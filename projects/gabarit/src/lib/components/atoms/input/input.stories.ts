@@ -32,6 +32,14 @@ export const Password: Story = {
   },
 }
 
+export const Email: Story = {
+  args: {
+    label: 'Adresse électronique',
+    type: 'email',
+    placeholder: 'prenom.nom@exemple.fr',
+  },
+}
+
 export const Error: Story = {
   args: {
     label: 'Nom',

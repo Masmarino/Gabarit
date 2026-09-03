@@ -14,7 +14,7 @@ import { GbtInput } from './input'
   `,
 })
 class HostComponent {
-  type: 'text' | 'password' = 'text'
+  type: 'text' | 'password' | 'email' = 'text'
   form = new FormGroup({ name: new FormControl('') })
 }
 
@@ -92,6 +92,32 @@ describe('GbtInput', () => {
 
     const input: HTMLInputElement = fixture.nativeElement.querySelector('input')
     expect(input.disabled).toBe(true)
+  })
+
+  it('renders the email type on the native input', () => {
+    const fixture = TestBed.createComponent(HostComponent)
+    fixture.componentInstance.type = 'email'
+    fixture.detectChanges()
+
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('input')
+    expect(input.getAttribute('type')).toBe('email')
+  })
+
+  it('emits committed on blur, with the value the user settled on', () => {
+    const fixture = TestBed.createComponent(GbtInput)
+    const committed: string[] = []
+    fixture.componentInstance.committed.subscribe((value) => committed.push(value))
+    fixture.detectChanges()
+
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('input')
+    input.value = '2'
+    input.dispatchEvent(new Event('input'))
+    input.value = '24'
+    input.dispatchEvent(new Event('input'))
+    expect(committed).toEqual([])
+
+    input.dispatchEvent(new Event('blur'))
+    expect(committed).toEqual(['24'])
   })
 
   it('presents no accessibility violation with a label', async () => {

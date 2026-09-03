@@ -5,6 +5,8 @@ import { formatNumber } from '../../../primitives'
 export interface DimensionRow {
   label: string
   value: number
+
+  display?: string
 }
 
 interface RenderedRow {
@@ -37,7 +39,7 @@ export class DimensionCard {
     const maxValue = rows.reduce((max, row) => Math.max(max, row.value), 0)
     return rows.map((row) => ({
       label: row.label,
-      formattedValue: formatNumber(row.value, this.locale()),
+      formattedValue: row.display ?? formatNumber(row.value, this.locale()),
 
       part: maxValue <= 0 ? 0 : (row.value / maxValue) * 100,
     }))

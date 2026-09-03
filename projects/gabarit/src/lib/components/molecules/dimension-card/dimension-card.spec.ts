@@ -120,6 +120,25 @@ describe('DimensionCard', () => {
     for (const row of renderedRows) expect(row.hasAttribute('tabindex')).toBe(false)
   })
 
+  it("prefers a row's display over the formatted value, and keeps its bar on value", () => {
+    const fixture = TestBed.createComponent(HostComponent)
+    fixture.componentInstance.rows.set([
+      { label: 'Archives', value: 2_147_483_648, display: '2 Gio' },
+      { label: 'Miroirs', value: 1_073_741_824, display: '1 Gio' },
+    ])
+    fixture.detectChanges()
+
+    const values = [...fixture.nativeElement.querySelectorAll('.gbt-dimension-card__value')].map(
+      (cell: HTMLElement) => cell.textContent?.trim(),
+    )
+    expect(values).toEqual(['2 Gio', '1 Gio'])
+
+    const bars = [...fixture.nativeElement.querySelectorAll('.gbt-dimension-card__bar')].map(
+      (bar: HTMLElement) => bar.style.width,
+    )
+    expect(bars).toEqual(['100%', '50%'])
+  })
+
   it('has no violation detected by axe', async () => {
     await expectNoA11yViolations(setup().nativeElement)
   })

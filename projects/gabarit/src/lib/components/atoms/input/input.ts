@@ -5,6 +5,7 @@ import {
   computed,
   forwardRef,
   input,
+  output,
   signal,
 } from '@angular/core'
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
@@ -31,7 +32,7 @@ let nextInputId = 0
 export class GbtInput implements ControlValueAccessor {
   id = input<string>(`gbt-input-${++nextInputId}`)
   label = input<string>('')
-  type = input<'text' | 'password'>('text')
+  type = input<'text' | 'password' | 'email'>('text')
   required = input(false, { transform: booleanAttribute })
   disabled = input(false, { transform: booleanAttribute })
   placeholder = input<string>('')
@@ -42,11 +43,16 @@ export class GbtInput implements ControlValueAccessor {
 
   hidePasswordLabel = input<string>('Hide password')
 
+  committed = output<string>()
+
   protected readonly value = signal('')
   protected readonly passwordVisible = signal(false)
-  protected readonly effectiveType = computed(() =>
-    this.type() === 'password' && !this.passwordVisible() ? 'password' : 'text',
-  )
+  protected readonly effectiveType = computed(() => {
+    if (this.type() !== 'password') {
+      return this.type()
+    }
+    return this.passwordVisible() ? 'text' : 'password'
+  })
 
   private readonly formDisabled = signal(false)
   protected readonly isDisabled = computed(() => this.disabled() || this.formDisabled())
@@ -78,6 +84,7 @@ export class GbtInput implements ControlValueAccessor {
 
   protected onBlur(): void {
     this.onTouched()
+    this.committed.emit(this.value())
   }
 
   protected togglePasswordVisibility(): void {

@@ -56,3 +56,17 @@ export const Empty: Story = {
     moduleMetadata: { imports: [DimensionCard] },
   }),
 }
+
+export const PreformattedValues: Story = {
+  render: () => ({
+    props: {
+      rows: [
+        { label: 'Archives', value: 2_147_483_648, display: '2 Gio' },
+        { label: 'Miroirs', value: 1_073_741_824, display: '1 Gio' },
+        { label: 'Journaux', value: 268_435_456, display: '256 Mio' },
+      ],
+    },
+    template: template,
+    moduleMetadata: { imports: [DimensionCard] },
+  }),
+}
