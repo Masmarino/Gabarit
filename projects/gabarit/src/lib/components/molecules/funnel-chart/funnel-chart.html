@@ -1,0 +1,32 @@
+@if (renderedSteps().length > 0) {
+  <ol class="gbt-funnel-chart" [attr.aria-label]="label()">
+    @for (step of renderedSteps(); track $index) {
+      <li
+        class="gbt-funnel-chart__step"
+        [attr.data-active]="$index === activeIndex() ? '' : null"
+        tabindex="0"
+        (mouseenter)="activeIndex.set($index)"
+        (mouseleave)="onMouseLeave($event)"
+        (focus)="activeIndex.set($index)"
+        (blur)="activeIndex.set(null)"
+      >
+        <div class="gbt-funnel-chart__bar" [style.width.%]="step.part" aria-hidden="true"></div>
+        <span class="gbt-funnel-chart__label">{{ step.label }}</span>
+        <span class="gbt-funnel-chart__value">{{ step.formattedValue }}</span>
+        @if ($index === activeIndex()) {
+          <span class="gbt-funnel-chart__tip" aria-hidden="true">{{
+            step.conversionFromPrevious
+          }}</span>
+        }
+      </li>
+    }
+  </ol>
+  <div class="gbt-sr-only" role="status" aria-live="polite" aria-atomic="true">
+    @if (activeStep(); as step) {
+      {{ stepAnnouncement()(step.label, step.conversionFromPrevious) }}
+    }
+  </div>
+  <gbt-chart-table [caption]="tableCaption()" [columns]="columns()" [rows]="tableRows()" />
+} @else {
+  <gbt-chart-empty [message]="emptyMessage()" />
+}

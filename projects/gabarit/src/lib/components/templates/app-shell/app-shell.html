@@ -1,0 +1,44 @@
+<div class="gbt-app-shell">
+  <a class="gbt-app-shell__skip" [href]="'#' + mainId">{{ skipLabel() }}</a>
+
+  <nav
+    #nav
+    [id]="navId"
+    class="gbt-app-shell__nav"
+    [class.gbt-app-shell__nav--open]="menuOpen()"
+    [attr.aria-label]="navLabel()"
+    tabindex="-1"
+    (keydown)="onNavKeydown($event)"
+  >
+    <div class="gbt-app-shell__brand">
+      <ng-content select="[shell-brand]" />
+    </div>
+    <ng-content select="[shell-nav]" />
+  </nav>
+
+  @if (menuOpen()) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    <div class="gbt-app-shell__scrim" (click)="close()"></div>
+  }
+
+  <div class="gbt-app-shell__body">
+    <header class="gbt-app-shell__header">
+      <button
+        #toggle
+        type="button"
+        class="gbt-app-shell__toggle"
+        [attr.aria-expanded]="menuOpen()"
+        [attr.aria-controls]="navId"
+        [attr.aria-label]="menuLabel()"
+        (click)="toggleMenu()"
+      >
+        <span class="gbt-app-shell__burger" aria-hidden="true"></span>
+      </button>
+      <ng-content select="[shell-header]" />
+    </header>
+
+    <main [id]="mainId" class="gbt-app-shell__content" tabindex="-1">
+      <ng-content />
+    </main>
+  </div>
+</div>

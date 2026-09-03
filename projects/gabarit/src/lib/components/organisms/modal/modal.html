@@ -1,0 +1,48 @@
+@if (isOpen()) {
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+  <div class="gbt-modal__backdrop" (click)="onBackdropClick($event)">
+    <div
+      class="gbt-modal__dialog"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="heading() || null"
+      tabindex="-1"
+      #dialog
+      (keydown)="onDialogKeydown($event)"
+    >
+      <header class="gbt-modal__header">
+        @switch (headingLevel()) {
+          @case (1) {
+            <h1 class="gbt-modal__title">{{ heading() }}</h1>
+          }
+          @case (3) {
+            <h3 class="gbt-modal__title">{{ heading() }}</h3>
+          }
+          @case (4) {
+            <h4 class="gbt-modal__title">{{ heading() }}</h4>
+          }
+          @case (5) {
+            <h5 class="gbt-modal__title">{{ heading() }}</h5>
+          }
+          @case (6) {
+            <h6 class="gbt-modal__title">{{ heading() }}</h6>
+          }
+          @default {
+            <h2 class="gbt-modal__title">{{ heading() }}</h2>
+          }
+        }
+        <button
+          type="button"
+          class="gbt-modal__close"
+          (click)="closed.emit()"
+          [attr.aria-label]="closeLabel()"
+        >
+          <gbt-icon name="x" aria-hidden="true" />
+        </button>
+      </header>
+      <div class="gbt-modal__body">
+        <ng-content />
+      </div>
+    </div>
+  </div>
+}

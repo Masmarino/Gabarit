@@ -1,0 +1,72 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": {
+    "packageManager": "npm",
+    "schematicCollections": ["angular-eslint"]
+  },
+  "newProjectRoot": "projects",
+  "projects": {
+    "gabarit": {
+      "projectType": "library",
+      "root": "projects/gabarit",
+      "sourceRoot": "projects/gabarit/src",
+      "prefix": "gbt",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/gabarit/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/gabarit/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "watch": false
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["projects/gabarit/**/*.ts", "projects/gabarit/**/*.html"]
+          }
+        },
+        "storybook": {
+          "builder": "@storybook/angular-vite:start-storybook",
+          "options": {
+            "styles": [
+              "./projects/gabarit/src/lib/tokens/index.scss",
+              "./projects/gabarit/.storybook/style.scss"
+            ],
+            "configDir": "projects/gabarit/.storybook",
+            "browserTarget": "gabarit:build",
+            "port": 6006
+          }
+        },
+        "build-storybook": {
+          "builder": "@storybook/angular-vite:build-storybook",
+          "options": {
+            "styles": [
+              "./projects/gabarit/src/lib/tokens/index.scss",
+              "./projects/gabarit/.storybook/style.scss"
+            ],
+            "configDir": "projects/gabarit/.storybook",
+            "browserTarget": "gabarit:build",
+            "outputDir": "dist/storybook"
+          }
+        }
+      }
+    }
+  }
+}

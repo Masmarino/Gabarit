@@ -1,0 +1,151 @@
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+<div class="gbt-sb-trigger" [class.gbt-sb-trigger--open]="isFocused()" (click)="focusSearch()">
+  <gbt-icon name="search" class="gbt-sb-trigger__icon" aria-hidden="true" />
+  <input
+    #searchInput
+    type="text"
+    role="combobox"
+    class="gbt-sb-trigger__input"
+    [placeholder]="placeholder()"
+    [attr.aria-label]="ariaLabel() || placeholder()"
+    [value]="searchQuery()"
+    [attr.aria-expanded]="showOverlay()"
+    aria-autocomplete="list"
+    aria-haspopup="listbox"
+    [attr.aria-controls]="showOverlay() ? panelId() : null"
+    [attr.aria-activedescendant]="activeItemDomId()"
+    (focus)="onFocus()"
+    (blur)="onBlur()"
+    (input)="onInput($event)"
+    autocomplete="off"
+    spellcheck="false"
+  />
+  @if (searchQuery().length > 0) {
+    <button
+      type="button"
+      class="gbt-sb-trigger__clear"
+      (click)="onClear()"
+      [attr.aria-label]="clearLabel()"
+    >
+      <gbt-icon name="x" aria-hidden="true" />
+    </button>
+  }
+</div>
+@if (showOverlay()) {
+  <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
+    {{ resultsAnnouncement()(resultCount()) }}
+  </div>
+}
+@if (showOverlay()) {
+  <div class="gbt-sb-backdrop" (click)="blurSearch()" aria-hidden="true"></div>
+  <ng-template #footer>
+    <div class="gbt-sb-footer" aria-hidden="true">
+      <span class="gbt-sb-footer__hint">
+        <kbd class="gbt-sb-kbd gbt-sb-kbd--sm">↑</kbd>
+        <kbd class="gbt-sb-kbd gbt-sb-kbd--sm">↓</kbd>
+        {{ navigateHint() }}
+      </span>
+      <span class="gbt-sb-footer__hint">
+        <kbd class="gbt-sb-kbd gbt-sb-kbd--sm">↵</kbd>
+        {{ selectHint() }}
+      </span>
+      <span class="gbt-sb-footer__hint">
+        <kbd class="gbt-sb-kbd gbt-sb-kbd--sm">Esc</kbd>
+        {{ closeHint() }}
+      </span>
+    </div>
+  </ng-template>
+  @if (hasNoResults()) {
+    <div [id]="panelId()" class="gbt-sb-panel">
+      <div class="gbt-sb-state" role="status">
+        <gbt-icon name="search" class="gbt-sb-state__icon" aria-hidden="true" />
+        <span>{{ noResultsMessage() }}</span>
+        <p class="gbt-sb-state__hint">{{ noResultsHint() }}</p>
+      </div>
+      <ng-container [ngTemplateOutlet]="footer"></ng-container>
+    </div>
+  } @else {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    <div
+      [id]="panelId()"
+      class="gbt-sb-panel"
+      role="listbox"
+      (mousedown)="$event.preventDefault()"
+      (click)="$event.stopPropagation()"
+    >
+      @if (hasGroupedResults()) {
+        <div class="gbt-sb-list">
+          @for (category of indexedGroupedResults(); track category.label) {
+            @if (category.items.length > 0) {
+              <div class="gbt-sb-group-label">
+                @if (category.icon) {
+                  <gbt-icon [name]="category.icon" aria-hidden="true" />
+                }
+                {{ category.label }}
+                <span class="gbt-sb-group-count" aria-hidden="true">{{
+                  category.items.length
+                }}</span>
+              </div>
+              @for (entry of category.indexedItems; track entry.index) {
+                <button
+                  type="button"
+                  role="option"
+                  tabindex="-1"
+                  [id]="itemDomId(entry.index)"
+                  class="gbt-sb-item"
+                  [attr.aria-selected]="entry.index === activeIndex()"
+                  [class.gbt-sb-item--active]="entry.index === activeIndex()"
+                  (click)="onSelect(entry.item)"
+                  (mouseenter)="activeIndex.set(entry.index)"
+                >
+                  @if (itemTemplate()) {
+                    <ng-container
+                      [ngTemplateOutlet]="itemTemplate()!"
+                      [ngTemplateOutletContext]="{ $implicit: entry.item }"
+                    ></ng-container>
+                  } @else {
+                    @if (category.icon) {
+                      <gbt-icon
+                        [name]="category.icon"
+                        class="gbt-sb-item__icon"
+                        aria-hidden="true"
+                      />
+                    }
+                    <span class="gbt-sb-item__label">{{ entry.formatted }}</span>
+                  }
+                </button>
+              }
+            }
+          }
+        </div>
+      } @else if (results() && results()!.length > 0) {
+        <div class="gbt-sb-list">
+          @for (entry of indexedResults(); track entry.index) {
+            <button
+              type="button"
+              role="option"
+              tabindex="-1"
+              [id]="itemDomId(entry.index)"
+              class="gbt-sb-item"
+              [attr.aria-selected]="entry.index === activeIndex()"
+              [class.gbt-sb-item--active]="entry.index === activeIndex()"
+              (click)="onSelect(entry.item)"
+              (mouseenter)="activeIndex.set(entry.index)"
+            >
+              @if (itemTemplate()) {
+                <ng-container
+                  [ngTemplateOutlet]="itemTemplate()!"
+                  [ngTemplateOutletContext]="{ $implicit: entry.item }"
+                ></ng-container>
+              } @else {
+                <span class="gbt-sb-item__label">{{ entry.formatted }}</span>
+              }
+            </button>
+          }
+        </div>
+      }
+
+      <ng-container [ngTemplateOutlet]="footer"></ng-container>
+    </div>
+  }
+}

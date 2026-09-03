@@ -1,0 +1,43 @@
+:host {
+  display: block;
+}
+
+.gbt-card {
+  background: var(--bg-principal);
+  border-radius: var(--site-border-radius-lg);
+  box-shadow: var(--site-shadow-sm);
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 1.25rem 1.5rem;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+
+  &--hoverable {
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      box-shadow: var(--site-shadow-lg);
+    }
+  }
+}
+
+.gbt-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.gbt-card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}

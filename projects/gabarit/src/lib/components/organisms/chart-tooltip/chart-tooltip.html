@@ -1,0 +1,21 @@
+<div class="gbt-chart-tooltip" role="status" aria-live="polite">
+  @if (active(); as point) {
+    <div class="gbt-chart-tooltip__panel" [style.left.px]="left()" [attr.data-anchor]="anchor()">
+      <p class="gbt-chart-tooltip__header">{{ point.header }}</p>
+      <ul class="gbt-chart-tooltip__rows">
+        @for (row of point.rows; track $index) {
+          <li>
+            <span
+              class="gbt-chart-tooltip__swatch"
+              [attr.data-series]="row.series ?? null"
+              [attr.data-pattern]="row.pattern ?? 'solid'"
+              aria-hidden="true"
+            ></span>
+            <span class="gbt-chart-tooltip__label">{{ row.label }}</span>
+            <span class="gbt-chart-tooltip__value">{{ row.value }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+</div>

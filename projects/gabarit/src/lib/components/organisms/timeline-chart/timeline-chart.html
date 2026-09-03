@@ -1,0 +1,31 @@
+<gbt-chart-frame
+  [label]="label()"
+  [x]="xSpec()"
+  [y]="ySpec()"
+  [pointValues]="publicXValues()"
+  [size]="size()"
+  [heading]="heading()"
+  [headingLevel]="headingLevel()"
+  [headline]="headline()"
+  [trend]="trend()"
+>
+  <svg:g gbtChartLayer>
+    <svg:g gbtChartAxis axis="y" [locale]="locale()" [tickCount]="yTickCount()" grid></svg:g>
+    <svg:g gbtChartAxis axis="x" [locale]="locale()"></svg:g>
+    <svg:g gbtTimelineSeries [series]="series()" [intervals]="intervals()"></svg:g>
+  </svg:g>
+  <gbt-chart-tooltip [points]="tooltipPoints()" />
+  @if (hasData()) {
+    <gbt-chart-table [caption]="tableCaption()" [columns]="tableColumns()" [rows]="tableRows()" />
+  }
+  @if (hasData() && intervals().length > 0) {
+    <gbt-chart-table
+      [caption]="intervalsCaption()"
+      [columns]="intervalColumns()"
+      [rows]="intervalRows()"
+    />
+  }
+  @if (!hasData()) {
+    <gbt-chart-empty [message]="emptyMessage()" />
+  }
+</gbt-chart-frame>

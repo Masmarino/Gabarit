@@ -1,0 +1,114 @@
+:root {
+  --primary: var(--brand-600);
+
+  --primary-hover: #32344e;
+  --bg-principal: #ffffff;
+  --bg-panel: #f5f5f7;
+  --bg-hover: rgba(0, 0, 0, 0.05);
+
+  --border-color: #7798b3;
+
+  --text-primary: var(--grey-900);
+  --text-secondary: var(--grey-700);
+
+  --text-discret: #425c6b;
+  --text-on-color: #ffffff;
+
+  --text-on-primary: #ffffff;
+  --text-on-error: #ffffff;
+
+  --color-success-base: var(--green-500);
+  --color-success-text: #1a644c;
+  --color-success-hover: var(--green-700);
+  --color-success-bg: var(--green-100);
+  --color-success-bg-text: var(--green-800);
+
+  --color-warning-base: #c38927;
+  --color-warning-text: #755217;
+  --color-warning-hover: var(--amber-600);
+  --color-warning-bg: var(--amber-100);
+  --color-warning-bg-text: var(--amber-800);
+
+  --color-error-base: var(--red-500);
+  --color-error-fill: #a82727;
+  --color-error-text: #a82727;
+  --color-error-hover: #8f2121;
+  --color-error-bg: var(--red-100);
+  --color-error-bg-text: var(--red-800);
+
+  --chart-series-1-base: #bd8200;
+  --chart-series-2-base: #009e73;
+  --chart-series-3-base: #0072b2;
+  --chart-grid: var(--grey-200);
+
+  --site-border-radius: 14px;
+  --site-border-radius-sm: 10px;
+  --site-border-radius-lg: 24px;
+
+  --site-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.06);
+  --site-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --site-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+
+  --site-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --site-transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  --font-family: 'Inter', sans-serif;
+}
+
+@mixin dark-tokens {
+  --primary: #a7aeff;
+
+  --primary-hover: #c6caff;
+
+  --bg-principal: var(--grey-900);
+  --bg-panel: #0f1c26;
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --border-color: #436a80;
+
+  --text-primary: var(--grey-50);
+
+  --text-secondary: #9ebdcf;
+  --text-discret: #86a9bb;
+  --text-on-color: #ffffff;
+
+  --text-on-primary: var(--grey-900);
+  --text-on-error: var(--grey-900);
+
+  --color-success-base: var(--green-400);
+  --color-success-text: #54b592;
+  --color-success-hover: var(--green-500);
+  --color-success-bg: var(--green-900);
+  --color-success-bg-text: var(--green-100);
+
+  --color-warning-base: var(--amber-400);
+  --color-warning-text: var(--amber-400);
+  --color-warning-hover: var(--amber-500);
+  --color-warning-bg: var(--amber-900);
+  --color-warning-bg-text: var(--amber-100);
+
+  --color-error-base: var(--red-400);
+  --color-error-fill: #e98989;
+  --color-error-text: #e98989;
+  --color-error-hover: #eea3a3;
+  --color-error-bg: var(--red-900);
+  --color-error-bg-text: var(--red-100);
+
+  --chart-series-1-base: #e69f00;
+  --chart-series-2-base: #009e73;
+  --chart-series-3-base: #0072b2;
+  --chart-grid: var(--grey-800);
+
+  --site-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.3);
+  --site-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --site-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4), 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    @include dark-tokens;
+  }
+}
+
+:root[data-theme='dark'] {
+  @include dark-tokens;
+}

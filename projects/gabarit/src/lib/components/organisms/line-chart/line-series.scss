@@ -1,0 +1,47 @@
+.gbt-line-series__line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+
+  &[data-series='1'] {
+    stroke: var(--chart-series-1-base);
+  }
+  &[data-series='2'] {
+    stroke: var(--chart-series-2-base);
+  }
+  &[data-series='3'] {
+    stroke: var(--chart-series-3-base);
+  }
+}
+
+.gbt-line-series__area {
+  stroke: none;
+  opacity: 0.15;
+
+  &[data-series='1'] {
+    fill: var(--chart-series-1-base);
+  }
+  &[data-series='2'] {
+    fill: var(--chart-series-2-base);
+  }
+  &[data-series='3'] {
+    fill: var(--chart-series-3-base);
+  }
+}
+
+.gbt-line-series__dot {
+  stroke: var(--bg-principal);
+  stroke-width: 2;
+  pointer-events: none;
+
+  &[data-series='1'] {
+    fill: var(--chart-series-1-base);
+  }
+  &[data-series='2'] {
+    fill: var(--chart-series-2-base);
+  }
+  &[data-series='3'] {
+    fill: var(--chart-series-3-base);
+  }
+}

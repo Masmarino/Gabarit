@@ -1,0 +1,70 @@
+<div class="gbt-chart-frame">
+  @if (heading()) {
+    <div class="gbt-chart-frame__header">
+      @switch (headingLevel()) {
+        @case (1) {
+          <h1 class="gbt-chart-frame__title">{{ heading() }}</h1>
+        }
+        @case (3) {
+          <h3 class="gbt-chart-frame__title">{{ heading() }}</h3>
+        }
+        @case (4) {
+          <h4 class="gbt-chart-frame__title">{{ heading() }}</h4>
+        }
+        @case (5) {
+          <h5 class="gbt-chart-frame__title">{{ heading() }}</h5>
+        }
+        @case (6) {
+          <h6 class="gbt-chart-frame__title">{{ heading() }}</h6>
+        }
+        @default {
+          <h2 class="gbt-chart-frame__title">{{ heading() }}</h2>
+        }
+      }
+      @if (headline()) {
+        <p class="gbt-chart-frame__headline">{{ headline() }}</p>
+      }
+      @if (trend()) {
+        <p class="gbt-chart-frame__trend">{{ trend() }}</p>
+      }
+    </div>
+  }
+
+  <div
+    #surface
+    class="gbt-chart-frame__surface"
+    [attr.tabindex]="ready() && pointValues().length > 0 ? 0 : null"
+    [attr.role]="ready() ? 'group' : null"
+    [attr.aria-label]="ready() ? label() : null"
+    (keydown)="onKeydown($event)"
+    (blur)="onBlur()"
+    (pointermove)="onPointerMove($event)"
+    (pointerleave)="onPointerLeave($event)"
+  >
+    @if (ready()) {
+      <svg
+        class="gbt-chart-frame__svg"
+        [attr.viewBox]="viewBox()"
+        role="presentation"
+        focusable="false"
+      >
+        <g [attr.transform]="innerTransform()">
+          <ng-content select="[gbtChartLayer]" />
+          @if (activePosition() !== null) {
+            <line
+              class="gbt-chart-frame__guide"
+              [attr.x1]="activePosition()"
+              [attr.x2]="activePosition()"
+              y1="0"
+              [attr.y2]="innerHeight()"
+              aria-hidden="true"
+            />
+          }
+        </g>
+      </svg>
+      <ng-content select="gbt-chart-tooltip" />
+    }
+  </div>
+  <ng-content select="gbt-chart-empty" />
+  <ng-content select="gbt-chart-table" />
+</div>

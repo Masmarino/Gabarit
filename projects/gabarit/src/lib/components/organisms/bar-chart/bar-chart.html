@@ -1,0 +1,23 @@
+<gbt-chart-frame
+  [label]="label()"
+  [x]="xSpec()"
+  [y]="ySpec()"
+  [pointValues]="publicXValues()"
+  [size]="size()"
+  [heading]="heading()"
+  [headingLevel]="headingLevel()"
+  [headline]="headline()"
+  [trend]="trend()"
+>
+  <svg:g gbtChartLayer>
+    <svg:g gbtChartAxis axis="y" [locale]="locale()" [tickCount]="yTickCount()" grid></svg:g>
+    <svg:g gbtChartAxis axis="x" [locale]="locale()"></svg:g>
+    <svg:g gbtBarSeries [series]="series()"></svg:g>
+  </svg:g>
+  <gbt-chart-tooltip [points]="tooltipPoints()" />
+  @if (hasData()) {
+    <gbt-chart-table [caption]="tableCaption()" [columns]="tableColumns()" [rows]="tableRows()" />
+  } @else {
+    <gbt-chart-empty [message]="emptyMessage()" />
+  }
+</gbt-chart-frame>

@@ -1,0 +1,72 @@
+:host {
+  display: block;
+}
+
+.gbt-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  &__wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-family);
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    background: var(--bg-principal);
+    border: 1px solid var(--border-color);
+    border-radius: var(--site-border-radius-sm);
+    transition: border-color var(--site-transition-fast);
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 1px;
+    }
+
+    &:disabled {
+      background: var(--bg-panel);
+      cursor: not-allowed;
+    }
+  }
+
+  &__toggle {
+    position: absolute;
+    right: 0.5rem;
+    display: inline-flex;
+    background: none;
+    border: none;
+    color: var(--text-discret);
+    cursor: pointer;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 50% auto auto 50%;
+      width: max(100%, 24px);
+      height: max(100%, 24px);
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  &__error {
+    font-size: 0.75rem;
+    color: var(--color-error-text);
+  }
+}

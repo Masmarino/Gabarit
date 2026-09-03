@@ -1,0 +1,7 @@
+.gbt-bar-series__bar {
+  fill: var(--chart-series-1-base);
+
+  &[data-active] {
+    filter: brightness(1.15);
+  }
+}
