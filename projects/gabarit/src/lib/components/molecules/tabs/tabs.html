@@ -1,0 +1,24 @@
+<div class="gbt-tabs">
+  <div class="gbt-tabs__list" role="tablist">
+    @for (tab of tabs(); track tab; let i = $index) {
+      <button
+        #trigger
+        type="button"
+        class="gbt-tabs__trigger"
+        [class.gbt-tabs__trigger--active]="activeIndex() === i"
+        role="tab"
+        [id]="id() + '-trigger-' + i"
+        [attr.aria-selected]="activeIndex() === i"
+        [attr.aria-controls]="id() + '-panel-' + i"
+        [tabIndex]="activeIndex() === i ? 0 : -1"
+        (click)="select(i)"
+        (keydown)="onKeydown($event, i)"
+      >
+        {{ tab.label() }}
+      </button>
+    }
+  </div>
+  <div class="gbt-tabs__panels">
+    <ng-content></ng-content>
+  </div>
+</div>

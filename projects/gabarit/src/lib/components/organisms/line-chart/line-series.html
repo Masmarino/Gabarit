@@ -1,0 +1,24 @@
+@for (renderedLine of renderedLines(); track $index) {
+  @if (area()) {
+    <svg:path
+      class="gbt-line-series__area"
+      [attr.d]="renderedLine.fillPath"
+      [attr.data-series]="renderedLine.colorIndex"
+    />
+  }
+  <svg:path
+    class="gbt-line-series__line"
+    [attr.d]="renderedLine.strokePath"
+    [attr.data-series]="renderedLine.colorIndex"
+    [attr.stroke-dasharray]="renderedLine.dashArray"
+  />
+}
+@for (dot of activeDots(); track $index) {
+  <svg:circle
+    class="gbt-line-series__dot"
+    [attr.cx]="dot.x"
+    [attr.cy]="dot.y"
+    r="4"
+    [attr.data-series]="dot.colorIndex"
+  />
+}

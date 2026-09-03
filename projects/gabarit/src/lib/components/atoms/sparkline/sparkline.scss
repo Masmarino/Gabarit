@@ -1,0 +1,46 @@
+:host {
+  display: inline-block;
+  line-height: 0;
+}
+
+.gbt-sparkline {
+  position: relative;
+  display: inline-block;
+
+  &__svg:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  &__line {
+    fill: none;
+
+    stroke: var(--chart-series-1-base);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  &__dot {
+    fill: var(--chart-series-1-base);
+    stroke: var(--bg-principal);
+    stroke-width: 1.5;
+    pointer-events: none;
+  }
+
+  &__tooltip {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--site-border-radius);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+    pointer-events: none;
+  }
+}

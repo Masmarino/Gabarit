@@ -1,0 +1,7 @@
+node_modules/
+dist/
+storybook-static/
+.angular/
+.DS_Store
+.superpowers/
+.idea/

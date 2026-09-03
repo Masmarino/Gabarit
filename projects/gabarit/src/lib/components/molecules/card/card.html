@@ -1,0 +1,34 @@
+<div [class]="cardClass()">
+  @if (heading()) {
+    <div class="gbt-card__header">
+      @switch (headingLevel()) {
+        @case (1) {
+          <h1 class="gbt-card__title"><ng-container *ngTemplateOutlet="headingContent" /></h1>
+        }
+        @case (3) {
+          <h3 class="gbt-card__title"><ng-container *ngTemplateOutlet="headingContent" /></h3>
+        }
+        @case (4) {
+          <h4 class="gbt-card__title"><ng-container *ngTemplateOutlet="headingContent" /></h4>
+        }
+        @case (5) {
+          <h5 class="gbt-card__title"><ng-container *ngTemplateOutlet="headingContent" /></h5>
+        }
+        @case (6) {
+          <h6 class="gbt-card__title"><ng-container *ngTemplateOutlet="headingContent" /></h6>
+        }
+        @default {
+          <h2 class="gbt-card__title"><ng-container *ngTemplateOutlet="headingContent" /></h2>
+        }
+      }
+      <ng-content select="[card-header-actions]"></ng-content>
+    </div>
+  }
+  <ng-content></ng-content>
+</div>
+<ng-template #headingContent>
+  @if (icon()) {
+    <gbt-icon [name]="icon()" aria-hidden="true" />
+  }
+  {{ heading() }}
+</ng-template>

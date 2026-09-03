@@ -1,0 +1,32 @@
+<div class="gbt-menu">
+  <button
+    #trigger
+    type="button"
+    class="gbt-menu__trigger"
+    [class.gbt-menu__trigger--open]="open()"
+    aria-haspopup="menu"
+    [attr.aria-expanded]="open()"
+    (click)="toggle()"
+    (keydown)="onTriggerKeydown($event)"
+  >
+    <span class="gbt-menu__label">{{ label() }}</span>
+    <gbt-icon name="chevron-down" class="gbt-menu__chevron" aria-hidden="true" />
+  </button>
+
+  @if (open() && position(); as pos) {
+    <div
+      #list
+      class="gbt-menu__list"
+      role="menu"
+      tabindex="-1"
+      [attr.aria-label]="label()"
+      [style.top]="pos.top"
+      [style.left]="pos.left"
+      [style.right]="pos.right"
+      (keydown)="onListKeydown($event)"
+      (click)="onListClick()"
+    >
+      <ng-content />
+    </div>
+  }
+</div>

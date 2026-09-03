@@ -1,0 +1,70 @@
+:host {
+  display: block;
+}
+
+.gbt-chart-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  &__surface {
+    flex: 1;
+    min-height: 0;
+
+    position: relative;
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+  }
+
+  &__svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__guide {
+    stroke: var(--border-color);
+    stroke-width: 1;
+    pointer-events: none;
+  }
+
+  &__header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    column-gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  &__headline {
+    margin: 0;
+    grid-row: 1;
+    grid-column: 2;
+    font-size: 1.375rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+
+  &__trend {
+    margin: 0;
+    grid-column: 2;
+    justify-self: end;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+}

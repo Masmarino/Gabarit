@@ -1,0 +1,10 @@
+@for (bar of bars(); track bar.category) {
+  <svg:rect
+    class="gbt-bar-series__bar"
+    [attr.x]="bar.x"
+    [attr.y]="bar.y"
+    [attr.width]="bar.width"
+    [attr.height]="bar.height"
+    [attr.data-active]="$index === activeIndex() ? '' : null"
+  />
+}

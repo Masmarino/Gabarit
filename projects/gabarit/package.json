@@ -1,0 +1,39 @@
+{
+  "name": "@masmarino/gabarit",
+  "version": "0.1.0",
+  "description": "Angular design system — UI components and dataviz for self-hosted applications.",
+  "license": "MIT",
+  "homepage": "https://github.com/Masmarino/Gabarit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Masmarino/Gabarit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Masmarino/Gabarit/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "angular",
+    "design-system",
+    "components",
+    "dataviz"
+  ],
+  "peerDependencies": {
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "@angular/forms": "^22.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false,
+  "exports": {
+    "./tokens": {
+      "sass": "./src/lib/tokens/index.scss",
+      "style": "./src/lib/tokens/index.scss",
+      "default": "./src/lib/tokens/index.scss"
+    }
+  }
+}

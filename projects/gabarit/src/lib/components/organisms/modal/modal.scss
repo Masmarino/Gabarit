@@ -1,0 +1,73 @@
+.gbt-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.gbt-modal__dialog {
+  background: var(--bg-principal);
+  border-radius: var(--site-border-radius);
+  box-shadow: var(--site-shadow-lg);
+  width: min(90vw, 480px);
+  max-height: 90vh;
+  overflow-y: auto;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+.gbt-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+
+  .gbt-modal__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+}
+
+.gbt-modal__close {
+  position: relative;
+  display: inline-flex;
+  background: none;
+  border: none;
+  color: var(--text-discret);
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: max(100%, 24px);
+    height: max(100%, 24px);
+    transform: translate(-50%, -50%);
+  }
+}
+
+.gbt-modal__body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  > form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}

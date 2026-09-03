@@ -1,0 +1,76 @@
+<div class="gbt-select" [class.gbt-select--disabled]="isDisabled()">
+  @if (label()) {
+    <label [id]="labelId()" [for]="id()" class="gbt-select__label"
+      >{{ label() }}{{ required() ? ' *' : '' }}</label
+    >
+  }
+
+  <button
+    type="button"
+    [id]="id()"
+    class="gbt-select__trigger"
+    [class.gbt-select__trigger--open]="open()"
+    [disabled]="isDisabled()"
+    role="combobox"
+    aria-haspopup="listbox"
+    [attr.aria-expanded]="open()"
+    [attr.aria-controls]="open() ? id() + '-listbox' : null"
+    [attr.aria-activedescendant]="activeOptionId()"
+    [attr.aria-labelledby]="label() ? labelId() + ' ' + id() : null"
+    [attr.aria-required]="required() ? true : null"
+    [attr.aria-invalid]="errorMessage() ? true : null"
+    [attr.aria-describedby]="errorMessage() ? id() + '-error' : null"
+    (click)="toggleOpen()"
+  >
+    @if (triggerIcon(); as icon) {
+      <gbt-icon [name]="icon" class="gbt-select__trigger-icon" aria-hidden="true" />
+    }
+    <span
+      class="gbt-select__trigger-label"
+      [class.gbt-select__trigger-label--placeholder]="selectedOptions().length === 0"
+    >
+      {{ triggerLabel() }}
+    </span>
+    <gbt-icon name="chevron-down" class="gbt-select__chevron" aria-hidden="true" />
+  </button>
+  @if (open() && panelStyle(); as style) {
+    <ul
+      [id]="id() + '-listbox'"
+      class="gbt-select__panel"
+      role="listbox"
+      [attr.aria-label]="label() || placeholder()"
+      [attr.aria-multiselectable]="multiple()"
+      [style.top]="style.top"
+      [style.left]="style.left"
+      [style.width]="style.width"
+    >
+      @for (option of options(); track option.value; let i = $index) {
+        <li role="presentation">
+          <button
+            [id]="id() + '-option-' + i"
+            type="button"
+            role="option"
+            tabindex="-1"
+            class="gbt-select__option"
+            [class.gbt-select__option--selected]="isSelected(option.value)"
+            [class.gbt-select__option--active]="i === activeIndex()"
+            [attr.aria-selected]="isSelected(option.value)"
+            (click)="selectOption(option.value)"
+            (mouseenter)="activeIndex.set(i)"
+          >
+            @if (option.icon) {
+              <gbt-icon [name]="option.icon" class="gbt-select__option-icon" aria-hidden="true" />
+            }
+            <span class="gbt-select__option-label">{{ option.label }}</span>
+            @if (isSelected(option.value)) {
+              <gbt-icon name="check" class="gbt-select__option-check" aria-hidden="true" />
+            }
+          </button>
+        </li>
+      }
+    </ul>
+  }
+  @if (errorMessage()) {
+    <p [id]="id() + '-error'" class="gbt-select__error" role="alert">{{ errorMessage() }}</p>
+  }
+</div>

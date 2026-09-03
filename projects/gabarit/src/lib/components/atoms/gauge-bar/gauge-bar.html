@@ -1,0 +1,26 @@
+<div class="gbt-gauge-bar">
+  <div class="gbt-gauge-bar__header">
+    <span class="gbt-gauge-bar__label">{{ label() }}</span>
+    <span class="gbt-gauge-bar__value">
+      {{ formattedValue() }}
+      @if (severityLabel(); as tierLabel) {
+        <span class="gbt-gauge-bar__tier" [attr.data-tier]="severity()">{{ tierLabel }}</span>
+      }
+    </span>
+  </div>
+  <div
+    class="gbt-gauge-bar__track"
+    role="progressbar"
+    [attr.aria-label]="label()"
+    [attr.aria-valuenow]="percentage()"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    [attr.aria-valuetext]="formattedValue()"
+  >
+    <div
+      class="gbt-gauge-bar__fill"
+      [attr.data-tier]="severity()"
+      [style.width.%]="percentage()"
+    ></div>
+  </div>
+</div>

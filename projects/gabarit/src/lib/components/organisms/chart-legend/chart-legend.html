@@ -1,0 +1,21 @@
+<ul class="gbt-chart-legend">
+  @for (entry of entries(); track $index) {
+    <li class="gbt-chart-legend__item" [attr.data-pattern]="entry.pattern ?? 'solid'">
+      <svg class="gbt-chart-legend__swatch" viewBox="0 0 24 8" aria-hidden="true" focusable="false">
+        <line
+          class="gbt-chart-legend__line"
+          x1="0"
+          y1="4"
+          x2="24"
+          y2="4"
+          [attr.stroke-dasharray]="dashArray(entry.pattern)"
+          stroke-width="2"
+        />
+      </svg>
+      {{ entry.label }}
+      @if (entry.value; as value) {
+        <span class="gbt-chart-legend__value">{{ value }}</span>
+      }
+    </li>
+  }
+</ul>

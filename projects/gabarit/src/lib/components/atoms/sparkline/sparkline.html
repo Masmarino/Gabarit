@@ -1,0 +1,28 @@
+@if (path(); as d) {
+  <div class="gbt-sparkline" role="status" aria-live="polite">
+    <svg
+      class="gbt-sparkline__svg"
+      [attr.viewBox]="viewBox()"
+      [attr.width]="width()"
+      [attr.height]="height()"
+      tabindex="0"
+      role="group"
+      [attr.aria-label]="tableCaption()"
+      (pointermove)="onPointerMove($event)"
+      (pointerleave)="onPointerLeave($event)"
+      (keydown)="onKeydown($event)"
+      (blur)="onBlur()"
+    >
+      <path class="gbt-sparkline__line" [attr.d]="d" />
+      @if (dot(); as p) {
+        <circle class="gbt-sparkline__dot" [attr.cx]="p.x" [attr.cy]="p.y" r="3" />
+      }
+    </svg>
+    @if (tooltip(); as text) {
+      <span class="gbt-sparkline__tooltip">{{ text }}</span>
+    }
+  </div>
+  <gbt-chart-table [caption]="tableCaption()" [columns]="columns()" [rows]="tableRows()" />
+} @else {
+  <gbt-chart-empty [message]="emptyMessage()" />
+}

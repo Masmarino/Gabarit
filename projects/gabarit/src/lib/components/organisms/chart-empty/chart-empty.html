@@ -1,0 +1,8 @@
+<div class="gbt-chart-empty" role="status">
+  <p class="gbt-chart-empty__message">{{ message() }}</p>
+  @if (actionLabel()) {
+    <button type="button" class="gbt-chart-empty__action" (click)="action.emit()">
+      {{ actionLabel() }}
+    </button>
+  }
+</div>

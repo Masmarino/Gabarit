@@ -1,0 +1,10 @@
+<label class="gbt-checkbox" [class.gbt-checkbox--disabled]="isDisabled()">
+  <input
+    type="checkbox"
+    [id]="id()"
+    [checked]="checked()"
+    [disabled]="isDisabled()"
+    (change)="onToggle($event)"
+  />
+  <span>{{ label() }}</span>
+</label>

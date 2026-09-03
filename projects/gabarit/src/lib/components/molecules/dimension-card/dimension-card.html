@@ -1,0 +1,36 @@
+@if (rows().length > 0) {
+  <table class="gbt-dimension-card">
+    <caption>
+      {{
+        caption()
+      }}
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">{{ labelColumn() }}</th>
+        <th scope="col">{{ valueColumn() }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of renderedRows(); track $index) {
+        <tr
+          [attr.data-active]="$index === activeIndex() ? '' : null"
+          (mouseenter)="activeIndex.set($index)"
+          (mouseleave)="activeIndex.set(null)"
+        >
+          <th scope="row" class="gbt-dimension-card__cell">
+            <span
+              class="gbt-dimension-card__bar"
+              [style.width.%]="row.part"
+              aria-hidden="true"
+            ></span>
+            <span class="gbt-dimension-card__label">{{ row.label }}</span>
+          </th>
+          <td class="gbt-dimension-card__value">{{ row.formattedValue }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+} @else {
+  <gbt-chart-empty [message]="emptyMessage()" />
+}

@@ -1,0 +1,28 @@
+@for (band of bands(); track $index) {
+  <svg:rect
+    class="gbt-timeline-series__band"
+    [attr.x]="band.x"
+    y="0"
+    [attr.width]="band.width"
+    [attr.height]="height()"
+  />
+  <svg:rect
+    class="gbt-timeline-series__band-edge"
+    [attr.x]="band.x"
+    y="0"
+    [attr.width]="band.width"
+    [attr.height]="band.strokeWidth"
+    [attr.data-active]="band.active ? '' : null"
+  />
+  @if (band.labeled) {
+    <svg:text class="gbt-timeline-series__band-label" [attr.x]="band.x + 4" y="14">
+      {{ band.label }}
+    </svg:text>
+  }
+}
+@if (strokePath(); as d) {
+  <svg:path class="gbt-timeline-series__line" [attr.d]="d" />
+}
+@if (activePoint(); as p) {
+  <svg:circle class="gbt-timeline-series__dot" [attr.cx]="p.x" [attr.cy]="p.y" r="4" />
+}

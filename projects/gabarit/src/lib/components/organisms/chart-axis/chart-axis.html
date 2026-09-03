@@ -1,0 +1,24 @@
+@for (y of gridLines(); track $index) {
+  <svg:line
+    class="gbt-chart-axis__grid"
+    x1="0"
+    [attr.x2]="innerWidth()"
+    [attr.y1]="y"
+    [attr.y2]="y"
+  />
+}
+@for (tick of ticks(); track tick.key) {
+  <svg:text
+    class="gbt-chart-axis__label"
+    [attr.x]="tick.x"
+    [attr.y]="tick.y"
+    [attr.text-anchor]="tick.anchor"
+  >
+    @if (tick.date) {
+      <svg:tspan [attr.x]="tick.x" dy="0">{{ tick.label }}</svg:tspan>
+      <svg:tspan [attr.x]="tick.x" dy="1.1em">{{ tick.date }}</svg:tspan>
+    } @else {
+      {{ tick.label }}
+    }
+  </svg:text>
+}

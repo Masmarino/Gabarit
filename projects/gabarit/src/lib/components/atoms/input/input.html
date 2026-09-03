@@ -1,0 +1,33 @@
+<div class="gbt-input">
+  @if (label()) {
+    <label [for]="id()">{{ label() }}{{ required() ? ' *' : '' }}</label>
+  }
+  <div class="gbt-input__wrapper">
+    <input
+      [id]="id()"
+      [type]="effectiveType()"
+      [placeholder]="placeholder()"
+      [required]="required()"
+      [disabled]="isDisabled()"
+      [attr.autocomplete]="autocomplete()"
+      [value]="value()"
+      [attr.aria-invalid]="errorMessage() ? true : null"
+      [attr.aria-describedby]="errorMessage() ? id() + '-error' : null"
+      (input)="onInput($event)"
+      (blur)="onBlur()"
+    />
+    @if (type() === 'password') {
+      <button
+        type="button"
+        class="gbt-input__toggle"
+        (click)="togglePasswordVisibility()"
+        [attr.aria-label]="passwordVisible() ? hidePasswordLabel() : showPasswordLabel()"
+      >
+        <gbt-icon [name]="passwordVisible() ? 'eye-off' : 'eye'" aria-hidden="true" />
+      </button>
+    }
+  </div>
+  @if (errorMessage()) {
+    <p [id]="id() + '-error'" class="gbt-input__error" role="alert">{{ errorMessage() }}</p>
+  }
+</div>

@@ -1,0 +1,11 @@
+.gbt-chart-axis__label {
+  fill: var(--text-discret);
+  font-size: 0.75rem;
+  font-family: var(--font-family);
+}
+
+.gbt-chart-axis__grid {
+  stroke: var(--border-color);
+  stroke-width: 1;
+  opacity: 0.5;
+}

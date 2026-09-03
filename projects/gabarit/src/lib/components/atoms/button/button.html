@@ -1,0 +1,17 @@
+<button
+  [type]="type()"
+  class="gbt-button gbt-button--{{ variant() }} gbt-button--{{ size() }}"
+  [disabled]="disabled() || loading()"
+  [attr.aria-label]="ariaLabel()"
+  [attr.aria-busy]="loading() ? 'true' : null"
+  (click)="handleClick()"
+>
+  @if (iconName()) {
+    <gbt-icon [name]="iconName()!" aria-hidden="true" />
+  }
+  @if (loading()) {
+    <span class="gbt-button__spinner" aria-hidden="true"></span>
+    <span class="sr-only">{{ loadingLabel() }}</span>
+  }
+  <span>{{ text() }}</span>
+</button>

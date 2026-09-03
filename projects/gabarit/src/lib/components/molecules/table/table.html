@@ -1,0 +1,32 @@
+<table class="gbt-table">
+  <caption>
+    {{
+      caption()
+    }}
+  </caption>
+  <thead>
+    <tr>
+      @for (column of columns(); track column.key) {
+        <th scope="col">{{ column.label }}</th>
+      }
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of data(); track trackRow($index, row)) {
+      <tr
+        [class.gbt-table__row--clickable]="clickableRows()"
+        [attr.tabindex]="clickableRows() ? 0 : null"
+        (click)="clickableRows() && rowClick.emit(row)"
+        (keydown)="clickableRows() && onRowKeydown($event, row)"
+      >
+        @for (column of columns(); track column.key) {
+          <td>{{ cellValue(row, column) }}</td>
+        }
+      </tr>
+    } @empty {
+      <tr class="gbt-table__empty">
+        <td [attr.colspan]="columns().length">{{ emptyMessage() }}</td>
+      </tr>
+    }
+  </tbody>
+</table>
