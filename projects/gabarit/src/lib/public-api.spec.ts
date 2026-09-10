@@ -17,13 +17,15 @@ describe('public surface', () => {
       'Tab',
       'Table',
       'Tabs',
+      'Toaster',
+      'Tooltip',
     ]) {
       expect(api).toHaveProperty(name)
     }
   })
 
   it('exposes the version', () => {
-    expect(api.GABARIT_VERSION).toBe('0.1.2')
+    expect(api.GABARIT_VERSION).toBe('0.2.0')
   })
 
   it('exports the twelve dataviz primitives', () => {
