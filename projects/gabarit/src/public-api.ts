@@ -81,3 +81,7 @@ export {
   type ToasterPosition,
 } from './lib/components/organisms/toaster/toaster'
 export { Tooltip, type TooltipPosition } from './lib/components/molecules/tooltip/tooltip'
+export {
+  RadioGroup,
+  type RadioOption,
+} from './lib/components/molecules/radio-group/radio-group'

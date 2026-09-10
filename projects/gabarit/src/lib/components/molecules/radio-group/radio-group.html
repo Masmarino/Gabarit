@@ -1,0 +1,28 @@
+<fieldset
+  class="gbt-radio-group"
+  [attr.data-orientation]="orientation()"
+  [disabled]="isDisabled()"
+  [attr.aria-invalid]="errorMessage() ? true : null"
+  [attr.aria-describedby]="errorMessage() ? id() + '-error' : null"
+>
+  <legend class="gbt-radio-group__legend">{{ label() }}{{ required() ? ' *' : '' }}</legend>
+  <div class="gbt-radio-group__options">
+    @for (option of options(); track option.value; let i = $index) {
+      <label class="gbt-radio-group__option">
+        <input
+          type="radio"
+          [id]="id() + '-' + i"
+          [name]="id()"
+          [value]="option.value"
+          [checked]="isSelected(option.value)"
+          [disabled]="isDisabled() || !!option.disabled"
+          (change)="selectOption(option.value)"
+        />
+        <span>{{ option.label }}</span>
+      </label>
+    }
+  </div>
+  @if (errorMessage()) {
+    <p [id]="id() + '-error'" class="gbt-radio-group__error" role="alert">{{ errorMessage() }}</p>
+  }
+</fieldset>
