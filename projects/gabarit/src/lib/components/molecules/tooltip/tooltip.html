@@ -1,0 +1,14 @@
+<ng-content />
+@if (visible() && coords(); as pos) {
+  <span
+    class="gbt-tooltip__bubble"
+    [class.gbt-tooltip__bubble--leaving]="closing()"
+    role="tooltip"
+    [id]="tooltipId"
+    [attr.data-position]="position()"
+    [style.top.px]="pos.top"
+    [style.left.px]="pos.left"
+  >
+    {{ text() }}
+  </span>
+}

@@ -80,3 +80,4 @@ export {
   type ToastVariant,
   type ToasterPosition,
 } from './lib/components/organisms/toaster/toaster'
+export { Tooltip, type TooltipPosition } from './lib/components/molecules/tooltip/tooltip'
