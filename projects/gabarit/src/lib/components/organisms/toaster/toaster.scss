@@ -1,0 +1,153 @@
+.gbt-toaster {
+  position: fixed;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: min(90vw, 360px);
+  pointer-events: none;
+
+  &[data-position='top-right'] {
+    top: 1rem;
+    right: 1rem;
+    align-items: flex-end;
+  }
+
+  &[data-position='top-left'] {
+    top: 1rem;
+    left: 1rem;
+    align-items: flex-start;
+  }
+
+  &[data-position='top-center'] {
+    top: 1rem;
+    left: 50%;
+    align-items: center;
+    transform: translateX(-50%);
+  }
+
+  &[data-position='bottom-right'] {
+    right: 1rem;
+    bottom: 1rem;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+  }
+
+  &[data-position='bottom-left'] {
+    bottom: 1rem;
+    left: 1rem;
+    flex-direction: column-reverse;
+    align-items: flex-start;
+  }
+
+  &[data-position='bottom-center'] {
+    bottom: 1rem;
+    left: 50%;
+    flex-direction: column-reverse;
+    align-items: center;
+    transform: translateX(-50%);
+  }
+}
+
+.gbt-toaster__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  pointer-events: auto;
+  background: var(--bg-inverse);
+  border: none;
+  border-radius: var(--site-border-radius);
+  box-shadow: var(--site-shadow-lg);
+  animation: gbt-toaster-in var(--site-transition-base);
+
+  // Each fill below is a small graphical badge behind a white glyph, fixed
+  // regardless of host theme — audited for 3:1 (graphic), not the 7:1 bar.
+  &[data-variant='success'] .gbt-toaster__icon {
+    background: var(--color-success-vivid-base); // token-graphique-sans-texte
+  }
+
+  &[data-variant='warning'] .gbt-toaster__icon {
+    background: var(--color-warning-vivid-base); // token-graphique-sans-texte
+  }
+
+  &[data-variant='error'] .gbt-toaster__icon {
+    background: var(--color-error-vivid-base); // token-graphique-sans-texte
+  }
+
+  &[data-variant='info'] .gbt-toaster__icon {
+    background: var(--color-info-vivid-base); // token-graphique-sans-texte
+  }
+}
+
+.gbt-toaster__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  margin-top: 0.0625rem;
+  color: var(--text-on-color);
+  border-radius: 50%;
+
+  gbt-icon {
+    width: 1.125em;
+    height: 1.125em;
+  }
+}
+
+.gbt-toaster__message {
+  flex: 1 1 auto;
+  margin: 0.3125rem 0;
+  color: var(--text-on-color);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.gbt-toaster__close {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-self: flex-start;
+  margin-top: 0.3125rem;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-on-color);
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity var(--site-transition-fast);
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--text-on-color);
+    outline-offset: 2px;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: max(100%, 24px);
+    height: max(100%, 24px);
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes gbt-toaster-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

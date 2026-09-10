@@ -1,0 +1,23 @@
+<div class="gbt-toaster" [attr.data-position]="position()">
+  @for (toast of toasts(); track toast.id) {
+    <div
+      class="gbt-toaster__item"
+      [attr.data-variant]="toast.variant"
+      [attr.role]="roleFor(toast.variant)"
+      aria-atomic="true"
+    >
+      <span class="gbt-toaster__icon">
+        <gbt-icon [name]="iconFor(toast.variant)" aria-hidden="true" />
+      </span>
+      <p class="gbt-toaster__message">{{ toast.message }}</p>
+      <button
+        type="button"
+        class="gbt-toaster__close"
+        [attr.aria-label]="closeLabel()"
+        (click)="dismissed.emit(toast.id)"
+      >
+        <gbt-icon name="x" aria-hidden="true" />
+      </button>
+    </div>
+  }
+</div>

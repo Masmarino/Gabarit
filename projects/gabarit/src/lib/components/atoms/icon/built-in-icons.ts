@@ -11,4 +11,12 @@ export const BUILT_IN_ICONS: Record<string, string> = {
 <path d="m2 2 20 20" />`,
   'chevron-down': `<path d="m6 9 6 6 6-6" />`,
   check: `<path d="M20 6 9 17l-5-5" />`,
+  'check-circle': `<path d="m5 12 5 5 9-10" />`,
+  'alert-circle': `<path d="M12 7v6" />
+<path d="M12 17h.01" />`,
+  'alert-triangle': `<path d="m21.73 18-8-14a2 2 0 0 0-3.46 0L2.27 18a2 2 0 0 0 1.73 3h16a2 2 0 0 0 1.73-3Z" />
+<path d="M12 9v4" />
+<path d="M12 17h.01" />`,
+  info: `<path d="M12 17v-6" />
+<path d="M12 7h.01" />`,
 }
