@@ -85,3 +85,4 @@ export {
   RadioGroup,
   type RadioOption,
 } from './lib/components/molecules/radio-group/radio-group'
+export { Switch } from './lib/components/atoms/switch/switch'

@@ -1,0 +1,15 @@
+<label class="gbt-switch" [class.gbt-switch--disabled]="isDisabled()">
+  <input
+    type="checkbox"
+    role="switch"
+    class="gbt-switch__input"
+    [id]="id()"
+    [checked]="checked()"
+    [disabled]="isDisabled()"
+    (change)="onToggle($event)"
+  />
+  <span class="gbt-switch__track">
+    <span class="gbt-switch__thumb"></span>
+  </span>
+  <span>{{ label() }}</span>
+</label>

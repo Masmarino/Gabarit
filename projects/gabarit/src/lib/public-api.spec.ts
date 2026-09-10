@@ -15,6 +15,7 @@ describe('public surface', () => {
       'RadioGroup',
       'SearchBar',
       'Select',
+      'Switch',
       'Tab',
       'Table',
       'Tabs',
