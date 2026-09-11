@@ -1,0 +1,20 @@
+<div class="gbt-textarea">
+  @if (label()) {
+    <label [for]="id()">{{ label() }}{{ required() ? ' *' : '' }}</label>
+  }
+  <textarea
+    [id]="id()"
+    [placeholder]="placeholder()"
+    [required]="required()"
+    [disabled]="isDisabled()"
+    [rows]="rows()"
+    [attr.aria-invalid]="errorMessage() ? true : null"
+    [attr.aria-describedby]="errorMessage() ? id() + '-error' : null"
+    (input)="onInput($event)"
+    (blur)="onBlur()"
+    >{{ value() }}</textarea
+  >
+  @if (errorMessage()) {
+    <p [id]="id() + '-error'" class="gbt-textarea__error" role="alert">{{ errorMessage() }}</p>
+  }
+</div>

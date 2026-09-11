@@ -19,6 +19,7 @@ describe('public surface', () => {
       'Tab',
       'Table',
       'Tabs',
+      'Textarea',
       'Toaster',
       'Tooltip',
     ]) {
