@@ -16,8 +16,24 @@ most criteria carry over identically.
 | 11.2        | Label relevance                | Entirely delegated to the consumer (`input<string>`) — nothing hardcoded to check.                                                                                                                                                                                                       | Compliant (delegated)              |
 | 11.4        | Label position                 | `<label>` before `<textarea>` in the flow, above the field — same convention as `Input`.                                                                                                                                                                                                 | Compliant                          |
 | 11.11       | Label/format with a hint       | `errorMessage` linked via `[attr.aria-describedby]="id() + '-error'"` and `role="alert"` — tested ("renders the error message and wires aria-invalid/aria-describedby").                                                                                                                | Compliant                          |
+| 10.11       | 320px reflow                   | **Regression found and fixed** (see below) — `document.body.scrollWidth` measured 382px against a 372px viewport before the fix (10px, i.e. `2×padding + 2×border`, overflowing past the field's container). Re-verified at both the default Storybook canvas width and 320×600: `scrollWidth === clientWidth` in both. | Compliant — verified                |
 | WCAG 2.5.8  | 24×24px target size            | No small interactive control on this component (unlike `Input`'s password toggle) — the field itself is a large target by nature. Not applicable.                                                                                                                                       | Not applicable to this component   |
 | WCAG 2.4.11 | Focus not obscured             | No scrolling container specific to the component.                                                                                                                                                                                                                                        | Not applicable to this component   |
+
+## Box-sizing regression (found post-ship, fixed)
+
+`textarea` computed to `box-sizing: content-box` by default — unlike
+`<input>`, which stayed flush with its container under the same
+`width: 100%` + padding + border despite also reporting `content-box`
+(a form-control sizing quirk, not something either component's own
+CSS controlled). For `<textarea>` this meant the rendered box was
+`2×padding + 2×border` (~26px) wider than its wrapper, producing a
+real horizontal scrollbar — caught by a user visually inspecting the
+component, not by the test suite (jsdom doesn't compute real layout
+boxes, so this class of bug is invisible to `textarea.spec.ts`).
+Fixed with an explicit `box-sizing: border-box` on `textarea` in
+`textarea.scss`. Worth checking for on any future component that pairs
+`width: 100%` with padding/border on a native form element.
 
 ## Resize
 
