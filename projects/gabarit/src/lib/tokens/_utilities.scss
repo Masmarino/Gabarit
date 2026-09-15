@@ -86,14 +86,26 @@
 }
 
 .gbt-app-shell__link {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.625rem;
+  min-width: 0;
   padding: 0.5rem 0.75rem;
   border-radius: var(--site-border-radius-sm);
   color: var(--text-secondary);
   font-size: 0.875rem;
   text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  > span {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 
   &:hover {
     background: var(--bg-hover);
@@ -111,7 +123,46 @@
   }
 }
 
+@media (min-width: 769px) {
+  .gbt-app-shell__nav--collapsed {
+    .gbt-app-shell__link {
+      > span {
+        display: inline-block;
+        width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.15s ease, width 0.2s ease;
+      }
+
+      &:hover > span,
+      &:focus-visible > span {
+        position: absolute;
+        left: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        width: auto;
+        overflow: visible;
+        opacity: 1;
+        margin-left: 0.625rem;
+        padding: 0.375rem 0.625rem;
+        background: var(--bg-principal);
+        border: 1px solid var(--border-color);
+        border-radius: var(--site-border-radius-sm);
+        box-shadow: var(--site-shadow-md);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        > span {
+          transition: none;
+        }
+      }
+    }
+  }
+}
+
 .gbt-container {
+  box-sizing: border-box;
   width: 100%;
   max-width: 1200px;
   margin-inline: auto;
@@ -119,6 +170,7 @@
 }
 
 .gbt-menu__item {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -142,4 +194,40 @@
     outline: 2px solid var(--primary);
     outline-offset: -2px;
   }
+}
+
+.gbt-breadcrumb__list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.gbt-breadcrumb__list > li {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.gbt-breadcrumb__list > li:not(:last-child)::after {
+  content: '/';
+  color: var(--text-secondary);
+}
+
+.gbt-breadcrumb__item {
+  color: var(--text-secondary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.gbt-breadcrumb__current {
+  color: var(--text-primary);
+  font-weight: 600;
 }

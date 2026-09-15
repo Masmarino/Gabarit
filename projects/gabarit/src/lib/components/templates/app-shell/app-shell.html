@@ -6,6 +6,7 @@
     [id]="navId"
     class="gbt-app-shell__nav"
     [class.gbt-app-shell__nav--open]="menuOpen()"
+    [class.gbt-app-shell__nav--collapsed]="collapsed()"
     [attr.aria-label]="navLabel()"
     tabindex="-1"
     (keydown)="onNavKeydown($event)"
@@ -14,6 +15,18 @@
       <ng-content select="[shell-brand]" />
     </div>
     <ng-content select="[shell-nav]" />
+    @if (collapsible()) {
+      <button
+        type="button"
+        class="gbt-app-shell__collapse-toggle"
+        [class.gbt-app-shell__collapse-toggle--collapsed]="collapsed()"
+        [attr.aria-expanded]="!collapsed()"
+        [attr.aria-label]="collapsed() ? expandLabel() : collapseLabel()"
+        (click)="toggleCollapsed()"
+      >
+        <gbt-icon name="chevrons-left" />
+      </button>
+    }
   </nav>
 
   @if (menuOpen()) {

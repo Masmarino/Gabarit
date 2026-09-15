@@ -5,16 +5,18 @@ import {
   HostListener,
   computed,
   input,
+  output,
   signal,
   viewChild,
 } from '@angular/core'
+import { Icon } from '../../atoms/icon/icon'
 
 let nextId = 0
 
 @Component({
   selector: 'gbt-app-shell',
   standalone: true,
-  imports: [],
+  imports: [Icon],
   templateUrl: './app-shell.html',
   styleUrl: './app-shell.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +26,11 @@ export class AppShell {
   skipLabel = input.required<string>()
   openMenuLabel = input.required<string>()
   closeMenuLabel = input.required<string>()
+  collapseLabel = input<string>('')
+  expandLabel = input<string>('')
+  collapsed = input<boolean>(false)
+  collapsible = input<boolean>(true)
+  collapsedChange = output<boolean>()
 
   private readonly id = ++nextId
   protected readonly mainId = `gbt-app-shell-main-${this.id}`
@@ -51,6 +58,10 @@ export class AppShell {
     if (!this.menuOpen()) return
     this.menuOpen.set(false)
     this.toggleButton()?.nativeElement.focus()
+  }
+
+  protected toggleCollapsed(): void {
+    this.collapsedChange.emit(!this.collapsed())
   }
 
   @HostListener('document:keydown.escape')

@@ -40,10 +40,57 @@ $nav-width: 220px;
     padding: 1rem 0.75rem;
     background: var(--bg-panel);
     border-right: 1px solid var(--border-color);
+    overflow: hidden;
+    transition: width 0.2s ease;
+
+    @media (min-width: $drawer-breakpoint + 1) {
+      &--collapsed {
+        width: 64px;
+      }
+    }
   }
 
   &__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
     margin-bottom: 1rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  &__collapse-toggle {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    width: 100%;
+    margin-top: auto;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: var(--site-border-radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--bg-hover);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    gbt-icon {
+      transition: transform 0.2s ease;
+    }
+
+    &--collapsed gbt-icon {
+      transform: rotate(180deg);
+    }
   }
 
   &__body {
@@ -146,6 +193,16 @@ $nav-width: 220px;
       inset: 0;
       z-index: 1020;
       background: rgb(0 0 0 / 0.4);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__nav {
+      transition: none;
+    }
+
+    &__collapse-toggle gbt-icon {
+      transition: none;
     }
   }
 }

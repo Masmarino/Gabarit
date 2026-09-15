@@ -1,8 +1,10 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { Component } from '@angular/core'
+import { Component, signal } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
+import { By } from '@angular/platform-browser'
 import { AppShell } from './app-shell'
+import { Icon } from '../../atoms/icon/icon'
 import { expectNoA11yViolations } from '../../../../testing/expect-no-a11y-violations'
 
 @Component({
@@ -14,6 +16,10 @@ import { expectNoA11yViolations } from '../../../../testing/expect-no-a11y-viola
       skipLabel="Aller au contenu principal"
       openMenuLabel="Ouvrir la navigation"
       closeMenuLabel="Fermer la navigation"
+      collapseLabel="Réduire la navigation"
+      expandLabel="Agrandir la navigation"
+      [collapsed]="collapsed()"
+      (collapsedChange)="collapsed.set($event)"
     >
       <a shell-brand href="/">Hangar</a>
       <a shell-nav href="/depots" class="gbt-app-shell__link" aria-current="page">Dépôts</a>
@@ -23,7 +29,9 @@ import { expectNoA11yViolations } from '../../../../testing/expect-no-a11y-viola
     </gbt-app-shell>
   `,
 })
-class HostComponent {}
+class HostComponent {
+  collapsed = signal(false)
+}
 
 function setup() {
   const fixture = TestBed.createComponent(HostComponent)
@@ -33,6 +41,9 @@ function setup() {
 
 const button = (f: ReturnType<typeof setup>): HTMLButtonElement =>
   f.nativeElement.querySelector('.gbt-app-shell__toggle')
+
+const collapseToggle = (f: ReturnType<typeof setup>): HTMLButtonElement =>
+  f.nativeElement.querySelector('.gbt-app-shell__collapse-toggle')
 
 describe('AppShell', () => {
   it('projects content into a focusable main', () => {
@@ -119,6 +130,104 @@ describe('AppShell', () => {
     expect(drawerNav).toContain('z-index: 1030')
   })
 
+  it('narrows the nav to an icon rail when collapsed', () => {
+    const componentScss = readFileSync(
+      join(process.cwd(), 'projects/gabarit/src/lib/components/templates/app-shell/app-shell.scss'),
+      'utf8',
+    )
+    const desktopNav = componentScss.slice(
+      componentScss.indexOf('&__nav {'),
+      componentScss.indexOf('&__brand'),
+    )
+    expect(desktopNav).toContain('&--collapsed')
+    expect(desktopNav).toContain('width: 64px')
+    expect(desktopNav).toContain('transition: width')
+    expect(desktopNav).toContain('overflow: hidden')
+  })
+
+  it('animates the collapse-toggle icon rotation, guarded by prefers-reduced-motion', () => {
+    const componentScss = readFileSync(
+      join(process.cwd(), 'projects/gabarit/src/lib/components/templates/app-shell/app-shell.scss'),
+      'utf8',
+    )
+    const toggleRule = componentScss.slice(
+      componentScss.indexOf('&__collapse-toggle {'),
+      componentScss.indexOf('&__body'),
+    )
+    expect(toggleRule).toContain('rotate(180deg)')
+    expect(toggleRule).toContain('transition: transform')
+
+    const reducedMotion = componentScss.slice(
+      componentScss.indexOf('@media (prefers-reduced-motion: reduce)'),
+    )
+    expect(reducedMotion).toContain('&__nav')
+    expect(reducedMotion).toContain('&__collapse-toggle')
+  })
+
+  it('reveals a collapsed link label on hover/focus via the global stylesheet, not the component one', () => {
+    const utilities = readFileSync(
+      join(process.cwd(), 'projects/gabarit/src/lib/tokens/_utilities.scss'),
+      'utf8',
+    )
+    expect(utilities).toContain('.gbt-app-shell__nav--collapsed')
+    const collapsedRule = utilities.slice(utilities.indexOf('.gbt-app-shell__nav--collapsed'))
+    expect(collapsedRule).toContain('width: 0')
+    expect(collapsedRule).toContain('opacity: 0')
+    expect(collapsedRule).toContain('transition: opacity')
+    expect(collapsedRule).toContain(':hover > span')
+    expect(collapsedRule).toContain(':focus-visible > span')
+
+    const componentScss = readFileSync(
+      join(process.cwd(), 'projects/gabarit/src/lib/components/templates/app-shell/app-shell.scss'),
+      'utf8',
+    )
+    expect(componentScss).not.toContain('__link')
+  })
+
+  it('keeps the collapsed link icon anchored — no justify-content jump, no static-to-absolute jump during the collapse animation itself', () => {
+    const utilities = readFileSync(
+      join(process.cwd(), 'projects/gabarit/src/lib/tokens/_utilities.scss'),
+      'utf8',
+    )
+    const collapsedBlock = utilities.slice(
+      utilities.indexOf('.gbt-app-shell__nav--collapsed'),
+      utilities.indexOf('.gbt-container'),
+    )
+    // Re-centering the icon (justify-content) can't be transitioned, so while
+    // the rail is animating between 220px and 64px, an instant recenter would
+    // show as a jump independent of the smooth width change.
+    expect(collapsedBlock).not.toContain('justify-content')
+
+    // Only the hover/focus flyout reveal should pull the label out of flow —
+    // the base collapsed (not hovered) state must stay in normal flow so its
+    // opacity/width fade plays in sync with the rail's own width transition,
+    // instead of jumping to `position: absolute` the instant the class lands.
+    const baseSpanRule = collapsedBlock.slice(
+      collapsedBlock.indexOf('> span {'),
+      collapsedBlock.indexOf(':hover > span'),
+    )
+    expect(baseSpanRule).not.toContain('position: absolute')
+
+    const hoverRule = collapsedBlock.slice(collapsedBlock.indexOf(':hover > span'))
+    expect(hoverRule).toContain('position: absolute')
+  })
+
+  it('keeps the two files\' desktop-only guards in sync (769px = 768px drawer breakpoint + 1)', () => {
+    const componentScss = readFileSync(
+      join(process.cwd(), 'projects/gabarit/src/lib/components/templates/app-shell/app-shell.scss'),
+      'utf8',
+    )
+    const breakpointMatch = componentScss.match(/\$drawer-breakpoint:\s*(\d+)px/)
+    expect(breakpointMatch).not.toBeNull()
+    const drawerBreakpoint = Number(breakpointMatch![1])
+
+    const utilities = readFileSync(
+      join(process.cwd(), 'projects/gabarit/src/lib/tokens/_utilities.scss'),
+      'utf8',
+    )
+    expect(utilities).toContain(`@media (min-width: ${drawerBreakpoint + 1}px)`)
+  })
+
   it('renders the drawer collapsed, and the button denotes it', () => {
     const fixture = setup()
     const nav: HTMLElement = fixture.nativeElement.querySelector('nav')
@@ -180,23 +289,189 @@ describe('AppShell', () => {
     button(fixture).click()
     fixture.detectChanges()
 
-    const links: HTMLAnchorElement[] = [...fixture.nativeElement.querySelectorAll('nav a')]
-    const first = links[0]
-    const last = links[links.length - 1]
+    const nav = fixture.nativeElement.querySelector('nav')
+    const focusableElements = [
+      ...(nav.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ) as NodeListOf<HTMLElement>),
+    ]
+    const first = focusableElements[0]
+    const last = focusableElements[focusableElements.length - 1]
 
     last.focus()
-    fixture.nativeElement
-      .querySelector('nav')
-      .dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }))
+    nav.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }))
     fixture.detectChanges()
     expect(document.activeElement).toBe(first)
 
     first.focus()
-    fixture.nativeElement
-      .querySelector('nav')
-      .dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }))
+    nav.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }))
     fixture.detectChanges()
     expect(document.activeElement).toBe(last)
+  })
+
+  it('collapse toggle button is reachable by tab and wraps focus back to first', () => {
+    const fixture = setup()
+    button(fixture).click()
+    fixture.detectChanges()
+
+    const nav = fixture.nativeElement.querySelector('nav')
+    const collapseBtn = collapseToggle(fixture)
+    const links = [...(nav.querySelectorAll('a[href]') as NodeListOf<HTMLAnchorElement>)]
+    const firstLink = links[0]
+
+    // Focus the collapse button directly and verify Tab wraps back to first
+    collapseBtn.focus()
+    expect(document.activeElement).toBe(collapseBtn)
+
+    nav.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }))
+    fixture.detectChanges()
+    expect(document.activeElement).toBe(firstLink)
+  })
+
+  it('is expanded by default, offering to collapse', () => {
+    const fixture = setup()
+    const nav: HTMLElement = fixture.nativeElement.querySelector('nav')
+    expect(nav.classList.contains('gbt-app-shell__nav--collapsed')).toBe(false)
+    expect(collapseToggle(fixture).getAttribute('aria-label')).toBe('Réduire la navigation')
+    expect(collapseToggle(fixture).getAttribute('aria-expanded')).toBe('true')
+  })
+
+  it('collapses on click, emitting collapsedChange, and then offers to expand', () => {
+    const fixture = setup()
+    collapseToggle(fixture).click()
+    fixture.detectChanges()
+
+    const nav: HTMLElement = fixture.nativeElement.querySelector('nav')
+    expect(nav.classList.contains('gbt-app-shell__nav--collapsed')).toBe(true)
+    expect(collapseToggle(fixture).getAttribute('aria-label')).toBe('Agrandir la navigation')
+    expect(collapseToggle(fixture).getAttribute('aria-expanded')).toBe('false')
+  })
+
+  it('keeps a single collapse-toggle icon and rotates it 180° when collapsed, instead of swapping icons', () => {
+    const fixture = setup()
+    const iconName = () =>
+      fixture.debugElement.query(By.directive(Icon)).componentInstance.name() as string
+
+    expect(iconName()).toBe('chevrons-left')
+    expect(collapseToggle(fixture).classList.contains('gbt-app-shell__collapse-toggle--collapsed')).toBe(
+      false,
+    )
+
+    collapseToggle(fixture).click()
+    fixture.detectChanges()
+
+    expect(iconName()).toBe('chevrons-left')
+    expect(collapseToggle(fixture).classList.contains('gbt-app-shell__collapse-toggle--collapsed')).toBe(
+      true,
+    )
+  })
+
+  it('expands again on a second click', () => {
+    const fixture = setup()
+    collapseToggle(fixture).click()
+    fixture.detectChanges()
+    collapseToggle(fixture).click()
+    fixture.detectChanges()
+
+    const nav: HTMLElement = fixture.nativeElement.querySelector('nav')
+    expect(nav.classList.contains('gbt-app-shell__nav--collapsed')).toBe(false)
+    expect(collapseToggle(fixture).getAttribute('aria-label')).toBe('Réduire la navigation')
+  })
+
+  it('does not collapse on its own if the consumer never updates the bound value (fully controlled)', () => {
+    @Component({
+      standalone: true,
+      imports: [AppShell],
+      template: `
+        <gbt-app-shell
+          navLabel="Navigation principale"
+          skipLabel="Aller au contenu principal"
+          openMenuLabel="Ouvrir la navigation"
+          closeMenuLabel="Fermer la navigation"
+          collapseLabel="Réduire la navigation"
+          expandLabel="Agrandir la navigation"
+        >
+          <a shell-brand href="/">Hangar</a>
+          <a shell-nav href="/depots" class="gbt-app-shell__link">Dépôts</a>
+        </gbt-app-shell>
+      `,
+    })
+    class UncontrolledHost {}
+
+    const fixture = TestBed.createComponent(UncontrolledHost)
+    fixture.detectChanges()
+    const nav: HTMLElement = fixture.nativeElement.querySelector('nav')
+    fixture.nativeElement.querySelector('.gbt-app-shell__collapse-toggle').click()
+    fixture.detectChanges()
+
+    expect(nav.classList.contains('gbt-app-shell__nav--collapsed')).toBe(false)
+  })
+
+  it('omits the collapse-toggle button when collapsible is false, without needing collapseLabel/expandLabel', () => {
+    @Component({
+      standalone: true,
+      imports: [AppShell],
+      template: `
+        <gbt-app-shell
+          navLabel="Navigation principale"
+          skipLabel="Aller au contenu principal"
+          openMenuLabel="Ouvrir la navigation"
+          closeMenuLabel="Fermer la navigation"
+          [collapsible]="false"
+        >
+          <a shell-brand href="/">Hangar</a>
+          <a shell-nav href="/depots" class="gbt-app-shell__link">Dépôts</a>
+        </gbt-app-shell>
+      `,
+    })
+    class NotCollapsibleHost {}
+
+    const fixture = TestBed.createComponent(NotCollapsibleHost)
+    fixture.detectChanges()
+
+    expect(fixture.nativeElement.querySelector('.gbt-app-shell__collapse-toggle')).toBeNull()
+  })
+
+  it('still lets an app drive collapsed/collapsedChange from its own control when collapsible is false', () => {
+    @Component({
+      standalone: true,
+      imports: [AppShell],
+      template: `
+        <button type="button" data-external-toggle (click)="collapsed.set(!collapsed())">Basculer</button>
+        <gbt-app-shell
+          navLabel="Navigation principale"
+          skipLabel="Aller au contenu principal"
+          openMenuLabel="Ouvrir la navigation"
+          closeMenuLabel="Fermer la navigation"
+          [collapsible]="false"
+          [collapsed]="collapsed()"
+          (collapsedChange)="collapsed.set($event)"
+        >
+          <a shell-brand href="/">Hangar</a>
+          <a shell-nav href="/depots" class="gbt-app-shell__link">Dépôts</a>
+        </gbt-app-shell>
+      `,
+    })
+    class ExternallyControlledHost {
+      collapsed = signal(false)
+    }
+
+    const fixture = TestBed.createComponent(ExternallyControlledHost)
+    fixture.detectChanges()
+    const nav: HTMLElement = fixture.nativeElement.querySelector('nav')
+    expect(nav.classList.contains('gbt-app-shell__nav--collapsed')).toBe(false)
+
+    fixture.nativeElement.querySelector('[data-external-toggle]').click()
+    fixture.detectChanges()
+
+    expect(nav.classList.contains('gbt-app-shell__nav--collapsed')).toBe(true)
+  })
+
+  it('has no violation detected by axe, nav collapsed', async () => {
+    const fixture = setup()
+    collapseToggle(fixture).click()
+    fixture.detectChanges()
+    await expectNoA11yViolations(fixture.nativeElement)
   })
 
   it('has no violation detected by axe', async () => {
