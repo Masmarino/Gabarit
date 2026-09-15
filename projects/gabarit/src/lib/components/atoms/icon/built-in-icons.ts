@@ -14,6 +14,9 @@ export const BUILT_IN_ICONS: Record<string, string> = {
 <path d="m18 17-5-5 5-5" />`,
   'chevrons-right': `<path d="m6 17 5-5-5-5" />
 <path d="m13 17 5-5-5-5" />`,
+  'ellipsis-vertical': `<circle cx="12" cy="12" r="1" />
+<circle cx="12" cy="5" r="1" />
+<circle cx="12" cy="19" r="1" />`,
   check: `<path d="M20 6 9 17l-5-5" />`,
   'check-circle': `<path d="m5 12 5 5 9-10" />`,
   'alert-circle': `<path d="M12 7v6" />

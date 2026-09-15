@@ -232,4 +232,68 @@ describe('Menu', () => {
     fixture.detectChanges()
     await expectNoA11yViolations(fixture.nativeElement)
   })
+
+  it('renders an icon-only trigger when triggerIcon is set, using label as the accessible name', () => {
+    @Component({
+      standalone: true,
+      imports: [Menu],
+      template: `
+        <gbt-menu label="Actions" triggerIcon="ellipsis-vertical">
+          <a role="menuitem" class="gbt-menu__item" href="/x">Item</a>
+        </gbt-menu>
+      `,
+    })
+    class HostIconOnly {}
+
+    const fixture = TestBed.createComponent(HostIconOnly)
+    fixture.detectChanges()
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('.gbt-menu__trigger')
+
+    expect(button.textContent?.trim()).toBe('')
+    expect(button.getAttribute('aria-label')).toBe('Actions')
+    expect(button.querySelector('gbt-icon')).not.toBeNull()
+    expect(button.querySelector('.gbt-menu__label')).toBeNull()
+    expect(button.querySelector('.gbt-menu__chevron')).toBeNull()
+  })
+
+  it('an icon-only trigger still opens on click and focuses the first item', async () => {
+    @Component({
+      standalone: true,
+      imports: [Menu],
+      template: `
+        <gbt-menu label="Actions" triggerIcon="ellipsis-vertical">
+          <a role="menuitem" class="gbt-menu__item" href="/x">Item</a>
+        </gbt-menu>
+      `,
+    })
+    class HostIconOnlyOpens {}
+
+    const fixture = TestBed.createComponent(HostIconOnlyOpens)
+    fixture.detectChanges()
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('.gbt-menu__trigger')
+    button.click()
+    fixture.detectChanges()
+    await Promise.resolve()
+
+    expect(button.getAttribute('aria-expanded')).toBe('true')
+    const item: HTMLElement = fixture.nativeElement.querySelector('[role="menuitem"]')
+    expect(document.activeElement).toBe(item)
+  })
+
+  it('has no violation detected by axe, icon-only trigger', async () => {
+    @Component({
+      standalone: true,
+      imports: [Menu],
+      template: `
+        <gbt-menu label="Actions" triggerIcon="ellipsis-vertical">
+          <a role="menuitem" class="gbt-menu__item" href="/x">Item</a>
+        </gbt-menu>
+      `,
+    })
+    class HostIconOnlyA11y {}
+
+    const fixture = TestBed.createComponent(HostIconOnlyA11y)
+    fixture.detectChanges()
+    await expectNoA11yViolations(fixture.nativeElement)
+  })
 })

@@ -33,6 +33,17 @@ export const AlignEnd: Story = {
   }),
 }
 
+export const IconOnlyKebab: Story = {
+  render: () => ({
+    template: `
+      <div style="display:flex;justify-content:flex-end">
+        <gbt-menu label="Actions" triggerIcon="ellipsis-vertical" align="end">${elements}</gbt-menu>
+      </div>
+    `,
+    moduleMetadata: { imports: [Menu] },
+  }),
+}
+
 export const Dark: Story = {
   render: () => ({
     template: `<gbt-menu label="Mon compte">${elements}</gbt-menu>`,

@@ -1,0 +1,22 @@
+<gbt-modal
+  [isOpen]="isOpen()"
+  [heading]="heading()"
+  [closeLabel]="closeLabel()"
+  (closed)="cancel()"
+>
+  <p class="gbt-confirm-danger-modal__message">{{ message() }}</p>
+  <gbt-input
+    [label]="confirmInputLabel()"
+    [ngModel]="typed()"
+    (ngModelChange)="typed.set($event)"
+  />
+  <div class="gbt-confirm-danger-modal__actions">
+    <gbt-button variant="secondary" [text]="cancelLabel()" (clicked)="cancel()" />
+    <gbt-button
+      variant="danger"
+      [text]="confirmLabel()"
+      [disabled]="!canConfirm()"
+      (clicked)="confirm()"
+    />
+  </div>
+</gbt-modal>

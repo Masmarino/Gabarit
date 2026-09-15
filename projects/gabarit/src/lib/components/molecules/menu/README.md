@@ -14,10 +14,11 @@ closes it without stealing focus.
 
 ## Inputs
 
-| Input   | Type               | Default   | Role                                                      |
-| ------- | ------------------ | --------- | --------------------------------------------------------- |
-| `label` | `string`           | required  | Trigger text, and accessible name of the list.            |
-| `align` | `'start' \| 'end'` | `'start'` | Horizontal alignment of the list relative to the trigger. |
+| Input         | Type               | Default   | Role                                                                                                                                                                            |
+| ------------- | ------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `label`       | `string`           | required  | Trigger text, and accessible name of the list.                                                                                                                                  |
+| `align`       | `'start' \| 'end'` | `'start'` | Horizontal alignment of the list relative to the trigger.                                                                                                                       |
+| `triggerIcon` | `string \| null`   | `null`    | When set, the trigger renders only this icon (no visible label, no chevron) and `label` becomes its `aria-label` instead — for an icon-only trigger such as a "⋮" kebab button. |
 
 ## Outputs
 
@@ -42,5 +43,14 @@ never a decorative element: it's what receives focus.
   <button role="menuitem" class="gbt-menu__item" type="button" (click)="logout()">
     Déconnexion
   </button>
+</gbt-menu>
+```
+
+## Icon-only trigger (e.g. a kebab menu)
+
+```html
+<gbt-menu label="Actions" triggerIcon="ellipsis-vertical" align="end">
+  <a role="menuitem" class="gbt-menu__item" href="/x">Copier le chemin</a>
+  <button role="menuitem" class="gbt-menu__item" type="button" (click)="delete()">Supprimer</button>
 </gbt-menu>
 ```

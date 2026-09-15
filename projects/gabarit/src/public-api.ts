@@ -75,6 +75,7 @@ export {
 export { FunnelChart, type FunnelStep } from './lib/components/molecules/funnel-chart/funnel-chart'
 export { Menu } from './lib/components/molecules/menu/menu'
 export { Breadcrumb } from './lib/components/molecules/breadcrumb/breadcrumb'
+export { ConfirmDangerModal } from './lib/components/organisms/confirm-danger-modal/confirm-danger-modal'
 export {
   Toaster,
   type ToastItem,

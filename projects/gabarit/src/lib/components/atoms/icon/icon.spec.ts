@@ -28,6 +28,13 @@ describe('Icon', () => {
     expect(fixture.nativeElement.querySelector('svg')).not.toBeNull()
   })
 
+  it("renders the ellipsis-vertical icon (Menu's icon-only kebab trigger mode)", () => {
+    const fixture = TestBed.createComponent(Icon)
+    fixture.componentRef.setInput('name', 'ellipsis-vertical')
+    fixture.detectChanges()
+    expect(fixture.nativeElement.querySelectorAll('circle').length).toBe(3)
+  })
+
   it('renders no svg for an unknown icon', () => {
     const fixture = TestBed.createComponent(Icon)
     fixture.componentRef.setInput('name', 'inexistante')

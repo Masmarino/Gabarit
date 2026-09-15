@@ -38,6 +38,7 @@ export class Menu {
 
   label = input.required<string>()
   align = input<'start' | 'end'>('start')
+  triggerIcon = input<string | null>(null)
   opened = output<void>()
 
   protected readonly open = signal(false)

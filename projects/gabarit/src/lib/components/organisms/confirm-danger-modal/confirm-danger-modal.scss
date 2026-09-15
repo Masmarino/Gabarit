@@ -1,0 +1,10 @@
+.gbt-confirm-danger-modal__message {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.gbt-confirm-danger-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

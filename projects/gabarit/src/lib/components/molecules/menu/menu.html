@@ -4,13 +4,19 @@
     type="button"
     class="gbt-menu__trigger"
     [class.gbt-menu__trigger--open]="open()"
+    [class.gbt-menu__trigger--icon-only]="triggerIcon()"
     aria-haspopup="menu"
     [attr.aria-expanded]="open()"
+    [attr.aria-label]="triggerIcon() ? label() : null"
     (click)="toggle()"
     (keydown)="onTriggerKeydown($event)"
   >
-    <span class="gbt-menu__label">{{ label() }}</span>
-    <gbt-icon name="chevron-down" class="gbt-menu__chevron" aria-hidden="true" />
+    @if (triggerIcon(); as icon) {
+      <gbt-icon [name]="icon" aria-hidden="true" />
+    } @else {
+      <span class="gbt-menu__label">{{ label() }}</span>
+      <gbt-icon name="chevron-down" class="gbt-menu__chevron" aria-hidden="true" />
+    }
   </button>
 
   @if (open() && position(); as pos) {
