@@ -38,6 +38,18 @@ export const Dense: Story = {
   }),
 }
 
+export const Sizes: Story = {
+  render: () => ({
+    template: `
+      <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap">
+        <gbt-button text="Small" size="small" />
+        <gbt-button text="Medium" size="medium" />
+        <gbt-button text="Large" size="large" />
+      </div>`,
+    moduleMetadata: { imports: [Button] },
+  }),
+}
+
 export const Dark: Story = {
   args: {
     text: 'Enregistrer',

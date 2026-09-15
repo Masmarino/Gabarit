@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite'
+import { darkTheme } from '../../../../../.storybook/preview'
 import { BarChart } from './bar-chart'
 
 const meta: Meta<BarChart> = { title: 'Organisms/Dataviz/BarChart', component: BarChart }
@@ -70,4 +71,13 @@ export const Empty: Story = {
     template: template,
     moduleMetadata: { imports: [BarChart] },
   }),
+}
+
+export const Dark: Story = {
+  render: () => ({
+    props: { series: artifacts },
+    template: template,
+    moduleMetadata: { imports: [BarChart] },
+  }),
+  decorators: [darkTheme],
 }

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite'
+import { darkTheme } from '../../../../../.storybook/preview'
 import { FunnelChart } from './funnel-chart'
 
 const meta: Meta<FunnelChart> = {
@@ -60,4 +61,13 @@ export const Empty: Story = {
     template: template,
     moduleMetadata: { imports: [FunnelChart] },
   }),
+}
+
+export const Dark: Story = {
+  render: () => ({
+    props: { steps: publicationSteps, stepAnnouncement },
+    template: template,
+    moduleMetadata: { imports: [FunnelChart] },
+  }),
+  decorators: [darkTheme],
 }

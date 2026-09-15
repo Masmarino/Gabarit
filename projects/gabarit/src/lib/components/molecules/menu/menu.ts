@@ -6,6 +6,7 @@ import {
   afterNextRender,
   inject,
   input,
+  output,
   signal,
   viewChild,
 } from '@angular/core'
@@ -37,6 +38,7 @@ export class Menu {
 
   label = input.required<string>()
   align = input<'start' | 'end'>('start')
+  opened = output<void>()
 
   protected readonly open = signal(false)
   protected readonly position = signal<PopupPosition | null>(null)
@@ -49,6 +51,7 @@ export class Menu {
     if (this.open()) {
       this.updatePosition()
       this.focusAfterRender('first')
+      this.opened.emit()
     }
   }
 
@@ -67,6 +70,7 @@ export class Menu {
     if (!this.open()) {
       this.open.set(true)
       this.updatePosition()
+      this.opened.emit()
     }
     this.focusAfterRender(target)
   }

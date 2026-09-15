@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite'
+import { darkTheme } from '../../../../../.storybook/preview'
 import { GaugeBar } from './gauge-bar'
 
 const meta: Meta<GaugeBar> = { title: 'Atoms/Dataviz/GaugeBar', component: GaugeBar }
@@ -61,4 +62,18 @@ export const Dense: Story = {
     template: template,
     moduleMetadata: { imports: [GaugeBar] },
   }),
+}
+
+export const Dark: Story = {
+  render: () => ({
+    props: {
+      value: 355,
+      max: 500,
+      label: 'Quota du registre Docker',
+      formattedValue: '355 Gio / 500 Gio',
+    },
+    template: template,
+    moduleMetadata: { imports: [GaugeBar] },
+  }),
+  decorators: [darkTheme],
 }

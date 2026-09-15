@@ -33,6 +33,38 @@ export const TopLeft: Story = {
   }),
 }
 
+export const TopRight: Story = {
+  render: () => ({
+    props: { toasts: SAMPLE_TOASTS },
+    template: `<gbt-toaster [toasts]="toasts" position="top-right" />`,
+    moduleMetadata: { imports: [Toaster] },
+  }),
+}
+
+export const TopCenter: Story = {
+  render: () => ({
+    props: { toasts: SAMPLE_TOASTS },
+    template: `<gbt-toaster [toasts]="toasts" position="top-center" />`,
+    moduleMetadata: { imports: [Toaster] },
+  }),
+}
+
+export const BottomLeft: Story = {
+  render: () => ({
+    props: { toasts: SAMPLE_TOASTS },
+    template: `<gbt-toaster [toasts]="toasts" position="bottom-left" />`,
+    moduleMetadata: { imports: [Toaster] },
+  }),
+}
+
+export const BottomCenter: Story = {
+  render: () => ({
+    props: { toasts: SAMPLE_TOASTS },
+    template: `<gbt-toaster [toasts]="toasts" position="bottom-center" />`,
+    moduleMetadata: { imports: [Toaster] },
+  }),
+}
+
 export const Dark: Story = {
   render: () => ({
     props: { toasts: SAMPLE_TOASTS },

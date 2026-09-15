@@ -19,6 +19,14 @@ closes it without stealing focus.
 | `label` | `string`           | required  | Trigger text, and accessible name of the list.            |
 | `align` | `'start' \| 'end'` | `'start'` | Horizontal alignment of the list relative to the trigger. |
 
+## Outputs
+
+| Output   | Type   | Role                                                                                                                                |
+| -------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `opened` | `void` | Emitted once per closed→open transition — never on close. Useful for lazily loading the menu's contents the first time it's opened. |
+
+If you lazily populate the menu's contents on `opened`, project a placeholder item (e.g. `<a role="menuitem" class="gbt-menu__item">Chargement…</a>`) so the menu is never empty while the real content loads — otherwise a keyboard user's first ArrowDown-triggered open has nothing to focus, and other users briefly see an empty dropdown.
+
 ## Projected content
 
 The list of menu items — each carries `role="menuitem"` and the

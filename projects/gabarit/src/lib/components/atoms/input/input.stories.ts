@@ -47,6 +47,14 @@ export const Error: Story = {
   },
 }
 
+export const Disabled: Story = {
+  render: () => ({
+    template: `<gbt-input label="Nom" [formControl]="control" />`,
+    moduleMetadata: { imports: [GbtInput, ReactiveFormsModule] },
+    props: { control: new FormControl({ value: 'Florian Simon', disabled: true }) },
+  }),
+}
+
 export const Dark: Story = {
   args: {
     label: 'Nom',

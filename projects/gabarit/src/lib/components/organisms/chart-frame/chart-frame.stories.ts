@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite'
+import { darkTheme } from '../../../../../.storybook/preview'
 import { ChartFrame } from './chart-frame'
 import { ChartAxis } from '../chart-axis/chart-axis'
 import { ChartLegend } from '../chart-legend/chart-legend'
@@ -63,4 +64,24 @@ export const Legend: Story = {
     template: `<gbt-chart-legend [entries]="entries" />`,
     moduleMetadata: { imports: [ChartLegend] },
   }),
+}
+
+export const Dark: Story = {
+  render: () => ({
+    props: {
+      x: { kind: 'linear', domain: [0, 97] },
+      y: { kind: 'linear', domain: [0, 1200] },
+    },
+    template: `
+      <gbt-chart-frame label="Requêtes par tranche" [x]="x" [y]="y" [size]="{ width: 720, height: 300 }">
+        <svg:g gbtChartLayer>
+          <svg:g gbtChartAxis axis="x" locale="fr-FR"></svg:g>
+          <svg:g gbtChartAxis axis="y" locale="fr-FR"></svg:g>
+        </svg:g>
+        <gbt-chart-table caption="Requêtes par tranche" [columns]="['Tranche', 'Requêtes']" [rows]="[['0-20', 120]]" />
+      </gbt-chart-frame>
+    `,
+    moduleMetadata: { imports: [ChartFrame, ChartAxis, ChartTable] },
+  }),
+  decorators: [darkTheme],
 }

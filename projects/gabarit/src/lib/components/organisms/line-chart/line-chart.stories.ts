@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite'
+import { darkTheme } from '../../../../../.storybook/preview'
 import { LineChart } from './line-chart'
 
 const meta: Meta<LineChart<Date | number>> = {
@@ -164,4 +165,50 @@ export const Empty: Story = {
     `,
     moduleMetadata: { imports: [LineChart] },
   }),
+}
+
+export const NonZeroYAxis: Story = {
+  render: () => ({
+    props: {
+      series: [
+        {
+          label: 'Docker',
+          points: [812, 816, 819, 815, 821, 824, 828].map((y, i) => ({ x: DAYS[i], y })),
+        },
+      ],
+    },
+    template: `
+      <div style="height: 18rem">
+        <gbt-line-chart
+          [series]="series" xKind="time" locale="fr-FR" [yZero]="false"
+          label="Stockage Docker, variation fine sur sept jours"
+          tableCaption="Stockage Docker par jour" xColumn="Jour"
+          emptyMessage="Pas encore assez de mesures."
+        />
+      </div>
+    `,
+    moduleMetadata: { imports: [LineChart] },
+  }),
+}
+
+export const Dark: Story = {
+  render: () => ({
+    props: { series: storage },
+    template: `
+      <div style="height: 320px">
+        <gbt-line-chart
+          [series]="series" xKind="time" locale="fr-FR"
+          label="Stockage des registres, sept derniers jours"
+          heading="Stockage des registres"
+          headline="388 Gio"
+          trend="+8,4 % sur 7 jours"
+          tableCaption="Stockage par registre et par jour"
+          xColumn="Jour" emptyMessage="Pas encore assez de mesures."
+          [area]="true"
+        />
+      </div>
+    `,
+    moduleMetadata: { imports: [LineChart] },
+  }),
+  decorators: [darkTheme],
 }

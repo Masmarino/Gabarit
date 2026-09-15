@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite'
+import { darkTheme } from '../../../../../.storybook/preview'
 import { Sparkline } from './sparkline'
 
 const meta: Meta<Sparkline> = { title: 'Atoms/Dataviz/Sparkline', component: Sparkline }
@@ -59,4 +60,13 @@ export const Empty: Story = {
     template: template,
     moduleMetadata: { imports: [Sparkline] },
   }),
+}
+
+export const Dark: Story = {
+  render: () => ({
+    props: { values: downloads },
+    template: template,
+    moduleMetadata: { imports: [Sparkline] },
+  }),
+  decorators: [darkTheme],
 }

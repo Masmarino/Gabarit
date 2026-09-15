@@ -1,6 +1,8 @@
 .gbt-toaster {
   position: fixed;
-  z-index: 100;
+  // Above Modal (1200) — a toast (e.g. a save error) must stay visible even
+  // while a modal is open, and above every other component's z-index.
+  z-index: 1300;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -50,6 +52,7 @@
 }
 
 .gbt-toaster__item {
+  box-sizing: border-box;
   display: flex;
   align-items: flex-start;
   gap: 0.625rem;

@@ -154,6 +154,37 @@ describe('Menu', () => {
     expect(trigger(fixture).getAttribute('aria-expanded')).toBe('false')
   })
 
+  it('emits opened only on the closed-to-open transition, never on close', () => {
+    @Component({
+      standalone: true,
+      imports: [Menu],
+      template: `
+        <gbt-menu label="Mon compte" (opened)="openedCount = openedCount + 1">
+          <a role="menuitem" class="gbt-menu__item" href="/compte">Mon compte</a>
+        </gbt-menu>
+      `,
+    })
+    class HostWithOpened {
+      openedCount = 0
+    }
+
+    const fixture = TestBed.createComponent(HostWithOpened)
+    fixture.detectChanges()
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('.gbt-menu__trigger')
+
+    button.click()
+    fixture.detectChanges()
+    expect(fixture.componentInstance.openedCount).toBe(1)
+
+    button.click()
+    fixture.detectChanges()
+    expect(fixture.componentInstance.openedCount).toBe(1)
+
+    button.click()
+    fixture.detectChanges()
+    expect(fixture.componentInstance.openedCount).toBe(2)
+  })
+
   it('tabbing out of the menu closes it, without stealing focus', () => {
     const fixture = setup()
     trigger(fixture).click()

@@ -23,6 +23,7 @@ import { IconRegistry } from './icon-registry'
   styles: `
     :host {
       display: inline-flex;
+      flex-shrink: 0;
       width: 1.25em;
       height: 1.25em;
     }

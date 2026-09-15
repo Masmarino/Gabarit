@@ -62,12 +62,6 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   &::placeholder {
     color: var(--text-secondary);
   }
-
-  &:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
 }
 
 .gbt-sb-trigger__clear {
@@ -172,6 +166,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .gbt-sb-item {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 10px;

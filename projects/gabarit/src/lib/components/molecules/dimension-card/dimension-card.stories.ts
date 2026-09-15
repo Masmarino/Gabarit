@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite'
+import { darkTheme } from '../../../../../.storybook/preview'
 import { DimensionCard } from './dimension-card'
 
 const meta: Meta<DimensionCard> = {
@@ -69,4 +70,13 @@ export const PreformattedValues: Story = {
     template: template,
     moduleMetadata: { imports: [DimensionCard] },
   }),
+}
+
+export const Dark: Story = {
+  render: () => ({
+    props: { rows: packages },
+    template: template,
+    moduleMetadata: { imports: [DimensionCard] },
+  }),
+  decorators: [darkTheme],
 }

@@ -44,6 +44,36 @@ export const OptionSelected: Story = {
   }),
 }
 
+export const Disabled: Story = {
+  render: () => ({
+    template: `<gbt-select label="Rôle" [options]="options" [formControl]="control" />`,
+    moduleMetadata: { imports: [Select, ReactiveFormsModule] },
+    props: {
+      options: ROLE_OPTIONS,
+      control: new FormControl({ value: 'write', disabled: true }),
+    },
+  }),
+}
+
+export const Multiple: Story = {
+  render: () => ({
+    template: `<gbt-select label="Rôle" [options]="options" [multiple]="true" [formControl]="control" />`,
+    moduleMetadata: { imports: [Select, ReactiveFormsModule] },
+    props: {
+      options: ROLE_OPTIONS,
+      control: new FormControl(['read', 'write']),
+    },
+  }),
+}
+
+export const Error: Story = {
+  args: {
+    label: 'Rôle',
+    options: ROLE_OPTIONS,
+    errorMessage: 'Choisissez un rôle',
+  },
+}
+
 export const Dark: Story = {
   args: {
     label: 'Rôle',

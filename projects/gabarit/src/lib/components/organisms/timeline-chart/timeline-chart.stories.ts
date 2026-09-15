@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite'
+import { darkTheme } from '../../../../../.storybook/preview'
 import { TimelineChart } from './timeline-chart'
 
 const meta: Meta<TimelineChart> = {
@@ -115,4 +116,16 @@ export const Empty: Story = {
     template: template,
     moduleMetadata: { imports: [TimelineChart] },
   }),
+}
+
+export const Dark: Story = {
+  render: () => ({
+    props: {
+      series: writes,
+      intervals: retentionWindows,
+    },
+    template: template,
+    moduleMetadata: { imports: [TimelineChart] },
+  }),
+  decorators: [darkTheme],
 }
