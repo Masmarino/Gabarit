@@ -33,6 +33,7 @@ outputs — the link is on its name.
 
 | Component                                                                               | Selector               | Role                                        |
 | --------------------------------------------------------------------------------------- | ---------------------- | ------------------------------------------- |
+| [Breadcrumb](projects/gabarit/src/lib/components/molecules/breadcrumb/README.md)        | `gbt-breadcrumb`       | Trail of ancestor links plus current item.  |
 | [Card](projects/gabarit/src/lib/components/molecules/card/README.md)                    | `gbt-card`             | Titled container.                           |
 | [DimensionCard](projects/gabarit/src/lib/components/molecules/dimension-card/README.md) | `gbt-dimension-card`   | Dimension table with an accented hover row. |
 | [FunnelChart](projects/gabarit/src/lib/components/molecules/funnel-chart/README.md)     | `gbt-funnel-chart`     | Step-by-step conversion funnel.             |

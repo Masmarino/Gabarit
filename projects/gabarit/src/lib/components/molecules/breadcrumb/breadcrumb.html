@@ -1,0 +1,6 @@
+<nav [attr.aria-label]="ariaLabel()" class="gbt-breadcrumb">
+  <ol class="gbt-breadcrumb__list">
+    <ng-content select="[breadcrumb-ancestor]" />
+    <li class="gbt-breadcrumb__current" aria-current="page"><ng-content /></li>
+  </ol>
+</nav>
