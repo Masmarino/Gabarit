@@ -4,6 +4,7 @@ describe('public surface', () => {
   it('exports the base components and the icon registry', () => {
     for (const name of [
       'AppShell',
+      'Autocomplete',
       'Button',
       'Card',
       'Checkbox',

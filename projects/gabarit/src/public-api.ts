@@ -89,3 +89,7 @@ export {
 } from './lib/components/molecules/radio-group/radio-group'
 export { Switch } from './lib/components/atoms/switch/switch'
 export { Textarea } from './lib/components/atoms/textarea/textarea'
+export {
+  Autocomplete,
+  type AutocompleteSearchFn,
+} from './lib/components/molecules/autocomplete/autocomplete'

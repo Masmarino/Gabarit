@@ -1,0 +1,100 @@
+<div class="gbt-autocomplete" [class.gbt-autocomplete--disabled]="isDisabled()">
+  @if (label()) {
+    <label [for]="id()" class="gbt-autocomplete__label"
+      >{{ label() }}{{ required() ? ' *' : '' }}</label
+    >
+  }
+
+  <input
+    [id]="id()"
+    type="text"
+    class="gbt-autocomplete__input"
+    role="combobox"
+    aria-autocomplete="list"
+    aria-haspopup="listbox"
+    [attr.aria-expanded]="open()"
+    [attr.aria-controls]="open() ? id() + '-listbox' : null"
+    [attr.aria-activedescendant]="activeOptionId()"
+    [attr.aria-required]="required() ? true : null"
+    [attr.aria-invalid]="errorMessage() ? true : null"
+    [attr.aria-describedby]="errorMessage() ? id() + '-error' : null"
+    [placeholder]="placeholder()"
+    [disabled]="isDisabled()"
+    [value]="query()"
+    autocomplete="off"
+    spellcheck="false"
+    (input)="onInput($event)"
+    (focus)="onFocus()"
+    (blur)="onBlur()"
+    (keydown)="onKeydown($event)"
+  />
+
+  @if (open()) {
+    <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
+      @if (loading()) {
+        {{ loadingMessage() }}
+      } @else if (searchFailed()) {
+        {{ searchErrorMessage() }}
+      } @else {
+        {{ resultsAnnouncement()(results().length) }}
+      }
+    </div>
+  }
+
+  @if (open() && panelStyle(); as style) {
+    <div
+      class="gbt-autocomplete__panel"
+      [style.top]="style.top"
+      [style.left]="style.left"
+      [style.width]="style.width"
+      (mousedown)="$event.preventDefault()"
+    >
+      @if (loading()) {
+        <div class="gbt-autocomplete__state" role="status">
+          <span>{{ loadingMessage() }}</span>
+        </div>
+      } @else if (searchFailed()) {
+        <div class="gbt-autocomplete__state gbt-autocomplete__state--error" role="alert">
+          <span>{{ searchErrorMessage() }}</span>
+        </div>
+      } @else if (hasNoResults()) {
+        <div class="gbt-autocomplete__state" role="status">
+          <span>{{ noResultsMessage() }}</span>
+        </div>
+      } @else {
+        <ul
+          [id]="id() + '-listbox'"
+          class="gbt-autocomplete__list"
+          role="listbox"
+          [attr.aria-label]="label() || placeholder()"
+        >
+          @for (item of results(); track $index; let i = $index) {
+            <li role="presentation">
+              <button
+                [id]="id() + '-option-' + i"
+                type="button"
+                role="option"
+                tabindex="-1"
+                class="gbt-autocomplete__option"
+                [class.gbt-autocomplete__option--active]="i === activeIndex()"
+                [attr.aria-selected]="i === activeIndex()"
+                (click)="selectOption(item)"
+                (mouseenter)="activeIndex.set(i)"
+              >
+                @if (itemTemplate(); as template) {
+                  <ng-container [ngTemplateOutlet]="template" [ngTemplateOutletContext]="{ $implicit: item }" />
+                } @else {
+                  <span class="gbt-autocomplete__option-label">{{ displayFn()(item) }}</span>
+                }
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <p [id]="id() + '-error'" class="gbt-autocomplete__error" role="alert">{{ errorMessage() }}</p>
+  }
+</div>
