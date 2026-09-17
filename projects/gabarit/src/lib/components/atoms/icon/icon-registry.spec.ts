@@ -7,6 +7,12 @@ describe('IconRegistry', () => {
     expect(registry.get('chevron-down')).toContain('<path')
   })
 
+  it('provides the arrow-up and arrow-down built-in icons', () => {
+    const registry = TestBed.inject(IconRegistry)
+    expect(registry.get('arrow-up')).toContain('<path')
+    expect(registry.get('arrow-down')).toContain('<path')
+  })
+
   it('returns null for an unknown icon', () => {
     const registry = TestBed.inject(IconRegistry)
     expect(registry.get('inexistante')).toBeNull()

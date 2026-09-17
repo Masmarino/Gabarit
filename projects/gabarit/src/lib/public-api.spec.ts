@@ -9,9 +9,11 @@ describe('public surface', () => {
       'Button',
       'Card',
       'Checkbox',
+      'EmptyState',
       'Icon',
       'IconRegistry',
       'GbtInput',
+      'ListToolbar',
       'Menu',
       'Modal',
       'Pagination',
@@ -31,7 +33,7 @@ describe('public surface', () => {
   })
 
   it('exposes the version', () => {
-    expect(api.GABARIT_VERSION).toBe('0.4.0')
+    expect(api.GABARIT_VERSION).toBe('0.5.0')
   })
 
   it('exports the twelve dataviz primitives', () => {

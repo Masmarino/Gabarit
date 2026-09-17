@@ -1,0 +1,23 @@
+<div class="gbt-list-toolbar">
+  <gbt-input
+    class="gbt-list-toolbar__search"
+    [label]="searchLabel()"
+    [placeholder]="searchPlaceholder()"
+    [formControl]="searchControl"
+  />
+  <gbt-select
+    class="gbt-list-toolbar__sort"
+    [label]="sortLabel()"
+    [options]="asSelectOptions(sortOptions())"
+    [formControl]="sortControl"
+  />
+  <button
+    type="button"
+    class="gbt-list-toolbar__direction"
+    (click)="toggleDirection()"
+    [attr.aria-label]="directionLabel()"
+    [attr.aria-pressed]="sortDirection() === 'desc'"
+  >
+    <gbt-icon [name]="sortDirection() === 'asc' ? 'arrow-up' : 'arrow-down'" />
+  </button>
+</div>

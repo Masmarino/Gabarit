@@ -5,7 +5,7 @@ import {
   contentChildren,
   effect,
   input,
-  signal,
+  model,
   viewChildren,
 } from '@angular/core'
 import { Tab } from '../tab/tab'
@@ -26,7 +26,7 @@ export class Tabs {
   protected readonly tabs = contentChildren(Tab)
   private readonly triggers = viewChildren<ElementRef<HTMLButtonElement>>('trigger')
 
-  protected readonly activeIndex = signal(0)
+  activeIndex = model(0)
 
   constructor() {
     effect(() => {
@@ -34,6 +34,22 @@ export class Tabs {
       const active = this.activeIndex()
       const groupId = this.id()
       tabs.forEach((tab, i) => tab.setState(i, i === active, groupId))
+    })
+
+    // Self-heals an out-of-range `activeIndex` — e.g. a consumer binds it to
+    // a URL query parameter and the stored value no longer matches any tab —
+    // instead of leaving every panel hidden and every trigger out of the
+    // keyboard tab order with no way to reach the component at all.
+    effect(() => {
+      const count = this.tabs().length
+      if (count === 0) {
+        return
+      }
+      const current = this.activeIndex()
+      const clamped = Math.min(Math.max(current, 0), count - 1)
+      if (clamped !== current) {
+        this.activeIndex.set(clamped)
+      }
     })
   }
 

@@ -180,3 +180,70 @@ describe('Tabs — accessibility', () => {
     expect(triggers[1].getAttribute('aria-selected')).toBe('true')
   })
 })
+
+@Component({
+  standalone: true,
+  imports: [Tabs, Tab],
+  template: `
+    <gbt-tabs [activeIndex]="active" (activeIndexChange)="active = $event">
+      <gbt-tab label="Un"><p>Contenu un</p></gbt-tab>
+      <gbt-tab label="Deux"><p>Contenu deux</p></gbt-tab>
+    </gbt-tabs>
+  `,
+})
+class ControlledHostComponent {
+  active = 0
+}
+
+describe('Tabs — external control', () => {
+  it('shows the tab named by an externally-set activeIndex', () => {
+    const fixture = TestBed.createComponent(ControlledHostComponent)
+    fixture.componentInstance.active = 1
+    fixture.detectChanges()
+
+    const panels = fixture.nativeElement.querySelectorAll('gbt-tab')
+    expect((panels[0] as HTMLElement).style.display).toBe('none')
+    expect((panels[1] as HTMLElement).style.display).not.toBe('none')
+  })
+
+  it('emits activeIndexChange, and reflects the parent update back, when a trigger is clicked', () => {
+    const fixture = TestBed.createComponent(ControlledHostComponent)
+    fixture.detectChanges()
+
+    const triggers: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.gbt-tabs__trigger'))
+    triggers[1].click()
+    fixture.detectChanges()
+
+    expect(fixture.componentInstance.active).toBe(1)
+    const panels = fixture.nativeElement.querySelectorAll('gbt-tab')
+    expect((panels[1] as HTMLElement).style.display).not.toBe('none')
+  })
+
+  it('clamps an out-of-range activeIndex (past the last tab) to the last valid tab, and corrects the bound value', () => {
+    const fixture = TestBed.createComponent(ControlledHostComponent)
+    fixture.componentInstance.active = 99
+    fixture.detectChanges()
+
+    expect(fixture.componentInstance.active).toBe(1)
+    const panels = fixture.nativeElement.querySelectorAll('gbt-tab')
+    expect((panels[0] as HTMLElement).style.display).toBe('none')
+    expect((panels[1] as HTMLElement).style.display).not.toBe('none')
+
+    const triggers: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.gbt-tabs__trigger'))
+    expect(triggers[1].tabIndex).toBe(0)
+  })
+
+  it('clamps a negative activeIndex to the first valid tab, and corrects the bound value', () => {
+    const fixture = TestBed.createComponent(ControlledHostComponent)
+    fixture.componentInstance.active = -1
+    fixture.detectChanges()
+
+    expect(fixture.componentInstance.active).toBe(0)
+    const panels = fixture.nativeElement.querySelectorAll('gbt-tab')
+    expect((panels[0] as HTMLElement).style.display).not.toBe('none')
+    expect((panels[1] as HTMLElement).style.display).toBe('none')
+
+    const triggers: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.gbt-tabs__trigger'))
+    expect(triggers[0].tabIndex).toBe(0)
+  })
+})

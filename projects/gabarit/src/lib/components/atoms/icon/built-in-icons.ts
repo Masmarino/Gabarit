@@ -28,4 +28,8 @@ export const BUILT_IN_ICONS: Record<string, string> = {
 <path d="M12 17h.01" />`,
   info: `<path d="M12 17v-6" />
 <path d="M12 7h.01" />`,
+  'arrow-up': `<path d="m5 12 7-7 7 7" />
+<path d="M12 19V5" />`,
+  'arrow-down': `<path d="M12 5v14" />
+<path d="m19 12-7 7-7-7" />`,
 }
