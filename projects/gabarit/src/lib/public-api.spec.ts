@@ -14,6 +14,7 @@ describe('public surface', () => {
       'GbtInput',
       'Menu',
       'Modal',
+      'Pagination',
       'RadioGroup',
       'SearchBar',
       'Select',

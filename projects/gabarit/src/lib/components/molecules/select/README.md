@@ -11,6 +11,7 @@ forms and `ngModel`.
 | -------------------- | --------------------------- | -------------------------- | --------------------------------------------------------------- |
 | `id`                 | `string`                    | generated (`gbt-select-N`) | DOM id, associates the `<label>`.                               |
 | `label`              | `string`                    | `''`                       | Visible label.                                                  |
+| `size`               | `'md' \| 'sm'`               | `'md'`                     | `'sm'` shrinks the trigger to 32px tall — for compact contexts like a table's rows-per-page selector (see `Pagination`). |
 | `options`            | `SelectOption<T>[]`         | required                   | `{ value, label, icon? }` — the offered options.                |
 | `multiple`           | `boolean`                   | `false`                    | Multiple selection.                                             |
 | `placeholder`        | `string`                    | `'Select…'`                | Text shown with no selection.                                   |

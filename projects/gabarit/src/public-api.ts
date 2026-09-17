@@ -75,6 +75,7 @@ export {
 } from './lib/components/molecules/dimension-card/dimension-card'
 export { FunnelChart, type FunnelStep } from './lib/components/molecules/funnel-chart/funnel-chart'
 export { Menu } from './lib/components/molecules/menu/menu'
+export { Pagination } from './lib/components/molecules/pagination/pagination'
 export { Breadcrumb } from './lib/components/molecules/breadcrumb/breadcrumb'
 export { ConfirmDangerModal } from './lib/components/organisms/confirm-danger-modal/confirm-danger-modal'
 export {

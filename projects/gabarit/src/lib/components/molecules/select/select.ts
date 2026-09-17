@@ -32,6 +32,7 @@ let nextSelectId = 0
     '(keydown)': 'onKeydown($event)',
     '(window:scroll)': 'updatePanelPosition()',
     '(window:resize)': 'updatePanelPosition()',
+    '[class.gbt-select--sm]': "size() === 'sm'",
   },
   providers: [
     {
@@ -46,6 +47,7 @@ export class Select<T = string> implements ControlValueAccessor {
 
   id = input<string>(`gbt-select-${++nextSelectId}`)
   label = input<string>('')
+  size = input<'md' | 'sm'>('md')
   options = input.required<SelectOption<T>[]>()
   multiple = input(false, { transform: booleanAttribute })
   placeholder = input<string>('Select…')

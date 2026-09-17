@@ -55,6 +55,16 @@ $easing: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
+:host(.gbt-select--sm) {
+  min-width: 120px;
+}
+
+:host(.gbt-select--sm) .gbt-select__trigger {
+  height: 32px;
+  padding: 0 8px;
+  font-size: 13px;
+}
+
 .gbt-select__trigger-icon {
   flex-shrink: 0;
   color: var(--text-secondary);

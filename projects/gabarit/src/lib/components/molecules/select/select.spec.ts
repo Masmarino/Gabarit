@@ -294,6 +294,18 @@ describe('Select', () => {
     await expectNoA11yViolations(fixture.nativeElement)
   })
 
+  it('defaults to the md size, opting into sm via a host class', () => {
+    const fixture = TestBed.createComponent(Select)
+    fixture.componentRef.setInput('label', 'Rôle')
+    fixture.componentRef.setInput('options', ROLE_OPTIONS)
+    fixture.detectChanges()
+    expect(fixture.nativeElement.classList).not.toContain('gbt-select--sm')
+
+    fixture.componentRef.setInput('size', 'sm')
+    fixture.detectChanges()
+    expect(fixture.nativeElement.classList).toContain('gbt-select--sm')
+  })
+
   it('namespaces the trigger id per instance, so two gbt-select instances on the same page never collide', () => {
     const first = TestBed.createComponent(Select)
     first.componentRef.setInput('label', 'Rôle')

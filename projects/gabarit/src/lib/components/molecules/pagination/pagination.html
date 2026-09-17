@@ -1,0 +1,66 @@
+<div class="gbt-pagination">
+  <div class="gbt-pagination__side gbt-pagination__side--start">
+    @if (showItemsSummary()) {
+      <span class="gbt-pagination__summary">{{ itemsSummary() }}</span>
+    }
+  </div>
+
+  <nav [attr.aria-label]="ariaLabel()">
+    <ul class="gbt-pagination__list">
+      <li>
+        <button
+          type="button"
+          class="gbt-pagination__nav"
+          [disabled]="disabled() || page() <= 1"
+          [attr.aria-label]="previousLabel()"
+          (click)="goTo(page() - 1)"
+        >
+          <gbt-icon name="chevron-left" aria-hidden="true" />
+        </button>
+      </li>
+      @for (item of items(); track $index) {
+        @if (item === ELLIPSIS) {
+          <li class="gbt-pagination__ellipsis" aria-hidden="true">{{ ELLIPSIS }}</li>
+        } @else {
+          <li>
+            <button
+              type="button"
+              class="gbt-pagination__page"
+              [class.gbt-pagination__page--current]="item === page()"
+              [attr.aria-current]="item === page() ? 'page' : null"
+              [attr.aria-label]="pageLabel()(item)"
+              [disabled]="disabled()"
+              (click)="goTo(item)"
+            >
+              {{ item }}
+            </button>
+          </li>
+        }
+      }
+      <li>
+        <button
+          type="button"
+          class="gbt-pagination__nav"
+          [disabled]="disabled() || page() >= pageCount()"
+          [attr.aria-label]="nextLabel()"
+          (click)="goTo(page() + 1)"
+        >
+          <gbt-icon name="chevron-right" aria-hidden="true" />
+        </button>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="gbt-pagination__side gbt-pagination__side--end">
+    @if (pageSizeOptions().length > 0) {
+      <gbt-select
+        class="gbt-pagination__page-size"
+        size="sm"
+        [label]="pageSizeSelectLabel()"
+        [options]="pageSizeSelectOptions()"
+        [disabled]="disabled()"
+        [formControl]="pageSizeControl"
+      />
+    }
+  </div>
+</div>
