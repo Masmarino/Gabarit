@@ -119,6 +119,9 @@ describe('token contrast', () => {
     expect(
       ratio(token('color-warning-bg-text', 'light'), token('color-warning-bg', 'light')),
     ).toBeGreaterThanOrEqual(7)
+    expect(
+      ratio(token('color-info-bg-text', 'light'), token('color-info-bg', 'light')),
+    ).toBeGreaterThanOrEqual(7)
   })
 
   it('every hover fill is clearly distinct from its resting state', () => {

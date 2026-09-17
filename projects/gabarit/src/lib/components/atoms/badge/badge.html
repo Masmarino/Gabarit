@@ -1,0 +1,6 @@
+<span class="gbt-badge" [attr.data-variant]="variant()">
+  @if (icon(); as name) {
+    <gbt-icon [name]="name" class="gbt-badge__icon" aria-hidden="true" />
+  }
+  <span class="gbt-badge__label"><ng-content /></span>
+</span>

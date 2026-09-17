@@ -5,6 +5,7 @@ describe('public surface', () => {
     for (const name of [
       'AppShell',
       'Autocomplete',
+      'Badge',
       'Button',
       'Card',
       'Checkbox',

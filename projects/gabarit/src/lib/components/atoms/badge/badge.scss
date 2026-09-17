@@ -1,0 +1,51 @@
+:host {
+  display: inline-flex;
+}
+
+.gbt-badge {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+
+  &[data-variant='success'] {
+    background: var(--color-success-bg);
+    color: var(--color-success-bg-text);
+  }
+
+  &[data-variant='warning'] {
+    background: var(--color-warning-bg);
+    color: var(--color-warning-bg-text);
+  }
+
+  &[data-variant='error'] {
+    background: var(--color-error-bg);
+    color: var(--color-error-bg-text);
+  }
+
+  &[data-variant='info'] {
+    background: var(--color-info-bg);
+    color: var(--color-info-bg-text);
+  }
+}
+
+.gbt-badge__icon {
+  flex-shrink: 0;
+  width: 0.875em;
+  height: 0.875em;
+}
+
+.gbt-badge__label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
