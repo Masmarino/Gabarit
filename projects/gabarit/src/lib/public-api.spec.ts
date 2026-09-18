@@ -3,6 +3,8 @@ import * as api from '../public-api'
 describe('public surface', () => {
   it('exports the base components and the icon registry', () => {
     for (const name of [
+      'Accordion',
+      'AccordionItem',
       'Alert',
       'AppShell',
       'Avatar',

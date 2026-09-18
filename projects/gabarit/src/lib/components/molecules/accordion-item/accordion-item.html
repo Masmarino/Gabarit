@@ -1,0 +1,27 @@
+<button
+  #header
+  type="button"
+  class="gbt-accordion-item__header"
+  [class.gbt-accordion-item__header--open]="active()"
+  [id]="headerId()"
+  [attr.aria-expanded]="active()"
+  [attr.aria-controls]="panelId()"
+  (click)="toggle()"
+  (keydown)="onKeydown($event)"
+>
+  <span class="gbt-accordion-item__label">{{ label() }}</span>
+  <gbt-icon name="chevron-down" class="gbt-accordion-item__chevron" aria-hidden="true" />
+</button>
+<div
+  class="gbt-accordion-item__panel"
+  [class.gbt-accordion-item__panel--open]="active()"
+  [id]="panelId()"
+  [attr.aria-labelledby]="headerId()"
+  [attr.inert]="active() ? null : ''"
+>
+  <div class="gbt-accordion-item__panel-inner">
+    <div class="gbt-accordion-item__panel-content">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>

@@ -85,6 +85,8 @@ export {
 } from './lib/components/molecules/dimension-card/dimension-card'
 export { FunnelChart, type FunnelStep } from './lib/components/molecules/funnel-chart/funnel-chart'
 export { Menu } from './lib/components/molecules/menu/menu'
+export { Accordion, type AccordionMode } from './lib/components/molecules/accordion/accordion'
+export { AccordionItem } from './lib/components/molecules/accordion-item/accordion-item'
 export { Pagination } from './lib/components/molecules/pagination/pagination'
 export { Breadcrumb } from './lib/components/molecules/breadcrumb/breadcrumb'
 export { ConfirmDangerModal } from './lib/components/organisms/confirm-danger-modal/confirm-danger-modal'
