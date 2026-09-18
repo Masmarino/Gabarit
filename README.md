@@ -22,24 +22,36 @@ outputs — the link is on its name.
 
 | Component                                                                  | Selector        | Role                                  |
 | -------------------------------------------------------------------------- | --------------- | ------------------------------------- |
+| [Badge](projects/gabarit/src/lib/components/atoms/badge/README.md)        | `gbt-badge`     | Status/category label pill.           |
 | [Button](projects/gabarit/src/lib/components/atoms/button/README.md)       | `gbt-button`    | Action button.                        |
 | [Checkbox](projects/gabarit/src/lib/components/atoms/checkbox/README.md)   | `gbt-checkbox`  | Checkbox, integrated with forms.      |
 | [GaugeBar](projects/gabarit/src/lib/components/atoms/gauge-bar/README.md)  | `gbt-gauge-bar` | Progress gauge with alert thresholds. |
 | [Icon](projects/gabarit/src/lib/components/atoms/icon/README.md)           | `gbt-icon`      | Registered SVG icon.                  |
 | [Input](projects/gabarit/src/lib/components/atoms/input/README.md)         | `gbt-input`     | Text or password field.               |
 | [Sparkline](projects/gabarit/src/lib/components/atoms/sparkline/README.md) | `gbt-sparkline` | Fixed-size trend mini-chart.          |
+| [Switch](projects/gabarit/src/lib/components/atoms/switch/README.md)      | `gbt-switch`    | On/off toggle.                        |
+| [Tag](projects/gabarit/src/lib/components/atoms/tag/README.md)            | `gbt-tag`       | Custom-colored, optionally removable label. |
+| [Textarea](projects/gabarit/src/lib/components/atoms/textarea/README.md)  | `gbt-textarea`  | Multiline text field.                 |
 
 ### Molecules
 
 | Component                                                                               | Selector               | Role                                        |
 | --------------------------------------------------------------------------------------- | ---------------------- | ------------------------------------------- |
+| [Alert](projects/gabarit/src/lib/components/molecules/alert/README.md)                  | `gbt-alert`            | Persistent inline banner message.           |
+| [Autocomplete](projects/gabarit/src/lib/components/molecules/autocomplete/README.md)    | `gbt-autocomplete`     | Text field with async suggestions.          |
+| [Breadcrumb](projects/gabarit/src/lib/components/molecules/breadcrumb/README.md)        | `gbt-breadcrumb`       | Ancestor trail plus current segment.        |
 | [Card](projects/gabarit/src/lib/components/molecules/card/README.md)                    | `gbt-card`             | Titled container.                           |
 | [DimensionCard](projects/gabarit/src/lib/components/molecules/dimension-card/README.md) | `gbt-dimension-card`   | Dimension table with an accented hover row. |
+| [EmptyState](projects/gabarit/src/lib/components/molecules/empty-state/README.md)       | `gbt-empty-state`      | Placeholder for an empty list/grid.         |
 | [FunnelChart](projects/gabarit/src/lib/components/molecules/funnel-chart/README.md)     | `gbt-funnel-chart`     | Step-by-step conversion funnel.             |
+| [ListToolbar](projects/gabarit/src/lib/components/molecules/list-toolbar/README.md)     | `gbt-list-toolbar`     | Search + sort controls for a list.          |
 | [Menu](projects/gabarit/src/lib/components/molecules/menu/README.md)                    | `gbt-menu`             | Generic dropdown menu.                      |
+| [Pagination](projects/gabarit/src/lib/components/molecules/pagination/README.md)        | `gbt-pagination`       | Page navigation for a list/table.           |
+| [RadioGroup](projects/gabarit/src/lib/components/molecules/radio-group/README.md)       | `gbt-radio-group`      | Radio button group, integrated with forms.  |
 | [Select](projects/gabarit/src/lib/components/molecules/select/README.md)                | `gbt-select`           | Dropdown list, single or multiple.          |
 | [Table](projects/gabarit/src/lib/components/molecules/table/README.md)                  | `gbt-table`            | Data table.                                 |
 | [Tabs](projects/gabarit/src/lib/components/molecules/tabs/README.md)                    | `gbt-tabs` / `gbt-tab` | Tab navigation.                             |
+| [Tooltip](projects/gabarit/src/lib/components/molecules/tooltip/README.md)              | `gbt-tooltip`          | Hover/focus info bubble for any content.    |
 
 ### Organisms
 
@@ -52,10 +64,12 @@ outputs — the link is on its name.
 | [ChartLegend](projects/gabarit/src/lib/components/organisms/chart-legend/README.md)     | `gbt-chart-legend`   | Multi-series legend — base building block. |
 | [ChartTable](projects/gabarit/src/lib/components/organisms/chart-table/README.md)       | `gbt-chart-table`    | Non-visual table — base building block.    |
 | [ChartTooltip](projects/gabarit/src/lib/components/organisms/chart-tooltip/README.md)   | `gbt-chart-tooltip`  | Tooltip — base building block.             |
+| [ConfirmDangerModal](projects/gabarit/src/lib/components/organisms/confirm-danger-modal/README.md) | `gbt-confirm-danger-modal` | Type-to-confirm destructive-action dialog. |
 | [LineChart](projects/gabarit/src/lib/components/organisms/line-chart/README.md)         | `gbt-line-chart`     | Line(s) on the dataviz base.               |
 | [Modal](projects/gabarit/src/lib/components/organisms/modal/README.md)                  | `gbt-modal`          | Modal dialog box.                          |
 | [SearchBar](projects/gabarit/src/lib/components/organisms/search-bar/README.md)         | `gbt-search-bar`     | Search with grouped results.               |
 | [TimelineChart](projects/gabarit/src/lib/components/organisms/timeline-chart/README.md) | `gbt-timeline-chart` | Timeline on the dataviz base.              |
+| [Toaster](projects/gabarit/src/lib/components/organisms/toaster/README.md)              | `gbt-toaster`        | Stack of temporary notifications.          |
 
 ### Templates
 
