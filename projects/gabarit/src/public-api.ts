@@ -19,6 +19,7 @@ export { GbtInput } from './lib/components/atoms/input/input'
 export { Checkbox } from './lib/components/atoms/checkbox/checkbox'
 export { Select, type SelectOption } from './lib/components/molecules/select/select'
 export { Modal } from './lib/components/organisms/modal/modal'
+export { Drawer, type DrawerEdge } from './lib/components/organisms/drawer/drawer'
 export { Table, type TableColumn } from './lib/components/molecules/table/table'
 export {
   SearchBar,
