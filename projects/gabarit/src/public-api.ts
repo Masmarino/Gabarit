@@ -87,6 +87,11 @@ export {
 export { FunnelChart, type FunnelStep } from './lib/components/molecules/funnel-chart/funnel-chart'
 export { Menu } from './lib/components/molecules/menu/menu'
 export { Popover, type PopoverAlign } from './lib/components/molecules/popover/popover'
+export {
+  DescriptionList,
+  type DescriptionListEntry,
+  type DescriptionListLayout,
+} from './lib/components/molecules/description-list/description-list'
 export { Accordion, type AccordionMode } from './lib/components/molecules/accordion/accordion'
 export { AccordionItem } from './lib/components/molecules/accordion-item/accordion-item'
 export { Pagination } from './lib/components/molecules/pagination/pagination'

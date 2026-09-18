@@ -1,0 +1,12 @@
+<dl class="gbt-description-list" [attr.data-layout]="layout()">
+  @for (item of items(); track $index) {
+    <dt class="gbt-description-list__term">{{ item.term }}</dt>
+    <dd class="gbt-description-list__value">
+      @if (isTemplate(item.value)) {
+        <ng-container [ngTemplateOutlet]="item.value"></ng-container>
+      } @else {
+        {{ item.value }}
+      }
+    </dd>
+  }
+</dl>
