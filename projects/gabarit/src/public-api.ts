@@ -96,6 +96,11 @@ export {
   SegmentedControl,
   type SegmentedControlOption,
 } from './lib/components/molecules/segmented-control/segmented-control'
+export { DatePicker } from './lib/components/molecules/date-picker/date-picker'
+export {
+  type CalendarDay,
+  type WeekStartsOn,
+} from './lib/components/molecules/date-picker/date-picker-calendar'
 export { Accordion, type AccordionMode } from './lib/components/molecules/accordion/accordion'
 export { AccordionItem } from './lib/components/molecules/accordion-item/accordion-item'
 export { Pagination } from './lib/components/molecules/pagination/pagination'

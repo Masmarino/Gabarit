@@ -32,4 +32,8 @@ export const BUILT_IN_ICONS: Record<string, string> = {
 <path d="M12 19V5" />`,
   'arrow-down': `<path d="M12 5v14" />
 <path d="m19 12-7 7-7-7" />`,
+  calendar: `<path d="M8 2v4" />
+<path d="M16 2v4" />
+<rect width="18" height="18" x="3" y="4" rx="2" />
+<path d="M3 10h18" />`,
 }
