@@ -5,6 +5,7 @@ export { AppShell } from './lib/components/templates/app-shell/app-shell'
 export { Button } from './lib/components/atoms/button/button'
 export { Badge, type BadgeVariant } from './lib/components/atoms/badge/badge'
 export { Avatar, type AvatarSize } from './lib/components/atoms/avatar/avatar'
+export { Skeleton, type SkeletonVariant } from './lib/components/atoms/skeleton/skeleton'
 export {
   AvatarGroup,
   type AvatarGroupItem,
