@@ -24,6 +24,7 @@ describe('public surface', () => {
       'Tab',
       'Table',
       'Tabs',
+      'Tag',
       'Textarea',
       'Toaster',
       'Tooltip',
@@ -33,7 +34,7 @@ describe('public surface', () => {
   })
 
   it('exposes the version', () => {
-    expect(api.GABARIT_VERSION).toBe('0.5.0')
+    expect(api.GABARIT_VERSION).toBe('0.6.0')
   })
 
   it('exports the twelve dataviz primitives', () => {

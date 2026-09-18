@@ -7,3 +7,4 @@ storybook-static/
 .idea/
 docs/
 .claude/
+.worktrees/

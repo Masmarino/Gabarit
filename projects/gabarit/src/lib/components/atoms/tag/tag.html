@@ -1,0 +1,8 @@
+<span class="gbt-tag" [style.background]="color()" [style.color]="textColor()">
+  <span class="gbt-tag__label"><ng-content /></span>
+  @if (removable()) {
+    <button type="button" class="gbt-tag__remove" [attr.aria-label]="removeLabel()" (click)="onRemoveClick($event)">
+      <gbt-icon name="x" aria-hidden="true" />
+    </button>
+  }
+</span>

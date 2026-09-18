@@ -203,7 +203,12 @@ The other 76 criteria. The main ones:
   - `gbt-input`: `showPasswordLabel` (`'Show password'`),
     `hidePasswordLabel` (`'Hide password'`).
   - `gbt-select`: `placeholder` (`'Select…'`), `selectedCountLabel`
-    (function, `` `${count} selected` ``).
+    (function, `` `${count} selected` `` — in `chips` mode it is also what
+    the status region announces, criterion 7.5), `chipRemoveLabel`
+    (function, `` `Remove ${label}` ``, the accessible name of each chip's
+    remove button in `chips` mode).
+  - `gbt-tag`: `removeLabel` (`'Remove'`). `gbt-select` passes its own
+    `chipRemoveLabel` down to this input for the chips it renders.
   - `gbt-modal`: `closeLabel` (`'Close'`).
   - `gbt-table`: `emptyMessage` (`'No data'`).
   - `gbt-search-bar`: `placeholder` (`'Search…'`), `noResultsMessage`

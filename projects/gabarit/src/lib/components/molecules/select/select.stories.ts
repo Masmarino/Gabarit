@@ -74,6 +74,27 @@ export const Error: Story = {
   },
 }
 
+export const Chips: Story = {
+  render: () => ({
+    template: `
+      <gbt-select
+        [options]="options"
+        [multiple]="true"
+        [chips]="true"
+        placeholder="Filtrer par label"
+      />
+    `,
+    moduleMetadata: { imports: [Select] },
+    props: {
+      options: [
+        { value: 'bug', label: 'Bug', color: '#dc2626' },
+        { value: 'feature', label: 'Feature', color: '#16a34a' },
+        { value: 'docs', label: 'Documentation', color: '#2563eb' },
+      ],
+    },
+  }),
+}
+
 export const Dark: Story = {
   args: {
     label: 'Rôle',

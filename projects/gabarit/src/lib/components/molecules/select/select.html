@@ -19,7 +19,7 @@
     [attr.aria-labelledby]="label() ? labelId() + ' ' + id() : null"
     [attr.aria-required]="required() ? true : null"
     [attr.aria-invalid]="errorMessage() ? true : null"
-    [attr.aria-describedby]="errorMessage() ? id() + '-error' : null"
+    [attr.aria-describedby]="describedBy()"
     (click)="toggleOpen()"
   >
     @if (triggerIcon(); as icon) {
@@ -33,6 +33,25 @@
     </span>
     <gbt-icon name="chevron-down" class="gbt-select__chevron" aria-hidden="true" />
   </button>
+  @if (chipsVisible()) {
+    <div class="gbt-select__chips" [id]="chipsId()">
+      @for (option of selectedOptions(); track option.value; let i = $index) {
+        <gbt-tag
+          [color]="option.color ?? '#6b7280'"
+          [removable]="!isDisabled()"
+          [removeLabel]="chipRemoveLabel()(option.label)"
+          (removed)="removeChip(option.value, i)"
+        >
+          {{ option.label }}
+        </gbt-tag>
+      }
+    </div>
+  }
+  @if (chips() && multiple()) {
+    <div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
+      {{ selectedCountLabel()(selectedOptions().length) }}
+    </div>
+  }
   @if (open() && panelStyle(); as style) {
     <ul
       [id]="id() + '-listbox'"

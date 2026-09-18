@@ -353,4 +353,293 @@ describe('Select', () => {
 
     expect(fixture.componentInstance.ancestorEscapeCount).toBe(1)
   })
+
+  describe('chips mode', () => {
+    const colorOptions: SelectOption[] = [
+      { value: 'bug', label: 'Bug', color: '#dc2626' },
+      { value: 'feature', label: 'Feature', color: '#16a34a' },
+    ]
+
+    function setupChips(selection: string[] = []) {
+      const fixture = TestBed.createComponent(Select<string>)
+      fixture.componentRef.setInput('options', colorOptions)
+      fixture.componentRef.setInput('multiple', true)
+      fixture.componentRef.setInput('chips', true)
+      fixture.detectChanges()
+      if (selection.length > 0) {
+        fixture.componentInstance.writeValue(selection)
+        fixture.detectChanges()
+      }
+      return fixture
+    }
+
+    function removeButtons(fixture: { nativeElement: HTMLElement }): HTMLButtonElement[] {
+      return Array.from(
+        fixture.nativeElement.querySelectorAll<HTMLButtonElement>(
+          '.gbt-select__chips gbt-tag .gbt-tag__remove',
+        ),
+      )
+    }
+
+    /**
+     * jsdom has no layout: every `getBoundingClientRect()` is all zeros, so
+     * panel positioning can only be exercised by giving the two anchors a
+     * real geometry.
+     */
+    function stubRect(element: HTMLElement, box: { bottom: number; left: number; width: number }) {
+      element.getBoundingClientRect = () =>
+        ({
+          x: box.left,
+          y: 0,
+          top: 0,
+          bottom: box.bottom,
+          left: box.left,
+          right: box.left + box.width,
+          width: box.width,
+          height: box.bottom,
+          toJSON: () => ({}),
+        }) as DOMRect
+    }
+
+    it('renders no chip row when chips is false', () => {
+      const fixture = TestBed.createComponent(Select)
+      fixture.componentRef.setInput('options', colorOptions)
+      fixture.componentRef.setInput('multiple', true)
+      fixture.componentRef.setInput('chips', false)
+      fixture.detectChanges()
+      fixture.componentInstance.writeValue(['bug'])
+      fixture.detectChanges()
+      expect(fixture.nativeElement.querySelector('.gbt-select__chips')).toBeNull()
+    })
+
+    it('renders a removable Tag per selected option when chips and multiple are both true', () => {
+      const fixture = setupChips(['bug', 'feature'])
+      const tags = fixture.nativeElement.querySelectorAll('.gbt-select__chips gbt-tag')
+      expect(tags.length).toBe(2)
+      expect(fixture.nativeElement.textContent).toContain('Bug')
+      expect(fixture.nativeElement.textContent).toContain('Feature')
+    })
+
+    it('deselects an option when its chip is removed, without opening the dropdown', () => {
+      const fixture = setupChips()
+      let changed: unknown = null
+      fixture.componentInstance.registerOnChange((value) => (changed = value))
+      fixture.componentInstance.writeValue(['bug', 'feature'])
+      fixture.detectChanges()
+
+      removeButtons(fixture)[0].click()
+      fixture.detectChanges()
+
+      expect(changed).toEqual(['feature'])
+      expect(fixture.nativeElement.querySelectorAll('.gbt-select__chips gbt-tag').length).toBe(1)
+      expect(fixture.nativeElement.querySelector('.gbt-select__panel')).toBeNull()
+    })
+
+    it('shows the placeholder in the trigger, not a selected count, when chips mode is active', () => {
+      const fixture = TestBed.createComponent(Select<string>)
+      fixture.componentRef.setInput('options', colorOptions)
+      fixture.componentRef.setInput('multiple', true)
+      fixture.componentRef.setInput('chips', true)
+      fixture.componentRef.setInput('placeholder', 'Filtrer par label')
+      fixture.detectChanges()
+      fixture.componentInstance.writeValue(['bug', 'feature'])
+      fixture.detectChanges()
+      const trigger: HTMLElement = fixture.nativeElement.querySelector('.gbt-select__trigger-label')
+      expect(trigger.textContent?.trim()).toBe('Filtrer par label')
+    })
+
+    it('renders chips read-only when disabled: no remove control, and no way to mutate the value', () => {
+      const fixture = setupChips()
+      let changed: unknown = null
+      fixture.componentInstance.registerOnChange((value) => (changed = value))
+      fixture.componentInstance.writeValue(['bug', 'feature'])
+      fixture.detectChanges()
+      expect(removeButtons(fixture).length).toBe(2)
+
+      fixture.componentRef.setInput('disabled', true)
+      fixture.detectChanges()
+
+      // The chips stay visible — they are still the field's value — but carry
+      // no clickable, tabbable remove control any more.
+      expect(fixture.nativeElement.querySelectorAll('.gbt-select__chips gbt-tag').length).toBe(2)
+      expect(removeButtons(fixture).length).toBe(0)
+
+      // And the removal path itself refuses to run while disabled, so no
+      // programmatic caller can bypass the disabled state either.
+      const select = fixture.componentInstance as unknown as {
+        removeChip(value: string, index: number): void
+      }
+      select.removeChip('bug', 0)
+      fixture.detectChanges()
+
+      expect(changed).toBeNull()
+      expect(fixture.nativeElement.querySelectorAll('.gbt-select__chips gbt-tag').length).toBe(2)
+    })
+
+    it('renders chips read-only when the form control is disabled programmatically', () => {
+      const fixture = setupChips(['bug'])
+      expect(removeButtons(fixture).length).toBe(1)
+
+      fixture.componentInstance.setDisabledState(true)
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.querySelectorAll('.gbt-select__chips gbt-tag').length).toBe(1)
+      expect(removeButtons(fixture).length).toBe(0)
+    })
+
+    it('opens the panel below the chip row, never on top of its focusable remove buttons', () => {
+      const fixture = setupChips(['bug', 'feature'])
+      const trigger: HTMLElement = fixture.nativeElement.querySelector('.gbt-select__trigger')
+      const chipRow: HTMLElement = fixture.nativeElement.querySelector('.gbt-select__chips')
+      stubRect(trigger, { bottom: 40, left: 12, width: 180 })
+      stubRect(chipRow, { bottom: 78, left: 12, width: 180 })
+
+      trigger.click()
+      fixture.detectChanges()
+
+      const panel: HTMLElement = fixture.nativeElement.querySelector('.gbt-select__panel')
+      // 78 (chip row bottom) + 6, not 40 (trigger bottom) + 6.
+      expect(panel.style.top).toBe('84px')
+      expect(panel.style.left).toBe('12px')
+      expect(panel.style.width).toBe('180px')
+    })
+
+    it('still anchors the panel to the trigger when no chip row is rendered', () => {
+      const fixture = TestBed.createComponent(Select<string>)
+      fixture.componentRef.setInput('options', colorOptions)
+      fixture.detectChanges()
+      const trigger: HTMLElement = fixture.nativeElement.querySelector('.gbt-select__trigger')
+      stubRect(trigger, { bottom: 40, left: 12, width: 180 })
+
+      trigger.click()
+      fixture.detectChanges()
+
+      const panel: HTMLElement = fixture.nativeElement.querySelector('.gbt-select__panel')
+      expect(panel.style.top).toBe('46px')
+    })
+
+    it('announces the selection count in a polite status region as chips are added and removed', () => {
+      const fixture = setupChips()
+      const region = (): HTMLElement =>
+        fixture.nativeElement.querySelector('[role="status"][aria-live="polite"]')
+
+      // Present from the start, so later changes are announced as changes.
+      expect(region()).not.toBeNull()
+      expect(region().getAttribute('aria-atomic')).toBe('true')
+      expect(region().textContent?.trim()).toBe('0 selected')
+
+      fixture.componentInstance.writeValue(['bug', 'feature'])
+      fixture.detectChanges()
+      expect(region().textContent?.trim()).toBe('2 selected')
+
+      removeButtons(fixture)[0].click()
+      fixture.detectChanges()
+      expect(region().textContent?.trim()).toBe('1 selected')
+    })
+
+    it('renders no status region outside chips mode', () => {
+      const fixture = TestBed.createComponent(Select<string>)
+      fixture.componentRef.setInput('options', colorOptions)
+      fixture.componentRef.setInput('multiple', true)
+      fixture.detectChanges()
+      expect(fixture.nativeElement.querySelector('[role="status"]')).toBeNull()
+    })
+
+    it('moves focus to a remaining chip after a removal, never to the body', () => {
+      const fixture = setupChips(['bug', 'feature'])
+      const buttons = removeButtons(fixture)
+      buttons[0].focus()
+      expect(document.activeElement).toBe(buttons[0])
+
+      buttons[0].click()
+      fixture.detectChanges()
+
+      expect(document.activeElement).not.toBe(document.body)
+      expect(document.activeElement).toBe(buttons[1])
+      expect(buttons[1].isConnected).toBe(true)
+    })
+
+    it('moves focus back to the trigger when the last chip is removed', () => {
+      const fixture = setupChips(['bug'])
+      const button = removeButtons(fixture)[0]
+      button.focus()
+
+      button.click()
+      fixture.detectChanges()
+
+      const trigger: HTMLElement = fixture.nativeElement.querySelector('.gbt-select__trigger')
+      expect(fixture.nativeElement.querySelector('.gbt-select__chips')).toBeNull()
+      expect(document.activeElement).not.toBe(document.body)
+      expect(document.activeElement).toBe(trigger)
+    })
+
+    it('marks the control as touched when a chip is removed without ever opening the panel', () => {
+      const fixture = setupChips(['bug', 'feature'])
+      let touched = false
+      fixture.componentInstance.registerOnTouched(() => (touched = true))
+
+      removeButtons(fixture)[0].click()
+      fixture.detectChanges()
+
+      expect(touched).toBe(true)
+    })
+
+    it('labels each chip remove button in English by default', () => {
+      const fixture = setupChips(['bug', 'feature'])
+      const labels = removeButtons(fixture).map((button) => button.getAttribute('aria-label'))
+      expect(labels).toEqual(['Remove Bug', 'Remove Feature'])
+    })
+
+    it('allows overriding the chip remove label, like every other user-facing string', () => {
+      const fixture = setupChips()
+      fixture.componentRef.setInput('chipRemoveLabel', (label: string) => `Retirer ${label}`)
+      fixture.componentInstance.writeValue(['bug'])
+      fixture.detectChanges()
+      expect(removeButtons(fixture)[0].getAttribute('aria-label')).toBe('Retirer Bug')
+    })
+
+    it('describes the trigger with the chip row, so the selection stays announced', () => {
+      const fixture = setupChips(['bug', 'feature'])
+      const trigger: HTMLElement = fixture.nativeElement.querySelector('.gbt-select__trigger')
+      const chipRow: HTMLElement = fixture.nativeElement.querySelector('.gbt-select__chips')
+
+      const describedBy = trigger.getAttribute('aria-describedby')
+      expect(describedBy).toBe(chipRow.id)
+      expect(chipRow.id).toBeTruthy()
+
+      const description: HTMLElement = fixture.nativeElement.querySelector(`#${describedBy}`)
+      expect(description.textContent).toContain('Bug')
+      expect(description.textContent).toContain('Feature')
+    })
+
+    it('drops the chip row from aria-describedby when nothing is selected', () => {
+      const fixture = setupChips()
+      const trigger: HTMLElement = fixture.nativeElement.querySelector('.gbt-select__trigger')
+      expect(trigger.getAttribute('aria-describedby')).toBeNull()
+    })
+
+    it('keeps the error message in aria-describedby alongside the chip row', () => {
+      const fixture = setupChips(['bug'])
+      fixture.componentRef.setInput('errorMessage', 'Ce champ est requis.')
+      fixture.detectChanges()
+
+      const trigger: HTMLElement = fixture.nativeElement.querySelector('.gbt-select__trigger')
+      const ids = trigger.getAttribute('aria-describedby')?.split(' ') ?? []
+      expect(ids.length).toBe(2)
+      for (const id of ids) {
+        expect(fixture.nativeElement.querySelector(`#${id}`)).not.toBeNull()
+      }
+      const errorId = ids[1]
+      expect(fixture.nativeElement.querySelector(`#${errorId}`).textContent).toBe(
+        'Ce champ est requis.',
+      )
+    })
+
+    it('presents no accessibility violation in chips mode, panel closed', async () => {
+      const fixture = setupChips(['bug', 'feature'])
+      fixture.componentRef.setInput('label', 'Labels')
+      fixture.detectChanges()
+      await expectNoA11yViolations(fixture.nativeElement)
+    })
+  })
 })
