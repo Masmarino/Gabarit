@@ -164,6 +164,26 @@ describe('AppShell', () => {
     expect(reducedMotion).toContain('&__collapse-toggle')
   })
 
+  it('hides the collapse-toggle button below the drawer breakpoint — collapsing to a rail is a desktop-only concept', () => {
+    const componentScss = readFileSync(
+      join(process.cwd(), 'projects/gabarit/src/lib/components/templates/app-shell/app-shell.scss'),
+      'utf8',
+    )
+    const desktopToggleRule = componentScss.slice(
+      componentScss.indexOf('&__collapse-toggle {'),
+      componentScss.indexOf('&__body'),
+    )
+    expect(desktopToggleRule).not.toContain('display: none')
+
+    const drawerBlock = componentScss.slice(
+      componentScss.indexOf('@media (max-width'),
+      componentScss.lastIndexOf('@media (prefers-reduced-motion: reduce)'),
+    )
+    expect(drawerBlock).toContain('&__collapse-toggle')
+    const drawerToggleRule = drawerBlock.slice(drawerBlock.indexOf('&__collapse-toggle'))
+    expect(drawerToggleRule).toContain('display: none')
+  })
+
   it('reveals a collapsed link label on hover/focus via the global stylesheet, not the component one', () => {
     const utilities = readFileSync(
       join(process.cwd(), 'projects/gabarit/src/lib/tokens/_utilities.scss'),
