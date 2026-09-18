@@ -4,6 +4,11 @@ export { IconRegistry } from './lib/components/atoms/icon/icon-registry'
 export { AppShell } from './lib/components/templates/app-shell/app-shell'
 export { Button } from './lib/components/atoms/button/button'
 export { Badge, type BadgeVariant } from './lib/components/atoms/badge/badge'
+export { Avatar, type AvatarSize } from './lib/components/atoms/avatar/avatar'
+export {
+  AvatarGroup,
+  type AvatarGroupItem,
+} from './lib/components/molecules/avatar-group/avatar-group'
 export { Alert, type AlertVariant } from './lib/components/molecules/alert/alert'
 export { Tag } from './lib/components/atoms/tag/tag'
 export { EmptyState, type EmptyStateIllustration } from './lib/components/molecules/empty-state/empty-state'

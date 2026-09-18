@@ -1,0 +1,58 @@
+<ul class="gbt-avatar-group__list" [attr.aria-label]="ariaLabel()">
+  @for (item of visibleItems(); track $index) {
+    <li class="gbt-avatar-group__item">
+      <button
+        type="button"
+        class="gbt-avatar-group__button"
+        [class.gbt-avatar-group__button--active]="isActive(item)"
+        [attr.aria-label]="item.name"
+        [attr.aria-current]="isActive(item) ? 'true' : null"
+        (click)="selectItem(item)"
+      >
+        <gbt-avatar [name]="item.name" [src]="item.src ?? null" size="md" />
+      </button>
+    </li>
+  }
+  @if (overflowCount() > 0) {
+    <li class="gbt-avatar-group__item">
+      <button
+        type="button"
+        class="gbt-avatar-group__more"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="panelOpen()"
+        [attr.aria-label]="moreLabel()(overflowCount())"
+        (click)="toggleOverflowPanel()"
+      >
+        +{{ overflowCount() }}
+      </button>
+    </li>
+  }
+</ul>
+
+@if (panelOpen() && panelStyle(); as style) {
+  <ul
+    class="gbt-avatar-group__panel"
+    role="menu"
+    [attr.aria-label]="moreLabel()(overflowCount())"
+    [style.top]="style.top"
+    [style.left]="style.left"
+  >
+    @for (item of overflowItems(); track $index) {
+      <li role="presentation">
+        <button
+          type="button"
+          role="menuitem"
+          class="gbt-avatar-group__panel-item"
+          [attr.aria-current]="isActive(item) ? 'true' : null"
+          (click)="selectItem(item)"
+        >
+          <gbt-avatar [name]="item.name" [src]="item.src ?? null" size="sm" />
+          <span class="gbt-avatar-group__panel-item-name">{{ item.name }}</span>
+          @if (isActive(item)) {
+            <gbt-icon name="check" class="gbt-avatar-group__panel-item-check" aria-hidden="true" />
+          }
+        </button>
+      </li>
+    }
+  </ul>
+}
