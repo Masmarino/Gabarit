@@ -22,6 +22,7 @@ describe('public surface', () => {
       'Menu',
       'Modal',
       'Pagination',
+      'Popover',
       'RadioGroup',
       'SearchBar',
       'Select',
