@@ -1,0 +1,17 @@
+<div #group class="gbt-segmented-control" role="radiogroup" [attr.aria-label]="ariaLabel() || null">
+  @for (option of options(); track option.value; let i = $index) {
+    <button
+      type="button"
+      role="radio"
+      class="gbt-segmented-control__option"
+      [class.gbt-segmented-control__option--selected]="isSelected(option.value)"
+      [attr.aria-checked]="isSelected(option.value)"
+      [tabIndex]="isSelected(option.value) ? 0 : -1"
+      [disabled]="disabled() || !!option.disabled"
+      (click)="select(option)"
+      (keydown)="onKeydown($event, i)"
+    >
+      {{ option.label }}
+    </button>
+  }
+</div>

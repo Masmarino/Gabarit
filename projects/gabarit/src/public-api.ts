@@ -92,6 +92,10 @@ export {
   type DescriptionListEntry,
   type DescriptionListLayout,
 } from './lib/components/molecules/description-list/description-list'
+export {
+  SegmentedControl,
+  type SegmentedControlOption,
+} from './lib/components/molecules/segmented-control/segmented-control'
 export { Accordion, type AccordionMode } from './lib/components/molecules/accordion/accordion'
 export { AccordionItem } from './lib/components/molecules/accordion-item/accordion-item'
 export { Pagination } from './lib/components/molecules/pagination/pagination'

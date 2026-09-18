@@ -27,6 +27,7 @@ describe('public surface', () => {
       'Popover',
       'RadioGroup',
       'SearchBar',
+      'SegmentedControl',
       'Select',
       'Skeleton',
       'Switch',
