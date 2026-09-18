@@ -1,0 +1,16 @@
+<div class="gbt-alert" [attr.data-variant]="variant()" [attr.role]="role()" aria-atomic="true">
+  <span class="gbt-alert__icon">
+    <gbt-icon [name]="icon()" aria-hidden="true" />
+  </span>
+  <div class="gbt-alert__content"><ng-content /></div>
+  @if (dismissible()) {
+    <button
+      type="button"
+      class="gbt-alert__close"
+      [attr.aria-label]="closeLabel()"
+      (click)="dismissed.emit()"
+    >
+      <gbt-icon name="x" aria-hidden="true" />
+    </button>
+  }
+</div>

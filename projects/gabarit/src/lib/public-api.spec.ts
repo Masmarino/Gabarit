@@ -3,6 +3,7 @@ import * as api from '../public-api'
 describe('public surface', () => {
   it('exports the base components and the icon registry', () => {
     for (const name of [
+      'Alert',
       'AppShell',
       'Autocomplete',
       'Badge',
