@@ -63,14 +63,49 @@ describe('DatePicker', () => {
     expect(trigger(fixture).textContent).toContain('Mar 15, 2024')
   })
 
-  it('renders no panel by default, and 42 day cells once opened', () => {
+  it('renders no panel by default, and a grid of day cells once opened', () => {
     const fixture = setup()
     expect(panel(fixture)).toBeNull()
 
     open(fixture)
 
     expect(panel(fixture)).not.toBeNull()
+    expect(fixture.nativeElement.querySelectorAll('.gbt-date-picker__day').length).toBeGreaterThan(0)
+  })
+
+  it('renders a full 6-week grid (42 cells) for a month that genuinely needs one', () => {
+    const fixture = setup()
+    // December 2024 starts on a Sunday (Monday-start week): 6 leading blanks + 31 days spill into a 6th week.
+    fixture.componentInstance.writeValue(new Date(2024, 11, 10))
+    fixture.detectChanges()
+    open(fixture)
+
     expect(fixture.nativeElement.querySelectorAll('.gbt-date-picker__day').length).toBe(42)
+  })
+
+  it("doesn't render a wholly-blank trailing week for a month that fits in fewer", () => {
+    const fixture = setup()
+    // June 2024 needs exactly 5 weeks (5 leading blanks + 30 days = 35 cells) — a 6th week would be pure filler.
+    fixture.componentInstance.writeValue(new Date(2024, 5, 10))
+    fixture.detectChanges()
+    open(fixture)
+
+    expect(fixture.nativeElement.querySelectorAll('.gbt-date-picker__day').length).toBe(35)
+  })
+
+  it("doesn't show a day number for leading/trailing days outside the current month", () => {
+    const fixture = setup()
+    // June 2024 starts on a Saturday, so the grid's leading days are late May.
+    fixture.componentInstance.writeValue(new Date(2024, 5, 10))
+    fixture.detectChanges()
+    open(fixture)
+
+    const cells = [...fixture.nativeElement.querySelectorAll('.gbt-date-picker__day')]
+    const outside = cells.filter((el: HTMLElement) => !el.hasAttribute('data-date'))
+    expect(outside.length).toBeGreaterThan(0)
+    expect(outside.every((el: HTMLElement) => el.textContent?.trim() === '')).toBe(true)
+    expect(outside.every((el: HTMLElement) => el.tagName !== 'BUTTON')).toBe(true)
+    expect(outside.every((el: HTMLElement) => el.getAttribute('role') === 'gridcell')).toBe(true)
   })
 
   it('opens showing the month of the selected date', () => {
@@ -107,17 +142,14 @@ describe('DatePicker', () => {
     expect(trigger(fixture).textContent).toContain('Jun 20, 2024')
   })
 
-  it('selecting an outside-month day shifts the view to that day’s month', () => {
+  it("doesn't render a clickable cell for a day outside the current month", () => {
     const fixture = setup()
     fixture.componentInstance.writeValue(new Date(2024, 5, 10))
     fixture.detectChanges()
     open(fixture)
 
-    // The June 2024 grid starts in late May — click a leading May day.
-    dayCell(fixture, new Date(2024, 4, 27))!.click()
-    fixture.detectChanges()
-
-    expect(trigger(fixture).textContent).toContain('May 27, 2024')
+    // The June 2024 grid starts in late May — there is no cell for it anymore.
+    expect(dayCell(fixture, new Date(2024, 4, 27))).toBeNull()
   })
 
   it('closes the panel and returns focus to the trigger on Escape', () => {
@@ -139,6 +171,18 @@ describe('DatePicker', () => {
     fixture.detectChanges()
 
     expect(panel(fixture)).toBeNull()
+  })
+
+  it('puts the month heading(s) on the same row as the previous/next buttons', () => {
+    const fixture = setup()
+    fixture.componentRef.setInput('visibleMonths', 2)
+    fixture.componentInstance.writeValue(new Date(2024, 5, 10))
+    fixture.detectChanges()
+    open(fixture)
+
+    const nav = fixture.nativeElement.querySelector('.gbt-date-picker__nav')
+    expect(nav.querySelectorAll('.gbt-date-picker__month-heading').length).toBe(2)
+    expect(fixture.nativeElement.querySelector('.gbt-date-picker__month .gbt-date-picker__month-heading')).toBeNull()
   })
 
   describe('grid keyboard navigation', () => {
@@ -377,7 +421,8 @@ describe('DatePicker', () => {
       open(fixture)
 
       expect(fixture.nativeElement.querySelectorAll('.gbt-date-picker__month').length).toBe(1)
-      expect(fixture.nativeElement.querySelectorAll('.gbt-date-picker__day').length).toBe(42)
+      // June 2024 needs exactly 5 weeks (5 leading blanks + 30 days).
+      expect(fixture.nativeElement.querySelectorAll('.gbt-date-picker__day').length).toBe(35)
     })
 
     it('shows two consecutive months when visibleMonths is 2', () => {
@@ -388,9 +433,25 @@ describe('DatePicker', () => {
       open(fixture)
 
       expect(fixture.nativeElement.querySelectorAll('.gbt-date-picker__month').length).toBe(2)
-      expect(fixture.nativeElement.querySelectorAll('.gbt-date-picker__day').length).toBe(84)
+      // Both June and July 2024 need exactly 5 weeks, so both grids share that height.
+      expect(fixture.nativeElement.querySelectorAll('.gbt-date-picker__day').length).toBe(70)
       expect(monthLabel(fixture)).toBe('June 2024')
       expect(secondMonthLabel(fixture)).toBe('July 2024')
+    })
+
+    it('keeps both visible months the same height, even if only one needs the extra week', () => {
+      const fixture = setup()
+      fixture.componentRef.setInput('visibleMonths', 2)
+      // November 2024 needs 5 weeks, but December 2024 (the second visible month) needs 6.
+      fixture.componentInstance.writeValue(new Date(2024, 10, 10))
+      fixture.detectChanges()
+      open(fixture)
+
+      const grids = [...fixture.nativeElement.querySelectorAll('.gbt-date-picker__grid')]
+      const rowCounts = grids.map(
+        (g: HTMLElement) => g.querySelectorAll('.gbt-date-picker__row:not(.gbt-date-picker__row--head)').length,
+      )
+      expect(rowCounts).toEqual([6, 6])
     })
 
     it('shifts both visible months together via the next/previous buttons', () => {
@@ -575,7 +636,7 @@ describe('DatePicker — ngModel integration', () => {
     fixture.detectChanges()
 
     const cell = [...fixture.nativeElement.querySelectorAll('.gbt-date-picker__day')].find(
-      (el: HTMLElement) => el.textContent?.trim() === '15' && !el.classList.contains('gbt-date-picker__day--outside'),
+      (el: HTMLElement) => el.textContent?.trim() === '15',
     ) as HTMLElement
     cell.click()
     fixture.detectChanges()

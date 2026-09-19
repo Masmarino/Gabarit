@@ -100,7 +100,7 @@ export class DatePicker implements ControlValueAccessor {
     const anchor = this.anchorDate()
     const count = this.visibleMonths()
     const formatter = new Intl.DateTimeFormat(this.locale(), { month: 'long', year: 'numeric' })
-    return Array.from({ length: count }, (_, i) => {
+    const views = Array.from({ length: count }, (_, i) => {
       const monthDate = new Date(anchor.getFullYear(), anchor.getMonth() + i, 1)
       const year = monthDate.getFullYear()
       const month = monthDate.getMonth()
@@ -111,6 +111,19 @@ export class DatePicker implements ControlValueAccessor {
       }
       return { year, month, label: formatter.format(monthDate), weeks }
     })
+    // Trim wholly-blank trailing weeks (pure next-month filler) — but by the
+    // same amount across every visible month, so side-by-side calendars
+    // (`visibleMonths="2"`) stay the same height even when only one of them
+    // actually needs the extra week.
+    const neededWeeks = views.map((view) => {
+      let last = view.weeks.length
+      while (last > 1 && view.weeks[last - 1].every((day) => !day.inCurrentMonth)) {
+        last--
+      }
+      return last
+    })
+    const sharedWeeks = Math.max(...neededWeeks)
+    return views.map((view) => ({ ...view, weeks: view.weeks.slice(0, sharedWeeks) }))
   })
 
   protected readonly panelLabel = computed(() => {

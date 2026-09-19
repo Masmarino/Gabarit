@@ -53,18 +53,8 @@
         >
           <gbt-icon name="chevron-left" aria-hidden="true" />
         </button>
-        <button
-          type="button"
-          class="gbt-date-picker__nav-button"
-          [attr.aria-label]="nextMonthLabel()"
-          (click)="shiftMonth(1)"
-        >
-          <gbt-icon name="chevron-right" aria-hidden="true" />
-        </button>
-      </div>
-      <div class="gbt-date-picker__months">
-        @for (view of monthViews(); track view.year + '-' + view.month; let i = $index) {
-          <div class="gbt-date-picker__month">
+        <div class="gbt-date-picker__headings">
+          @for (view of monthViews(); track view.year + '-' + view.month; let i = $index) {
             <div class="gbt-date-picker__month-heading">
               @if (i === 0) {
                 <select
@@ -93,6 +83,20 @@
                 <span class="gbt-date-picker__month-label">{{ view.label }}</span>
               }
             </div>
+          }
+        </div>
+        <button
+          type="button"
+          class="gbt-date-picker__nav-button"
+          [attr.aria-label]="nextMonthLabel()"
+          (click)="shiftMonth(1)"
+        >
+          <gbt-icon name="chevron-right" aria-hidden="true" />
+        </button>
+      </div>
+      <div class="gbt-date-picker__months">
+        @for (view of monthViews(); track view.year + '-' + view.month) {
+          <div class="gbt-date-picker__month">
             <div
               class="gbt-date-picker__grid"
               role="grid"
@@ -108,21 +112,24 @@
               @for (week of view.weeks; track $index) {
                 <div class="gbt-date-picker__row" role="row">
                   @for (day of week; track day.date.getTime()) {
-                    <button
-                      type="button"
-                      role="gridcell"
-                      class="gbt-date-picker__day"
-                      [class.gbt-date-picker__day--outside]="!day.inCurrentMonth"
-                      [class.gbt-date-picker__day--today]="day.isToday"
-                      [class.gbt-date-picker__day--selected]="isSelected(day.date)"
-                      [attr.data-date]="cellId(day.date)"
-                      [attr.aria-selected]="isSelected(day.date)"
-                      [attr.aria-current]="day.isToday ? 'date' : null"
-                      [tabIndex]="isFocused(day.date) ? 0 : -1"
-                      (click)="selectDay(day)"
-                    >
-                      {{ day.date.getDate() }}
-                    </button>
+                    @if (day.inCurrentMonth) {
+                      <button
+                        type="button"
+                        role="gridcell"
+                        class="gbt-date-picker__day"
+                        [class.gbt-date-picker__day--today]="day.isToday"
+                        [class.gbt-date-picker__day--selected]="isSelected(day.date)"
+                        [attr.data-date]="cellId(day.date)"
+                        [attr.aria-selected]="isSelected(day.date)"
+                        [attr.aria-current]="day.isToday ? 'date' : null"
+                        [tabIndex]="isFocused(day.date) ? 0 : -1"
+                        (click)="selectDay(day)"
+                      >
+                        {{ day.date.getDate() }}
+                      </button>
+                    } @else {
+                      <span role="gridcell" class="gbt-date-picker__day gbt-date-picker__day--empty"></span>
+                    }
                   }
                 </div>
               }
