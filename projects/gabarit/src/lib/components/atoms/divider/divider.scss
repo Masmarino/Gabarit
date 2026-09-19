@@ -1,0 +1,30 @@
+:host {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  &[data-orientation='vertical'] {
+    flex-direction: column;
+    align-self: stretch;
+  }
+}
+
+.gbt-divider__line {
+  flex: 1;
+  background: var(--border-color);
+
+  :host[data-orientation='horizontal'] & {
+    height: 1px;
+  }
+
+  :host[data-orientation='vertical'] & {
+    width: 1px;
+  }
+}
+
+.gbt-divider__label {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
