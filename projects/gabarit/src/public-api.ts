@@ -138,3 +138,8 @@ export {
   type NotificationDotVariant,
 } from './lib/components/atoms/notification-dot/notification-dot'
 export { TagInput } from './lib/components/molecules/tag-input/tag-input'
+export { Tree } from './lib/components/molecules/tree/tree'
+export {
+  type FlatTreeNode,
+  type TreeNode,
+} from './lib/components/molecules/tree/tree-flatten'

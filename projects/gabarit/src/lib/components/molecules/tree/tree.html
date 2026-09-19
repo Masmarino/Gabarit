@@ -1,0 +1,45 @@
+<ul
+  class="gbt-tree"
+  role="tree"
+  tabindex="-1"
+  [attr.aria-label]="ariaLabel() || null"
+  (keydown)="onKeydown($event)"
+>
+  @for (flat of flatNodes(); track flat.node.id) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
+    <li
+      class="gbt-tree__item"
+      role="treeitem"
+      [attr.data-node-id]="flat.node.id"
+      [attr.aria-level]="flat.depth + 1"
+      [attr.aria-expanded]="flat.hasChildren ? isExpanded(flat.node.id) : null"
+      [attr.aria-selected]="selectedId() === flat.node.id"
+      [style.paddingLeft.px]="flat.depth * 20"
+      [attr.tabindex]="activeId() === flat.node.id ? 0 : -1"
+      (click)="onItemClick(flat)"
+    >
+      @if (flat.hasChildren) {
+        <button
+          type="button"
+          class="gbt-tree__toggle"
+          tabindex="-1"
+          [attr.aria-label]="isExpanded(flat.node.id) ? collapseLabel() : expandLabel()"
+          (click)="toggle(flat.node.id); $event.stopPropagation()"
+        >
+          <gbt-icon
+            name="chevron-right"
+            class="gbt-tree__chevron"
+            [class.gbt-tree__chevron--expanded]="isExpanded(flat.node.id)"
+            aria-hidden="true"
+          />
+        </button>
+      } @else {
+        <span class="gbt-tree__spacer"></span>
+      }
+      @if (flat.node.icon) {
+        <gbt-icon [name]="flat.node.icon" class="gbt-tree__icon" aria-hidden="true" />
+      }
+      <span class="gbt-tree__label">{{ flat.node.label }}</span>
+    </li>
+  }
+</ul>

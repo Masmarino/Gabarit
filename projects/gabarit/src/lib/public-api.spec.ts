@@ -46,6 +46,7 @@ describe('public surface', () => {
       'Textarea',
       'Toaster',
       'Tooltip',
+      'Tree',
     ]) {
       expect(api).toHaveProperty(name)
     }
