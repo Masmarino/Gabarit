@@ -34,6 +34,7 @@ describe('public surface', () => {
       'Select',
       'Skeleton',
       'Slider',
+      'Spinner',
       'Switch',
       'Tab',
       'Table',
