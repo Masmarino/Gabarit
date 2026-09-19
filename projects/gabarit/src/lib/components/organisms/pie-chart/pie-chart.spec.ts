@@ -99,6 +99,16 @@ describe('PieChart', () => {
     expect(fixture.nativeElement.querySelector('.gbt-pie-chart__slice')).toBeNull()
   })
 
+  it('gives the empty state a pie-shaped icon', () => {
+    const fixture = setup()
+    fixture.componentInstance.slices.set([])
+    fixture.detectChanges()
+    const icon = fixture.nativeElement.querySelector('.gbt-chart-empty__icon')
+    expect(icon.querySelector('svg')).not.toBeNull()
+    expect(icon.querySelector('circle')).not.toBeNull()
+    expect(icon.querySelector('path[fill="currentColor"]')).not.toBeNull()
+  })
+
   it("for an all-zero total, doesn't divide by zero", () => {
     const fixture = setup()
     fixture.componentInstance.slices.set([

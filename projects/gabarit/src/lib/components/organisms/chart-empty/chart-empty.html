@@ -1,4 +1,7 @@
 <div class="gbt-chart-empty" role="status">
+  <div class="gbt-chart-empty__icon" aria-hidden="true">
+    <ng-content select="[gbtChartEmptyIcon]" />
+  </div>
   <p class="gbt-chart-empty__message">{{ message() }}</p>
   @if (actionLabel()) {
     <button type="button" class="gbt-chart-empty__action" (click)="action.emit()">

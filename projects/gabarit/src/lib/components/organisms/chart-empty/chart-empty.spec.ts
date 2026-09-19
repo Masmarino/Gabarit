@@ -72,4 +72,36 @@ describe('ChartEmpty', () => {
   it('has no violation detected by axe', async () => {
     await expectNoA11yViolations(setup().nativeElement)
   })
+
+  it('renders no icon wrapper when nothing is projected into it', () => {
+    @Component({
+      standalone: true,
+      imports: [ChartEmpty],
+      template: `<gbt-chart-empty message="Rien" />`,
+    })
+    class NoIconHost {}
+    const fixture = TestBed.createComponent(NoIconHost)
+    fixture.detectChanges()
+    const icon = fixture.nativeElement.querySelector('.gbt-chart-empty__icon')
+    expect(icon).not.toBeNull()
+    expect(icon.children.length).toBe(0)
+  })
+
+  it('renders a projected icon, hidden from assistive technology', () => {
+    @Component({
+      standalone: true,
+      imports: [ChartEmpty],
+      template: `
+        <gbt-chart-empty message="Rien">
+          <svg gbtChartEmptyIcon viewBox="0 0 96 96"><circle cx="48" cy="48" r="30" /></svg>
+        </gbt-chart-empty>
+      `,
+    })
+    class WithIconHost {}
+    const fixture = TestBed.createComponent(WithIconHost)
+    fixture.detectChanges()
+    const wrapper = fixture.nativeElement.querySelector('.gbt-chart-empty__icon')
+    expect(wrapper.getAttribute('aria-hidden')).toBe('true')
+    expect(wrapper.querySelector('svg')).not.toBeNull()
+  })
 })

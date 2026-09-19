@@ -62,6 +62,9 @@ the same architecture (see "Why not `ChartFrame`" below).
   through `--chart-series-6`; beyond that the palette cycles and a
   console warning is logged in dev mode, the same convention
   `LineChart` uses for its own `MAX_SERIES`.
+- The empty state (`ChartEmpty`) gets a small pie icon — a circle with
+  one filled wedge, not a chart-agnostic placeholder — via
+  `ChartEmpty`'s `[gbtChartEmptyIcon]` projection slot.
 
 ## Why not `ChartFrame`
 
