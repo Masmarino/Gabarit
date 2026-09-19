@@ -143,4 +143,21 @@ describe('Tag', () => {
     fixture.detectChanges()
     await expectNoA11yViolations(fixture.nativeElement)
   })
+
+  it('carries no aria-disabled by default', () => {
+    const fixture = setupTag()
+    fixture.componentRef.setInput('color', '#1a1a2e')
+    fixture.detectChanges()
+    const el: HTMLElement = fixture.nativeElement.querySelector('.gbt-tag')
+    expect(el.hasAttribute('aria-disabled')).toBe(false)
+  })
+
+  it('marks itself aria-disabled when disabled', () => {
+    const fixture = setupTag()
+    fixture.componentRef.setInput('color', '#1a1a2e')
+    fixture.componentRef.setInput('disabled', true)
+    fixture.detectChanges()
+    const el: HTMLElement = fixture.nativeElement.querySelector('.gbt-tag')
+    expect(el.getAttribute('aria-disabled')).toBe('true')
+  })
 })

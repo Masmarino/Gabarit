@@ -476,6 +476,15 @@ describe('Select', () => {
       expect(fixture.nativeElement.querySelectorAll('.gbt-select__chips gbt-tag').length).toBe(2)
     })
 
+    it('marks each chip aria-disabled once the select is disabled', () => {
+      const fixture = setupChips(['bug', 'feature'])
+      fixture.componentRef.setInput('disabled', true)
+      fixture.detectChanges()
+      const chips = [...fixture.nativeElement.querySelectorAll('.gbt-select__chips .gbt-tag')]
+      expect(chips.length).toBe(2)
+      expect(chips.every((c: HTMLElement) => c.getAttribute('aria-disabled') === 'true')).toBe(true)
+    })
+
     it('renders chips read-only when the form control is disabled programmatically', () => {
       const fixture = setupChips(['bug'])
       expect(removeButtons(fixture).length).toBe(1)

@@ -81,6 +81,19 @@ than `gbt-tag`'s, and each is tested:
   directly. Previously the chip row ignored the disabled state entirely:
   a disabled `gbt-select` still offered focusable buttons that fired
   `onChange`.
+- **Disabled chips are recognizable as inactive, not just dimmed.**
+  `[disabled]="isDisabled()"` is passed to each `gbt-tag` alongside
+  `[removable]="!isDisabled()"`, which sets `aria-disabled="true"` on
+  the chip. Without it, axe's `color-contrast` rule flagged the chip
+  text once `.gbt-select--disabled`'s `opacity: 0.5` lowered its
+  effective ratio below 4.5:1 — WCAG 1.4.3's exemption for "text that
+  is part of an inactive component" only applies once the element is
+  actually recognized as inactive, which a lone CSS `opacity` on an
+  ancestor doesn't provide. Re-verified with axe-core directly
+  (`runOnly: ['color-contrast']`) against a disabled, chip-populated
+  select: zero violations. `TagInput` had the identical gap (same
+  `opacity`-only disabled treatment around the same `gbt-tag`) and got
+  the identical fix — see its own `AUDIT.md`.
 - **Focus survives a removal.** `removeChip()` resolves its successor
   *before* mutating — the next chip's remove button, else the previous
   one, else the trigger — and focuses it. Because `@for` tracks by

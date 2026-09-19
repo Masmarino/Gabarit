@@ -8,6 +8,7 @@
 | 11.1 / 11.2 | Field label | The remove button carries an explicit `aria-label` bound to `removeLabel()`, an externalized input rather than a hardcoded string. | Conforme |
 | 12.11 | Hidden content | `<gbt-icon name="x" aria-hidden="true" />` inside the remove button is decorative; the button's own `aria-label` is what's announced. | Conforme |
 | WCAG 2.5.8 | Target size | The remove button is 16×16px, below the 24×24px minimum target size. It is a secondary action inside an already-small chip (`Badge`'s own icon is unsized/decorative and sets no comparable precedent); this is accepted as a known minor deviation, consistent with how dense chip/tag UIs are commonly built, and mitigated by the chip's own larger hit area and hover feedback. | Écart mineur accepté |
+| 1.4.3 (via ancestor state) | Contrast exemption for inactive components | `disabled` sets `aria-disabled="true"` on the chip's root span. Without it, a consumer (`TagInput`, `Select` in chips mode) that only dims a disabled container via CSS `opacity` left the chip's text with no *recognized* inactive state, so axe's `color-contrast` rule correctly flagged the now-lower ratio rather than applying WCAG 1.4.3's exemption. `disabled` is purely an ARIA signal here — it doesn't affect rendering or the remove button, which the consumer already controls via `removable`. | Conforme |
 
 ## Externalized content
 

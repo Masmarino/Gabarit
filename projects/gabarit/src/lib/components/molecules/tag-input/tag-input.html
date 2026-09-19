@@ -9,7 +9,13 @@
     (click)="focusInput()"
   >
     @for (tag of tags(); track tag; let i = $index) {
-      <gbt-tag [color]="color()" [removable]="!isDisabled()" [removeLabel]="removeLabel()(tag)" (removed)="removeTagAt(i)">
+      <gbt-tag
+        [color]="color()"
+        [removable]="!isDisabled()"
+        [disabled]="isDisabled()"
+        [removeLabel]="removeLabel()(tag)"
+        (removed)="removeTagAt(i)"
+      >
         {{ tag }}
       </gbt-tag>
     }

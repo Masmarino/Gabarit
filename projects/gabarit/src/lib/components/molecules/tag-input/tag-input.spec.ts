@@ -147,6 +147,15 @@ describe('TagInput', () => {
     expect(textInput(fixture).disabled).toBe(true)
   })
 
+  it('marks each chip aria-disabled when the field is disabled', () => {
+    const fixture = setup()
+    fixture.componentInstance.writeValue(['bug'])
+    fixture.componentRef.setInput('disabled', true)
+    fixture.detectChanges()
+    const chip = fixture.nativeElement.querySelector('.gbt-tag')
+    expect(chip.getAttribute('aria-disabled')).toBe('true')
+  })
+
   it('renders the error message with role alert', () => {
     const fixture = setup()
     fixture.componentRef.setInput('errorMessage', 'Au moins un label est requis')

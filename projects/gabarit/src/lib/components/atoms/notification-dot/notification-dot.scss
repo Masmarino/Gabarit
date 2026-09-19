@@ -18,20 +18,20 @@
   min-width: 8px;
   height: 8px;
   padding: 0;
-  background: var(--color-error-base);
+  background: var(--color-error-base); // token-graphique-sans-texte
   border: 2px solid var(--bg-principal);
   border-radius: 999px;
 
   &[data-variant='warning'] {
-    background: var(--color-warning-base);
+    background: var(--color-warning-base); // token-graphique-sans-texte
   }
 
   &[data-variant='success'] {
-    background: var(--color-success-base);
+    background: var(--color-success-base); // token-graphique-sans-texte
   }
 
   &[data-variant='info'] {
-    background: var(--color-info-vivid-base);
+    background: var(--color-info-vivid-base); // token-graphique-sans-texte
   }
 
   &--count {

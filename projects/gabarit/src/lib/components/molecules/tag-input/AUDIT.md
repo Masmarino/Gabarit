@@ -28,19 +28,27 @@ suppressed for this one line, the same pattern `Modal`'s backdrop
 click and `Popover`'s trigger already established, rather than adding
 a meaningless `tabindex`/`keydown` pair purely to silence the linter.
 
-## Known axe flag on the `Disabled` story (not a defect)
+## Fixed: axe flag on the `Disabled` story
 
-Storybook's axe addon reports a "Color contrast" violation on the
-`Disabled` story: each tag's label span, seen through the field's
-`opacity: 0.5` disabled treatment, computes to a lower ratio than
-4.5:1. This is expected and not a compliance issue — WCAG 1.4.3
-explicitly exempts "text that is part of an inactive user interface
-component" from the contrast requirement, and `Tag`'s own contrast
-computation (already audited) is correct at full opacity, which is
-its actual state whenever it's interactive. `Select` uses the exact
-same `opacity: 0.5`-on-disabled-wrapper treatment around its own
-chips, so this is an established, consistent pattern across the
-library rather than something specific to `TagInput`.
+Storybook's axe addon used to report a "Color contrast" violation on
+the `Disabled` story: each tag's label span, seen through the field's
+`opacity: 0.5` disabled treatment, computed to a lower ratio than
+4.5:1. WCAG 1.4.3 exempts "text that is part of an inactive user
+interface component" from the contrast requirement, but that exemption
+only applies once the element is actually *recognized* as inactive —
+a plain `<span>` dimmed only by an ancestor's CSS `opacity` carries no
+such signal, so axe correctly still flagged it as a false negative on
+our part, not a false positive on axe's.
+
+Fixed by threading a `disabled` input through to `Tag`, which sets
+`aria-disabled="true"` on its root span whenever set —
+`tag-input.html` now passes `[disabled]="isDisabled()"` alongside the
+existing `[removable]="!isDisabled()"`. Re-run against
+`Molecules/TagInput`'s `Disabled` story with axe-core directly
+(`runOnly: ['color-contrast']`): zero violations, chips confirmed
+`aria-disabled="true"` (`tag-input.spec.ts`, "marks each chip
+aria-disabled..."). `Select` had the identical gap and got the
+identical fix — see its own `AUDIT.md`.
 
 ## Externalized strings
 

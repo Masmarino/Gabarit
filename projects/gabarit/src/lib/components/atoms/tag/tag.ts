@@ -14,6 +14,7 @@ export class Tag {
   color = input.required<string>()
   removable = input<boolean>(false)
   removeLabel = input<string>('Remove')
+  disabled = input<boolean>(false)
 
   removed = output<void>()
 

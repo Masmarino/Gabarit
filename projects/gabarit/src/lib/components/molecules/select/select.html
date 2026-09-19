@@ -39,6 +39,7 @@
         <gbt-tag
           [color]="option.color ?? '#6b7280'"
           [removable]="!isDisabled()"
+          [disabled]="isDisabled()"
           [removeLabel]="chipRemoveLabel()(option.label)"
           (removed)="removeChip(option.value, i)"
         >
