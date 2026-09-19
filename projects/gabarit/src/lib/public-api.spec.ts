@@ -33,6 +33,7 @@ describe('public surface', () => {
       'SegmentedControl',
       'Select',
       'Skeleton',
+      'Slider',
       'Switch',
       'Tab',
       'Table',

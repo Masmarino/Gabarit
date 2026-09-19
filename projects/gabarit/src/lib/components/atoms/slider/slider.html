@@ -1,0 +1,25 @@
+<div class="gbt-slider">
+  <div class="gbt-slider__header">
+    <label [for]="id()">{{ label() }}</label>
+    @if (showValue()) {
+      <span class="gbt-slider__value">{{ formatValue()(value()) }}</span>
+    }
+  </div>
+  <input
+    type="range"
+    [id]="id()"
+    [min]="min()"
+    [max]="max()"
+    [step]="step()"
+    [value]="value()"
+    [disabled]="isDisabled()"
+    [style.--gbt-slider-fill.%]="fillPercent()"
+    [attr.aria-invalid]="errorMessage() ? true : null"
+    [attr.aria-describedby]="errorMessage() ? id() + '-error' : null"
+    (input)="onInput($event)"
+    (blur)="onBlur()"
+  />
+  @if (errorMessage()) {
+    <p [id]="id() + '-error'" class="gbt-slider__error" role="alert">{{ errorMessage() }}</p>
+  }
+</div>
