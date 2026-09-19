@@ -1,0 +1,11 @@
+<span class="gbt-notification-dot__anchor">
+  <ng-content></ng-content>
+</span>
+@if (showDot()) {
+  <span
+    class="gbt-notification-dot__badge"
+    [class.gbt-notification-dot__badge--count]="count() !== null"
+    [attr.data-variant]="variant()"
+    aria-hidden="true"
+  >{{ displayValue() }}</span>
+}

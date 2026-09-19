@@ -124,3 +124,7 @@ export {
   type AutocompleteSearchFn,
 } from './lib/components/molecules/autocomplete/autocomplete'
 export { Divider, type DividerOrientation } from './lib/components/atoms/divider/divider'
+export {
+  NotificationDot,
+  type NotificationDotVariant,
+} from './lib/components/atoms/notification-dot/notification-dot'

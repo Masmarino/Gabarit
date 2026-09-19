@@ -1,0 +1,62 @@
+:host {
+  position: relative;
+  display: inline-flex;
+}
+
+.gbt-notification-dot__anchor {
+  display: inline-flex;
+}
+
+.gbt-notification-dot__badge {
+  box-sizing: border-box;
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 8px;
+  height: 8px;
+  padding: 0;
+  background: var(--color-error-base);
+  border: 2px solid var(--bg-principal);
+  border-radius: 999px;
+
+  &[data-variant='warning'] {
+    background: var(--color-warning-base);
+  }
+
+  &[data-variant='success'] {
+    background: var(--color-success-base);
+  }
+
+  &[data-variant='info'] {
+    background: var(--color-info-vivid-base);
+  }
+
+  &--count {
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background: var(--color-error-bg);
+    color: var(--color-error-bg-text);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+
+    &[data-variant='warning'] {
+      background: var(--color-warning-bg);
+      color: var(--color-warning-bg-text);
+    }
+
+    &[data-variant='success'] {
+      background: var(--color-success-bg);
+      color: var(--color-success-bg-text);
+    }
+
+    &[data-variant='info'] {
+      background: var(--color-info-bg);
+      color: var(--color-info-bg-text);
+    }
+  }
+}

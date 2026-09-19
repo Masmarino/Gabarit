@@ -25,6 +25,7 @@ describe('public surface', () => {
       'ListToolbar',
       'Menu',
       'Modal',
+      'NotificationDot',
       'Pagination',
       'Popover',
       'RadioGroup',
