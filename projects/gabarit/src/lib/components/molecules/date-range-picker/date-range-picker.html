@@ -1,0 +1,150 @@
+<div class="gbt-date-range-picker">
+  @if (label()) {
+    <label [for]="id()" class="gbt-date-range-picker__label">{{ label() }}{{ required() ? ' *' : '' }}</label>
+  }
+  <div class="gbt-date-range-picker__field">
+    <button
+      type="button"
+      [id]="id()"
+      class="gbt-date-range-picker__trigger"
+      [class.gbt-date-range-picker__trigger--open]="open()"
+      [disabled]="isDisabled()"
+      aria-haspopup="dialog"
+      [attr.aria-expanded]="open()"
+      [attr.aria-invalid]="errorMessage() ? true : null"
+      [attr.aria-describedby]="errorMessage() ? id() + '-error' : null"
+      (click)="toggleOpen()"
+    >
+      <span
+        class="gbt-date-range-picker__trigger-label"
+        [class.gbt-date-range-picker__trigger-label--placeholder]="!triggerLabel()"
+      >
+        {{ triggerLabel() || placeholder() }}
+      </span>
+    </button>
+    @if (showClear()) {
+      <button
+        type="button"
+        class="gbt-date-range-picker__clear"
+        [attr.aria-label]="clearLabel()"
+        (click)="clear($event)"
+      >
+        <gbt-icon name="x" aria-hidden="true" />
+      </button>
+    } @else {
+      <gbt-icon name="calendar" class="gbt-date-range-picker__icon" aria-hidden="true" />
+    }
+  </div>
+  @if (open() && panelStyle(); as pos) {
+    <div
+      class="gbt-date-range-picker__panel"
+      role="dialog"
+      aria-modal="false"
+      [attr.aria-label]="panelLabel()"
+      [style.top]="pos.top"
+      [style.left]="pos.left"
+    >
+      <div class="gbt-date-range-picker__nav">
+        <button
+          type="button"
+          class="gbt-date-range-picker__nav-button"
+          [attr.aria-label]="previousMonthLabel()"
+          (click)="shiftMonth(-1)"
+        >
+          <gbt-icon name="chevron-left" aria-hidden="true" />
+        </button>
+        <div class="gbt-date-range-picker__headings">
+          @for (view of monthViews(); track view.year + '-' + view.month; let i = $index) {
+            <div class="gbt-date-range-picker__month-heading">
+              @if (i === 0) {
+                <select
+                  #monthSelect
+                  class="gbt-date-range-picker__select"
+                  [attr.aria-label]="monthSelectLabel()"
+                  (change)="onMonthSelect(monthSelect.value)"
+                >
+                  @for (opt of monthOptions(); track opt.value) {
+                    <option [value]="opt.value" [selected]="opt.value === anchorDate().getMonth()">
+                      {{ opt.label }}
+                    </option>
+                  }
+                </select>
+                <select
+                  #yearSelect
+                  class="gbt-date-range-picker__select"
+                  [attr.aria-label]="yearSelectLabel()"
+                  (change)="onYearSelect(yearSelect.value)"
+                >
+                  @for (year of yearOptions(); track year) {
+                    <option [value]="year" [selected]="year === anchorDate().getFullYear()">{{ year }}</option>
+                  }
+                </select>
+              } @else {
+                <span class="gbt-date-range-picker__month-label">{{ view.label }}</span>
+              }
+            </div>
+          }
+        </div>
+        <button
+          type="button"
+          class="gbt-date-range-picker__nav-button"
+          [attr.aria-label]="nextMonthLabel()"
+          (click)="shiftMonth(1)"
+        >
+          <gbt-icon name="chevron-right" aria-hidden="true" />
+        </button>
+      </div>
+      <div class="gbt-date-range-picker__months">
+        @for (view of monthViews(); track view.year + '-' + view.month) {
+          <div class="gbt-date-range-picker__month">
+            <div
+              class="gbt-date-range-picker__grid"
+              role="grid"
+              tabindex="-1"
+              [attr.aria-label]="view.label"
+              (keydown)="onGridKeydown($event)"
+            >
+              <div class="gbt-date-range-picker__row gbt-date-range-picker__row--head" role="row">
+                @for (wd of weekdayLabels(); track $index) {
+                  <span role="columnheader" class="gbt-date-range-picker__weekday">{{ wd }}</span>
+                }
+              </div>
+              @for (week of view.weeks; track $index) {
+                <div class="gbt-date-range-picker__row" role="row">
+                  @for (day of week; track day.date.getTime()) {
+                    @if (day.inCurrentMonth) {
+                      <button
+                        type="button"
+                        role="gridcell"
+                        class="gbt-date-range-picker__day"
+                        [class.gbt-date-range-picker__day--today]="day.isToday"
+                        [class.gbt-date-range-picker__day--start-cap]="isRangeStartCap(day.date)"
+                        [class.gbt-date-range-picker__day--end-cap]="isRangeEndCap(day.date)"
+                        [class.gbt-date-range-picker__day--in-range]="isInRange(day.date)"
+                        [class.gbt-date-range-picker__day--preview]="isPreviewing()"
+                        [attr.data-date]="cellId(day.date)"
+                        [attr.aria-current]="day.isToday ? 'date' : null"
+                        [tabIndex]="isFocused(day.date) ? 0 : -1"
+                        (click)="selectDay(day.date)"
+                        (mouseenter)="onDayMouseEnter(day.date)"
+                        (mouseleave)="onDayMouseLeave()"
+                      >
+                        {{ day.date.getDate() }}
+                      </button>
+                    } @else {
+                      <span role="gridcell" class="gbt-date-range-picker__day gbt-date-range-picker__day--empty"></span>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+      <div class="gbt-sr-only" role="status" aria-live="polite" aria-atomic="true">{{ statusMessage() }}</div>
+    </div>
+  }
+  @if (errorMessage()) {
+    <p [id]="id() + '-error'" class="gbt-date-range-picker__error" role="alert">{{ errorMessage() }}</p>
+  }
+</div>

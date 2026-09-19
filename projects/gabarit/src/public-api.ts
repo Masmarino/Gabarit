@@ -101,6 +101,10 @@ export {
 } from './lib/components/molecules/segmented-control/segmented-control'
 export { DatePicker } from './lib/components/molecules/date-picker/date-picker'
 export {
+  DateRangePicker,
+  type DateRangeValue,
+} from './lib/components/molecules/date-range-picker/date-range-picker'
+export {
   type CalendarDay,
   type WeekStartsOn,
 } from './lib/components/molecules/date-picker/date-picker-calendar'

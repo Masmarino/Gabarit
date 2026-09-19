@@ -15,6 +15,7 @@ describe('public surface', () => {
       'Card',
       'Checkbox',
       'DatePicker',
+      'DateRangePicker',
       'DescriptionList',
       'Divider',
       'Drawer',
