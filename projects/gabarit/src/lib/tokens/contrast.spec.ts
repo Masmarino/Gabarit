@@ -61,6 +61,9 @@ const CASES: [string, 'light' | 'dark', string, number, string][] = [
   ['chart-series-1-base', 'light', LIGHT_BG, 3, '3.3'],
   ['chart-series-2-base', 'light', LIGHT_BG, 3, '3.3'],
   ['chart-series-3-base', 'light', LIGHT_BG, 3, '3.3'],
+  ['chart-series-4-base', 'light', LIGHT_BG, 3, '3.3'],
+  ['chart-series-5-base', 'light', LIGHT_BG, 3, '3.3'],
+  ['chart-series-6-base', 'light', LIGHT_BG, 3, '3.3'],
   ['text-primary', 'light', PANEL_BG_LIGHT, 7, '3.2 (AAA) — app-shell panel background'],
   ['text-secondary', 'light', PANEL_BG_LIGHT, 7, '3.2 (AAA) — app-shell panel background'],
   ['text-primary', 'dark', DARK_BG, 7, '3.2 (AAA)'],
@@ -78,6 +81,9 @@ const CASES: [string, 'light' | 'dark', string, number, string][] = [
   ['chart-series-1-base', 'dark', DARK_BG, 3, '3.3'],
   ['chart-series-2-base', 'dark', DARK_BG, 3, '3.3'],
   ['chart-series-3-base', 'dark', DARK_BG, 3, '3.3'],
+  ['chart-series-4-base', 'dark', DARK_BG, 3, '3.3'],
+  ['chart-series-5-base', 'dark', DARK_BG, 3, '3.3'],
+  ['chart-series-6-base', 'dark', DARK_BG, 3, '3.3'],
   ['text-primary', 'dark', PANEL_BG_DARK, 7, '3.2 (AAA) — app-shell panel background'],
   ['text-secondary', 'dark', PANEL_BG_DARK, 7, '3.2 (AAA) — app-shell panel background'],
 ]
@@ -148,12 +154,19 @@ describe('token contrast', () => {
 })
 
 describe('series palette', () => {
-  const SERIES = ['chart-series-1-base', 'chart-series-2-base', 'chart-series-3-base']
+  const SERIES = [
+    'chart-series-1-base',
+    'chart-series-2-base',
+    'chart-series-3-base',
+    'chart-series-4-base',
+    'chart-series-5-base',
+    'chart-series-6-base',
+  ]
 
   for (const theme of ['light', 'dark'] as const) {
-    it(`the three series are pairwise distinct (${theme})`, () => {
+    it(`the six series are pairwise distinct (${theme})`, () => {
       const hexes = SERIES.map((s) => token(s, theme))
-      expect(new Set(hexes).size).toBe(3)
+      expect(new Set(hexes).size).toBe(SERIES.length)
     })
   }
 
@@ -161,13 +174,8 @@ describe('series palette', () => {
     expect(token('chart-series-1-base', 'light')).not.toBe(token('chart-series-1-base', 'dark'))
   })
 
-  it('declares the four dataviz tokens in the dark block', () => {
-    for (const name of [
-      'chart-series-1-base',
-      'chart-series-2-base',
-      'chart-series-3-base',
-      'chart-grid',
-    ]) {
+  it('declares the seven dataviz tokens in the dark block', () => {
+    for (const name of [...SERIES, 'chart-grid']) {
       expect(DARK_SCOPE, `--${name} absent du mixin sombre`).toContain(`--${name}:`)
     }
   })

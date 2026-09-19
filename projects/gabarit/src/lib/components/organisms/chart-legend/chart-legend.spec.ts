@@ -91,4 +91,94 @@ describe('ChartLegend', () => {
   it('has no violation detected by axe', async () => {
     await expectNoA11yViolations(render().nativeElement)
   })
+
+  it('renders a filled swatch instead of a dashed line when the entry carries a color', () => {
+    const fixture = setup([
+      { label: 'A', color: 'var(--chart-series-1-base)' },
+      { label: 'B', pattern: 'dashed' },
+    ])
+    const swatches = fixture.nativeElement.querySelectorAll('.gbt-chart-legend__item')
+    expect(swatches[0].querySelector('.gbt-chart-legend__line')).toBeNull()
+    const fill = swatches[0].querySelector('.gbt-chart-legend__fill')
+    expect(fill).not.toBeNull()
+    expect(fill.getAttribute('fill')).toBe('var(--chart-series-1-base)')
+    expect(swatches[1].querySelector('.gbt-chart-legend__fill')).toBeNull()
+    expect(swatches[1].querySelector('.gbt-chart-legend__line')).not.toBeNull()
+  })
+
+  describe('interactive mode', () => {
+    @Component({
+      standalone: true,
+      imports: [ChartLegend],
+      template: `
+        <gbt-chart-legend
+          [entries]="entries()"
+          interactive
+          [activeIndex]="activeIndex()"
+          (activeIndexChange)="activeIndex.set($event)"
+        />
+      `,
+    })
+    class InteractiveHost {
+      entries = signal<LegendEntry[]>([{ label: 'A' }, { label: 'B' }])
+      activeIndex = signal<number | null>(null)
+    }
+
+    function renderInteractive() {
+      const fixture = TestBed.createComponent(InteractiveHost)
+      fixture.detectChanges()
+      return fixture
+    }
+
+    it('is not focusable by default (non-interactive)', () => {
+      const item = render().nativeElement.querySelector('.gbt-chart-legend__item')
+      expect(item.getAttribute('tabindex')).toBeNull()
+    })
+
+    it('makes each entry focusable when interactive', () => {
+      const items = renderInteractive().nativeElement.querySelectorAll('.gbt-chart-legend__item')
+      expect([...items].every((i: HTMLElement) => i.getAttribute('tabindex') === '0')).toBe(true)
+    })
+
+    it('emits the hovered index on mouseenter', () => {
+      const fixture = renderInteractive()
+      const item = fixture.nativeElement.querySelectorAll('.gbt-chart-legend__item')[1]
+      item.dispatchEvent(new MouseEvent('mouseenter'))
+      fixture.detectChanges()
+      expect(fixture.componentInstance.activeIndex()).toBe(1)
+    })
+
+    it('emits null on mouseleave when focus did not move into the item', () => {
+      const fixture = renderInteractive()
+      const item = fixture.nativeElement.querySelectorAll('.gbt-chart-legend__item')[1]
+      item.dispatchEvent(new MouseEvent('mouseenter'))
+      item.dispatchEvent(new MouseEvent('mouseleave'))
+      fixture.detectChanges()
+      expect(fixture.componentInstance.activeIndex()).toBeNull()
+    })
+
+    it('emits the focused index on focus and null on blur', () => {
+      const fixture = renderInteractive()
+      const item = fixture.nativeElement.querySelectorAll('.gbt-chart-legend__item')[0]
+      item.dispatchEvent(new FocusEvent('focus'))
+      fixture.detectChanges()
+      expect(fixture.componentInstance.activeIndex()).toBe(0)
+      item.dispatchEvent(new FocusEvent('blur'))
+      fixture.detectChanges()
+      expect(fixture.componentInstance.activeIndex()).toBeNull()
+    })
+
+    it('marks the entry matching activeIndex as active', () => {
+      const fixture = renderInteractive()
+      fixture.componentInstance.activeIndex.set(0)
+      fixture.detectChanges()
+      const items = fixture.nativeElement.querySelectorAll('.gbt-chart-legend__item')
+      expect(items[0].classList.contains('gbt-chart-legend__item--active')).toBe(true)
+      expect(items[1].classList.contains('gbt-chart-legend__item--active')).toBe(false)
+    })
+
+    it('has no violation detected by axe', async () => {
+      await expectNoA11yViolations(renderInteractive().nativeElement)
+    })
+  })
 })

@@ -56,7 +56,7 @@ describe('public surface', () => {
     expect(api.GABARIT_VERSION).toBe('0.7.0')
   })
 
-  it('exports the twelve dataviz primitives', () => {
+  it('exports the thirteen dataviz primitives', () => {
     for (const name of [
       'linearScale',
       'timeScale',
@@ -69,6 +69,7 @@ describe('public surface', () => {
       'formatPercent',
       'linePath',
       'areaPath',
+      'arcPath',
       'nearestIndex',
     ]) {
       expect(api).toHaveProperty(name)
@@ -111,8 +112,8 @@ describe('public surface', () => {
     }
   })
 
-  it('exports the four standalone charts', () => {
-    for (const name of ['Sparkline', 'GaugeBar', 'DimensionCard', 'FunnelChart']) {
+  it('exports the five standalone charts', () => {
+    for (const name of ['Sparkline', 'GaugeBar', 'DimensionCard', 'FunnelChart', 'PieChart']) {
       expect(api).toHaveProperty(name)
     }
   })

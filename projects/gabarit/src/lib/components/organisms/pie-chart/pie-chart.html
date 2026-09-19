@@ -1,0 +1,47 @@
+@if (renderedSlices().length > 0) {
+  <div class="gbt-pie-chart">
+    <svg class="gbt-pie-chart__svg" viewBox="-100 -100 200 200" role="group" [attr.aria-label]="label()">
+      @for (slice of renderedSlices(); track $index) {
+        <path
+          class="gbt-pie-chart__slice"
+          role="img"
+          tabindex="0"
+          [attr.aria-label]="slice.accessibleLabel"
+          [attr.data-active]="$index === activeIndex() ? '' : null"
+          [attr.d]="slice.path"
+          [attr.fill]="slice.color"
+          (mouseenter)="activeIndex.set($index)"
+          (mouseleave)="onMouseLeave($event)"
+          (focus)="activeIndex.set($index)"
+          (blur)="activeIndex.set(null)"
+        />
+      }
+      @for (slice of renderedSlices(); track $index) {
+        @if (slice.showLabel) {
+          <text
+            class="gbt-pie-chart__label"
+            aria-hidden="true"
+            [attr.x]="slice.labelX"
+            [attr.y]="slice.labelY"
+            [attr.text-anchor]="slice.labelAnchor"
+            >{{ slice.formattedShare }}</text
+          >
+        }
+      }
+    </svg>
+    <gbt-chart-legend
+      [entries]="legendEntries()"
+      interactive
+      [activeIndex]="activeIndex()"
+      (activeIndexChange)="activeIndex.set($event)"
+    />
+    <div class="gbt-sr-only" role="status" aria-live="polite" aria-atomic="true">
+      @if (activeSlice(); as slice) {
+        {{ sliceAnnouncement()(slice.label, slice.formattedValue, slice.formattedShare) }}
+      }
+    </div>
+    <gbt-chart-table [caption]="tableCaption()" [columns]="columns()" [rows]="tableRows()" />
+  </div>
+} @else {
+  <gbt-chart-empty [message]="emptyMessage()" />
+}

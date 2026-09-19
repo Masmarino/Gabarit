@@ -28,6 +28,7 @@ export {
 export { Tabs } from './lib/components/molecules/tabs/tabs'
 export { Tab } from './lib/components/molecules/tab/tab'
 export {
+  arcPath,
   areaPath,
   bandScale,
   formatCompact,
@@ -40,6 +41,7 @@ export {
   niceTicks,
   timeScale,
   timeTicks,
+  type Arc,
   type BandScale,
   type Point,
   type Scale,
@@ -71,6 +73,7 @@ export { BarChart } from './lib/components/organisms/bar-chart/bar-chart'
 export { BarSeries } from './lib/components/organisms/bar-chart/bar-series'
 export { TimelineChart } from './lib/components/organisms/timeline-chart/timeline-chart'
 export { TimelineSeries } from './lib/components/organisms/timeline-chart/timeline-series'
+export { PieChart, type PieSlice } from './lib/components/organisms/pie-chart/pie-chart'
 export {
   niceXDomain,
   niceYDomain,

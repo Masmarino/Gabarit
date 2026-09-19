@@ -12,6 +12,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
+    border-radius: var(--site-border-radius-sm);
 
     &:nth-child(3n + 1) .gbt-chart-legend__line {
       stroke: var(--chart-series-1-base);
@@ -21,6 +22,21 @@
     }
     &:nth-child(3n + 3) .gbt-chart-legend__line {
       stroke: var(--chart-series-3-base);
+    }
+
+    &[tabindex] {
+      cursor: default;
+      padding: 0.125rem 0.25rem;
+      margin: -0.125rem -0.25rem;
+    }
+
+    &[tabindex]:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 1px;
+    }
+
+    &--active {
+      background: var(--bg-hover);
     }
   }
 
