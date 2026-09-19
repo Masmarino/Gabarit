@@ -1,0 +1,63 @@
+<div class="gbt-file-upload">
+  @if (label()) {
+    <span class="gbt-file-upload__label" [id]="id() + '-label'">{{ label() }}</span>
+  }
+  <button
+    type="button"
+    class="gbt-file-upload__dropzone"
+    [class.gbt-file-upload__dropzone--drag-over]="dragOver()"
+    [disabled]="isDisabled()"
+    [attr.aria-labelledby]="label() ? id() + '-label' : null"
+    [attr.aria-describedby]="errorMessage() ? id() + '-error' : null"
+    (click)="openPicker()"
+    (dragenter)="onDragEnter($event)"
+    (dragleave)="onDragLeave($event)"
+    (dragover)="onDragOver($event)"
+    (drop)="onDrop($event)"
+  >
+    <gbt-icon name="upload" class="gbt-file-upload__icon" aria-hidden="true" />
+    <span class="gbt-file-upload__hint">{{ dropLabel() }}</span>
+  </button>
+  <input
+    #fileInput
+    type="file"
+    class="gbt-file-upload__input"
+    tabindex="-1"
+    aria-hidden="true"
+    [multiple]="multiple()"
+    [attr.accept]="accept() || null"
+    [disabled]="isDisabled()"
+    (change)="onFilesSelected($event)"
+  />
+  @if (rejections().length > 0) {
+    <div class="gbt-file-upload__rejections" role="alert">
+      <ul>
+        @for (message of rejections(); track message) {
+          <li>{{ message }}</li>
+        }
+      </ul>
+    </div>
+  }
+  @if (files().length > 0) {
+    <ul class="gbt-file-upload__files">
+      @for (file of files(); track file) {
+        <li class="gbt-file-upload__file">
+          <span class="gbt-file-upload__file-name">{{ file.name }}</span>
+          <span class="gbt-file-upload__file-size">{{ formatFileSize(file.size) }}</span>
+          <button
+            type="button"
+            class="gbt-file-upload__file-remove"
+            [disabled]="isDisabled()"
+            [attr.aria-label]="removeLabel()(file.name)"
+            (click)="removeFile(file)"
+          >
+            <gbt-icon name="x" aria-hidden="true" />
+          </button>
+        </li>
+      }
+    </ul>
+  }
+  @if (errorMessage()) {
+    <p [id]="id() + '-error'" class="gbt-file-upload__error" role="alert">{{ errorMessage() }}</p>
+  }
+</div>

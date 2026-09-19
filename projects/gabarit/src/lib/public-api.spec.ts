@@ -19,6 +19,7 @@ describe('public surface', () => {
       'Divider',
       'Drawer',
       'EmptyState',
+      'FileUpload',
       'Icon',
       'IconRegistry',
       'GbtInput',

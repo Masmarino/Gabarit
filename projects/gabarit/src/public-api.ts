@@ -126,6 +126,7 @@ export {
 export { Divider, type DividerOrientation } from './lib/components/atoms/divider/divider'
 export { Spinner, type SpinnerSize } from './lib/components/atoms/spinner/spinner'
 export { Slider } from './lib/components/atoms/slider/slider'
+export { FileUpload } from './lib/components/molecules/file-upload/file-upload'
 export {
   NotificationDot,
   type NotificationDotVariant,

@@ -36,4 +36,10 @@ export const BUILT_IN_ICONS: Record<string, string> = {
 <path d="M16 2v4" />
 <rect width="18" height="18" x="3" y="4" rx="2" />
 <path d="M3 10h18" />`,
+  upload: `<path d="M12 3v12" />
+<path d="m17 8-5-5-5 5" />
+<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />`,
+  folder: `<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />`,
+  file: `<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+<path d="M14 2v4a2 2 0 0 0 2 2h4" />`,
 }
