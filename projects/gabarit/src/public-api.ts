@@ -137,3 +137,4 @@ export {
   NotificationDot,
   type NotificationDotVariant,
 } from './lib/components/atoms/notification-dot/notification-dot'
+export { TagInput } from './lib/components/molecules/tag-input/tag-input'
