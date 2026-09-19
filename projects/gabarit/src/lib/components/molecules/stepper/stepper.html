@@ -1,0 +1,31 @@
+<ol class="gbt-stepper" [attr.data-orientation]="orientation()">
+  @for (step of steps(); track $index) {
+    <li
+      class="gbt-stepper__step"
+      [attr.data-status]="statusOf($index)"
+      [attr.aria-current]="statusOf($index) === 'current' ? 'step' : null"
+    >
+      <span class="gbt-stepper__indicator">
+        @switch (statusOf($index)) {
+          @case ('completed') {
+            <gbt-icon name="check" aria-hidden="true" />
+          }
+          @case ('error') {
+            <gbt-icon name="alert-triangle" aria-hidden="true" />
+          }
+          @default {
+            {{ $index + 1 }}
+          }
+        }
+      </span>
+      <span class="gbt-stepper__label">
+        {{ step.label }}
+        @if (statusOf($index) === 'completed') {
+          <span class="sr-only"> — {{ completedLabel() }}</span>
+        } @else if (statusOf($index) === 'error') {
+          <span class="sr-only"> — {{ errorLabel() }}</span>
+        }
+      </span>
+    </li>
+  }
+</ol>
