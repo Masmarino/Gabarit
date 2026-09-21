@@ -1,15 +1,17 @@
-import { ChangeDetectionStrategy, Component, booleanAttribute, input, output } from '@angular/core'
+import { ChangeDetectionStrategy, Component, TemplateRef, booleanAttribute, input, output } from '@angular/core'
+import { NgTemplateOutlet } from '@angular/common'
 
 export interface TableColumn<T> {
-  key: Extract<keyof T, string>
+  key: string
   label: string
-
   format?: (row: T) => string
+  cellTemplate?: TemplateRef<{ $implicit: T }>
 }
 
 @Component({
   selector: 'gbt-table',
   standalone: true,
+  imports: [NgTemplateOutlet],
   templateUrl: './table.html',
   styleUrl: './table.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,6 +39,6 @@ export class Table<T extends object> {
   }
 
   protected cellValue(row: T, column: TableColumn<T>): unknown {
-    return column.format ? column.format(row) : row[column.key]
+    return column.format ? column.format(row) : (row as Record<string, unknown>)[column.key]
   }
 }

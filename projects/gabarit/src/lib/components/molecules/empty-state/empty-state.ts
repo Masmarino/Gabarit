@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core'
 
-export type EmptyStateIllustration = 'folder' | 'star' | 'checklist' | 'merge' | 'pipeline' | 'tag' | 'book'
+export type EmptyStateIllustration = 'folder' | 'star' | 'checklist' | 'merge' | 'pipeline' | 'tag' | 'book' | 'server'
 
 @Component({
   selector: 'gbt-empty-state',

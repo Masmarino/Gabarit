@@ -59,6 +59,13 @@ export const Book: Story = {
   }),
 }
 
+export const Server: Story = {
+  render: () => ({
+    template: `<gbt-empty-state illustration="server" heading="Aucun runner enregistré"></gbt-empty-state>`,
+    moduleMetadata: { imports: [EmptyState] },
+  }),
+}
+
 export const Dark: Story = {
   render: () => ({
     template: `<gbt-empty-state illustration="folder" heading="Aucun dépôt pour l'instant" message="Créez votre premier dépôt pour commencer."><button type="button">Nouveau dépôt</button></gbt-empty-state>`,

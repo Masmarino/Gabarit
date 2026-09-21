@@ -1,10 +1,36 @@
+import { Component, TemplateRef, viewChild } from '@angular/core'
 import { TestBed } from '@angular/core/testing'
 import { expectNoA11yViolations } from '../../../../testing/expect-no-a11y-violations'
-import { Table } from './table'
+import { Table, TableColumn } from './table'
 
 interface Row {
   id: string
   name: string
+}
+
+@Component({
+  standalone: true,
+  imports: [Table],
+  template: `
+    <ng-template #actionsCell let-row>
+      <button type="button" class="row-action" [attr.data-row-id]="row.id">Supprimer {{ row.name }}</button>
+    </ng-template>
+    <gbt-table caption="Utilisateurs" [data]="data" [columns]="columns()" />
+  `,
+})
+class HostWithTemplateColumn {
+  private readonly actionsCell = viewChild.required<TemplateRef<{ $implicit: Row }>>('actionsCell')
+  data: Row[] = [
+    { id: '1', name: 'Alice' },
+    { id: '2', name: 'Bob' },
+  ]
+
+  columns(): TableColumn<Row>[] {
+    return [
+      { key: 'name', label: 'Nom' },
+      { key: 'actions', label: 'Actions', cellTemplate: this.actionsCell() },
+    ]
+  }
 }
 
 describe('Table', () => {
@@ -174,6 +200,33 @@ describe('Table', () => {
     fixture.componentRef.setInput('columns', [{ key: 'name', label: 'Nom' }])
     fixture.componentRef.setInput('caption', 'Dépôts')
     fixture.componentRef.setInput('clickableRows', true)
+    fixture.detectChanges()
+    await expectNoA11yViolations(fixture.nativeElement)
+  })
+
+  it('renders a cellTemplate column with the row projected as its context, once per row', () => {
+    const fixture = TestBed.createComponent(HostWithTemplateColumn)
+    fixture.detectChanges()
+
+    const buttons: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.row-action'))
+    expect(buttons.length).toBe(2)
+    expect(buttons[0].dataset['rowId']).toBe('1')
+    expect(buttons[0].textContent?.trim()).toBe('Supprimer Alice')
+    expect(buttons[1].dataset['rowId']).toBe('2')
+    expect(buttons[1].textContent?.trim()).toBe('Supprimer Bob')
+  })
+
+  it('still renders a plain-text column normally alongside a cellTemplate column', () => {
+    const fixture = TestBed.createComponent(HostWithTemplateColumn)
+    fixture.detectChanges()
+
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr')
+    expect(rows[0].textContent).toContain('Alice')
+    expect(rows[1].textContent).toContain('Bob')
+  })
+
+  it('presents no accessibility violation with a cellTemplate column', async () => {
+    const fixture = TestBed.createComponent(HostWithTemplateColumn)
     fixture.detectChanges()
     await expectNoA11yViolations(fixture.nativeElement)
   })

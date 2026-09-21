@@ -28,7 +28,7 @@ function setupState() {
   return fixture
 }
 
-const ALL_ILLUSTRATIONS: EmptyStateIllustration[] = ['folder', 'star', 'checklist', 'merge', 'pipeline', 'tag', 'book']
+const ALL_ILLUSTRATIONS: EmptyStateIllustration[] = ['folder', 'star', 'checklist', 'merge', 'pipeline', 'tag', 'book', 'server']
 
 describe('EmptyState', () => {
   it('renders the heading and message', () => {

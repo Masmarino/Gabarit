@@ -36,6 +36,17 @@ depend on. Tested (`never sets role="button" on a row…`,
 empty-state message" and "shows an English default empty-state
 message".
 
+## `cellTemplate` — delegated content
+
+A column's `cellTemplate` projects arbitrary consumer-authored content
+into a `<td>` (see README) — its accessibility is the consumer's
+responsibility, the same delegation already applied to 5.5 above.
+Combining `cellTemplate`'s own interactive content with `clickableRows`
+on the same table is documented as unsupported (a click on the
+projected element would bubble up and also fire `rowClick`) rather
+than guarded against by the component — a known limitation, not a
+defect, in the same spirit as 5.6's "no row header" note.
+
 ## Cursor and hover scoped to interactive rows
 
 `cursor: pointer` and the hover `background: var(--bg-hover)` in

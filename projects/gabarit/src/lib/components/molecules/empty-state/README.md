@@ -11,7 +11,7 @@ here yet" from a plain "no results" text message.
 
 | Input          | Type                    | Default | Role                                                              |
 | -------------- | ----------------------- | ------- | ------------------------------------------------------------------ |
-| `illustration` | `EmptyStateIllustration`| —       | Required. One of `'folder' \| 'star' \| 'checklist' \| 'merge' \| 'pipeline' \| 'tag' \| 'book'`. |
+| `illustration` | `EmptyStateIllustration`| —       | Required. One of `'folder' \| 'star' \| 'checklist' \| 'merge' \| 'pipeline' \| 'tag' \| 'book' \| 'server'`. |
 | `heading`      | `string`                | —       | Required. The primary message.                                    |
 | `message`      | `string`                | `''`    | Optional secondary text, e.g. a hint or call to action description.|
 
@@ -32,7 +32,8 @@ An optional action (typically a `<gbt-button>`) is projected via
 
 Each illustration is a fixed, curated piece of art shipped by Gabarit —
 not an extensible registry like `gbt-icon`'s. Pick whichever of the
-seven best matches the empty collection: `folder` for
+eight best matches the empty collection: `folder` for
 repositories/groups, `star` for a starred/favorites list, `checklist`
 for issues, `merge` for merge/pull requests, `pipeline` for CI
-pipelines, `tag` for releases, `book` for a wiki.
+pipelines, `tag` for releases, `book` for a wiki, `server` for
+infrastructure (e.g. CI runners).
