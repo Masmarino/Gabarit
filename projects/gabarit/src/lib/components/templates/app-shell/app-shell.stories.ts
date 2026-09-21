@@ -38,6 +38,7 @@ const labels = `
   closeMenuLabel="Fermer la navigation"
   collapseLabel="Réduire la navigation"
   expandLabel="Agrandir la navigation"
+  versionLabel="0.1.0"
 `
 
 const brand = `<a shell-brand href="#" style="font-weight:600;text-decoration:none;color:var(--text-primary)">Hangar</a>`

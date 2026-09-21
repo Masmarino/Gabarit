@@ -28,6 +28,7 @@ export class AppShell {
   closeMenuLabel = input.required<string>()
   collapseLabel = input<string>('')
   expandLabel = input<string>('')
+  versionLabel = input<string | null>(null)
   collapsed = input<boolean>(false)
   collapsible = input<boolean>(true)
   collapsedChange = output<boolean>()
