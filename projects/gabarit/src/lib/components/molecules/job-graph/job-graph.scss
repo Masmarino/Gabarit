@@ -1,0 +1,148 @@
+.gbt-job-graph {
+  position: relative;
+  overflow-x: auto;
+}
+
+.gbt-job-graph__stages {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 4rem;
+  margin: 0;
+  padding: 0.5rem;
+  list-style: none;
+}
+
+.gbt-job-graph__stage-name {
+  margin: 0 0 0.75rem;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.gbt-job-graph__jobs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gbt-job-graph__node {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 13rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-principal);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  &[aria-current='true'] {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 30%, transparent);
+  }
+}
+
+.gbt-job-graph__glyph {
+  display: inline-flex;
+  flex-shrink: 0;
+
+  .gbt-job-graph__node[data-status='success'] & {
+    color: var(--color-success-text);
+  }
+
+  .gbt-job-graph__node[data-status='failed'] & {
+    color: var(--color-error-text);
+  }
+
+  .gbt-job-graph__node[data-status='canceled'] & {
+    color: var(--text-secondary);
+  }
+}
+
+.gbt-job-graph__dot {
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+
+  .gbt-job-graph__node[data-status='running'] & {
+    border-color: var(--primary);
+    border-top-color: transparent;
+    animation: gbt-job-graph-spin 0.9s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gbt-job-graph__node[data-status='running'] & {
+      animation: none;
+      border-top-color: var(--primary);
+      background: var(--primary);
+    }
+  }
+}
+
+@keyframes gbt-job-graph-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.gbt-job-graph__name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.gbt-job-graph__duration {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.gbt-job-graph__links {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+
+  path {
+    fill: none;
+    stroke: var(--border-color);
+    stroke-width: 2;
+  }
+
+  path[data-done] {
+    stroke: var(--color-success-base);
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

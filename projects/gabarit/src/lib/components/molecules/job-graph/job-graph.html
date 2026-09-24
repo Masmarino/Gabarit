@@ -1,0 +1,52 @@
+<div class="gbt-job-graph" #graph>
+  <ol class="gbt-job-graph__stages" [attr.aria-label]="ariaLabel()">
+    @for (stage of stages(); track stage.name) {
+      <li class="gbt-job-graph__stage">
+        <h3 class="gbt-job-graph__stage-name">{{ stage.name }}</h3>
+        <ul class="gbt-job-graph__jobs">
+          @for (job of stage.jobs; track job.id) {
+            <li>
+              <button
+                type="button"
+                class="gbt-job-graph__node"
+                [attr.data-job-name]="job.name"
+                [attr.data-status]="job.status"
+                [attr.aria-current]="job.id === selectedJobId() ? 'true' : null"
+                (click)="jobSelected.emit(job.id)"
+              >
+                <span class="gbt-job-graph__glyph" data-glyph aria-hidden="true">
+                  @switch (job.status) {
+                    @case ('success') {
+                      <gbt-icon name="check-circle" />
+                    }
+                    @case ('failed') {
+                      <gbt-icon name="alert-circle" />
+                    }
+                    @case ('canceled') {
+                      <gbt-icon name="x" />
+                    }
+                    @default {
+                      <span class="gbt-job-graph__dot"></span>
+                    }
+                  }
+                </span>
+                <span class="gbt-job-graph__name">{{ job.name }}</span>
+                @if (job.durationLabel) {
+                  <span class="gbt-job-graph__duration">{{ job.durationLabel }}</span>
+                }
+                <span class="sr-only">
+                  — {{ statusLabels()[job.status] }}@if (job.needs.length > 0) {. {{ needsLabel() }}: {{ job.needs.join(', ') }}}
+                </span>
+              </button>
+            </li>
+          }
+        </ul>
+      </li>
+    }
+  </ol>
+  <svg class="gbt-job-graph__links" aria-hidden="true" focusable="false">
+    @for (link of links(); track link.key) {
+      <path [attr.d]="link.d" [attr.data-done]="link.done ? '' : null" />
+    }
+  </svg>
+</div>
