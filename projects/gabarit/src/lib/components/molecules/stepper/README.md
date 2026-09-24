@@ -17,6 +17,9 @@ never navigates anywhere.
 | `orientation`    | `'horizontal' \| 'vertical'`       | `'horizontal'`     | —                                                                    |
 | `completedLabel` | `string`                          | `'Completed'`      | Visually-hidden suffix announced for a completed step.              |
 | `errorLabel`     | `string`                          | `'Error'`           | Visually-hidden suffix announced for a step with `hasError`.        |
+| `interactive`    | `boolean`                         | `false`             | Renders each step as a native button that sets `selectedIndex`.     |
+| `selectedIndex`  | `number \| null` (model)          | `null`              | The step being viewed (interactive mode only); distinct from `activeIndex`. |
+| `selectedLabel`  | `string`                          | `'Selected'`        | Visually-hidden suffix announced for the selected step.             |
 
 ## Example
 
@@ -27,14 +30,29 @@ never navigates anywhere.
 />
 ```
 
+## Interactive mode
+
+With `interactive`, every step becomes a real `<button type="button">`
+inside its `<li>`. Clicking one only sets `selectedIndex` — the step
+being *viewed* — while `activeIndex` stays the progress (and keeps
+`aria-current="step"`). The consumer decides what a selection does:
+
+```html
+<gbt-stepper
+  [steps]="steps"
+  [activeIndex]="progress()"
+  [interactive]="true"
+  [(selectedIndex)]="viewed"
+/>
+```
+
 ## Behavior
 
-- Purely informational: no click handler on a step, no keyboard
-  navigation of its own — this component only ever *reflects*
-  `activeIndex`, it never changes it. If steps should be clickable to
-  jump back, the application wires that itself (e.g. a button around
-  each step, or `(click)` on the consumer's own template), rather than
-  this component assuming every use case wants that.
+- Informational by default: without `interactive`, no click handler on
+  a step and no keyboard navigation of its own — this component only
+  ever *reflects* `activeIndex`, it never changes it. With
+  `interactive`, a click only sets `selectedIndex`; `activeIndex` is
+  never modified by this component.
 - A step's status is derived purely from its position relative to
   `activeIndex` (`completed` before it, `current` at it, `upcoming`
   after it) and its own `hasError` — a step marked `hasError` only

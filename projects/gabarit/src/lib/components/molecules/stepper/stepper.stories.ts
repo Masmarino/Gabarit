@@ -59,3 +59,17 @@ export const Dark: Story = {
   },
   decorators: [darkTheme],
 }
+
+export const Interactive: Story = {
+  args: {
+    steps: [{ label: 'build' }, { label: 'test', hasError: true }, { label: 'deploy' }],
+    activeIndex: 1,
+    interactive: true,
+    selectedIndex: 0,
+  },
+}
+
+export const InteractiveDark: Story = {
+  args: { ...Interactive.args },
+  decorators: [darkTheme],
+}
