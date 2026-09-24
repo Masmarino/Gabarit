@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing'
 import { JobGraph } from './job-graph'
+import { linkPath } from './job-graph-layout'
 import type { JobGraphStage } from './job-graph.types'
 import { expectNoA11yViolations } from '../../../../testing/expect-no-a11y-violations'
 
@@ -84,6 +85,32 @@ describe('JobGraph', () => {
     const svg = fixture.nativeElement.querySelector('svg.gbt-job-graph__links')
     expect(svg.getAttribute('aria-hidden')).toBe('true')
     expect(svg.querySelectorAll('path').length).toBe(4)
+  })
+
+  it('offsets link coordinates by the root scroll position', () => {
+    const fixture = setup()
+    const root: HTMLElement = fixture.nativeElement.querySelector('.gbt-job-graph')
+    Object.defineProperty(root, 'scrollLeft', { value: 30, configurable: true })
+    Object.defineProperty(root, 'scrollTop', { value: 7, configurable: true })
+    const rects: Record<string, [number, number]> = { hello: [110, 60], 'app-health': [400, 60] }
+    const rect = (left: number, top: number, width: number, height: number) =>
+      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this === root) return rect(100, 50, 800, 300)
+      const [left, top] = rects[this.dataset['jobName'] ?? ''] ?? [0, 0]
+      return rect(left, top, 200, 40)
+    })
+    fixture.componentRef.setInput('stages', [...STAGES])
+    fixture.detectChanges()
+    const expected = linkPath(
+      { left: 10 + 30, top: 10 + 7, width: 200, height: 40 },
+      { left: 300 + 30, top: 10 + 7, width: 200, height: 40 },
+    )
+    const first = fixture.nativeElement.querySelector('svg.gbt-job-graph__links path')
+    vi.restoreAllMocks()
+    expect(first.getAttribute('d')).toBe(expected)
   })
 
   it('has no accessibility violations', async () => {

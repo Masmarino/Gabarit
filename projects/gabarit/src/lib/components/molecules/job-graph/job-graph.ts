@@ -78,8 +78,8 @@ export class JobGraph {
     root.querySelectorAll<HTMLElement>('[data-job-name]').forEach((node) => {
       const rect = node.getBoundingClientRect()
       boxes.set(node.dataset['jobName'] ?? '', {
-        left: rect.left - origin.left,
-        top: rect.top - origin.top,
+        left: rect.left - origin.left + root.scrollLeft,
+        top: rect.top - origin.top + root.scrollTop,
         width: rect.width,
         height: rect.height,
       })
