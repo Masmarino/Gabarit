@@ -139,6 +139,12 @@ export {
   type StepperStatus,
   type StepperStep,
 } from './lib/components/molecules/stepper/stepper'
+export { JobGraph } from './lib/components/molecules/job-graph/job-graph'
+export type {
+  JobGraphJob,
+  JobGraphStage,
+  JobGraphStatus,
+} from './lib/components/molecules/job-graph/job-graph.types'
 export { FileUpload } from './lib/components/molecules/file-upload/file-upload'
 export {
   NotificationDot,
