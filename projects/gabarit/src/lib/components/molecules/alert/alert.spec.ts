@@ -325,4 +325,19 @@ describe('Alert — stylesheet', () => {
     expect(withHas.length).toBe(1)
     expect(withHas[0]).not.toContain(',')
   })
+
+  it('gives a projected [alert-actions] button a 44px touch target on a coarse pointer', () => {
+    const scss = readFileSync(
+      join(process.cwd(), 'projects/gabarit/src/lib/components/molecules/alert/alert.scss'),
+      'utf8',
+    )
+      .replace(/\/\/.*$/gm, '')
+      .replace(/\s+/g, ' ')
+    const coarseIndex = scss.indexOf('@media (pointer: coarse)')
+    const ruleIndex = scss.indexOf(
+      '.gbt-alert__actions ::ng-deep .gbt-button { min-height: 44px; }',
+    )
+    expect(coarseIndex).toBeGreaterThan(-1)
+    expect(ruleIndex).toBeGreaterThan(coarseIndex)
+  })
 })

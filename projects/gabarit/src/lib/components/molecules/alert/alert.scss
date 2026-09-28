@@ -193,4 +193,8 @@
     margin-block: calc((var(--gbt-alert-icon) - var(--gbt-alert-close)) / 2);
     margin-inline-end: -0.5rem;
   }
+
+  .gbt-alert__actions ::ng-deep .gbt-button {
+    min-height: 44px;
+  }
 }
