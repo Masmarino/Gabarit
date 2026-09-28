@@ -66,9 +66,9 @@ describe('AvatarGroup', () => {
     fixture.detectChanges()
 
     expect(panel(fixture)).not.toBeNull()
-    const names = [...fixture.nativeElement.querySelectorAll('.gbt-avatar-group__panel-item-name')].map(
-      (el: HTMLElement) => el.textContent?.trim(),
-    )
+    const names = [
+      ...fixture.nativeElement.querySelectorAll('.gbt-avatar-group__panel-item-name'),
+    ].map((el: HTMLElement) => el.textContent?.trim())
     expect(names).toEqual(['Dorothy Vaughan', 'Mary Jackson'])
   })
 
@@ -92,7 +92,9 @@ describe('AvatarGroup', () => {
     fixture.detectChanges()
     expect(panel(fixture)).not.toBeNull()
 
-    fixture.nativeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    fixture.nativeElement.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    )
     fixture.detectChanges()
 
     expect(panel(fixture)).toBeNull()
@@ -124,7 +126,9 @@ describe('AvatarGroup', () => {
     fixture.componentRef.setInput('moreLabel', (count: number) => `${count} de plus`)
     fixture.detectChanges()
 
-    expect(fixture.nativeElement.querySelector('ul').getAttribute('aria-label')).toBe('Utilisateurs')
+    expect(fixture.nativeElement.querySelector('ul').getAttribute('aria-label')).toBe(
+      'Utilisateurs',
+    )
     expect(moreButton(fixture)?.getAttribute('aria-label')).toBe('2 de plus')
   })
 

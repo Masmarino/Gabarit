@@ -11,7 +11,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core'
-import { Icon } from '../../atoms/icon/icon'
+import { JobStatus } from '../../atoms/job-status/job-status'
 import { graphEdges, linkPath } from './job-graph-layout'
 import type { JobGraphStage, JobGraphStatus } from './job-graph.types'
 
@@ -34,7 +34,7 @@ const DEFAULT_STATUS_LABELS: Record<JobGraphStatus, string> = {
 @Component({
   selector: 'gbt-job-graph',
   standalone: true,
-  imports: [Icon],
+  imports: [JobStatus],
   templateUrl: './job-graph.html',
   styleUrl: './job-graph.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

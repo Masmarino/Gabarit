@@ -45,3 +45,8 @@ it never filters or sorts anything itself, and takes no `data` input.
 The consumer owns the actual filtering/sorting, typically as a
 `computed()` over its own data driven by these three signals — the
 same pattern used throughout consuming apps for local list filtering.
+
+To avoid re-declaring the three signals and the filter/sort on every page,
+use `createListToolbarState()` (see "List toolbar state" in the root README):
+it exposes `search`, `sortValue`, `direction` and `sortOptions` ready to bind to
+this component, plus `apply()` / `filtered()`.

@@ -1,0 +1,22 @@
+.gbt-menu-item__icon {
+  flex-shrink: 0;
+}
+
+:host([data-variant='danger']) {
+  color: var(--color-error-text);
+}
+
+:host([data-variant='danger']:hover),
+:host([data-variant='danger']:focus-visible) {
+  background: var(--color-error-bg);
+  color: var(--color-error-bg-text);
+}
+
+:host([aria-disabled='true']) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+:host([aria-disabled='true']:hover) {
+  background: transparent;
+}

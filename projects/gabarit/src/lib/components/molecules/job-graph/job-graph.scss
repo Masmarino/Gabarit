@@ -63,46 +63,6 @@
 .gbt-job-graph__glyph {
   display: inline-flex;
   flex-shrink: 0;
-
-  .gbt-job-graph__node[data-status='success'] & {
-    color: var(--color-success-text);
-  }
-
-  .gbt-job-graph__node[data-status='failed'] & {
-    color: var(--color-error-text);
-  }
-
-  .gbt-job-graph__node[data-status='canceled'] & {
-    color: var(--text-secondary);
-  }
-}
-
-.gbt-job-graph__dot {
-  box-sizing: border-box;
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--border-color);
-  border-radius: 50%;
-
-  .gbt-job-graph__node[data-status='running'] & {
-    border-color: var(--primary);
-    border-top-color: transparent;
-    animation: gbt-job-graph-spin 0.9s linear infinite;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .gbt-job-graph__node[data-status='running'] & {
-      animation: none;
-      border-top-color: var(--primary);
-      background: var(--primary);
-    }
-  }
-}
-
-@keyframes gbt-job-graph-spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .gbt-job-graph__name {

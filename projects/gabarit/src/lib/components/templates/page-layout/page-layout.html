@@ -1,0 +1,9 @@
+<div class="gbt-page-layout">
+  <nav class="gbt-page-layout__nav" [attr.aria-label]="navLabel()">
+    <ng-content select="[page-nav]" />
+  </nav>
+  <div class="gbt-page-layout__main"><ng-content /></div>
+  <aside class="gbt-page-layout__aside" [attr.aria-label]="asideLabel()">
+    <ng-content select="[page-aside]" />
+  </aside>
+</div>

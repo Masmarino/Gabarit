@@ -28,7 +28,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   width: 260px;
-  height: 40px;
+  height: var(--gbt-control-height-md);
   padding: 0 34px 0 10px;
   background: var(--bg-principal);
   border: 1px solid var(--border-color);
@@ -275,11 +275,6 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
 
   &--start-cap::before {
     background: var(--primary);
-    // Redundant on a contentless pseudo-element — declared only so the
-    // token-usage checker pairs this `--primary` fill with the already-
-    // audited `--text-on-primary`, not the `--text-primary` it would
-    // otherwise inherit (textually, via SCSS nesting) from the day cell's
-    // own base rule.
     color: var(--text-on-primary);
     border-radius: 50% 0 0 50%;
   }

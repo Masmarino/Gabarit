@@ -19,7 +19,11 @@ function range(start: number, end: number): number[] {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i)
 }
 
-export function paginationRange(page: number, pageCount: number, siblingCount: number): PaginationItem[] {
+export function paginationRange(
+  page: number,
+  pageCount: number,
+  siblingCount: number,
+): PaginationItem[] {
   const totalPageNumbers = siblingCount + 5
 
   if (totalPageNumbers >= pageCount) {
@@ -30,8 +34,6 @@ export function paginationRange(page: number, pageCount: number, siblingCount: n
   const rightSiblingIndex = Math.min(page + siblingCount, pageCount)
 
   const shouldShowLeftDots = leftSiblingIndex > 2
-  // -2, not -1: a lone skipped page right before the last one isn't worth an
-  // ellipsis — showing that page costs no more room than the "…" would.
   const shouldShowRightDots = rightSiblingIndex < pageCount - 2
 
   if (!shouldShowLeftDots && shouldShowRightDots) {
@@ -117,10 +119,6 @@ export class Pagination {
       this.pageChange.emit(1)
     })
 
-    // Self-heals a stale `page` — e.g. a filter shrinks `totalItems` while
-    // the app was sitting on a now out-of-range page — instead of leaving
-    // the pager stuck with no page marked current and a live "previous"
-    // button pointing at a page that no longer exists.
     effect(() => {
       const count = this.pageCount()
       const current = this.page()

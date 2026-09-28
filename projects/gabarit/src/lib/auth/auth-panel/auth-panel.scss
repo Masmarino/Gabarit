@@ -1,0 +1,154 @@
+$radius: 12px;
+
+:host {
+  display: block;
+}
+
+.gbt-auth-panel {
+  display: flex;
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100dvh;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(2rem, 18vh, 10rem) 1rem 2rem;
+  background:
+    radial-gradient(
+      ellipse 80% 55% at 50% 0%,
+      color-mix(in srgb, var(--primary) 8%, transparent),
+      transparent 70%
+    ),
+    var(--bg-panel);
+}
+
+.gbt-auth-panel__panel {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 25rem;
+  padding: 2rem 2rem 2.25rem;
+  border: 1px solid var(--gbt-card-border);
+  border-radius: $radius;
+  background: var(--bg-principal);
+  box-shadow: var(--site-shadow-md);
+}
+
+.gbt-auth-panel__panel--wide {
+  max-width: 30rem;
+}
+
+.gbt-auth-panel__logo {
+  display: flex;
+  justify-content: center;
+  margin: var(--gbt-auth-panel-logo-offset, 0) 0 1.25rem;
+
+  &:empty {
+    display: none;
+  }
+
+  ::ng-deep img,
+  ::ng-deep svg {
+    display: block;
+    width: var(--gbt-auth-panel-logo-width, 15rem);
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+:host ::ng-deep {
+  .gbt-auth-panel__heading {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: center;
+    text-wrap: balance;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .gbt-auth-panel__heading--alone {
+    margin-bottom: 1.5rem;
+  }
+
+  .gbt-auth-panel__intro {
+    margin: 0.25rem 0 1.5rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .gbt-auth-panel__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .gbt-auth-panel__submit {
+    margin-top: 0.5rem;
+  }
+
+  .gbt-auth-panel__status {
+    .gbt-empty-state {
+      padding: 0;
+    }
+
+    .gbt-empty-state__heading {
+      font-size: 1.25rem;
+      line-height: 1.4;
+      text-wrap: balance;
+    }
+
+    .gbt-empty-state__message {
+      max-width: none;
+      text-wrap: balance;
+    }
+
+    .gbt-empty-state__action {
+      align-self: stretch;
+      margin-top: 0.75rem;
+    }
+  }
+
+  .gbt-auth-panel__status--success .gbt-empty-state__icon {
+    background: var(--color-success-bg);
+    color: var(--color-success-text);
+  }
+
+  .gbt-auth-panel__links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0 1.25rem;
+    margin-top: -0.5rem;
+  }
+
+  .gbt-auth-panel__links .gbt-button.gbt-button--link {
+    min-height: 2.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .gbt-auth-panel {
+    padding-top: 3rem;
+  }
+
+  .gbt-auth-panel__panel {
+    padding: 1.5rem 1.25rem 1.75rem;
+  }
+
+  :host ::ng-deep .gbt-input .gbt-input__wrapper input {
+    min-height: 2.75rem;
+    font-size: 1rem;
+  }
+
+  :host ::ng-deep .gbt-input__toggle::before {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}

@@ -54,6 +54,9 @@ export class FileUpload implements ControlValueAccessor {
   oversizeMessage = input<(name: string, maxSizeMb: number) => string>(
     (name, maxSizeMb) => `${name} exceeds ${maxSizeMb} MB and was not added.`,
   )
+  extraFileMessage = input<(name: string) => string>(
+    (name) => `${name} was not added — only one file is allowed.`,
+  )
 
   protected readonly files = signal<File[]>([])
   protected readonly rejections = signal<string[]>([])
@@ -145,6 +148,10 @@ export class FileUpload implements ControlValueAccessor {
       } else {
         accepted.push(file)
       }
+    }
+    const extra = this.multiple() ? [] : accepted.slice(1)
+    for (const file of extra) {
+      rejected.push(this.extraFileMessage()(file.name))
     }
     this.rejections.set(rejected)
     if (accepted.length === 0) {

@@ -82,7 +82,10 @@
                 (mouseenter)="activeIndex.set(i)"
               >
                 @if (itemTemplate(); as template) {
-                  <ng-container [ngTemplateOutlet]="template" [ngTemplateOutletContext]="{ $implicit: item }" />
+                  <ng-container
+                    [ngTemplateOutlet]="template"
+                    [ngTemplateOutletContext]="{ $implicit: item }"
+                  />
                 } @else {
                   <span class="gbt-autocomplete__option-label">{{ displayFn()(item) }}</span>
                 }

@@ -56,7 +56,10 @@ export const Dense: Story = {
   },
 }
 
-const ALL_PACKAGES = Array.from({ length: 50 }, (_, i) => ({ name: `paquet-${i}`, size: `${i} ko` }))
+const ALL_PACKAGES = Array.from({ length: 50 }, (_, i) => ({
+  name: `paquet-${i}`,
+  size: `${i} ko`,
+}))
 const PAGE_SIZE = 10
 
 @Component({

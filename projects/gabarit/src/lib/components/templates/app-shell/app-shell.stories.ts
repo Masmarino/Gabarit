@@ -47,7 +47,7 @@ const brand = `<a shell-brand href="#" style="font-weight:600;text-decoration:no
 // `(collapsedChange)` — it reuses that same state here to hide the brand
 // label itself instead of relying on AppShell for anything extra.
 const collapsedBrand = `
-  <a shell-brand href="#" style="font-weight:600;text-decoration:none;color:var(--text-primary)">
+  <a shell-brand href="#" aria-label="Hangar" style="font-weight:600;text-decoration:none;color:var(--text-primary)">
     <gbt-icon name="info" />
     @if (!collapsed) {
       <span>Hangar</span>
@@ -80,7 +80,7 @@ const account = `
 
 const searchAndAccount = `
   <div shell-header style="margin-left:auto">
-    <gbt-search-bar
+    <gbt-search-bar collapsible="narrow"
       [groupedResults]="categories" [displayFn]="displayFn"
       ariaLabel="Rechercher un dépôt" placeholder="Rechercher…" />
   </div>

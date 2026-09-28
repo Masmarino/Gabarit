@@ -1,0 +1,27 @@
+<div
+  class="gbt-skeleton-list"
+  [attr.data-divided]="divided() ? '' : null"
+  [attr.data-padded]="padded() ? '' : null"
+>
+  <span class="sr-only" role="status">{{ loadingLabel() }}</span>
+  <div aria-hidden="true">
+    @for (item of items(); track item.row) {
+      <div class="gbt-skeleton-list__row">
+        @if (leading() !== 'none') {
+          <gbt-skeleton
+            class="gbt-skeleton-list__leading"
+            [variant]="leading() === 'circle' ? 'circle' : 'rect'"
+            [attr.data-leading]="leading()"
+            [width]="leadingSize()"
+            [height]="leadingSize()"
+          />
+        }
+        <div class="gbt-skeleton-list__lines">
+          @for (width of item.widths; track $index) {
+            <gbt-skeleton [width]="width" [height]="$index === 0 ? '0.875rem' : '0.625rem'" />
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

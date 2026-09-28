@@ -65,7 +65,9 @@ describe('ListToolbar', () => {
     const trigger: HTMLButtonElement = fixture.nativeElement.querySelector('.gbt-select__trigger')
     trigger.click()
     fixture.detectChanges()
-    const options: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.gbt-select__option'))
+    const options: HTMLButtonElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.gbt-select__option'),
+    )
     const dateOption = options.find((o) => o.textContent?.trim() === 'Date')
     dateOption!.click()
     fixture.detectChanges()
@@ -77,7 +79,9 @@ describe('ListToolbar', () => {
     const trigger: HTMLButtonElement = fixture.nativeElement.querySelector('.gbt-select__trigger')
     trigger.click()
     fixture.detectChanges()
-    const options: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.gbt-select__option'))
+    const options: HTMLButtonElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.gbt-select__option'),
+    )
     const nameOption = options.find((o) => o.textContent?.trim() === 'Nom')
     nameOption!.click()
     fixture.detectChanges()
@@ -92,7 +96,9 @@ describe('ListToolbar', () => {
 
   it('emits sortDirectionChange with the flipped direction when the direction button is clicked', () => {
     const fixture = setup()
-    const button: HTMLButtonElement = fixture.nativeElement.querySelector('.gbt-list-toolbar__direction')
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '.gbt-list-toolbar__direction',
+    )
     button.click()
     fixture.detectChanges()
     expect(fixture.componentInstance.direction).toBe('desc')

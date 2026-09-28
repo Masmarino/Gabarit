@@ -3,7 +3,6 @@ import {
   Component,
   ElementRef,
   Injector,
-  afterNextRender,
   booleanAttribute,
   computed,
   forwardRef,
@@ -13,17 +12,8 @@ import {
 } from '@angular/core'
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { Icon } from '../../atoms/icon/icon'
-import {
-  CalendarDay,
-  WeekStartsOn,
-  addMonths,
-  addYears,
-  buildCalendarGrid,
-  endOfWeek,
-  isSameDay,
-  startOfWeek,
-  weekdayLabels,
-} from '../date-picker/date-picker-calendar'
+import { CalendarPanel, type CalendarPanelView } from '../date-picker/calendar-panel'
+import { WeekStartsOn, isSameDay } from '../date-picker/date-picker-calendar'
 
 export type DateRangeVisibleMonths = 1 | 2
 
@@ -32,12 +22,7 @@ export interface DateRangeValue {
   end: Date | null
 }
 
-export interface DateRangePickerMonthView {
-  year: number
-  month: number
-  label: string
-  weeks: CalendarDay[][]
-}
+export type DateRangePickerMonthView = CalendarPanelView
 
 let nextId = 0
 
@@ -91,14 +76,26 @@ export class DateRangePicker implements ControlValueAccessor {
     return `Date range: ${start} to ${end}.`
   })
 
-  protected readonly open = signal(false)
+  private readonly panel = new CalendarPanel({
+    elementRef: this.elementRef,
+    injector: this.injector,
+    triggerSelector: '.gbt-date-range-picker__trigger',
+    locale: () => this.locale(),
+    weekStartsOn: () => this.weekStartsOn(),
+    visibleMonths: () => this.visibleMonths(),
+    minYear: () => this.minYear(),
+    maxYear: () => this.maxYear(),
+    onTouched: () => this.onTouched(),
+  })
+
+  protected readonly open = this.panel.open
   protected readonly value = signal<DateRangeValue | null>(null)
   protected readonly draftStart = signal<Date | null>(null)
   protected readonly draftEnd = signal<Date | null>(null)
   protected readonly hoveredDate = signal<Date | null>(null)
-  protected readonly focusedDate = signal<Date>(new Date())
-  protected readonly anchorDate = signal<Date>(new Date())
-  protected readonly panelStyle = signal<{ top: string; left: string } | null>(null)
+  protected readonly focusedDate = this.panel.focusedDate
+  protected readonly anchorDate = this.panel.anchorDate
+  protected readonly panelStyle = this.panel.panelStyle
 
   private readonly formDisabled = signal(false)
   private onChange: (value: DateRangeValue | null) => void = () => {}
@@ -109,49 +106,11 @@ export class DateRangePicker implements ControlValueAccessor {
     () => this.clearable() && this.value() !== null && !this.isDisabled(),
   )
 
-  protected readonly monthViews = computed<DateRangePickerMonthView[]>(() => {
-    const anchor = this.anchorDate()
-    const count = this.visibleMonths()
-    const formatter = new Intl.DateTimeFormat(this.locale(), { month: 'long', year: 'numeric' })
-    const views = Array.from({ length: count }, (_, i) => {
-      const monthDate = new Date(anchor.getFullYear(), anchor.getMonth() + i, 1)
-      const year = monthDate.getFullYear()
-      const month = monthDate.getMonth()
-      const days = buildCalendarGrid(year, month, this.weekStartsOn())
-      const weeks: CalendarDay[][] = []
-      for (let d = 0; d < days.length; d += 7) {
-        weeks.push(days.slice(d, d + 7))
-      }
-      return { year, month, label: formatter.format(monthDate), weeks }
-    })
-    const neededWeeks = views.map((view) => {
-      let last = view.weeks.length
-      while (last > 1 && view.weeks[last - 1].every((day) => !day.inCurrentMonth)) {
-        last--
-      }
-      return last
-    })
-    const sharedWeeks = Math.max(...neededWeeks)
-    return views.map((view) => ({ ...view, weeks: view.weeks.slice(0, sharedWeeks) }))
-  })
-
-  protected readonly panelLabel = computed(() => {
-    const views = this.monthViews()
-    return views.length === 1 ? views[0].label : `${views[0].label} – ${views[views.length - 1].label}`
-  })
-
-  protected readonly weekdayLabels = computed(() => weekdayLabels(this.locale(), this.weekStartsOn()))
-
-  protected readonly monthOptions = computed(() => {
-    const formatter = new Intl.DateTimeFormat(this.locale(), { month: 'long' })
-    return Array.from({ length: 12 }, (_, i) => ({ value: i, label: formatter.format(new Date(2024, i, 1)) }))
-  })
-
-  protected readonly yearOptions = computed(() => {
-    const min = this.minYear()
-    const max = this.maxYear()
-    return Array.from({ length: max - min + 1 }, (_, i) => min + i)
-  })
+  protected readonly monthViews = this.panel.monthViews
+  protected readonly panelLabel = this.panel.panelLabel
+  protected readonly weekdayLabels = this.panel.weekdayLabels
+  protected readonly monthOptions = this.panel.monthOptions
+  protected readonly yearOptions = this.panel.yearOptions
 
   private readonly dateFormatter = computed(
     () => new Intl.DateTimeFormat(this.locale(), { dateStyle: 'medium' }),
@@ -165,16 +124,19 @@ export class DateRangePicker implements ControlValueAccessor {
     return `${formatter.format(v.start)} – ${formatter.format(v.end)}`
   })
 
-  /** The visual [lower, upper] bounds to paint — the confirmed range once `draftEnd` is set, else a live preview against `hoveredDate`. */
   private readonly previewBounds = computed<{ lower: Date; upper: Date } | null>(() => {
     const start = this.draftStart()
     if (!start) return null
     const other = this.draftEnd() ?? this.hoveredDate()
     if (!other) return null
-    return start.getTime() <= other.getTime() ? { lower: start, upper: other } : { lower: other, upper: start }
+    return start.getTime() <= other.getTime()
+      ? { lower: start, upper: other }
+      : { lower: other, upper: start }
   })
 
-  protected readonly isPreviewing = computed(() => this.draftStart() !== null && this.draftEnd() === null)
+  protected readonly isPreviewing = computed(
+    () => this.draftStart() !== null && this.draftEnd() === null,
+  )
 
   protected readonly statusMessage = computed(() => {
     const start = this.draftStart()
@@ -216,48 +178,36 @@ export class DateRangePicker implements ControlValueAccessor {
 
   protected isInRange(date: Date): boolean {
     const bounds = this.previewBounds()
-    return bounds !== null && date.getTime() > bounds.lower.getTime() && date.getTime() < bounds.upper.getTime()
+    return (
+      bounds !== null &&
+      date.getTime() > bounds.lower.getTime() &&
+      date.getTime() < bounds.upper.getTime()
+    )
   }
 
   protected isFocused(date: Date): boolean {
-    return isSameDay(this.focusedDate(), date)
+    return this.panel.isFocused(date)
   }
 
   protected cellId(date: Date): string {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
-      date.getDate(),
-    ).padStart(2, '0')}`
+    return this.panel.cellId(date)
   }
 
   protected toggleOpen(): void {
     if (this.isDisabled()) {
       return
     }
-    this.open.update((v) => !v)
-    if (this.open()) {
+    this.panel.toggle(() => {
       const value = this.value()
-      const target = value?.start ?? new Date()
       this.draftStart.set(value?.start ?? null)
       this.draftEnd.set(value?.end ?? null)
       this.hoveredDate.set(null)
-      this.focusedDate.set(target)
-      this.anchorDate.set(new Date(target.getFullYear(), target.getMonth(), 1))
-      this.updatePanelPosition()
-      this.focusCellAfterRender()
-    } else {
-      this.onTouched()
-    }
+      return value?.start ?? new Date()
+    })
   }
 
   protected close(returnFocus: boolean): void {
-    if (!this.open()) {
-      return
-    }
-    this.open.set(false)
-    this.onTouched()
-    if (returnFocus) {
-      this.trigger()?.focus()
-    }
+    this.panel.close(returnFocus)
   }
 
   protected clear(event: Event): void {
@@ -270,7 +220,7 @@ export class DateRangePicker implements ControlValueAccessor {
     this.draftEnd.set(null)
     this.onChange(null)
     this.onTouched()
-    this.close(false)
+    this.panel.close(false)
   }
 
   protected selectDay(date: Date): void {
@@ -283,20 +233,20 @@ export class DateRangePicker implements ControlValueAccessor {
       this.draftStart.set(date)
       this.draftEnd.set(null)
       this.focusedDate.set(date)
-      this.ensureVisible(date)
-      this.focusCellAfterRender()
+      this.panel.ensureVisible(date)
+      this.panel.focusCellAfterRender()
       return
     }
     const [rangeStart, rangeEnd] = start.getTime() <= date.getTime() ? [start, date] : [date, start]
     this.draftStart.set(rangeStart)
     this.draftEnd.set(rangeEnd)
     this.focusedDate.set(date)
-    this.ensureVisible(date)
+    this.panel.ensureVisible(date)
     const next: DateRangeValue = { start: rangeStart, end: rangeEnd }
     this.value.set(next)
     this.onChange(next)
     this.onTouched()
-    this.close(true)
+    this.panel.close(true)
   }
 
   protected onDayMouseEnter(date: Date): void {
@@ -308,134 +258,35 @@ export class DateRangePicker implements ControlValueAccessor {
   }
 
   protected shiftMonth(delta: number): void {
-    this.anchorDate.set(addMonths(this.anchorDate(), delta))
-    this.focusedDate.set(addMonths(this.focusedDate(), delta))
-    this.updatePanelPosition()
-    this.focusCellAfterRender()
+    this.panel.shiftMonth(delta)
   }
 
   protected onMonthSelect(value: string): void {
-    this.setAnchorMonth(this.anchorDate().getFullYear(), Number(value))
+    this.panel.onMonthSelect(value)
   }
 
   protected onYearSelect(value: string): void {
-    this.setAnchorMonth(Number(value), this.anchorDate().getMonth())
-  }
-
-  private setAnchorMonth(year: number, month: number): void {
-    const dayOfMonth = this.focusedDate().getDate()
-    const daysInTarget = new Date(year, month + 1, 0).getDate()
-    this.anchorDate.set(new Date(year, month, 1))
-    this.focusedDate.set(new Date(year, month, Math.min(dayOfMonth, daysInTarget)))
-    this.updatePanelPosition()
-    this.focusCellAfterRender()
+    this.panel.onYearSelect(value)
   }
 
   protected onGridKeydown(event: KeyboardEvent): void {
-    const current = this.focusedDate()
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
-      this.selectDay(current)
+      this.selectDay(this.focusedDate())
       return
     }
-    if (event.key === 'PageDown' || event.key === 'PageUp') {
-      event.preventDefault()
-      const delta = event.key === 'PageDown' ? 1 : -1
-      if (event.shiftKey) {
-        this.anchorDate.set(addYears(this.anchorDate(), delta))
-        this.focusedDate.set(addYears(current, delta))
-      } else {
-        this.anchorDate.set(addMonths(this.anchorDate(), delta))
-        this.focusedDate.set(addMonths(current, delta))
-      }
-      this.updatePanelPosition()
-      this.focusCellAfterRender()
-      return
-    }
-    const next = this.nextFocusedDate(current, event)
-    if (next === null) {
-      return
-    }
-    event.preventDefault()
-    this.ensureVisible(next)
-    this.focusedDate.set(next)
-    this.focusCellAfterRender()
-  }
-
-  private nextFocusedDate(current: Date, event: KeyboardEvent): Date | null {
-    switch (event.key) {
-      case 'ArrowRight':
-        return shiftDays(current, 1)
-      case 'ArrowLeft':
-        return shiftDays(current, -1)
-      case 'ArrowDown':
-        return shiftDays(current, 7)
-      case 'ArrowUp':
-        return shiftDays(current, -7)
-      case 'Home':
-        return startOfWeek(current, this.weekStartsOn())
-      case 'End':
-        return endOfWeek(current, this.weekStartsOn())
-      default:
-        return null
-    }
-  }
-
-  /** Shifts the anchor by the minimum amount needed so `date`'s month becomes visible. */
-  private ensureVisible(date: Date): void {
-    const anchor = this.anchorDate()
-    const visibleMonths = this.visibleMonths()
-    const monthsDiff =
-      (date.getFullYear() - anchor.getFullYear()) * 12 + (date.getMonth() - anchor.getMonth())
-    if (monthsDiff < 0) {
-      this.anchorDate.set(new Date(date.getFullYear(), date.getMonth(), 1))
-    } else if (monthsDiff >= visibleMonths) {
-      this.anchorDate.set(addMonths(anchor, monthsDiff - visibleMonths + 1))
-    }
+    this.panel.handleNavigationKeydown(event)
   }
 
   protected onEscape(event: KeyboardEvent): void {
-    if (event.key === 'Escape' && this.open()) {
-      event.preventDefault()
-      event.stopPropagation()
-      this.close(true)
-    }
+    this.panel.onEscape(event)
   }
 
   protected handleClickOutside(event: MouseEvent): void {
-    if (this.open() && !this.elementRef.nativeElement.contains(event.target as Node)) {
-      this.close(false)
-    }
+    this.panel.handleClickOutside(event)
   }
 
   protected updatePanelPosition(): void {
-    if (!this.open()) {
-      return
-    }
-    const trigger = this.trigger()
-    if (!trigger) {
-      return
-    }
-    const rect = trigger.getBoundingClientRect()
-    this.panelStyle.set({ top: `${rect.bottom + 6}px`, left: `${rect.left}px` })
+    this.panel.updatePanelPosition()
   }
-
-  private trigger(): HTMLButtonElement | null {
-    return this.elementRef.nativeElement.querySelector('.gbt-date-range-picker__trigger')
-  }
-
-  private focusCellAfterRender(): void {
-    afterNextRender(
-      () => {
-        const id = this.cellId(this.focusedDate())
-        const host = this.elementRef.nativeElement as HTMLElement
-        host.querySelector<HTMLElement>(`[data-date="${id}"]`)?.focus()
-      },
-      { injector: this.injector },
-    )
-  }
-}
-
-function shiftDays(date: Date, delta: number): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + delta)
 }

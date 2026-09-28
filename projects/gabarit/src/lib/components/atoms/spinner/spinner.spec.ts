@@ -51,7 +51,7 @@ describe('Spinner', () => {
     await expectNoA11yViolations(setup().nativeElement)
   })
 
-  it("gives the ring a non-inline display so its width/height (and so its roundness) actually apply", () => {
+  it('gives the ring a non-inline display so its width/height (and so its roundness) actually apply', () => {
     const scss = readFileSync(join(__dirname, 'spinner.scss'), 'utf8')
     const ringBlock = /\.gbt-spinner__ring\s*\{([^}]*)\}/.exec(scss)?.[1] ?? ''
     expect(ringBlock).toMatch(/display:\s*(block|inline-block|flex|grid)\b/)

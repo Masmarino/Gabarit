@@ -1,0 +1,40 @@
+<div class="gbt-backup-codes">
+  <ol #grid class="gbt-backup-codes__grid" [attr.aria-label]="text().listLabel">
+    @for (lines of display(); track $index) {
+      <li class="gbt-backup-codes__code">
+        @for (line of lines; track $index) {
+          <span class="gbt-backup-codes__line">{{ line }}</span>
+        }
+      </li>
+    }
+  </ol>
+
+  <div class="gbt-backup-codes__actions">
+    <gbt-copy-button
+      variant="secondary"
+      size="small"
+      feedback="inline"
+      [text]="text().copy"
+      [copiedText]="text().copied"
+      [failedText]="text().copyFailed"
+      [value]="codesText()"
+      [selectTarget]="grid"
+    />
+    <gbt-button
+      variant="secondary"
+      size="small"
+      iconName="download"
+      [text]="text().download"
+      (clicked)="download()"
+    />
+  </div>
+
+  <div class="gbt-backup-codes__ack">
+    <gbt-checkbox
+      [id]="id + '-ack'"
+      [label]="text().acknowledge"
+      [ngModel]="acknowledged()"
+      (ngModelChange)="acknowledged.set($event)"
+    />
+  </div>
+</div>

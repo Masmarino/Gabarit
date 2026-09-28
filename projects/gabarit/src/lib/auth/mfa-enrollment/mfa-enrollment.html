@@ -1,0 +1,225 @@
+<section class="gbt-mfa-enrollment">
+  <header class="gbt-mfa-enrollment__header">
+    <p class="gbt-mfa-enrollment__step">{{ text().step(stepNumber(), stepCount) }}</p>
+    @switch (step()) {
+      @case ('choice') {
+        <h2 class="gbt-mfa-enrollment__title" tabindex="-1">{{ text().choiceHeading }}</h2>
+      }
+      @case ('scan') {
+        <h2 class="gbt-mfa-enrollment__title" tabindex="-1">{{ text().scanHeading }}</h2>
+      }
+      @case ('passkey') {
+        <h2 class="gbt-mfa-enrollment__title" tabindex="-1">{{ text().passkeyHeading }}</h2>
+      }
+      @case ('codes') {
+        <h2 class="gbt-mfa-enrollment__title" tabindex="-1">{{ text().codesHeading }}</h2>
+      }
+    }
+  </header>
+
+  @switch (step()) {
+    @case ('choice') {
+      <gbt-alert variant="info" appearance="subtle" iconAlign="start" live="off">{{
+        text().mandatory
+      }}</gbt-alert>
+
+      @if (passkeyOffered()) {
+        <p class="gbt-mfa-enrollment__lead">{{ text().choiceLead }}</p>
+
+        @if (error()) {
+          <gbt-alert [variant]="errorVariant()" appearance="subtle" iconAlign="start">{{
+            error()
+          }}</gbt-alert>
+        }
+
+        <div class="gbt-mfa-enrollment__options">
+          <gbt-card
+            class="gbt-mfa-enrollment__option gbt-mfa-enrollment__option--recommended"
+            icon="key"
+            [heading]="text().passkeyOption"
+            [headingLevel]="3"
+          >
+            <gbt-badge card-header-actions variant="info">{{ text().recommended }}</gbt-badge>
+            <p class="gbt-mfa-enrollment__option-text">{{ text().passkeyOptionText }}</p>
+            <gbt-button
+              class="gbt-mfa-enrollment__primary"
+              block
+              size="large"
+              [text]="text().usePasskey"
+              [disabled]="submitting()"
+              (clicked)="choosePasskey()"
+            />
+          </gbt-card>
+
+          <gbt-card
+            class="gbt-mfa-enrollment__option"
+            icon="smartphone"
+            [heading]="text().appOption"
+            [headingLevel]="3"
+          >
+            <p class="gbt-mfa-enrollment__option-text">{{ text().appOptionText }}</p>
+            <gbt-button
+              class="gbt-mfa-enrollment__begin"
+              block
+              variant="secondary"
+              size="large"
+              [text]="text().useApp"
+              [loading]="submitting()"
+              [loadingLabel]="text().preparing"
+              (clicked)="begin()"
+            />
+          </gbt-card>
+        </div>
+
+        <div class="gbt-mfa-enrollment__actions">
+          <gbt-button
+            block
+            size="large"
+            variant="secondary"
+            [text]="text().back"
+            [disabled]="submitting()"
+            (clicked)="back()"
+          />
+        </div>
+      } @else {
+        <ol class="gbt-mfa-enrollment__todo">
+          <li>{{ text().todoInstall }}</li>
+          <li>{{ text().todoScan }}</li>
+          <li>{{ text().todoKeep }}</li>
+        </ol>
+
+        @if (error()) {
+          <gbt-alert variant="error" appearance="subtle" iconAlign="start">{{ error() }}</gbt-alert>
+        }
+
+        <div class="gbt-mfa-enrollment__actions">
+          <gbt-button
+            class="gbt-mfa-enrollment__primary gbt-mfa-enrollment__begin"
+            block
+            size="large"
+            [text]="text().begin"
+            [loading]="submitting()"
+            [loadingLabel]="text().preparing"
+            (clicked)="begin()"
+          />
+          <gbt-button
+            block
+            size="large"
+            variant="secondary"
+            [text]="text().back"
+            [disabled]="submitting()"
+            (clicked)="back()"
+          />
+        </div>
+      }
+    }
+
+    @case ('scan') {
+      <p class="gbt-mfa-enrollment__lead">{{ text().scanLead }}</p>
+
+      <form class="gbt-mfa-enrollment__form" (ngSubmit)="confirm()">
+        <gbt-totp-qr [otpauthUrl]="otpauthUrl()" [secret]="secret()" />
+
+        @if (error()) {
+          <gbt-alert variant="error" appearance="subtle" iconAlign="start">{{ error() }}</gbt-alert>
+        }
+
+        <gbt-input
+          [id]="id + '-code'"
+          inputmode="numeric"
+          [spellcheck]="false"
+          autocapitalize="off"
+          enterkeyhint="go"
+          name="code"
+          autocomplete="one-time-code"
+          [label]="text().codeLabel"
+          [ngModel]="code()"
+          (ngModelChange)="code.set($event)"
+        />
+
+        <div class="gbt-mfa-enrollment__actions">
+          <gbt-button
+            class="gbt-mfa-enrollment__primary"
+            block
+            type="submit"
+            size="large"
+            [text]="text().activate"
+            [loading]="submitting()"
+            [loadingLabel]="text().verifying"
+          />
+          <gbt-button
+            block
+            size="large"
+            variant="secondary"
+            [text]="text().back"
+            [disabled]="submitting()"
+            (clicked)="back()"
+          />
+        </div>
+      </form>
+    }
+
+    @case ('passkey') {
+      <p class="gbt-mfa-enrollment__lead">{{ text().passkeyLead }}</p>
+
+      <form class="gbt-mfa-enrollment__form" (ngSubmit)="createPasskey()">
+        @if (error()) {
+          <gbt-alert [variant]="errorVariant()" appearance="subtle" iconAlign="start">{{
+            error()
+          }}</gbt-alert>
+        }
+        @if (promptOpen()) {
+          <gbt-alert variant="info" appearance="subtle" iconAlign="start" live="polite">{{
+            text().promptOpen
+          }}</gbt-alert>
+        }
+
+        <gbt-input
+          [id]="id + '-passkey-name'"
+          name="passkeyName"
+          autocomplete="off"
+          [label]="text().passkeyNameLabel"
+          [placeholder]="text().defaultPasskeyName"
+          [ngModel]="passkeyName()"
+          (ngModelChange)="passkeyName.set($event)"
+        />
+
+        <div class="gbt-mfa-enrollment__actions">
+          <gbt-button
+            class="gbt-mfa-enrollment__primary"
+            block
+            type="submit"
+            size="large"
+            [text]="text().createPasskey"
+            [loading]="submitting()"
+            [loadingLabel]="text().creating"
+          />
+          <gbt-button
+            block
+            size="large"
+            variant="secondary"
+            [text]="text().back"
+            (clicked)="back()"
+          />
+        </div>
+      </form>
+    }
+
+    @case ('codes') {
+      <p class="gbt-mfa-enrollment__lead">{{ text().codesLead(factor()) }}</p>
+
+      <gbt-backup-codes [codes]="backupCodes()" [(acknowledged)]="acknowledged" />
+
+      <div class="gbt-mfa-enrollment__actions">
+        <gbt-button
+          class="gbt-mfa-enrollment__primary"
+          block
+          size="large"
+          [text]="text().continue"
+          [disabled]="!acknowledged()"
+          (clicked)="finish()"
+        />
+      </div>
+    }
+  }
+</section>

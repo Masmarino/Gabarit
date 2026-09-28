@@ -1,5 +1,36 @@
+@if (collapsibleMode()) {
+  @if (folded()) {
+    <button
+      #toggle
+      type="button"
+      class="gbt-sb-toggle"
+      aria-expanded="false"
+      [attr.aria-controls]="triggerId()"
+      [attr.aria-label]="openLabel()"
+      (click)="expand()"
+    >
+      <gbt-icon name="search" aria-hidden="true" />
+    </button>
+  }
+}
 <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
-<div class="gbt-sb-trigger" [class.gbt-sb-trigger--open]="isFocused()" (click)="focusSearch()">
+<div
+  class="gbt-sb-trigger"
+  [attr.id]="collapsibleMode() ? triggerId() : null"
+  [attr.hidden]="folded() ? '' : null"
+  [class.gbt-sb-trigger--open]="isFocused()"
+  (click)="focusSearch()"
+>
+  @if (collapsibleMode() && expanded()) {
+    <button
+      type="button"
+      class="gbt-sb-trigger__close"
+      [attr.aria-label]="closeLabel()"
+      (click)="close($event)"
+    >
+      <gbt-icon name="arrow-left" aria-hidden="true" />
+    </button>
+  }
   <gbt-icon name="search" class="gbt-sb-trigger__icon" aria-hidden="true" />
   <input
     #searchInput
@@ -15,7 +46,7 @@
     [attr.aria-controls]="showOverlay() ? panelId() : null"
     [attr.aria-activedescendant]="activeItemDomId()"
     (focus)="onFocus()"
-    (blur)="onBlur()"
+    (blur)="onBlur($event)"
     (input)="onInput($event)"
     autocomplete="off"
     spellcheck="false"

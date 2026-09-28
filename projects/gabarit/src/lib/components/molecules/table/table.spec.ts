@@ -13,7 +13,9 @@ interface Row {
   imports: [Table],
   template: `
     <ng-template #actionsCell let-row>
-      <button type="button" class="row-action" [attr.data-row-id]="row.id">Supprimer {{ row.name }}</button>
+      <button type="button" class="row-action" [attr.data-row-id]="row.id">
+        Supprimer {{ row.name }}
+      </button>
     </ng-template>
     <gbt-table caption="Utilisateurs" [data]="data" [columns]="columns()" />
   `,
@@ -30,6 +32,78 @@ class HostWithTemplateColumn {
       { key: 'name', label: 'Nom' },
       { key: 'actions', label: 'Actions', cellTemplate: this.actionsCell() },
     ]
+  }
+}
+
+@Component({
+  standalone: true,
+  imports: [Table],
+  template: `
+    <ng-template #actionsCell let-row>
+      <button type="button" class="row-action" [attr.data-row-id]="row.id">
+        Supprimer {{ row.name }}
+      </button>
+    </ng-template>
+    <gbt-table
+      caption="Utilisateurs"
+      [data]="data"
+      [columns]="columns()"
+      [clickableRows]="true"
+      (rowClick)="rowClick($event)"
+    />
+  `,
+})
+class HostWithClickableRowsAndTemplateColumn {
+  private readonly actionsCell = viewChild.required<TemplateRef<{ $implicit: Row }>>('actionsCell')
+  data: Row[] = [{ id: '1', name: 'Alice' }]
+  clicked: Row[] = []
+
+  rowClick(row: Row): void {
+    this.clicked.push(row)
+  }
+
+  columns(): TableColumn<Row>[] {
+    return [
+      { key: 'name', label: 'Nom' },
+      { key: 'actions', label: 'Actions', cellTemplate: this.actionsCell() },
+    ]
+  }
+}
+
+@Component({
+  standalone: true,
+  imports: [Table],
+  template: `
+    <ng-template #cell>
+      <details>
+        <summary class="row-summary">Details</summary>
+      </details>
+      <div class="row-editable" contenteditable="true">Edit me</div>
+      <span class="row-aria-checkbox" role="checkbox" aria-checked="false" tabindex="0"
+        >Toggle</span
+      >
+      <label class="row-label"><input type="checkbox" /> Select</label>
+    </ng-template>
+    <gbt-table
+      caption="Utilisateurs"
+      [data]="data"
+      [columns]="columns()"
+      [clickableRows]="true"
+      (rowClick)="rowClick($event)"
+    />
+  `,
+})
+class HostWithClickableRowsAndVariousInteractiveContent {
+  private readonly cell = viewChild.required<TemplateRef<{ $implicit: Row }>>('cell')
+  data: Row[] = [{ id: '1', name: 'Alice' }]
+  clicked: Row[] = []
+
+  rowClick(row: Row): void {
+    this.clicked.push(row)
+  }
+
+  columns(): TableColumn<Row>[] {
+    return [{ key: 'content', label: 'Contenu', cellTemplate: this.cell() }]
   }
 }
 
@@ -208,7 +282,9 @@ describe('Table', () => {
     const fixture = TestBed.createComponent(HostWithTemplateColumn)
     fixture.detectChanges()
 
-    const buttons: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.row-action'))
+    const buttons: HTMLButtonElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.row-action'),
+    )
     expect(buttons.length).toBe(2)
     expect(buttons[0].dataset['rowId']).toBe('1')
     expect(buttons[0].textContent?.trim()).toBe('Supprimer Alice')
@@ -229,5 +305,91 @@ describe('Table', () => {
     const fixture = TestBed.createComponent(HostWithTemplateColumn)
     fixture.detectChanges()
     await expectNoA11yViolations(fixture.nativeElement)
+  })
+
+  describe('a nested interactive cellTemplate control inside a clickable row', () => {
+    function setup() {
+      const fixture = TestBed.createComponent(HostWithClickableRowsAndTemplateColumn)
+      fixture.detectChanges()
+      const button: HTMLButtonElement = fixture.nativeElement.querySelector('.row-action')
+      return { fixture, button }
+    }
+
+    it("doesn't also fire rowClick when the nested button is clicked", () => {
+      const { fixture, button } = setup()
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      fixture.detectChanges()
+
+      expect(fixture.componentInstance.clicked).toEqual([])
+    })
+
+    it("doesn't fire rowClick, and doesn't suppress the button's own activation, on Space over the nested button", () => {
+      const { fixture, button } = setup()
+      const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true })
+      button.dispatchEvent(event)
+      fixture.detectChanges()
+
+      expect(fixture.componentInstance.clicked).toEqual([])
+      expect(event.defaultPrevented).toBe(false)
+    })
+
+    it('still fires rowClick for a click or Enter on a plain cell of the same row', () => {
+      const { fixture } = setup()
+      const row: HTMLElement = fixture.nativeElement.querySelector('tbody tr')
+      const plainCell = row.querySelector('td')!
+      plainCell.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      fixture.detectChanges()
+      row.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+      )
+      fixture.detectChanges()
+
+      expect(fixture.componentInstance.clicked).toEqual([
+        { id: '1', name: 'Alice' },
+        { id: '1', name: 'Alice' },
+      ])
+    })
+  })
+
+  describe('other kinds of interactive content inside a clickable row', () => {
+    function setup() {
+      const fixture = TestBed.createComponent(HostWithClickableRowsAndVariousInteractiveContent)
+      fixture.detectChanges()
+      return { fixture, el: fixture.nativeElement as HTMLElement }
+    }
+
+    it("doesn't fire rowClick when a <summary> is clicked", () => {
+      const { fixture, el } = setup()
+      el.querySelector('.row-summary')!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      fixture.detectChanges()
+
+      expect(fixture.componentInstance.clicked).toEqual([])
+    })
+
+    it("doesn't fire rowClick when a contenteditable region is clicked", () => {
+      const { fixture, el } = setup()
+      el.querySelector('.row-editable')!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      fixture.detectChanges()
+
+      expect(fixture.componentInstance.clicked).toEqual([])
+    })
+
+    it('doesn\'t fire rowClick when an ARIA widget role other than "button" is clicked', () => {
+      const { fixture, el } = setup()
+      el.querySelector('.row-aria-checkbox')!.dispatchEvent(
+        new MouseEvent('click', { bubbles: true }),
+      )
+      fixture.detectChanges()
+
+      expect(fixture.componentInstance.clicked).toEqual([])
+    })
+
+    it("doesn't fire rowClick when the <label> text of a checkbox is clicked (not the input itself)", () => {
+      const { fixture, el } = setup()
+      el.querySelector('.row-label')!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      fixture.detectChanges()
+
+      expect(fixture.componentInstance.clicked).toEqual([])
+    })
   })
 })

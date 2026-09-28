@@ -23,8 +23,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: var(--gbt-control-height-md);
+  height: var(--gbt-control-height-md);
   flex-shrink: 0;
   padding: 0;
   border: 1px solid var(--border-color);

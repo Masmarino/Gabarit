@@ -1,5 +1,5 @@
 <div class="gbt-toaster" [attr.data-position]="position()">
-  @for (toast of toasts(); track toast.id) {
+  @for (toast of items(); track toast.id) {
     <div
       class="gbt-toaster__item"
       [attr.data-variant]="toast.variant"
@@ -14,7 +14,7 @@
         type="button"
         class="gbt-toaster__close"
         [attr.aria-label]="closeLabel()"
-        (click)="dismissed.emit(toast.id)"
+        (click)="close(toast.id)"
       >
         <gbt-icon name="x" aria-hidden="true" />
       </button>

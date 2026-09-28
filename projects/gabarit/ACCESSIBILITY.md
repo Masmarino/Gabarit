@@ -15,20 +15,25 @@ AAA level.
 is therefore not "RGAA-compliant" and cannot be: it's your application
 that is, or isn't. What Gabarit guarantees is that **the 30 criteria that
 depend on its components are met**, verified by `axe-core` in the unit
-tests, by a contrast test on the tokens, and by thirteen manual audit
+tests, by a contrast test on the tokens, and by 69 manual audit
 checklists (`AUDIT.md`) — one alone covers seven chart-base components,
-another covers both tab components, and five components have none. The
-first two means run locally via `npm test`, not in continuous
-integration: this repository has no CI. The checklists are handwritten
-and reviewed by a human.
+another covers both tab components, and eight components have none. The
+first two means run with `npm test`, locally and in continuous
+integration (`.github/workflows/ci.yml` runs lint, tests, the library
+build and the Storybook build on every push and pull request to `main`,
+plus `npm audit --audit-level=high`; the release workflow re-runs lint,
+tests and build before publishing). The checklists are handwritten and
+reviewed by a human.
 
 ## How it's actually verified, and where that stops
 
 **This describes what actually runs, not what would be desirable.**
-This repository has no continuous integration, and no `axe-core` pass
-runs on Storybook stories. What does exist:
+CI runs the unit tests, but no `axe-core` pass runs on Storybook
+stories: for 1.2.0 such a pass (colour contrast included, light, dark and
+375px) was run once by hand over the stories, and nothing repeats it
+automatically. What does exist:
 
-- **`axe-core`, run in the unit tests (`npm test`, local).** Each
+- **`axe-core`, run in the unit tests (`npm test`, locally and in CI).** Each
   component has its own `expectNoA11yViolations` test. It covers only
   around 30% of RGAA criteria: necessary, and very insufficient on its
   own.
@@ -71,16 +76,21 @@ runs on Storybook stories. What does exist:
   it will actually be painted. It's the only check in this repository
   that measures a pair under rendering conditions, rather than two
   tokens side by side.
-- **Thirteen manual audit checklists** (`AUDIT.md` in the folder of the
-  components that have one — not all of them). One (`chart-frame/AUDIT.md`)
+- **69 manual audit checklists** (`AUDIT.md` in the folder of the
+  components that have one — not all of them; 86 component folders in
+  all). One (`chart-frame/AUDIT.md`)
   alone covers seven chart-base components (`chart-frame`, `chart-axis`,
   `chart-tooltip`, `chart-legend`, `chart-empty`, `chart-table`,
   `chart-context`), another (`tabs/AUDIT.md`) covers both the `Tabs` and
   `Tab` components. Each checklist records what automation doesn't see —
   actual keyboard use, screen reader, measurements in Storybook, reading
-  the `@storybook/addon-a11y` panel. Conversely, five components
-  (`bar-chart`, `funnel-chart`, `icon`, `sparkline`, `timeline-chart`)
-  have none.
+  the `@storybook/addon-a11y` panel. Conversely, eight components
+  (`app-shell`, `bar-chart`, `breadcrumb`, `confirm-danger-modal`,
+  `funnel-chart`, `icon`, `sparkline`, `timeline-chart`) have none.
+  Together the checklists record a verdict on 39 distinct RGAA criteria
+  (counted from their criterion column; some rows also cover WCAG 2.2
+  criteria 2.4.11 and 2.5.8) — more than the 30 below, see the note that
+  follows that table.
 
 Two measured limits of `axe-core` in this tooling, worth knowing before
 reproducing this approach:
@@ -126,11 +136,21 @@ rule.
 | 12 Navigation   | 12.8, 12.9, 12.11                                         |
 | 13 Consultation | 13.8                                                      |
 
-That's 30 out of the 106 criteria in RGAA 4.1.2. Two topics that might
-look like they belong here don't: **Topic 6 Links (6.1, 6.2)** isn't
-listed because no `<a>` element exists anywhere in the library — a
-library that never produces a link cannot guarantee a criterion about
-links. And **11.2, 11.10, and 11.13** sit under "What remains your
+That's 30 out of the 106 criteria in RGAA 4.1.2. Of these 30, 26 appear
+as rows in the `AUDIT.md` files; 10.5, 10.9, 10.10 and 10.14 do not.
+Conversely, the checklists also record verdicts on 13 criteria that are
+not in the table: 1.1, 1.2, 6.1, 6.2, 8.9, 9.1, 9.2, 10.4, 11.2, 11.5,
+11.10, 11.13 and 12.6. Those are observations on the components, each for
+its documented usage, not a guarantee, because the text or the structure
+that decides them is yours. Two topics that might look like they belong
+in the table are worth explaining: **Topic 6 Links (6.1, 6.2)** isn't
+listed because the wording and destination of a link are the
+application's. Since 1.2.0 the library styles the consumer's own `<a>` elements
+(`a[gbtButton]`, `a[gbtNavTab]`, `a[gbtMenuItem]`, `a[gbtCardLink]`,
+`a[gbtStatTileLink]`) and renders a few links itself (the card's
+link mode, the brand link of `gbt-app-shell`, the link of
+`gbt-stat-tile`), but none of them writes the link text for you. And
+**11.2, 11.10, and 11.13** sit under "What remains your
 responsibility" below rather than here, since the components only
 provide the mechanism (`label`/field association, `role="alert"`,
 `aria-describedby`, an `autocomplete` you can override) — never the
@@ -144,9 +164,9 @@ The other 76 criteria. The main ones:
 | Topic                | What you need to do                                                                                                                                                                                                                                                                                                                                                                              |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 1 Images             | Text alternatives for your images. `gbt-icon` is unconditionally decorative — see "Points to watch" below — a meaningful icon must be accompanied by text on your side.                                                                                                                                                                                                                          |
-| 6 Links              | Explicit (6.1) and relevant (6.2) wording for every link in your application. No Gabarit component renders an `<a>`: nothing to delegate.                                                                                                                                                                                                                                                        |
+| 6 Links              | Explicit (6.1) and relevant (6.2) wording for every link in your application. The link components style or render an `<a>`, the text and the destination stay yours: an icon-only link needs an `aria-label`.                                                                                                                                                                                    |
 | 8 Mandatory elements | Doctype, `lang`, page `<title>`, absence of validity errors.                                                                                                                                                                                                                                                                                                                                     |
-| 9 Structure          | Heading hierarchy of the page. `gbt-card` lets you choose its level via `headingLevel` — it's up to you to set it correctly.                                                                                                                                                                                                                                                                     |
+| 9 Structure          | Heading hierarchy of the page. `gbt-card`, `gbt-page-header` and `gbt-empty-state` let you choose their level via `headingLevel` — it's up to you to set it correctly.                                                                                                                                                                                                                           |
 | 10 Presentation      | 200% zoom, page-wide reflow. The components hold up their end; the layout is yours.                                                                                                                                                                                                                                                                                                              |
 | 11 Forms             | Field grouping (`fieldset` / `legend`), **relevance** of your labels (11.2 — the component associates `label`/field, the text is yours), **content** of your error messages (11.10 — the component announces them via `role="alert"`, you write the text in `errorMessage`), and a correct `autocomplete` value (11.13 — `gbt-input` sets it to `'off'` by default, to override field by field). |
 | 12 Navigation        | Two navigation systems, sitemap, skip link, ARIA regions. The `.skip-link` utility is provided (`tokens/_utilities.scss`), using it is up to you.                                                                                                                                                                                                                                                |
@@ -197,8 +217,12 @@ The other 76 criteria. The main ones:
   values worth reading if you inspect the attribute rather than letting
   assistive technology announce it.
 - **Default strings in English, to override in a non-English
-  application** — these components carry visible or announced labels
-  with no localized default:
+  application** — the components added in 1.2.0 follow the same rule
+  (every visible or announced string is an input, for instance
+  `closeLabel` on `gbt-search-bar` in compact mode, the labels of
+  `gbt-copy-button` and `gbt-secret-reveal`; see each README's inputs
+  table), and the pipes and formatters take a locale. These components
+  carry visible or announced labels with no localized default:
   - `gbt-button`: `loadingLabel` (`'Loading'`).
   - `gbt-input`: `showPasswordLabel` (`'Show password'`),
     `hidePasswordLabel` (`'Hide password'`).
@@ -216,6 +240,15 @@ The other 76 criteria. The main ones:
     `clearLabel` (`'Clear search'`), `resultsAnnouncement` (function,
     announces the result count — criterion 7.5), `navigateHint`
     (`'Navigate'`), `selectHint` (`'Select'`), `closeHint` (`'Close'`).
+- **Known gaps in 1.2.0.** Not fixed, stated here so you can decide: the
+  flyout label of the collapsed rail of `gbt-app-shell` cannot be
+  dismissed with `Escape` (WCAG 1.4.13, "dismissible"); `gbt-toaster`
+  expires every toast after 5 s, errors included, and has no pause on
+  hover and no `live` input (warnings are announced assertively — see its
+  README); and controls that already existed keep their sizes: the close
+  buttons of the toaster, drawer and modal are 24px hit areas on a fine
+  pointer, and only the controls added or reworked in 1.2.0 reach 44px on
+  a coarse pointer.
 - **Token overrides** — if you redefine the semantic colors, you take on
   criteria 3.2 and 3.3 yourself. Gabarit's contrast test only checks its
   own values.

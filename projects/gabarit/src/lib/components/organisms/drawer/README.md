@@ -43,8 +43,7 @@ page — a detail panel, advanced filters.
 - Sized `min(90vw, 400px)` for `left`/`right`, `min(90vh, 400px)` for
   `top`/`bottom` — adapts to the viewport with a fixed cap, same
   reasoning as `Modal`'s own `min(90vw, 480px)` dialog width.
-- `AppShell`'s own mobile navigation drawer is intentionally left
-  independent — refactoring it to use this component risked a
-  regression on an already-stable piece for no functional gain, since
-  its needs (a fixed nav-link list, no arbitrary content) are narrower
-  than this component's.
+- `AppShell`'s own mobile navigation drawer is a separate,
+  independent implementation, not built on `gbt-drawer`: its needs (a
+  fixed nav-link list, no arbitrary content) are narrower than this
+  component's.

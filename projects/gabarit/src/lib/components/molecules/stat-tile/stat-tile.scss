@@ -1,0 +1,117 @@
+:host {
+  display: block;
+  min-width: 0;
+  container: gbt-stat-tile / inline-size;
+}
+
+.gbt-stat-tile {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    'value icon'
+    'label label'
+    'meta meta';
+  column-gap: 0.75rem;
+  align-items: center;
+  box-sizing: border-box;
+  height: 100%;
+  min-width: 0;
+  padding: 0.875rem 1rem 0.9375rem;
+  border: 1px solid var(--gbt-card-border);
+  border-radius: var(--site-border-radius);
+  background: var(--bg-principal);
+  transition:
+    border-color var(--site-transition-fast),
+    box-shadow var(--site-transition-fast);
+}
+
+:host([data-link]) .gbt-stat-tile:hover {
+  border-color: var(--border-color);
+  box-shadow: var(--site-shadow-sm);
+}
+
+.gbt-stat-tile__label {
+  grid-area: label;
+  align-self: start;
+  min-width: 0;
+  margin-top: 0.125rem;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.gbt-stat-tile__icon {
+  grid-area: icon;
+}
+
+.gbt-stat-tile__value {
+  grid-area: value;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 2.25rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:host([data-muted]) .gbt-stat-tile__value {
+  color: var(--text-secondary);
+}
+
+.gbt-stat-tile__meta {
+  display: flex;
+  flex-wrap: wrap;
+  grid-area: meta;
+  align-items: center;
+  gap: 0.125rem 0.5rem;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.gbt-stat-tile__trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  font-weight: 600;
+
+  gbt-icon {
+    flex: none;
+    font-size: 0.6875rem;
+  }
+
+  &[data-tone='success'] {
+    color: var(--color-success-text);
+  }
+
+  &[data-tone='error'] {
+    color: var(--color-error-text);
+  }
+}
+
+@container gbt-stat-tile (max-width: 11rem) {
+  .gbt-stat-tile {
+    column-gap: 0.5rem;
+    padding: 0.75rem 0.75rem 0.8125rem;
+  }
+
+  .gbt-stat-tile__value {
+    font-size: 1.375rem;
+    line-height: 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-stat-tile {
+    transition: none;
+  }
+}

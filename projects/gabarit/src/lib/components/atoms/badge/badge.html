@@ -1,6 +1,27 @@
-<span class="gbt-badge" [attr.data-variant]="variant()">
+<span
+  class="gbt-badge"
+  [class.gbt-badge--truncate]="truncate()"
+  [class.gbt-badge--tabular]="tabularNums()"
+  [class.gbt-badge--mono]="mono()"
+  [attr.data-variant]="variant()"
+  [attr.data-appearance]="appearance() === 'outline' ? 'outline' : null"
+  [attr.data-size]="size() === 'sm' ? 'sm' : null"
+>
   @if (icon(); as name) {
     <gbt-icon [name]="name" class="gbt-badge__icon" aria-hidden="true" />
   }
-  <span class="gbt-badge__label"><ng-content /></span>
+  <!-- prettier-ignore -->
+  <span #content class="gbt-badge__label" [attr.title]="fullText()">@if (hasValue()) {{{ displayText() }}@if (label(); as description) {<span class="sr-only"> {{ description }}</span>}} @else {<ng-content />}</span>
+  @if (copyable()) {
+    <button
+      type="button"
+      class="gbt-badge__copy"
+      [attr.aria-label]="copyLabel()"
+      [attr.data-status]="clipboard.status()"
+      (click)="copy()"
+    >
+      <gbt-icon [name]="glyph()" />
+    </button>
+    <span class="sr-only" role="status" aria-live="polite">{{ statusText() }}</span>
+  }
 </span>

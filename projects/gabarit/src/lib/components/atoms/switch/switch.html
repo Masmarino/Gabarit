@@ -6,6 +6,7 @@
     [id]="id()"
     [checked]="checked()"
     [disabled]="isDisabled()"
+    [attr.aria-describedby]="hint() ? hintId() : null"
     (change)="onToggle($event)"
   />
   <span class="gbt-switch__track">
@@ -13,3 +14,6 @@
   </span>
   <span>{{ label() }}</span>
 </label>
+@if (hint()) {
+  <p [id]="hintId()" class="gbt-switch__hint">{{ hint() }}</p>
+}

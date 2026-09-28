@@ -1,0 +1,7 @@
+@if (icon(); as name) {
+  <gbt-icon class="gbt-nav-tab__icon" [name]="name" />
+}
+<span #label class="gbt-nav-tab__label"><ng-content /></span>
+@if (hasBadge()) {
+  &ngsp;<span class="gbt-nav-tab__badge">{{ badge() }}</span>
+}

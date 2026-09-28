@@ -15,6 +15,7 @@ import {
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { NgTemplateOutlet } from '@angular/common'
 import { Subscription, isObservable, type Observable } from 'rxjs'
+import { floatingPanelAnchor } from '../../shared/floating-panel-position'
 
 export type AutocompleteSearchFn<T> = (query: string) => Observable<T[]> | Promise<T[]>
 
@@ -182,21 +183,17 @@ export class Autocomplete<T = unknown> implements ControlValueAccessor, OnDestro
   }
 
   protected updatePanelPosition(): void {
-    if (!this.open()) {
-      return
-    }
     const trigger = this.elementRef.nativeElement.querySelector(
       '.gbt-autocomplete__input',
     ) as HTMLElement | null
-    if (!trigger) {
-      return
+    const anchor = floatingPanelAnchor(this.open(), trigger)
+    if (anchor) {
+      this.panelStyle.set({
+        top: `${anchor.bottom}px`,
+        left: `${anchor.left}px`,
+        width: `${anchor.rect.width}px`,
+      })
     }
-    const rect = trigger.getBoundingClientRect()
-    this.panelStyle.set({
-      top: `${rect.bottom + 6}px`,
-      left: `${rect.left}px`,
-      width: `${rect.width}px`,
-    })
   }
 
   protected selectOption(item: T): void {

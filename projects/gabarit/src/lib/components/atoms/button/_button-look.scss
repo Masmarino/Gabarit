@@ -1,0 +1,182 @@
+@use 'sass:string';
+
+@function selector($host, $mods: '', $state: 'any', $pseudo: '') {
+  $off: ':disabled';
+  $on: ':not(:disabled)';
+  @if $host {
+    $off: "[aria-disabled='true']";
+    $on: ":not([aria-disabled='true'])";
+  }
+  $tail: '';
+  @if $state == 'enabled' {
+    $tail: $on;
+  } @else if $state == 'disabled' {
+    $tail: $off;
+  }
+  @if $host {
+    $inner: $mods + $tail;
+    @if $inner == '' {
+      @return ':host' + $pseudo;
+    }
+    @return ':host(' + $inner + ')' + $pseudo;
+  }
+  $base: '';
+  @if $mods == '' or string.slice($mods, 1, 1) == '[' {
+    $base: '.gbt-button';
+  }
+  @return $base + $mods + $tail + $pseudo;
+}
+
+@mixin rule($host, $mods: '', $state: 'any', $pseudo: '') {
+  @at-root #{selector($host, $mods, $state, $pseudo)} {
+    @content;
+  }
+}
+
+@mixin gbt-button-look($host: false) {
+  @include rule($host) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-sizing: border-box;
+    border: none;
+    border-radius: var(--site-border-radius-sm);
+    font-family: var(--font-family);
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background-color var(--site-transition-fast),
+      color var(--site-transition-fast),
+      box-shadow var(--site-transition-fast),
+      opacity var(--site-transition-fast);
+  }
+
+  @include rule($host, '', 'disabled') {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  @include rule($host, '.gbt-button--small') {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+    min-height: var(--gbt-control-height-sm);
+  }
+  @include rule($host, '.gbt-button--medium') {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    min-height: var(--gbt-control-height-md);
+  }
+  @include rule($host, '.gbt-button--large') {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    min-height: var(--gbt-control-height-lg);
+  }
+
+  @include rule($host, '.gbt-button--icon-only') {
+    gap: 0;
+  }
+
+  @include rule($host, '.gbt-button--icon-only.gbt-button--small') {
+    padding: 0.375rem;
+    min-width: var(--gbt-control-height-sm);
+  }
+  @include rule($host, '.gbt-button--icon-only.gbt-button--medium') {
+    padding: 0.5rem;
+    min-width: var(--gbt-control-height-md);
+  }
+  @include rule($host, '.gbt-button--icon-only.gbt-button--large') {
+    padding: 0.75rem;
+    min-width: var(--gbt-control-height-lg);
+  }
+
+  @include rule($host, '.gbt-button--icon-only.gbt-button--secondary.gbt-button--small') {
+    padding: calc(0.375rem - 1px);
+  }
+  @include rule($host, '.gbt-button--icon-only.gbt-button--secondary.gbt-button--medium') {
+    padding: calc(0.5rem - 1px);
+  }
+  @include rule($host, '.gbt-button--icon-only.gbt-button--secondary.gbt-button--large') {
+    padding: calc(0.75rem - 1px);
+    min-width: var(--gbt-control-height-lg);
+    min-height: var(--gbt-control-height-lg);
+  }
+
+  @include rule($host, '.gbt-button--primary') {
+    background: var(--primary);
+    color: var(--text-on-primary);
+  }
+  @include rule($host, '.gbt-button--primary', 'enabled', ':hover') {
+    background: var(--primary-hover);
+  }
+
+  @include rule($host, '.gbt-button--secondary') {
+    background: var(--bg-panel);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+  }
+  @include rule($host, '.gbt-button--secondary', 'enabled', ':hover') {
+    background: var(--bg-hover);
+  }
+
+  @include rule($host, '.gbt-button--danger') {
+    background: var(--color-error-fill);
+    color: var(--text-on-error);
+  }
+  @include rule($host, '.gbt-button--danger', 'enabled', ':hover') {
+    background: var(--color-error-hover);
+  }
+
+  @include rule($host, '.gbt-button--ghost') {
+    background: transparent;
+    color: var(--text-secondary);
+  }
+  @include rule($host, '.gbt-button--ghost', 'enabled', ':hover') {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  @include rule($host, '.gbt-button--ghost-danger') {
+    background: transparent;
+    color: var(--text-secondary);
+  }
+  @include rule($host, '.gbt-button--ghost-danger', 'enabled', ':hover') {
+    background: var(--color-error-bg);
+    color: var(--color-error-bg-text);
+  }
+  @include rule($host, '.gbt-button--ghost-danger', 'enabled', ':focus-visible') {
+    background: var(--color-error-bg);
+    color: var(--color-error-bg-text);
+  }
+
+  @include rule($host, '.gbt-button--link') {
+    min-height: 0;
+    padding: 0.25rem 0.125rem;
+    background: none;
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  @include rule($host, '.gbt-button--link', 'enabled', ':hover') {
+    color: var(--primary-hover);
+    text-decoration-thickness: 2px;
+  }
+
+  @include rule($host, "[aria-pressed='true']") {
+    background: var(--bg-hover);
+    box-shadow: inset 0 0 0 2px var(--primary);
+  }
+  @include rule($host, ".gbt-button--primary[aria-pressed='true']") {
+    background: var(--primary-hover);
+    box-shadow: inset 0 0 0 2px var(--text-on-primary);
+  }
+  @include rule($host, ".gbt-button--danger[aria-pressed='true']") {
+    background: var(--color-error-hover);
+    box-shadow: inset 0 0 0 2px var(--text-on-error);
+  }
+  @include rule($host, ".gbt-button--link[aria-pressed='true']") {
+    background: none;
+    box-shadow: none;
+    text-decoration-thickness: 2px;
+  }
+}

@@ -78,3 +78,60 @@ describe('Switch', () => {
     await expectNoA11yViolations(fixture.nativeElement)
   })
 })
+
+describe('Switch hint', () => {
+  function setup(hint = '') {
+    const fixture = TestBed.createComponent(Switch)
+    fixture.componentRef.setInput('label', 'Notifications')
+    if (hint) fixture.componentRef.setInput('hint', hint)
+    fixture.detectChanges()
+    return fixture
+  }
+  const input = (f: ReturnType<typeof setup>): HTMLInputElement =>
+    f.nativeElement.querySelector('input')
+
+  it("keeps today's rendering without a hint: no hint element, no describedby, no block host class", () => {
+    const fixture = setup()
+    expect(fixture.nativeElement.querySelector('.gbt-switch__hint')).toBeNull()
+    expect(input(fixture).hasAttribute('aria-describedby')).toBe(false)
+    expect(fixture.nativeElement.classList.contains('gbt-switch-host--hint')).toBe(false)
+  })
+
+  it('renders the hint under the label and links it with aria-describedby', () => {
+    const fixture = setup('Sent once a day.')
+    const hint: HTMLElement = fixture.nativeElement.querySelector('.gbt-switch__hint')
+    expect(hint.textContent?.trim()).toBe('Sent once a day.')
+    expect(hint.id).toBeTruthy()
+    expect(input(fixture).getAttribute('aria-describedby')).toBe(hint.id)
+    expect(fixture.nativeElement.classList.contains('gbt-switch-host--hint')).toBe(true)
+  })
+
+  it('keeps the hint out of the accessible name (it is a description)', () => {
+    const fixture = setup('Sent once a day.')
+    const label: HTMLElement = fixture.nativeElement.querySelector('label')
+    expect(label.contains(fixture.nativeElement.querySelector('.gbt-switch__hint'))).toBe(false)
+  })
+
+  it('derives the hint id from a custom id', () => {
+    const fixture = TestBed.createComponent(Switch)
+    fixture.componentRef.setInput('id', 'digest')
+    fixture.componentRef.setInput('label', 'Digest')
+    fixture.componentRef.setInput('hint', 'Daily.')
+    fixture.detectChanges()
+    expect(input(fixture).getAttribute('aria-describedby')).toBe('digest-hint')
+    expect(fixture.nativeElement.querySelector('#digest-hint')).not.toBeNull()
+  })
+
+  it('removes the hint again when it is cleared', () => {
+    const fixture = setup('Sent once a day.')
+    fixture.componentRef.setInput('hint', '')
+    fixture.detectChanges()
+    expect(fixture.nativeElement.querySelector('.gbt-switch__hint')).toBeNull()
+    expect(input(fixture).hasAttribute('aria-describedby')).toBe(false)
+  })
+
+  it('has no a11y violations with a hint', async () => {
+    const fixture = setup('Sent once a day.')
+    await expectNoA11yViolations(fixture.nativeElement)
+  })
+})

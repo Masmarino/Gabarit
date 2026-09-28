@@ -32,12 +32,10 @@ panel via gbt--prefixed identifiers").
 
 ## Why `inert` instead of `hidden` on a collapsed panel
 
-The issue's own accessibility guidance suggested the `hidden`
-attribute (the same mechanism `Tab` uses via `display: none`), but
-`hidden` forces `display: none`, which cannot be transitioned through
-— a collapsed panel would snap shut instantly, contradicting the
-animated `grid-template-rows` collapse this component was explicitly
-designed to have (see the design discussion for this issue). `inert`
+`hidden` (the mechanism `Tab` uses via `display: none`) forces
+`display: none`, which cannot be transitioned through — a collapsed
+panel would snap shut instantly, contradicting the animated
+`grid-template-rows` collapse this component has. `inert`
 achieves the same accessibility outcome — the subtree becomes
 unreachable by keyboard and invisible to assistive technology — without
 constraining `display`, so the CSS transition still renders for
@@ -47,12 +45,11 @@ present.
 ## Why no forced heading wrapper
 
 The WAI-ARIA APG accordion pattern shows headers optionally wrapped in
-a heading element (e.g. `<h3>`) for landmark-style navigation. This was
-deliberately left out: the issue's own accessibility guidance for this
-component describes only a button + region pair (matching `Menu` and
-`Select`'s existing patterns), and hardcoding a heading level would
-assume a document structure this library can't know in advance. A
-consumer that wants heading semantics can wrap the whole
+a heading element (e.g. `<h3>`) for landmark-style navigation.
+`AccordionItem` only ever renders a button + region pair (matching
+`Menu` and `Select`'s existing patterns): hardcoding a heading level
+would assume a document structure this library can't know in advance.
+A consumer that wants heading semantics can wrap the whole
 `gbt-accordion` in their own `<h3>`-per-item structure if their page
 calls for it.
 

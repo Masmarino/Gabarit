@@ -1,8 +1,20 @@
-<div class="gbt-input">
+<div
+  class="gbt-input"
+  [class.gbt-input--sm]="size() === 'sm'"
+  [class.gbt-input--mono]="mono()"
+  [class.gbt-input--leading]="!!leadingIcon()"
+>
   @if (label()) {
-    <label [for]="id()">{{ label() }}{{ required() ? ' *' : '' }}</label>
+    <label [for]="id()" [class.gbt-input__label--hidden]="hideLabel()"
+      >{{ label() }}{{ required() ? ' *' : '' }}</label
+    >
   }
   <div class="gbt-input__wrapper">
+    @if (leadingIcon(); as icon) {
+      <span class="gbt-input__leading" aria-hidden="true">
+        <gbt-icon [name]="icon" />
+      </span>
+    }
     <input
       [id]="id()"
       [type]="effectiveType()"
@@ -10,9 +22,16 @@
       [required]="required()"
       [disabled]="isDisabled()"
       [attr.autocomplete]="autocomplete()"
+      [attr.inputmode]="inputmode()"
+      [attr.spellcheck]="spellcheck()"
+      [attr.autocapitalize]="autocapitalize()"
+      [attr.enterkeyhint]="enterkeyhint()"
+      [attr.maxlength]="maxlength()"
+      [attr.min]="min()"
+      [attr.max]="max()"
       [value]="value()"
       [attr.aria-invalid]="errorMessage() ? true : null"
-      [attr.aria-describedby]="errorMessage() ? id() + '-error' : null"
+      [attr.aria-describedby]="describedBy()"
       (input)="onInput($event)"
       (blur)="onBlur()"
     />
@@ -27,7 +46,10 @@
       </button>
     }
   </div>
+  @if (showHint()) {
+    <p [id]="hintId()" class="gbt-input__hint">{{ hint() }}</p>
+  }
   @if (errorMessage()) {
-    <p [id]="id() + '-error'" class="gbt-input__error" role="alert">{{ errorMessage() }}</p>
+    <p [id]="errorId()" class="gbt-input__error" role="alert">{{ errorMessage() }}</p>
   }
 </div>

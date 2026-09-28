@@ -1,0 +1,7 @@
+<p class="gbt-auth-footer">
+  <span>{{ text() }}</span>
+  @if (href(); as url) {
+    <a gbtButton class="gbt-auth-footer__link" variant="link" [href]="url">{{ linkText() }}</a>
+  }
+  <ng-content />
+</p>

@@ -82,9 +82,11 @@ describe('PieChart', () => {
   it('feeds the legend one entry per slice, with its own color and formatted value', () => {
     const items = setup().nativeElement.querySelectorAll('.gbt-chart-legend__item')
     expect(items.length).toBe(3)
-    expect([...items].map((i: HTMLElement) => i.textContent?.replace(/\s+/g, ' ').trim())).toEqual(
-      ['Direct 60', 'Recherche 30', 'Réseaux sociaux 10'],
-    )
+    expect([...items].map((i: HTMLElement) => i.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
+      'Direct 60',
+      'Recherche 30',
+      'Réseaux sociaux 10',
+    ])
     const fills = [...items].map((i: HTMLElement) =>
       i.querySelector('.gbt-chart-legend__fill')?.getAttribute('fill'),
     )

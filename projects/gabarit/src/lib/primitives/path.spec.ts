@@ -44,15 +44,15 @@ describe('areaPath', () => {
 
 describe('arcPath', () => {
   it('renders a pie slice (no inner radius) as a wedge from the center', () => {
-    expect(
-      arcPath({ startAngle: 0, endAngle: Math.PI / 2, innerRadius: 0, outerRadius: 10 }),
-    ).toBe('M0,0L0,-10A10,10 0 0,1 10,0Z')
+    expect(arcPath({ startAngle: 0, endAngle: Math.PI / 2, innerRadius: 0, outerRadius: 10 })).toBe(
+      'M0,0L0,-10A10,10 0 0,1 10,0Z',
+    )
   })
 
   it('renders a donut slice (inner radius > 0) as an annular sector', () => {
-    expect(
-      arcPath({ startAngle: 0, endAngle: Math.PI / 2, innerRadius: 5, outerRadius: 10 }),
-    ).toBe('M0,-10A10,10 0 0,1 10,0L5,0A5,5 0 0,0 0,-5Z')
+    expect(arcPath({ startAngle: 0, endAngle: Math.PI / 2, innerRadius: 5, outerRadius: 10 })).toBe(
+      'M0,-10A10,10 0 0,1 10,0L5,0A5,5 0 0,0 0,-5Z',
+    )
   })
 
   it('sets the large-arc flag once the slice spans more than a half-circle', () => {

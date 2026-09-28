@@ -61,9 +61,9 @@ Painting readable text *on top of* an arbitrary fill would need the
 same kind of dynamic per-background contrast computation `Tag` uses
 for its removable chips (`getReadableTextColor`) — solvable, but a
 real chunk of added complexity for a presentational nicety. Instead,
-the percentage for a large-enough slice (≥15% of the total; smaller
-slices skip the direct label, per the original ticket's note that a
-label on a tiny slice mostly just overlaps its neighbors) is placed
+the percentage for a large-enough slice (≥15% of the total; a label on
+a smaller slice would mostly just overlap its neighbors, so those
+slices skip the direct label) is placed
 just outside the arc's outer radius, over the chart's ordinary
 background — so it can use the already-audited `--text-secondary`
 token exactly like any other text in the library, with zero new

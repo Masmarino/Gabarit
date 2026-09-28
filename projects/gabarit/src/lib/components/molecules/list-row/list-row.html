@@ -1,0 +1,10 @@
+<div class="gbt-list-row">
+  <div class="gbt-list-row__leading" [attr.data-tone]="tone()">
+    <ng-content select="[row-leading]" />
+  </div>
+  <div class="gbt-list-row__main">
+    <div class="gbt-list-row__title"><ng-content /></div>
+    <div class="gbt-list-row__meta"><ng-content select="[row-meta]" /></div>
+  </div>
+  <div class="gbt-list-row__trailing"><ng-content select="[row-trailing]" /></div>
+</div>

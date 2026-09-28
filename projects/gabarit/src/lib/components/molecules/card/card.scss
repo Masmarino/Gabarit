@@ -1,18 +1,135 @@
 :host {
-  display: block;
+  --gbt-card-radius: var(--site-border-radius-lg);
+  --gbt-card-focus-offset: -2px;
+
+  position: relative;
+  display: grid;
+  grid-template-areas:
+    'gbt-card-header'
+    'gbt-card-box';
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+}
+
+:host:has(> .gbt-card[data-variant='outlined']) {
+  --gbt-card-radius: var(--site-border-radius);
+}
+
+:host:has(> .gbt-card[data-selected]) {
+  --gbt-card-focus-offset: -5px;
+}
+
+.gbt-card__header {
+  grid-area: gbt-card-header;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.gbt-card__icon {
+  display: inline-flex;
+  flex: none;
+  align-self: flex-start;
+  align-items: center;
+  justify-content: center;
+  height: 1.5rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.gbt-card__icon--status gbt-icon {
+  box-sizing: border-box;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0.1875rem;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.gbt-card__titles {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.gbt-card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5rem;
+  overflow-wrap: anywhere;
+}
+
+.gbt-card__header > .gbt-card__title {
+  flex: 1 1 auto;
+}
+
+.gbt-card__description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.25rem;
+}
+
+.gbt-card__header-slot {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.gbt-card__count {
+  flex: none;
+  min-width: 1.25rem;
+  box-sizing: border-box;
+  padding: 0 0.375rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border-color) 8%, transparent);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25rem;
+  text-align: center;
+}
+
+@each $tone in (success, warning, error) {
+  .gbt-card__header[data-tone='#{$tone}'] {
+    .gbt-card__icon,
+    .gbt-card__title {
+      color: var(--color-#{$tone}-text);
+    }
+  }
 }
 
 .gbt-card {
-  background: var(--bg-principal);
-  border-radius: var(--site-border-radius-lg);
-  box-shadow: var(--site-shadow-sm);
+  --gbt-card-radius: var(--site-border-radius-lg);
+  --gbt-card-inner-radius: var(--gbt-card-radius);
+  --gbt-card-edge: var(--gbt-card-border);
+  --gbt-card-focus-offset: -2px;
+
+  grid-area: gbt-card-box;
   position: relative;
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--gbt-card-radius);
+  background: var(--bg-principal);
+  box-shadow: var(--site-shadow-sm);
   overflow: hidden;
   transition: box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 1.25rem 1.5rem;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   line-height: 1.65;
-  color: var(--text-secondary);
 
   &--hoverable {
     cursor: pointer;
@@ -24,20 +141,124 @@
   }
 }
 
-.gbt-card__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
+.gbt-card__body {
+  display: contents;
 }
 
-.gbt-card__title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
+.gbt-card[data-variant='outlined'] {
+  --gbt-card-radius: var(--site-border-radius);
+  --gbt-card-inner-radius: calc(var(--site-border-radius) - 1px);
+
+  border: 1px solid var(--gbt-card-edge);
+  box-shadow: none;
+  overflow: visible;
+
+  &.gbt-card--hoverable:hover,
+  &[data-link]:hover {
+    border-color: var(--border-color);
+    box-shadow: none;
+  }
+}
+
+.gbt-card[data-flush] {
+  padding: 0;
+}
+
+.gbt-card[data-flush] .gbt-card__body {
+  display: block;
+  overflow: clip;
+  border-radius: var(--gbt-card-inner-radius);
+}
+
+.gbt-card[data-selected]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 2px solid var(--gbt-card-edge);
+  border-radius: var(--gbt-card-inner-radius);
+  pointer-events: none;
+}
+
+.gbt-card[data-selected] {
+  --gbt-card-edge: var(--primary);
+  --gbt-card-focus-offset: -5px;
+
+  background: color-mix(in srgb, var(--primary) 4%, var(--bg-principal));
+
+  &[data-variant='outlined']::before {
+    border-width: 1px;
+  }
+}
+
+.gbt-card__selected-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.gbt-card[data-link] {
+  cursor: pointer;
+  transition:
+    box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:not([data-variant='outlined']):hover {
+    box-shadow: var(--site-shadow-lg);
+  }
+}
+
+:host:has(> .gbt-card__header .gbt-card__link:hover) > .gbt-card[data-link] {
+  box-shadow: var(--site-shadow-lg);
+
+  &[data-variant='outlined'] {
+    border-color: var(--border-color);
+    box-shadow: none;
+  }
+}
+
+// Link mode: the body's own controls sit above the stretched link's overlay (z-index 1), so they stay
+// clickable. Zero specificity (`:where()`), so a control's own position/z-index wins.
+:where(.gbt-card[data-link])
+  ::ng-deep
+  :where(
+    a:not(.gbt-card__link),
+    button,
+    input,
+    select,
+    textarea,
+    summary,
+    label,
+    [tabindex]:not([tabindex='-1'])
+  ) {
+  position: relative;
+  z-index: 2;
+}
+
+// Same lift for the header's controls ([card-header-actions], a custom [card-header]): the overlay
+// covers the header row too if the host grid does not apply (e.g. `display` overridden on gbt-card).
+:where(.gbt-card__header:has(~ .gbt-card[data-link]))
+  ::ng-deep
+  :where(
+    a:not(.gbt-card__link),
+    button,
+    input,
+    select,
+    textarea,
+    summary,
+    label,
+    [tabindex]:not([tabindex='-1'])
+  ) {
+  position: relative;
+  z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-card,
+  .gbt-card[data-link] {
+    transition: none;
+  }
 }

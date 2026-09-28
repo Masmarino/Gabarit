@@ -96,6 +96,22 @@ describe('FileUpload', () => {
     expect(fileRows(fixture)[0].textContent).toContain('deux.pdf')
   })
 
+  it('keeps only the first file and reports the rest when several are dropped at once in single mode', () => {
+    const fixture = setup()
+    selectFiles(fixture, [
+      new File(['a'], 'un.pdf'),
+      new File(['b'], 'deux.pdf'),
+      new File(['c'], 'trois.pdf'),
+    ])
+
+    expect(fileRows(fixture).length).toBe(1)
+    expect(fileRows(fixture)[0].textContent).toContain('un.pdf')
+    const rejection = fixture.nativeElement.querySelector('.gbt-file-upload__rejections')
+    expect(rejection).not.toBeNull()
+    expect(rejection.textContent).toContain('deux.pdf')
+    expect(rejection.textContent).toContain('trois.pdf')
+  })
+
   it('accumulates files when multiple', () => {
     const fixture = setup()
     fixture.componentRef.setInput('multiple', true)

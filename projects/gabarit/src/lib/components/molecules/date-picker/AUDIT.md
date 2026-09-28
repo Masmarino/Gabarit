@@ -6,9 +6,9 @@ Storybook (stories `Empty`, `WithValue`, `Clearable`, `TwoMonths`,
 keyboard use and
 `getBoundingClientRect` run in the browser console — and by code
 review (`date-picker.ts`, `date-picker.html`, `date-picker.scss`,
-`date-picker-calendar.ts`). This is the most complex keyboard pattern
-in the library so far, per the issue's own warning; the checklist
-below is correspondingly more detailed than most.
+`date-picker-calendar.ts`). This is one of the more complex keyboard
+patterns in the library, so the checklist below is correspondingly
+more detailed than most.
 
 ## Checklist
 
@@ -61,18 +61,9 @@ text heading. The two visible months are never independently
 navigable — the second is always "the first's next month" — so giving
 it its own selects would let the two get out of sync with each other,
 which the component's whole navigation model (a single `anchorDate`)
-deliberately prevents.
-
-**Fixed during review**: the first version placed the selects in the
-shared nav row (alongside the previous/next buttons), leaving the
-second month's plain-text heading as the only heading above *its*
-grid — a heading the first month didn't have in that row, so the two
-calendars' weekday rows landed 25px apart instead of level with each
-other (measured via `getBoundingClientRect` in Storybook). Moving the
-previous/next buttons to their own full-width row, and giving every
-month's heading (whether selects or text) the same fixed height via
-`.gbt-date-picker__month-heading`, fixed it — re-measured at identical
-`top` values for both grids.
+deliberately prevents. The previous/next buttons sit in their own full-width row, and every month's
+heading (whether selects or text) shares the same fixed height via `.gbt-date-picker__month-heading`,
+so both grids' weekday rows land level with each other regardless of which heading a month carries.
 
 ## Why the trigger is a button, not an editable `<input>`
 
@@ -104,3 +95,13 @@ and week order via `weekStartsOn`).
 Dark mode is visually confirmed in Storybook (`Dark` story) — trigger,
 panel, weekday header, and the selected-day circle all legible, no
 contrast regression.
+
+## Shared implementation
+
+The panel and calendar-grid mechanics — `monthViews`, `panelLabel`, `weekdayLabels`, `monthOptions`,
+`yearOptions`, `cellId`, `isFocused`, opening/closing the panel, month/year navigation, the grid's
+keyboard handling, `Escape`, click-outside, and panel positioning (`floatingPanelAnchor()`, shared
+with `Select` and `Autocomplete`) — live in `./calendar-panel.ts` (`CalendarPanel`), a plain class
+instantiated per component instance and shared with `DateRangePicker`. This component owns only its
+value model (`selected`, `isSelected`, `writeValue`, `clear`, `selectDay`) and delegates the rest to
+`this.panel`. `DatePickerMonthView` is an alias of `CalendarPanel`'s own `CalendarPanelView`.

@@ -1,0 +1,42 @@
+<div class="gbt-stat-tile">
+  <span class="gbt-stat-tile__label">
+    <ng-content select="a[gbtStatTileLink]" />
+    @if (!hasLink()) {
+      @if (href(); as target) {
+        <a gbtStatTileLink [attr.href]="target">{{ label() }}</a>
+      } @else {
+        {{ label() }}
+      }
+    }
+  </span>
+  @if (icon(); as name) {
+    <gbt-icon-marker
+      class="gbt-stat-tile__icon"
+      [icon]="name"
+      [tone]="muted() ? 'neutral' : iconTone()"
+      shape="tile"
+    />
+  }
+  <span class="gbt-stat-tile__value">{{ value() }}</span>
+  @if (hint() || trendLabel()) {
+    <span class="gbt-stat-tile__meta">
+      @if (trendLabel(); as text) {
+        <span
+          class="gbt-stat-tile__trend"
+          [attr.data-trend]="trend()"
+          [attr.data-tone]="trendTone()"
+        >
+          @if (trend() === 'up') {
+            <gbt-icon name="arrow-up" />
+          } @else if (trend() === 'down') {
+            <gbt-icon name="arrow-down" />
+          }
+          {{ text }}
+        </span>
+      }
+      @if (hint(); as text) {
+        <span class="gbt-stat-tile__hint">{{ text }}</span>
+      }
+    </span>
+  }
+</div>

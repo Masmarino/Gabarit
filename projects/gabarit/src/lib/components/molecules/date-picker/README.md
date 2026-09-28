@@ -73,12 +73,10 @@ with Angular forms via `ControlValueAccessor`, like `Select` and
 
 ## Scope
 
-Single date only. A range picker (start/end) is a separate, larger
-feature — deliberately left out of this component rather than
-half-built in, per the issue's own recommendation. `min`/`max` date
-bounds (disabling out-of-range days) were also left out: nothing in
-the current use cases needed them, and they're a straightforward
-addition later if one does.
+Single date only. A range picker (start/end) is [`DateRangePicker`](../date-range-picker/README.md),
+a separate component rather than a mode of this one. `min`/`max` date bounds (disabling
+out-of-range days) are also out of scope: nothing in the current use cases needs them, and they're a
+straightforward addition later if one does.
 
 No date library (day.js, date-fns) is used — calendar math (month
 grid, leap years) is hand-rolled in `date-picker-calendar.ts` on top of

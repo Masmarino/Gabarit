@@ -1,0 +1,58 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.gbt-nav-tabs {
+  min-width: 0;
+}
+
+.gbt-nav-tabs__list {
+  position: relative;
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+
+@mixin row {
+  .gbt-nav-tabs__list {
+    flex-direction: row;
+    gap: 0.25rem;
+    overflow-x: auto;
+    box-shadow: inset 0 -1px 0 var(--gbt-hairline);
+    scrollbar-width: none;
+  }
+
+  .gbt-nav-tabs__list[data-hidden-before] {
+    mask-image: linear-gradient(to right, transparent, #000 2.5rem);
+  }
+
+  .gbt-nav-tabs__list[data-hidden-after] {
+    mask-image: linear-gradient(to left, transparent, #000 2.5rem);
+  }
+
+  .gbt-nav-tabs__list[data-hidden-before][data-hidden-after] {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 2.5rem,
+      #000 calc(100% - 2.5rem),
+      transparent
+    );
+  }
+}
+
+.gbt-nav-tabs[data-orientation='vertical'] .gbt-nav-tabs__list {
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gbt-nav-tabs[data-orientation='horizontal'] {
+  @include row;
+}
+
+@container gbt-page-layout (max-width: 768px) {
+  .gbt-nav-tabs[data-orientation='vertical'] {
+    @include row;
+  }
+}

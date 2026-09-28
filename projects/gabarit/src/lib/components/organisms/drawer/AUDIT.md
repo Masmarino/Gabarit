@@ -46,15 +46,6 @@ This also means `Drawer`'s "closed and destroyed" test differs from
 `CLOSE_ANIMATION_MS` first (`vi.useFakeTimers()` / `vi.advanceTimersByTime`),
 whereas `Modal`'s equivalent test asserts this synchronously.
 
-## Why `AppShell`'s mobile drawer wasn't refactored to use this component
-
-Considered and rejected, per the issue's own framing: `AppShell`'s
-internal drawer only ever renders a fixed nav-link list, never
-arbitrary content, and is already shipped and stable. Routing it
-through `gbt-drawer` would add indirection for no behavioral gain,
-while risking a regression on a component real applications already
-depend on.
-
 ## Externalized strings
 
 `closeLabel` defaults to `'Close'`. Tested ("uses an English default

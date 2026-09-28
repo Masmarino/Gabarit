@@ -12,6 +12,7 @@ import {
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { Icon } from '../../atoms/icon/icon'
 import { Tag } from '../../atoms/tag/tag'
+import { floatingPanelAnchor } from '../../shared/floating-panel-position'
 
 export interface SelectOption<T = string> {
   value: T
@@ -35,6 +36,7 @@ let nextSelectId = 0
     '(window:scroll)': 'updatePanelPosition()',
     '(window:resize)': 'updatePanelPosition()',
     '[class.gbt-select--sm]': "size() === 'sm'",
+    '[class.gbt-select--full]': 'fullWidth()',
   },
   providers: [
     {
@@ -50,6 +52,9 @@ export class Select<T = string> implements ControlValueAccessor {
   id = input<string>(`gbt-select-${++nextSelectId}`)
   label = input<string>('')
   size = input<'md' | 'sm'>('md')
+  hint = input<string>('')
+  hideLabel = input(false, { transform: booleanAttribute })
+  fullWidth = input(false, { transform: booleanAttribute })
   options = input.required<SelectOption<T>[]>()
   multiple = input(false, { transform: booleanAttribute })
   chips = input(false, { transform: booleanAttribute })
@@ -59,6 +64,7 @@ export class Select<T = string> implements ControlValueAccessor {
   errorMessage = input<string | null>(null)
   selectedCountLabel = input<(count: number) => string>((count) => `${count} selected`)
   chipRemoveLabel = input<(label: string) => string>((label) => `Remove ${label}`)
+  noOptionsMessage = input<string>('No options')
 
   protected readonly open = signal(false)
   protected readonly activeIndex = signal(-1)
@@ -68,6 +74,8 @@ export class Select<T = string> implements ControlValueAccessor {
 
   protected readonly labelId = computed(() => `${this.id()}-label`)
   protected readonly chipsId = computed(() => `${this.id()}-chips`)
+  protected readonly hintId = computed(() => `${this.id()}-hint`)
+  protected readonly showHint = computed(() => !!this.hint() && !this.errorMessage())
   protected readonly isDisabled = computed(() => this.disabled() || this.formDisabled())
 
   private onChange: (value: T | T[] | null) => void = () => {}
@@ -116,11 +124,6 @@ export class Select<T = string> implements ControlValueAccessor {
     () => this.chips() && this.multiple() && this.selectedOptions().length > 0,
   )
 
-  /**
-   * In chips mode the trigger keeps showing the placeholder, so the selection
-   * is conveyed to assistive technology by describing the trigger with the
-   * chip row itself. The error message keeps its own id in the list.
-   */
   protected readonly describedBy = computed(() => {
     const ids: string[] = []
     if (this.chipsVisible()) {
@@ -128,6 +131,8 @@ export class Select<T = string> implements ControlValueAccessor {
     }
     if (this.errorMessage()) {
       ids.push(`${this.id()}-error`)
+    } else if (this.showHint()) {
+      ids.push(this.hintId())
     }
     return ids.length > 0 ? ids.join(' ') : null
   })
@@ -141,6 +146,8 @@ export class Select<T = string> implements ControlValueAccessor {
     this.open() && this.activeIndex() >= 0 ? `${this.id()}-option-${this.activeIndex()}` : null,
   )
 
+  protected readonly hasNoOptions = computed(() => this.options().length === 0)
+
   protected isSelected(value: T): boolean {
     return this.selected().includes(value)
   }
@@ -151,11 +158,14 @@ export class Select<T = string> implements ControlValueAccessor {
     }
     this.open.update((value) => !value)
     if (this.open()) {
+      const options = this.options()
       this.activeIndex.set(
-        Math.max(
-          0,
-          this.options().findIndex((o) => this.isSelected(o.value)),
-        ),
+        options.length === 0
+          ? -1
+          : Math.max(
+              0,
+              options.findIndex((o) => this.isSelected(o.value)),
+            ),
       )
       this.updatePanelPosition()
     } else {
@@ -164,39 +174,24 @@ export class Select<T = string> implements ControlValueAccessor {
   }
 
   protected updatePanelPosition(): void {
-    if (!this.open()) {
-      return
-    }
     const trigger = this.elementRef.nativeElement.querySelector(
       '.gbt-select__trigger',
     ) as HTMLElement | null
-    if (!trigger) {
-      return
-    }
-    const rect = trigger.getBoundingClientRect()
-    // In chips mode the chip row sits between the trigger and the panel.
-    // Anchoring the panel to the trigger alone would lay it over the chips,
-    // whose remove buttons are focusable — WCAG 2.4.11 "focus not obscured".
-    const chipRow = this.elementRef.nativeElement.querySelector(
-      '.gbt-select__chips',
-    ) as HTMLElement | null
-    const anchorBottom = chipRow
-      ? Math.max(rect.bottom, chipRow.getBoundingClientRect().bottom)
-      : rect.bottom
-    this.panelStyle.set({
-      top: `${anchorBottom + 6}px`,
-      left: `${rect.left}px`,
-      width: `${rect.width}px`,
+    const anchor = floatingPanelAnchor(this.open(), trigger, (rect) => {
+      const chipRow = this.elementRef.nativeElement.querySelector(
+        '.gbt-select__chips',
+      ) as HTMLElement | null
+      return chipRow ? Math.max(rect.bottom, chipRow.getBoundingClientRect().bottom) : rect.bottom
     })
+    if (anchor) {
+      this.panelStyle.set({
+        top: `${anchor.bottom}px`,
+        left: `${anchor.left}px`,
+        width: `${anchor.rect.width}px`,
+      })
+    }
   }
 
-  /**
-   * Removes the chip at `index`. Refuses to mutate anything while the control
-   * is disabled (the remove buttons are not rendered then, but a programmatic
-   * caller must not be able to bypass the disabled state either), and moves
-   * focus off the button it is about to destroy — otherwise focus falls back
-   * to `<body>`.
-   */
   protected removeChip(value: T, index: number): void {
     if (this.isDisabled()) {
       return
@@ -205,9 +200,6 @@ export class Select<T = string> implements ControlValueAccessor {
     const removeButtons = Array.from(
       host.querySelectorAll<HTMLElement>('.gbt-select__chips .gbt-tag__remove'),
     )
-    // `@for` tracks options by value, so the surviving chips keep their DOM
-    // nodes across this removal — the element resolved here is still the right
-    // one once the view updates.
     const nextFocus =
       removeButtons[index + 1] ??
       removeButtons[index - 1] ??
@@ -224,8 +216,6 @@ export class Select<T = string> implements ControlValueAccessor {
         : [...current, value]
       this.selected.set(next)
       this.onChange(next)
-      // A chip can be removed without ever opening the panel, so this is the
-      // only place that marks the control as touched in that flow.
       this.onTouched()
     } else {
       this.selected.set([value])
@@ -263,11 +253,15 @@ export class Select<T = string> implements ControlValueAccessor {
         break
       case 'ArrowDown':
         event.preventDefault()
-        this.activeIndex.update((i) => Math.min(i + 1, options.length - 1))
+        if (options.length > 0) {
+          this.activeIndex.update((i) => Math.min(i + 1, options.length - 1))
+        }
         break
       case 'ArrowUp':
         event.preventDefault()
-        this.activeIndex.update((i) => Math.max(i - 1, 0))
+        if (options.length > 0) {
+          this.activeIndex.update((i) => Math.max(i - 1, 0))
+        }
         break
       case 'Enter':
       case ' ': {

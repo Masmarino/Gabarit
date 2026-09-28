@@ -1,0 +1,25 @@
+@if (landmark()) {
+  <nav
+    class="gbt-nav-tabs"
+    [attr.data-orientation]="orientation()"
+    [attr.aria-label]="ariaLabel() || null"
+  >
+    <ng-container [ngTemplateOutlet]="links" />
+  </nav>
+} @else {
+  <div class="gbt-nav-tabs" [attr.data-orientation]="orientation()">
+    <ng-container [ngTemplateOutlet]="links" />
+  </div>
+}
+
+<ng-template #links>
+  <div
+    #list
+    class="gbt-nav-tabs__list"
+    [attr.data-hidden-before]="hiddenBefore() ? '' : null"
+    [attr.data-hidden-after]="hiddenAfter() ? '' : null"
+    (scroll)="updateOverflow()"
+  >
+    <ng-content />
+  </div>
+</ng-template>

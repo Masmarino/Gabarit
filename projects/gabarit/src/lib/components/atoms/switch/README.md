@@ -8,11 +8,12 @@ dans un formulaire à valider.
 
 ## Inputs
 
-| Input      | Type      | Default | Role                                  |
-| ---------- | --------- | ------- | -------------------------------------- |
-| `id`       | `string`  | généré  | `id` du champ natif.                   |
-| `label`    | `string`  | `''`    | Texte affiché à côté de la bascule.    |
-| `disabled` | `boolean` | `false` | Désactive le contrôle.                 |
+| Input      | Type      | Default | Role                                                                 |
+| ---------- | --------- | ------- | -------------------------------------------------------------------- |
+| `id`       | `string`  | généré  | `id` du champ natif.                                                 |
+| `label`    | `string`  | `''`    | Texte affiché à côté de la bascule.                                  |
+| `disabled` | `boolean` | `false` | Désactive le contrôle.                                               |
+| `hint`     | `string`  | `''`    | Texte d'aide sous le libellé, relié au champ par `aria-describedby`. |
 
 S'intègre aux formulaires Angular via `ControlValueAccessor`, comme
 `Checkbox` — utilisable indifféremment avec `formControlName` ou
@@ -22,7 +23,22 @@ S'intègre aux formulaires Angular via `ControlValueAccessor`, comme
 
 ```html
 <gbt-switch label="Recevoir les notifications" formControlName="notifications" />
+
+<gbt-switch
+  label="Envoyer un résumé quotidien"
+  hint="Un e-mail par jour, à 8 h."
+  formControlName="digest"
+/>
 ```
+
+## Texte d'aide (`hint`)
+
+Sans `hint`, le rendu ne comporte aucun élément supplémentaire (hôte inline).
+Avec `hint`, l'hôte devient un bloc et le texte
+s'affiche sous le libellé, aligné sur celui-ci (piste 2,25 rem + espace
+0,5 rem) — plus besoin d'une indentation « magique » côté application.
+Le texte est un `<p>` **hors** du `<label>` : il décrit le champ
+(`aria-describedby`) sans s'ajouter à son nom accessible.
 
 ## Accessibilité
 

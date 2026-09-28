@@ -1,0 +1,64 @@
+# RGAA Audit — MfaSettings
+
+Checked against RGAA 4.1.2 by the spec (`mfa-settings.spec.ts`, jsdom, including axe-core runs with the
+WCAG 2.0/2.1/2.2 A and AA rules, colour contrast excluded) and by the play functions of the
+`Auth/MfaSettings` stories (`Loading`, `Failed`, `Enabled`, `FewCodesLeft`, `NoCodesLeft`,
+`RegeneratePrompt`, `RegenerateWrongPassword`, `RegeneratedCodes`, `RegeneratedCodesAcknowledged`,
+`DisablePrompt`, `DisableConfirmation`, `DisableWrongPassword`, `DisableRevokesSession`, `Disabled`,
+`EnrollPrompt`, `EnrollScan`, `EnrollWrongCode`, `EnrollCodes`, `EnrollCodesAcknowledged`,
+`PasskeyOnly`, `PasskeyOnlyFewCodes`, `PasskeyOnlyEnrollPrompt`, `AppAndPasskey`,
+`AppAndPasskeyRemoveConfirmation`, `Dark`, `Phone`, `PhoneEnrollScan`, `Localised`), plus code review
+(`mfa-settings.ts`, `mfa-settings.html`, `mfa-settings.scss`). What the nested
+`gbt-totp-qr`, `gbt-backup-codes`, `gbt-confirm-danger-modal`, `gbt-input` and `gbt-button` do on
+their own is covered by their own audits.
+
+## Checklist
+
+| Criterion  | Short title                                  | Verification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Result            |
+| ---------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 1.1        | Images have a text alternative               | The QR of the scan step is an `img` with an alternative (axe run on the scan step, spec); the icons of the rows (the low-codes triangle) are `aria-hidden`.                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Compliant         |
+| 3.1        | Information not conveyed by colour alone     | The low-codes warning carries an icon and a sentence ("Regenerate some so that you do not lose access to your account.") on top of its tone, at 3, 1 and 0 codes left, and not at 4 (spec, `it.each`, and the `lowCodesThreshold` tests). The app's status is a word in a badge ("On", "Optional"), not a colour (spec).                                                                                                                                                                                                                                                                                                | Compliant         |
+| 3.2        | Text contrast                                | Not checked by this component's tests (axe's `color-contrast` rule is off in jsdom). The card only uses the kit's text and tone tokens; `Dark` shows the dark theme for visual review.                                                                                                                                                                                                                                                                                                                                                                                                                                  | Not verified here |
+| 7.1        | Scripts compatible with assistive technology | Loading: the skeleton is `aria-busy="true"` and a visually hidden `role="status"` beside it (no `aria-busy` ancestor, which would keep it quiet) names it (spec). Load failure: one `role="alert"` and no other live region (spec). The request failures above a form (429, server errors) are `role="alert"` alerts (spec). The warnings on the page from the start (no factor, "Do not leave this page") are static notes with no `role` and no `aria-live` (spec). The removal is confirmed in a `role="dialog"` (stories `DisableConfirmation`, `AppAndPasskeyRemoveConfirmation`); axe passes with it open (spec). | Compliant         |
+| 7.3        | Keyboard operable                            | Every action is a native `<button>` (`gbt-button`); the password and code prompts are `<form>`s, so Enter submits them (spec submits through the form's `submit` event). A second submit or a second confirmation while a request runs is ignored (spec).                                                                                                                                                                                                                                                                                                                                                               | Compliant         |
+| 7.1 / 12.8 | Focus management                             | A new state moves the focus where the user acts next (spec): the password field when a prompt opens and after an empty or refused password; the code field after an empty or refused code; the instruction line (`tabindex="-1"`) of the scan and codes steps, and the status line after **Done**; the opener after **Cancel** (prompt and scan). Stories `RegeneratePrompt`, `EnrollPrompt`, `PasskeyOnlyEnrollPrompt`, `RegenerateWrongPassword` check the focus in a real browser.                                                                                                                                   | Compliant         |
+| 8.9 / 9.1  | Headings                                     | The card's heading is an `h2` (spec, labels test) that names the current step (code review) ("Authenticator app", "Set up the authenticator app", "Backup codes").                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Compliant         |
+| 11.1       | Form fields have a label                     | "Current password" is the `label` of the password field and "6-digit code" the one of the code field (spec, `label[for]`); axe passes with each form open (spec).                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Compliant         |
+| 11.10      | Input control                                | An empty password or code is refused before any request, with a message under the field ("Enter your password", "Enter the 6-digit code from your app"); a wrong one says "Incorrect password" / "Incorrect code" under the field; the message clears as soon as the user types (spec).                                                                                                                                                                                                                                                                                                                                 | Compliant         |
+| 11.13      | Purpose of a field for autofill              | The password field has `type="password"` and `autocomplete="current-password"`; the code field `autocomplete="one-time-code"`, `inputmode="numeric"`, `spellcheck="false"`, `autocapitalize="off"`, `enterkeyhint="go"` (spec).                                                                                                                                                                                                                                                                                                                                                                                         | Compliant         |
+| 10.11      | Reflow                                       | At 375 px (`Phone`, `PhoneEnrollScan`) and in the 920 px settings column, the play functions check that the page does not scroll horizontally and that nothing sticks out of the card; on a viewport of 480 px or less they also check every button of the card is at least 44 px high.                                                                                                                                                                                                                                                                                                                                 | Compliant         |
+| 13.2       | No unexpected change of context              | Nothing is sent without a click: the removal needs the password, then a confirmation in a dialog (spec). The session revocation is left to the application (`sessionRevoked`), which decides where the user goes; the card meanwhile turns inert ("You have been signed out", focused, no action left) (spec).                                                                                                                                                                                                                                                                                                          | Compliant         |
+
+## Beyond RGAA
+
+- **One primary button per state** (spec, "has at most one primary button", and every story's layout check).
+- **Codes shown once**: closing or reloading the tab before they are acknowledged asks the browser to
+  confirm; the prompt stops once they are acknowledged or the card is destroyed (spec).
+- **Secrets** (password, secret, otpauth URL, code, backup codes) are dropped when they did their job and
+  on destroy (spec).
+
+## Externalized strings
+
+Every user-facing string of the card is a key of `MfaSettingsLabels`, with an English default in
+`DEFAULT_MFA_SETTINGS_LABELS`, overridable application-wide with `provideAuthLabels({ mfaSettings })`
+and per instance with the `labels` input (which wins, key by key; both paths are covered by the spec,
+and the `Localised` story sets every key in French):
+
+- headings and help: `heading`, `enrollingHeading`, `codesHeading`, `help`, `codesHelp`;
+- loading and failure: `loading`, `loadFailed`, `retry`, `tooManyAttempts`;
+- the prompts: `enrollLead`, `enrollSubmit`, `enrollBusy`, `enrollFailed`, `regenerateLead`,
+  `regenerateSubmit`, `regenerateBusy`, `regenerateFailed`, `disableSubmit`, `disableCheckBusy`,
+  `disableFailed`, `currentPassword`, `showPassword`, `hidePassword`, `enterPassword`, `wrongPassword`,
+  `cancel`;
+- the app's way out, with a passkey left (`removeTitle`, `removeHelp`, `removeAction`,
+  `removeDialogHeading`, `removeDialogMessage`, `removePromptLead`, `removeBusy`) or without
+  (`resetTitle`, `resetHelp`, `resetAction`, `resetDialogHeading`, `resetDialogMessage`,
+  `resetPromptLead`, `resetBusy`), and the dialog's `close`;
+- the rows: `appConfigured`, `enabled`, `appHelp`, `appHelpWithPasskey`, `noApp`, `optional`,
+  `noAppHelp`, `addApp`, `backupCodesTitle`, `backupCodesHelp`, `regenerateCodes`, `lowCodes`,
+  `noFactorWarning`, `setUpNow`, and `codesLeft(count)` (a function, for the plural);
+- the enrolment and the codes: `scanLead`, `codeLabel`, `activate`, `verifying`, `enterCode`,
+  `wrongCode`, `activationFailed`, `codesLeadEnrolled`, `codesLeadRegenerated`, `dontLeave`, `done`.
+
+The nested QR and backup codes take their strings from `provideAuthLabels({ totpQr, backupCodes })`
+(this card's `labels` input does not reach them). The backend's own error text is never shown.

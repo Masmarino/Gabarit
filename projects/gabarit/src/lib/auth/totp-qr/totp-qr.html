@@ -1,0 +1,23 @@
+<div class="gbt-totp-qr">
+  @if (failed()) {
+    <p class="gbt-totp-qr__fallback" role="status">{{ text().fallback }}</p>
+  } @else {
+    <div class="gbt-totp-qr__frame" [attr.aria-busy]="dataUrl() === null ? 'true' : null">
+      @if (dataUrl(); as src) {
+        <img [src]="src" [alt]="text().imageAlt" width="224" height="224" />
+      }
+    </div>
+  }
+
+  <div class="gbt-totp-qr__secret">
+    <p class="gbt-totp-qr__label">
+      {{ failed() ? text().fallbackSecretLabel : text().secretLabel }}
+    </p>
+    <gbt-copy-field
+      [value]="secret()"
+      [copyLabel]="text().copyLabel"
+      [copiedText]="text().copied"
+      [failedText]="text().copyFailed"
+    />
+  </div>
+</div>

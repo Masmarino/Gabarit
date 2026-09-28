@@ -24,18 +24,17 @@ the generic 7:1 pairing check in `token-usage.spec.ts` (already proven
 compliant for `Toaster`, same token pair, no new tokens needed).
 
 One difference from `Toaster`: a 1px `rgba(255, 255, 255, 0.15)`
-border was added after visual review in Storybook (`Dark` story)
-showed the bubble nearly disappearing against a dark-themed host page
-— `--bg-inverse` and the dark theme's own `--bg-principal` both
-resolve to `--grey-900`, so box-shadow alone wasn't enough separation.
-The border isn't a semantic token (it's a translucent white overlay,
-not a flat color), so it doesn't interact with `token-usage.spec.ts`'s
+border keeps the bubble visible against a dark-themed host page —
+`--bg-inverse` and the dark theme's own `--bg-principal` both resolve
+to `--grey-900`, so box-shadow alone isn't enough separation. The
+border isn't a semantic token (it's a translucent white overlay, not a
+flat color), so it doesn't interact with `token-usage.spec.ts`'s
 palette/contrast checks — it's a visual affordance on top of the
 already-compliant text contrast, not a substitute for it.
 
 ## Positioning
 
 No collision/flip handling if a bubble would render off-screen — the
-same trade-off `gbt-menu` already makes. Documented in the README as
+same trade-off `gbt-popover` already makes. Documented in the README as
 the application's responsibility (choose a `position` that fits the
 layout).

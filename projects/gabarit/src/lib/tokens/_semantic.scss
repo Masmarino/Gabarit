@@ -5,8 +5,11 @@
   --bg-principal: #ffffff;
   --bg-panel: #f5f5f7;
   --bg-hover: rgba(0, 0, 0, 0.05);
+  --bg-track: var(--grey-200);
 
   --border-color: #7798b3;
+  --gbt-hairline: color-mix(in srgb, var(--border-color) 45%, transparent);
+  --gbt-card-border: color-mix(in srgb, var(--border-color) 60%, transparent);
 
   --text-primary: var(--grey-900);
   --text-secondary: var(--grey-700);
@@ -18,20 +21,20 @@
   --text-on-error: #ffffff;
 
   --color-success-base: var(--green-500);
-  --color-success-text: #1a644c;
+  --color-success-text: #195e48;
   --color-success-hover: var(--green-700);
   --color-success-bg: var(--green-100);
   --color-success-bg-text: var(--green-800);
 
   --color-warning-base: #c38927;
-  --color-warning-text: #755217;
+  --color-warning-text: #6f4d16;
   --color-warning-hover: var(--amber-600);
   --color-warning-bg: var(--amber-100);
   --color-warning-bg-text: var(--amber-800);
 
   --color-error-base: var(--red-500);
   --color-error-fill: #a82727;
-  --color-error-text: #a82727;
+  --color-error-text: #9e2525;
   --color-error-hover: #8f2121;
   --color-error-bg: var(--red-100);
   --color-error-bg-text: var(--red-800);
@@ -58,6 +61,10 @@
   --site-border-radius-sm: 10px;
   --site-border-radius-lg: 24px;
 
+  --gbt-control-height-sm: 2rem;
+  --gbt-control-height-md: 2.375rem;
+  --gbt-control-height-lg: 2.75rem;
+
   --site-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.06);
   --site-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
   --site-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
@@ -66,6 +73,7 @@
   --site-transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
   --font-family: 'Inter', sans-serif;
+  --gbt-font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 }
 
 @mixin dark-tokens {
@@ -76,7 +84,10 @@
   --bg-principal: var(--grey-900);
   --bg-panel: #0f1c26;
   --bg-hover: rgba(255, 255, 255, 0.06);
+  --bg-track: var(--grey-800);
   --border-color: #436a80;
+  --gbt-hairline: color-mix(in srgb, var(--border-color) 45%, transparent);
+  --gbt-card-border: color-mix(in srgb, var(--border-color) 60%, transparent);
 
   --text-primary: var(--grey-50);
 
@@ -88,7 +99,7 @@
   --text-on-error: var(--grey-900);
 
   --color-success-base: var(--green-400);
-  --color-success-text: #54b592;
+  --color-success-text: #56b693;
   --color-success-hover: var(--green-500);
   --color-success-bg: var(--green-900);
   --color-success-bg-text: var(--green-100);
@@ -101,7 +112,7 @@
 
   --color-error-base: var(--red-400);
   --color-error-fill: #e98989;
-  --color-error-text: #e98989;
+  --color-error-text: #e98b8b;
   --color-error-hover: #eea3a3;
   --color-error-bg: var(--red-900);
   --color-error-bg-text: var(--red-100);

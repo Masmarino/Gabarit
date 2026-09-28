@@ -2,11 +2,7 @@ import { TestBed } from '@angular/core/testing'
 import { Stepper, StepperStep } from './stepper'
 import { expectNoA11yViolations } from '../../../../testing/expect-no-a11y-violations'
 
-const STEPS: StepperStep[] = [
-  { label: 'Compte' },
-  { label: 'Livraison' },
-  { label: 'Paiement' },
-]
+const STEPS: StepperStep[] = [{ label: 'Compte' }, { label: 'Livraison' }, { label: 'Paiement' }]
 
 function setup(steps: StepperStep[] = STEPS, activeIndex = 0) {
   const fixture = TestBed.createComponent(Stepper)

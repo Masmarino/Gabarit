@@ -39,9 +39,9 @@ describe('Avatar', () => {
 
   it('names the initials fallback with the full name, not the visible letters', () => {
     const fixture = setup()
-    expect(fixture.nativeElement.querySelector('.gbt-avatar__initials').getAttribute('aria-label')).toBe(
-      'Ada Lovelace',
-    )
+    expect(
+      fixture.nativeElement.querySelector('.gbt-avatar__initials').getAttribute('aria-label'),
+    ).toBe('Ada Lovelace')
   })
 
   it('shows the image when a src is given', () => {
@@ -72,19 +72,43 @@ describe('Avatar', () => {
     )
   })
 
+  it('tries a corrected src again after the previous picture failed', () => {
+    const fixture = TestBed.createComponent(Avatar)
+    fixture.componentRef.setInput('name', 'Ada Lovelace')
+    fixture.componentRef.setInput('src', 'https://example.com/broken.jpg')
+    fixture.detectChanges()
+    fixture.nativeElement.querySelector('img').dispatchEvent(new Event('error'))
+    fixture.detectChanges()
+    expect(fixture.nativeElement.querySelector('img')).toBeNull()
+
+    fixture.componentRef.setInput('src', 'https://example.com/fixed.jpg')
+    fixture.detectChanges()
+    expect(fixture.nativeElement.querySelector('img')?.getAttribute('src')).toBe(
+      'https://example.com/fixed.jpg',
+    )
+
+    // And a failure of the new one still falls back.
+    fixture.nativeElement.querySelector('img').dispatchEvent(new Event('error'))
+    fixture.detectChanges()
+    expect(fixture.nativeElement.querySelector('img')).toBeNull()
+  })
+
   it('defaults to the md size', () => {
     const fixture = setup()
     expect(fixture.nativeElement.getAttribute('data-size')).toBe('md')
   })
 
-  it.each<'sm' | 'md' | 'lg'>(['sm', 'md', 'lg'])('reflects the %s size as a data attribute', (size) => {
-    const fixture = TestBed.createComponent(Avatar)
-    fixture.componentRef.setInput('name', 'Ada Lovelace')
-    fixture.componentRef.setInput('size', size)
-    fixture.detectChanges()
+  it.each<'sm' | 'md' | 'lg'>(['sm', 'md', 'lg'])(
+    'reflects the %s size as a data attribute',
+    (size) => {
+      const fixture = TestBed.createComponent(Avatar)
+      fixture.componentRef.setInput('name', 'Ada Lovelace')
+      fixture.componentRef.setInput('size', size)
+      fixture.detectChanges()
 
-    expect(fixture.nativeElement.getAttribute('data-size')).toBe(size)
-  })
+      expect(fixture.nativeElement.getAttribute('data-size')).toBe(size)
+    },
+  )
 
   it('has no a11y violations, initials fallback', async () => {
     await expectNoA11yViolations(setup().nativeElement)

@@ -1,0 +1,30 @@
+:host {
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+  vertical-align: middle;
+}
+
+.gbt-user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.5rem;
+
+  &[data-size='md'] {
+    gap: 0.625rem;
+    font-size: 0.875rem;
+  }
+}
+
+.gbt-user-chip__name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

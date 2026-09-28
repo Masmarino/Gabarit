@@ -6,7 +6,9 @@ import { Tag } from './tag'
 @Component({
   standalone: true,
   imports: [Tag],
-  template: `<gbt-tag [color]="color" [removable]="removable" (removed)="onRemoved()">{{ label }}</gbt-tag>`,
+  template: `<gbt-tag [color]="color" [removable]="removable" (removed)="onRemoved()">{{
+    label
+  }}</gbt-tag>`,
 })
 class HostComponent {
   color = '#1a1a2e'

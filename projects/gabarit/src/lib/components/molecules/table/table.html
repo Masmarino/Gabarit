@@ -16,13 +16,16 @@
       <tr
         [class.gbt-table__row--clickable]="clickableRows()"
         [attr.tabindex]="clickableRows() ? 0 : null"
-        (click)="clickableRows() && rowClick.emit(row)"
+        (click)="clickableRows() && onRowClick($event, row)"
         (keydown)="clickableRows() && onRowKeydown($event, row)"
       >
         @for (column of columns(); track column.key) {
           <td>
             @if (column.cellTemplate) {
-              <ng-container [ngTemplateOutlet]="column.cellTemplate" [ngTemplateOutletContext]="{ $implicit: row }" />
+              <ng-container
+                [ngTemplateOutlet]="column.cellTemplate"
+                [ngTemplateOutletContext]="{ $implicit: row }"
+              />
             } @else {
               {{ cellValue(row, column) }}
             }

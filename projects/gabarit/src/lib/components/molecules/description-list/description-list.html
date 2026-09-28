@@ -1,4 +1,9 @@
-<dl class="gbt-description-list" [attr.data-layout]="layout()">
+<dl
+  class="gbt-description-list"
+  [attr.data-layout]="layout()"
+  [attr.data-value-align]="valueAlign() === 'end' ? 'end' : null"
+  [attr.data-responsive]="responsive() === 'container' ? 'container' : null"
+>
   @for (item of items(); track $index) {
     <dt class="gbt-description-list__term">{{ item.term }}</dt>
     <dd class="gbt-description-list__value">

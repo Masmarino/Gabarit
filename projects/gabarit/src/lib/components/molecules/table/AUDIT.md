@@ -41,11 +41,23 @@ message".
 A column's `cellTemplate` projects arbitrary consumer-authored content
 into a `<td>` (see README) — its accessibility is the consumer's
 responsibility, the same delegation already applied to 5.5 above.
-Combining `cellTemplate`'s own interactive content with `clickableRows`
-on the same table is documented as unsupported (a click on the
-projected element would bubble up and also fire `rowClick`) rather
-than guarded against by the component — a known limitation, not a
-defect, in the same spirit as 5.6's "no row header" note.
+
+## Nested interactive `cellTemplate` content
+
+A click or `Enter`/`Space` on a nested interactive element inside a `cellTemplate` cell is handled by
+that element alone — the row's `(click)`/`(keydown)` handlers check `event.target` against native
+interactive elements (`button`, `a[href]`, `input`, `select`, `textarea`, `label`, `summary`,
+`[contenteditable]:not([contenteditable="false"])`) and the WAI-ARIA widget roles (`button`, `link`,
+`checkbox`, `switch`, `radio`, `tab`, `option`, `menuitem`, `menuitemcheckbox`, `menuitemradio`,
+`textbox`, `searchbox`, `slider`, `spinbutton`) before firing `rowClick`. `label` covers a `<label>`
+wrapping a checkbox or radio: a click on the label's own text targets the label, not its descendant
+input, so it would otherwise slip past the guard. `[tabindex]` is deliberately excluded from the
+selector — the clickable row itself carries `tabindex="0"`, and including it would match on every
+click within the row. Tested ("a nested interactive cellTemplate control inside a clickable row" and
+"other kinds of interactive content inside a clickable row" describe blocks: a button, a `<summary>`,
+a `contenteditable` region, a non-`button` ARIA role, and a checkbox's `<label>` all suppress
+`rowClick` without swallowing their own activation, while a plain cell of the same row still fires it
+on click and on Enter).
 
 ## Cursor and hover scoped to interactive rows
 

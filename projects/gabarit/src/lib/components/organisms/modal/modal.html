@@ -6,6 +6,7 @@
       role="dialog"
       aria-modal="true"
       [attr.aria-label]="heading() || null"
+      [attr.data-busy]="busy() ? '' : null"
       tabindex="-1"
       #dialog
       (keydown)="onDialogKeydown($event)"
@@ -34,15 +35,18 @@
         <button
           type="button"
           class="gbt-modal__close"
-          (click)="closed.emit()"
+          (click)="onCloseClick()"
           [attr.aria-label]="closeLabel()"
+          [attr.aria-disabled]="busy() ? 'true' : null"
         >
           <gbt-icon name="x" aria-hidden="true" />
         </button>
       </header>
-      <div class="gbt-modal__body">
+      <div class="gbt-modal__body" [attr.aria-busy]="busy() ? 'true' : null">
         <ng-content />
       </div>
+      <div class="gbt-modal__footer"><ng-content select="[modal-footer]" /></div>
+      <span class="gbt-modal__status" role="status">{{ busy() ? busyLabel() : '' }}</span>
     </div>
   </div>
 }

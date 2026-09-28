@@ -5,6 +5,7 @@ import {
   computed,
   forwardRef,
   input,
+  model,
   signal,
 } from '@angular/core'
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
@@ -17,7 +18,9 @@ let nextCheckboxId = 0
   templateUrl: './checkbox.html',
   styleUrl: './checkbox.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-
+  host: {
+    '[class.gbt-checkbox-host--hint]': '!!hint()',
+  },
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -30,8 +33,10 @@ export class Checkbox implements ControlValueAccessor {
   id = input<string>(`gbt-checkbox-${++nextCheckboxId}`)
   label = input<string>('')
   disabled = input(false, { transform: booleanAttribute })
+  hint = input<string>('')
+  checked = model(false)
 
-  protected readonly checked = signal(false)
+  protected readonly hintId = computed(() => `${this.id()}-hint`)
 
   private readonly formDisabled = signal(false)
   protected readonly isDisabled = computed(() => this.disabled() || this.formDisabled())

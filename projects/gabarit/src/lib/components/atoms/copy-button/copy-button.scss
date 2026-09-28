@@ -1,0 +1,73 @@
+:host {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.gbt-copy-button__status {
+  padding: 0.125rem 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--color-success-text) 45%, transparent);
+  border-radius: 999px;
+  background: var(--color-success-bg);
+  color: var(--color-success-bg-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.125rem;
+  white-space: nowrap;
+
+  &[data-status='failed'] {
+    border-color: color-mix(in srgb, var(--color-error-text) 45%, transparent);
+    background: var(--color-error-bg);
+    color: var(--color-error-bg-text);
+  }
+
+  &[data-status='idle'] {
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+  }
+
+  &[data-feedback='bubble'] {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 6px);
+    z-index: 1;
+    box-shadow: var(--site-shadow-sm);
+    pointer-events: none;
+  }
+
+  &[data-feedback='inline'] {
+    margin-inline-start: 0.5rem;
+    white-space: normal;
+
+    &[data-status='idle'] {
+      margin: 0;
+    }
+  }
+
+  &[data-feedback='hidden'] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    border: 0;
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .gbt-copy-button__status[data-feedback='bubble']:not([data-status='idle']) {
+    animation: gbt-copy-button-in 0.15s ease-out;
+  }
+}
+
+@keyframes gbt-copy-button-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+}

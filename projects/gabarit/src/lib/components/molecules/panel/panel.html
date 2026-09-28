@@ -1,0 +1,17 @@
+<section class="gbt-panel" [attr.aria-labelledby]="headingId">
+  <div class="gbt-panel__header">
+    @switch (headingLevel()) {
+      @case (2) {
+        <h2 class="gbt-panel__heading" [id]="headingId">{{ heading() }}</h2>
+      }
+      @case (4) {
+        <h4 class="gbt-panel__heading" [id]="headingId">{{ heading() }}</h4>
+      }
+      @default {
+        <h3 class="gbt-panel__heading" [id]="headingId">{{ heading() }}</h3>
+      }
+    }
+    <div class="gbt-panel__actions"><ng-content select="[panel-actions]" /></div>
+  </div>
+  <div class="gbt-panel__body"><ng-content /></div>
+</section>

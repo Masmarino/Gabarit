@@ -1,3 +1,5 @@
+import { cachedIntl } from './intl-cache'
+
 export function formatNumber(value: number, locale: string, decimals?: number): string {
   return new Intl.NumberFormat(locale, {
     minimumFractionDigits: decimals,
@@ -12,14 +14,41 @@ export function formatCompact(value: number, locale: string): string {
   }).format(value)
 }
 
-export function formatDuration(ms: number, locale: string): string {
+export interface FormatDurationOptions {
+  days?: boolean
+}
+
+function dayLabel(locale: string): string {
+  return cachedIntl('day-label', locale, undefined, () => {
+    const parts = new Intl.NumberFormat(locale, {
+      style: 'unit',
+      unit: 'day',
+      unitDisplay: 'narrow',
+    }).formatToParts(1)
+    return parts.find((part) => part.type === 'unit')?.value ?? 'd'
+  })
+}
+
+export function formatDuration(
+  ms: number,
+  locale: string,
+  options: FormatDurationOptions = {},
+): string {
   if (ms < 1000) return `${formatNumber(Math.round(ms), locale)} ms`
 
   const totalSeconds = Math.round(ms / 1000)
+  const num = (value: number) => formatNumber(value, locale)
+
+  if (options.days && totalSeconds >= 86400) {
+    const days = Math.floor(totalSeconds / 86400)
+    const hours = Math.floor((totalSeconds % 86400) / 3600)
+    const unit = dayLabel(locale)
+    return hours > 0 ? `${num(days)} ${unit} ${num(hours)} h` : `${num(days)} ${unit}`
+  }
+
   const hours = Math.floor(totalSeconds / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
-  const num = (value: number) => formatNumber(value, locale)
 
   if (hours > 0) return minutes > 0 ? `${num(hours)} h ${num(minutes)} min` : `${num(hours)} h`
   if (minutes > 0)

@@ -37,7 +37,5 @@ echo yet.
 
 ## Relationship to `Button`'s own spinner
 
-`Button`'s internal loading spinner stays private and independent —
-not migrated to reuse this component, the same call made for
-`AppShell`'s mobile drawer versus `Drawer`: no functional gain, and a
-needless regression risk on an already-shipped, stable component.
+`Button`'s internal loading spinner stays private and independent — the same call made for
+`AppShell`'s mobile drawer versus `Drawer`: a separate, independent implementation.

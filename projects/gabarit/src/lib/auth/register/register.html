@@ -1,0 +1,151 @@
+<gbt-auth-panel [heading]="heading()" [intro]="intro()" [wide]="mfaToken() !== null">
+  <ng-container ngProjectAs="[auth-logo]"><ng-content select="[auth-logo]" /></ng-container>
+
+  @if (mfaToken() !== null) {
+    <gbt-mfa-enrollment
+      [mfaToken]="mfaToken()!"
+      [passkeysAvailable]="passkeysAvailable()"
+      (completed)="enrolled($event)"
+      (cancelled)="enrollmentInterrupted(false)"
+      (expired)="enrollmentInterrupted(true)"
+    />
+  } @else if (registration() === 'loading') {
+    <span class="sr-only" role="status">{{ text().loading }}</span>
+    <div class="gbt-auth-register__loading" aria-busy="true" aria-hidden="true">
+      <div class="gbt-auth-register__loading-title">
+        <gbt-skeleton width="9rem" height="1.5rem" />
+      </div>
+      <div class="gbt-auth-register__loading-intro">
+        <gbt-skeleton width="85%" height="0.875rem" />
+        <gbt-skeleton width="60%" height="0.875rem" />
+      </div>
+      <div class="gbt-auth-register__loading-form">
+        @for (field of skeletonFields; track field.name) {
+          <div class="gbt-auth-register__loading-field">
+            <div class="gbt-auth-register__loading-label">
+              <gbt-skeleton width="6rem" height="0.75rem" />
+            </div>
+            <gbt-skeleton
+              class="gbt-auth-register__loading-input"
+              width="100%"
+              height="var(--gbt-control-height-md)"
+            />
+            @if (field.hint) {
+              <div class="gbt-auth-register__loading-hint">
+                <gbt-skeleton width="55%" height="0.625rem" />
+              </div>
+            }
+          </div>
+        }
+        <gbt-skeleton class="gbt-auth-register__loading-submit" width="100%" height="2.75rem" />
+      </div>
+      <div class="gbt-auth-register__loading-footer">
+        <gbt-skeleton width="12rem" height="0.875rem" />
+      </div>
+    </div>
+  } @else if (registration() === 'closed') {
+    <gbt-empty-state
+      class="gbt-auth-panel__status"
+      icon="lock"
+      [headingLevel]="1"
+      headingFocusable
+      [heading]="text().closedHeading"
+      [message]="text().closedMessage"
+    >
+      <gbt-button
+        class="gbt-auth-panel__submit"
+        block
+        size="large"
+        [text]="text().signIn"
+        (clicked)="signIn.emit()"
+      />
+    </gbt-empty-state>
+  } @else if (registration() === 'created') {
+    <gbt-empty-state
+      class="gbt-auth-panel__status gbt-auth-panel__status--success"
+      icon="circle-check"
+      [headingLevel]="1"
+      headingFocusable
+      [heading]="text().createdHeading"
+      [message]="createdMessage()"
+    >
+      @if (createdName()) {
+        <p class="gbt-auth-register__created-name">
+          {{ text().createdName }} <strong>{{ createdName() }}</strong>
+        </p>
+      }
+      <gbt-button
+        class="gbt-auth-panel__submit"
+        block
+        size="large"
+        [text]="text().signIn"
+        (clicked)="signIn.emit()"
+      />
+    </gbt-empty-state>
+  } @else {
+    <form class="gbt-auth-panel__form" (ngSubmit)="submit()" novalidate>
+      @if (error()) {
+        <gbt-alert
+          [attr.id]="id + '-alert'"
+          tabindex="-1"
+          variant="error"
+          appearance="subtle"
+          iconAlign="start"
+          >{{ error() }}</gbt-alert
+        >
+      }
+
+      <gbt-input
+        [id]="id + '-username'"
+        name="username"
+        autocomplete="username"
+        [label]="text().username"
+        [hint]="text().usernameHint"
+        [errorMessage]="usernameFieldError()"
+        [ngModel]="username()"
+        (ngModelChange)="username.set($event)"
+      />
+
+      <gbt-input
+        [id]="id + '-email'"
+        type="email"
+        name="email"
+        autocomplete="email"
+        [label]="text().email"
+        [errorMessage]="emailFieldError()"
+        [ngModel]="email()"
+        (ngModelChange)="email.set($event)"
+      />
+
+      <gbt-input
+        [id]="id + '-password'"
+        type="password"
+        name="password"
+        autocomplete="new-password"
+        [label]="text().password"
+        [showPasswordLabel]="text().showPassword"
+        [hidePasswordLabel]="text().hidePassword"
+        [hint]="passwordHint()"
+        [errorMessage]="passwordFieldError()"
+        [ngModel]="password()"
+        (ngModelChange)="password.set($event)"
+      />
+
+      <gbt-button
+        class="gbt-auth-panel__submit"
+        block
+        type="submit"
+        size="large"
+        [text]="text().submit"
+        [loading]="submitting()"
+        [loadingLabel]="text().submitting"
+      />
+    </form>
+
+    @if (signInLink()) {
+      <gbt-auth-footer [text]="text().signInPrompt"
+        ><ng-content select="[gbtAuthFooterLink]"
+      /></gbt-auth-footer>
+    }
+  }
+</gbt-auth-panel>

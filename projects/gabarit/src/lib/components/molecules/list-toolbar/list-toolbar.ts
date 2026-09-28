@@ -32,12 +32,6 @@ export class ListToolbar<T extends string = string> {
   sortValueChange = output<T>()
   sortDirectionChange = output<'asc' | 'desc'>()
 
-  // Plain `[ngModel]` bindings on the child `gbt-input`/`gbt-select` defer their
-  // initial value to a control-value-accessor writeValue() call scheduled on a
-  // microtask (an Angular Forms `NgModel` implementation detail), so the very
-  // first render would briefly show the empty/placeholder state. Reactive
-  // FormControls propagate `setValue()` to the CVA synchronously, so we mirror
-  // the inputs onto internal controls instead and forward user edits back out.
   protected readonly searchControl = new FormControl<string>('', { nonNullable: true })
   protected readonly sortControl = new FormControl<T | null>(null)
 

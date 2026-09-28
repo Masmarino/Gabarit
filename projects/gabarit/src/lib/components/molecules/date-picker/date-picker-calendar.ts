@@ -8,21 +8,33 @@ export interface CalendarDay {
 
 export function isSameDay(a: Date, b: Date): boolean {
   return (
-    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
   )
 }
 
-/** Adds `delta` whole months, clamping an overflowing day to the target month's last day. */
 export function addMonths(date: Date, delta: number): Date {
   const day = date.getDate()
   const firstOfTarget = new Date(date.getFullYear(), date.getMonth() + delta, 1)
-  const daysInTarget = new Date(firstOfTarget.getFullYear(), firstOfTarget.getMonth() + 1, 0).getDate()
-  return new Date(firstOfTarget.getFullYear(), firstOfTarget.getMonth(), Math.min(day, daysInTarget))
+  const daysInTarget = new Date(
+    firstOfTarget.getFullYear(),
+    firstOfTarget.getMonth() + 1,
+    0,
+  ).getDate()
+  return new Date(
+    firstOfTarget.getFullYear(),
+    firstOfTarget.getMonth(),
+    Math.min(day, daysInTarget),
+  )
 }
 
-/** Adds `delta` whole years, clamping Feb 29 to Feb 28 on a non-leap target year. */
 export function addYears(date: Date, delta: number): Date {
   return addMonths(date, delta * 12)
+}
+
+export function shiftDays(date: Date, delta: number): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + delta)
 }
 
 export function startOfWeek(date: Date, weekStartsOn: WeekStartsOn): Date {
@@ -39,8 +51,11 @@ export function endOfWeek(date: Date, weekStartsOn: WeekStartsOn): Date {
   return start
 }
 
-/** Always 42 days (6 full weeks), starting on the week containing the 1st of `month`. */
-export function buildCalendarGrid(year: number, month: number, weekStartsOn: WeekStartsOn): CalendarDay[] {
+export function buildCalendarGrid(
+  year: number,
+  month: number,
+  weekStartsOn: WeekStartsOn,
+): CalendarDay[] {
   const firstOfMonth = new Date(year, month, 1)
   const gridStart = startOfWeek(firstOfMonth, weekStartsOn)
   const today = new Date()
@@ -59,7 +74,6 @@ export function buildCalendarGrid(year: number, month: number, weekStartsOn: Wee
 
 export function weekdayLabels(locale: string, weekStartsOn: WeekStartsOn): string[] {
   const formatter = new Intl.DateTimeFormat(locale, { weekday: 'short' })
-  // Any Sunday-anchored reference week: Jan 7 2024 is a Sunday.
   const reference = new Date(2024, 0, 7 + weekStartsOn)
   return Array.from({ length: 7 }, (_, i) => {
     const date = new Date(reference.getFullYear(), reference.getMonth(), reference.getDate() + i)

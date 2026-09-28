@@ -1,0 +1,67 @@
+:host {
+  display: block;
+}
+
+.gbt-app-shell-nav-group__toggle {
+  box-sizing: border-box;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.875rem;
+  text-align: left;
+
+  &:hover {
+    background: var(--bg-hover);
+  }
+}
+
+.gbt-app-shell-nav-group__chevron {
+  margin-left: auto;
+  transition: transform 0.15s ease;
+
+  .gbt-app-shell-nav-group[data-expanded] & {
+    transform: rotate(180deg);
+  }
+}
+
+.gbt-app-shell-nav-group__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+@media (min-width: 769px) {
+  :host-context(.gbt-app-shell__nav--collapsed) {
+    .gbt-app-shell-nav-group[data-expanded] {
+      border-radius: var(--site-border-radius-sm);
+      box-shadow: inset 0 0 0 1px var(--gbt-hairline);
+    }
+
+    .gbt-app-shell-nav-group__chevron {
+      position: absolute;
+      top: 50%;
+      right: 0.125rem;
+      width: 0.625rem;
+      height: 0.625rem;
+      margin: 0;
+      transform: translateY(-50%);
+    }
+
+    .gbt-app-shell-nav-group[data-expanded] .gbt-app-shell-nav-group__chevron {
+      transform: translateY(-50%) rotate(180deg);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-app-shell-nav-group__chevron {
+    transition: none;
+  }
+}

@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, input, output, signal } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core'
 import { Avatar } from '../../atoms/avatar/avatar'
 import { Icon } from '../../atoms/icon/icon'
 

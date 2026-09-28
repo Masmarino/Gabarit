@@ -210,7 +210,9 @@ describe('Tabs — external control', () => {
     const fixture = TestBed.createComponent(ControlledHostComponent)
     fixture.detectChanges()
 
-    const triggers: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.gbt-tabs__trigger'))
+    const triggers: HTMLButtonElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.gbt-tabs__trigger'),
+    )
     triggers[1].click()
     fixture.detectChanges()
 
@@ -229,7 +231,9 @@ describe('Tabs — external control', () => {
     expect((panels[0] as HTMLElement).style.display).toBe('none')
     expect((panels[1] as HTMLElement).style.display).not.toBe('none')
 
-    const triggers: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.gbt-tabs__trigger'))
+    const triggers: HTMLButtonElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.gbt-tabs__trigger'),
+    )
     expect(triggers[1].tabIndex).toBe(0)
   })
 
@@ -243,7 +247,9 @@ describe('Tabs — external control', () => {
     expect((panels[0] as HTMLElement).style.display).not.toBe('none')
     expect((panels[1] as HTMLElement).style.display).toBe('none')
 
-    const triggers: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.gbt-tabs__trigger'))
+    const triggers: HTMLButtonElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.gbt-tabs__trigger'),
+    )
     expect(triggers[0].tabIndex).toBe(0)
   })
 })

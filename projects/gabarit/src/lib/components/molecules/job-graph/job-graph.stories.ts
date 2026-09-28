@@ -12,7 +12,10 @@ export default meta
 type Story = StoryObj<JobGraph>
 
 const RUNNING: JobGraphStage[] = [
-  { name: 'prepare', jobs: [{ id: 'j1', name: 'hello', status: 'success', durationLabel: '3s', needs: [] }] },
+  {
+    name: 'prepare',
+    jobs: [{ id: 'j1', name: 'hello', status: 'success', durationLabel: '3s', needs: [] }],
+  },
   {
     name: 'check',
     jobs: [
@@ -23,7 +26,14 @@ const RUNNING: JobGraphStage[] = [
   },
   {
     name: 'report',
-    jobs: [{ id: 'j5', name: 'summary', status: 'pending', needs: ['app-health', 'parallel-a', 'parallel-b'] }],
+    jobs: [
+      {
+        id: 'j5',
+        name: 'summary',
+        status: 'pending',
+        needs: ['app-health', 'parallel-a', 'parallel-b'],
+      },
+    ],
   },
 ]
 

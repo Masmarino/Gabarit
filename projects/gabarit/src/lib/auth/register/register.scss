@@ -1,0 +1,91 @@
+.gbt-auth-register__loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  gbt-skeleton {
+    display: block;
+  }
+}
+
+.gbt-auth-register__loading-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.75rem;
+}
+
+.gbt-auth-register__loading-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4375rem;
+  margin: 0.25rem 0 1.5rem;
+  padding: 0.21875rem 0;
+}
+
+.gbt-auth-register__loading-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.gbt-auth-register__loading-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.gbt-auth-register__loading-label {
+  display: flex;
+  align-items: center;
+  height: 1rem;
+}
+
+.gbt-auth-register__loading-hint {
+  display: flex;
+  align-items: center;
+  height: 1.25rem;
+  margin-top: -0.125rem;
+}
+
+.gbt-auth-register__loading-submit {
+  margin-top: 0.5rem;
+}
+
+.gbt-auth-register__loading-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 3.3125rem;
+  margin: 1.5rem 0 -0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--gbt-hairline);
+}
+
+@media (max-width: 480px) {
+  .gbt-auth-register__loading-input {
+    height: 2.75rem !important;
+  }
+}
+
+.gbt-auth-register__created-name {
+  box-sizing: border-box;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 1rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--site-border-radius-sm);
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+
+  strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+}

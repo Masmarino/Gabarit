@@ -67,8 +67,9 @@ accessibility is the consumer's responsibility — same delegation
 `Table` already applies to `format`'s plain text, extended to richer
 markup. An interactive element inside a `cellTemplate` (a link, a
 `Menu` trigger) works normally with `Tab`/`Enter` since it's ordinary
-projected DOM inside a `<td>`, nothing about `Table` intercepts it —
-but don't also set `clickableRows` on that table: a click on the
-projected interactive element would bubble up and fire `rowClick` too,
-which is generally not what's wanted when a cell already has its own
-interactive content.
+projected DOM inside a `<td>`, nothing about `Table` intercepts it.
+Combining it with `clickableRows` is supported: a click or `Enter`/`Space` on the projected
+interactive element (a native control, a `<label>`, a `<summary>`, a `contenteditable` region, or an
+element carrying an interactive WAI-ARIA widget role such as `button`, `link`, `checkbox`, `switch`,
+`radio`, `tab`, `option`, `menuitem`, `textbox`, `searchbox`, `slider`) activates that element only
+— it does not also fire `rowClick` — while the same click or key elsewhere in the row still does.

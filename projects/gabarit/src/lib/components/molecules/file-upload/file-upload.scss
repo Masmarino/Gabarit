@@ -25,7 +25,9 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: var(--site-border-radius-sm);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: border-color 0.15s $easing-std, background 0.15s $easing-std;
+  transition:
+    border-color 0.15s $easing-std,
+    background 0.15s $easing-std;
 
   &:hover:not(:disabled) {
     border-color: var(--primary);

@@ -52,7 +52,10 @@ describe('DateRangePicker', () => {
 
   it('shows the formatted range once written (writeValue)', () => {
     const fixture = setup()
-    fixture.componentInstance.writeValue({ start: new Date(2024, 5, 10), end: new Date(2024, 5, 20) })
+    fixture.componentInstance.writeValue({
+      start: new Date(2024, 5, 10),
+      end: new Date(2024, 5, 20),
+    })
     fixture.detectChanges()
     expect(trigger(fixture).textContent).toContain('Jun 10, 2024')
     expect(trigger(fixture).textContent).toContain('Jun 20, 2024')
@@ -70,7 +73,10 @@ describe('DateRangePicker', () => {
 
   it('opens showing the month of the range start when a range is already set', () => {
     const fixture = setup()
-    fixture.componentInstance.writeValue({ start: new Date(2024, 5, 10), end: new Date(2024, 5, 20) })
+    fixture.componentInstance.writeValue({
+      start: new Date(2024, 5, 10),
+      end: new Date(2024, 5, 20),
+    })
     fixture.detectChanges()
 
     open(fixture)
@@ -147,7 +153,10 @@ describe('DateRangePicker', () => {
 
   it('starts a brand-new range when clicking again after a range is already complete', () => {
     const fixture = setup()
-    fixture.componentInstance.writeValue({ start: new Date(2024, 5, 10), end: new Date(2024, 5, 20) })
+    fixture.componentInstance.writeValue({
+      start: new Date(2024, 5, 10),
+      end: new Date(2024, 5, 20),
+    })
     let emitted: DateRangeValue | null = null
     fixture.componentInstance.registerOnChange((v: DateRangeValue | null) => (emitted = v))
     open(fixture)
@@ -175,7 +184,9 @@ describe('DateRangePicker', () => {
 
     dayCell(fixture, new Date(2024, 5, 10))!.click()
     fixture.detectChanges()
-    dayCell(fixture, new Date(2024, 5, 13))!.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }))
+    dayCell(fixture, new Date(2024, 5, 13))!.dispatchEvent(
+      new MouseEvent('mouseenter', { bubbles: true }),
+    )
     fixture.detectChanges()
 
     expect(dayCell(fixture, new Date(2024, 5, 10))!.classList).toContain(
@@ -200,7 +211,9 @@ describe('DateRangePicker', () => {
 
     dayCell(fixture, new Date(2024, 5, 10))!.click()
     fixture.detectChanges()
-    dayCell(fixture, new Date(2024, 5, 5))!.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }))
+    dayCell(fixture, new Date(2024, 5, 5))!.dispatchEvent(
+      new MouseEvent('mouseenter', { bubbles: true }),
+    )
     fixture.detectChanges()
 
     expect(dayCell(fixture, new Date(2024, 5, 5))!.classList).toContain(
@@ -216,7 +229,10 @@ describe('DateRangePicker', () => {
 
   it('renders a completed range identically without a hover, minus the preview modifier', () => {
     const fixture = setup()
-    fixture.componentInstance.writeValue({ start: new Date(2024, 5, 10), end: new Date(2024, 5, 13) })
+    fixture.componentInstance.writeValue({
+      start: new Date(2024, 5, 10),
+      end: new Date(2024, 5, 13),
+    })
     open(fixture)
     fixture.detectChanges()
 
@@ -237,7 +253,10 @@ describe('DateRangePicker', () => {
   it('clears the range on clear', () => {
     const fixture = setup()
     fixture.componentRef.setInput('clearable', true)
-    fixture.componentInstance.writeValue({ start: new Date(2024, 5, 10), end: new Date(2024, 5, 20) })
+    fixture.componentInstance.writeValue({
+      start: new Date(2024, 5, 10),
+      end: new Date(2024, 5, 20),
+    })
     let emitted: DateRangeValue | null | undefined = undefined
     fixture.componentInstance.registerOnChange((v: DateRangeValue | null) => (emitted = v))
     fixture.detectChanges()
@@ -256,7 +275,9 @@ describe('DateRangePicker', () => {
       seedAnchor(fixture, new Date(2024, 5, 10))
       fixture.detectChanges()
 
-      focusedCell(fixture)!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
+      focusedCell(fixture)!.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+      )
       fixture.detectChanges()
 
       expect(focusedCell(fixture)).toBe(dayCell(fixture, new Date(2024, 5, 11)))
@@ -270,11 +291,17 @@ describe('DateRangePicker', () => {
       seedAnchor(fixture, new Date(2024, 5, 10))
       fixture.detectChanges()
 
-      focusedCell(fixture)!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+      focusedCell(fixture)!.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
+      )
       fixture.detectChanges()
-      focusedCell(fixture)!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
+      focusedCell(fixture)!.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+      )
       fixture.detectChanges()
-      focusedCell(fixture)!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+      focusedCell(fixture)!.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
+      )
       fixture.detectChanges()
 
       expect(emitted).toEqual({ start: new Date(2024, 5, 10), end: new Date(2024, 5, 11) })
@@ -314,7 +341,9 @@ describe('DateRangePicker', () => {
     const fixture = setup()
     open(fixture)
 
-    fixture.nativeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    fixture.nativeElement.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    )
     fixture.detectChanges()
 
     expect(panel(fixture)).toBeNull()
@@ -387,7 +416,10 @@ describe('DateRangePicker', () => {
 
   it('has no a11y violations, with a completed range', async () => {
     const fixture = setup()
-    fixture.componentInstance.writeValue({ start: new Date(2024, 5, 10), end: new Date(2024, 5, 20) })
+    fixture.componentInstance.writeValue({
+      start: new Date(2024, 5, 10),
+      end: new Date(2024, 5, 20),
+    })
     fixture.detectChanges()
     await expectNoA11yViolations(fixture.nativeElement)
   })

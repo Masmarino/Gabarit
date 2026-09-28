@@ -74,7 +74,9 @@ export const Disabled: Story = {
   render: () => ({
     template: `<gbt-date-picker label="Date de rendez-vous" [formControl]="control" />`,
     moduleMetadata: { imports: [DatePicker, ReactiveFormsModule] },
-    props: { control: new FormControl<Date | null>({ value: new Date(2024, 5, 18), disabled: true }) },
+    props: {
+      control: new FormControl<Date | null>({ value: new Date(2024, 5, 18), disabled: true }),
+    },
   }),
 }
 

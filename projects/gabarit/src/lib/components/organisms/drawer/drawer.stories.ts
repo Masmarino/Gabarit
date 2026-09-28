@@ -18,7 +18,10 @@ type Story = StoryObj<Drawer>
   template: `
     <button type="button" (click)="open.set(true)">Ouvrir le tiroir</button>
     <gbt-drawer [isOpen]="open()" [edge]="edge()" heading="Filtres" (closed)="open.set(false)">
-      <p>Fait glisser depuis le bord « {{ edge() }} », avec une animation à l'ouverture et à la fermeture.</p>
+      <p>
+        Fait glisser depuis le bord « {{ edge() }} », avec une animation à l'ouverture et à la
+        fermeture.
+      </p>
       <button type="button">Un champ</button>
     </gbt-drawer>
   `,

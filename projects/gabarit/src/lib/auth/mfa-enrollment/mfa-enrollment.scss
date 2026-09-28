@@ -1,0 +1,125 @@
+:host {
+  display: block;
+}
+
+.gbt-mfa-enrollment {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.gbt-mfa-enrollment__header {
+  text-align: center;
+}
+
+.gbt-mfa-enrollment__step {
+  margin: 0 0 0.25rem;
+  color: var(--text-discret);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.gbt-mfa-enrollment__title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.4;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.gbt-mfa-enrollment__lead {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.gbt-mfa-enrollment__todo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: todo;
+
+  li {
+    position: relative;
+    padding-left: 2rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    counter-increment: todo;
+
+    &::before {
+      content: counter(todo);
+      position: absolute;
+      top: 0.0625rem;
+      left: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      width: 1.375rem;
+      height: 1.375rem;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--primary) 14%, transparent);
+      color: var(--primary);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+  }
+}
+
+.gbt-mfa-enrollment__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.gbt-mfa-enrollment__option {
+  ::ng-deep .gbt-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    box-shadow: none;
+  }
+
+  ::ng-deep .gbt-card__title {
+    font-size: 0.9375rem;
+  }
+}
+
+.gbt-mfa-enrollment__option--recommended ::ng-deep .gbt-card {
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--border-color));
+  background: color-mix(in srgb, var(--primary) 5%, var(--bg-principal));
+}
+
+.gbt-mfa-enrollment__option-text {
+  margin: 0 0 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.gbt-mfa-enrollment__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.gbt-mfa-enrollment__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}

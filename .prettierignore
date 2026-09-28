@@ -1,0 +1,3 @@
+# Hand-maintained docs (README.md/AUDIT.md): wide GFM tables and embedded code samples
+# are deliberately formatted by hand; out of scope for the ts/html/scss enforcement pass.
+*.md

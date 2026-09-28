@@ -1,20 +1,32 @@
-<div class="gbt-textarea">
+<div
+  class="gbt-textarea"
+  [class.gbt-textarea--mono]="mono()"
+  [class.gbt-textarea--autosize]="autosize()"
+>
   @if (label()) {
-    <label [for]="id()">{{ label() }}{{ required() ? ' *' : '' }}</label>
+    <label [for]="id()" [class.gbt-textarea__label--hidden]="hideLabel()"
+      >{{ label() }}{{ required() ? ' *' : '' }}</label
+    >
   }
   <textarea
+    #field
     [id]="id()"
     [placeholder]="placeholder()"
     [required]="required()"
     [disabled]="isDisabled()"
     [rows]="rows()"
+    [value]="value()"
+    [attr.data-resize]="effectiveResize()"
+    [style.--gbt-textarea-max-rows]="maxRowsProperty()"
     [attr.aria-invalid]="errorMessage() ? true : null"
-    [attr.aria-describedby]="errorMessage() ? id() + '-error' : null"
+    [attr.aria-describedby]="describedBy()"
     (input)="onInput($event)"
     (blur)="onBlur()"
-    >{{ value() }}</textarea
-  >
+  ></textarea>
+  @if (showHint()) {
+    <p [id]="hintId()" class="gbt-textarea__hint">{{ hint() }}</p>
+  }
   @if (errorMessage()) {
-    <p [id]="id() + '-error'" class="gbt-textarea__error" role="alert">{{ errorMessage() }}</p>
+    <p [id]="errorId()" class="gbt-textarea__error" role="alert">{{ errorMessage() }}</p>
   }
 </div>

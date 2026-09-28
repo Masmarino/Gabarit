@@ -39,7 +39,9 @@ describe('getReadableTextColor', () => {
     // (4.58:1); #757575 is the worst achromatic one (4.61:1, white text);
     // the rest are backgrounds the old #1a1a1a endpoint failed on.
     for (const background of ['#cf0dcc', '#757575', '#7c7c7c', '#808080', '#da25c3', '#946f9b']) {
-      expect(contrastRatio(background, getReadableTextColor(background))).toBeGreaterThanOrEqual(4.5)
+      expect(contrastRatio(background, getReadableTextColor(background))).toBeGreaterThanOrEqual(
+        4.5,
+      )
     }
   })
 

@@ -9,7 +9,11 @@ const TREE: TreeNode[] = [
     label: 'src',
     children: [
       { id: 'src/app.ts', label: 'app.ts' },
-      { id: 'src/utils', label: 'utils', children: [{ id: 'src/utils/date.ts', label: 'date.ts' }] },
+      {
+        id: 'src/utils',
+        label: 'utils',
+        children: [{ id: 'src/utils/date.ts', label: 'date.ts' }],
+      },
     ],
   },
   { id: 'readme', label: 'README.md' },

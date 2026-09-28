@@ -1,0 +1,49 @@
+<fieldset
+  class="gbt-checkbox-group"
+  [attr.aria-invalid]="errorMessage() ? true : null"
+  [attr.aria-describedby]="describedBy()"
+>
+  <legend
+    class="gbt-checkbox-group__legend"
+    [class.gbt-checkbox-group__legend--hidden]="hideLegend()"
+  >
+    {{ legend() }}{{ required() ? ' *' : '' }}
+  </legend>
+  @if (showHint()) {
+    <p [id]="hintId()" class="gbt-checkbox-group__hint">{{ hint() }}</p>
+  }
+  <div
+    class="gbt-checkbox-group__sections"
+    [style.grid-template-columns]="sectioned() ? gridColumns() : null"
+  >
+    @for (section of sections(); track section.key) {
+      <div
+        class="gbt-checkbox-group__section"
+        [attr.role]="section.label ? 'group' : null"
+        [attr.aria-labelledby]="section.label ? section.labelId : null"
+      >
+        @if (section.label) {
+          <p [id]="section.labelId" class="gbt-checkbox-group__group-label">{{ section.label }}</p>
+        }
+        <div
+          class="gbt-checkbox-group__list"
+          [style.grid-template-columns]="sectioned() ? null : gridColumns()"
+        >
+          @for (item of section.items; track item.id) {
+            <gbt-checkbox
+              [id]="item.id"
+              [label]="item.option.label"
+              [hint]="item.option.hint ?? ''"
+              [disabled]="isDisabled() || !!item.option.disabled"
+              [checked]="isChecked(item.option.value)"
+              (checkedChange)="setChecked(item.option.value, $event)"
+            />
+          }
+        </div>
+      </div>
+    }
+  </div>
+  @if (errorMessage()) {
+    <p [id]="errorId()" class="gbt-checkbox-group__error" role="alert">{{ errorMessage() }}</p>
+  }
+</fieldset>

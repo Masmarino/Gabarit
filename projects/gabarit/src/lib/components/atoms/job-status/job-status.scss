@@ -1,0 +1,61 @@
+:host {
+  display: inline-flex;
+  flex-shrink: 0;
+
+  &[data-status='success'] {
+    color: var(--color-success-text);
+  }
+
+  &[data-status='failed'] {
+    color: var(--color-error-text);
+  }
+
+  &[data-status='canceled'] {
+    color: var(--text-secondary);
+  }
+}
+
+.gbt-job-status__glyph {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.gbt-job-status__dot {
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+
+  :host([data-status='running']) & {
+    border-color: var(--primary);
+    border-top-color: transparent;
+    animation: gbt-job-status-spin 0.9s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :host([data-status='running']) & {
+      animation: none;
+      border-top-color: var(--primary);
+      background: var(--primary);
+    }
+  }
+}
+
+@keyframes gbt-job-status-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

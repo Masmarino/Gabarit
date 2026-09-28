@@ -1,6 +1,8 @@
 <div class="gbt-date-picker">
   @if (label()) {
-    <label [for]="id()" class="gbt-date-picker__label">{{ label() }}{{ required() ? ' *' : '' }}</label>
+    <label [for]="id()" class="gbt-date-picker__label"
+      >{{ label() }}{{ required() ? ' *' : '' }}</label
+    >
   }
   <div class="gbt-date-picker__field">
     <button
@@ -76,7 +78,9 @@
                   (change)="onYearSelect(yearSelect.value)"
                 >
                   @for (year of yearOptions(); track year) {
-                    <option [value]="year" [selected]="year === anchorDate().getFullYear()">{{ year }}</option>
+                    <option [value]="year" [selected]="year === anchorDate().getFullYear()">
+                      {{ year }}
+                    </option>
                   }
                 </select>
               } @else {
@@ -128,7 +132,10 @@
                         {{ day.date.getDate() }}
                       </button>
                     } @else {
-                      <span role="gridcell" class="gbt-date-picker__day gbt-date-picker__day--empty"></span>
+                      <span
+                        role="gridcell"
+                        class="gbt-date-picker__day gbt-date-picker__day--empty"
+                      ></span>
                     }
                   }
                 </div>

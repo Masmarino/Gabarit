@@ -25,7 +25,8 @@ $easing: cubic-bezier(0.34, 1.56, 0.64, 1);
 .gbt-autocomplete__input {
   box-sizing: border-box;
   width: 100%;
-  padding: 0.5rem 0.75rem;
+  height: var(--gbt-control-height-md);
+  padding: 0 0.75rem;
   font-family: var(--font-family);
   font-size: 0.875rem;
   color: var(--text-primary);

@@ -1,0 +1,98 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+// The section is the landmark (named by `ariaLabel`) and the size container: it holds BOTH the
+// header and the box, so the header's tabs and filters stay inside the named region and the
+// container queries (the header's own, a page's) measure the whole card.
+.gbt-list-card {
+  position: relative;
+  container: gbt-list-card / inline-size;
+  display: grid;
+  grid-template-areas:
+    'gbt-list-card-header'
+    'gbt-list-card-box';
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+}
+
+// A plain heading row above the box (as gbt-card's): no background, border or padding of its own.
+// The min-height is the tallest single-line control a header holds (an input, a select), so the
+// loading placeholder and the ready header are the same height and nothing jumps between them.
+.gbt-list-card__header {
+  grid-area: gbt-list-card-header;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: var(--gbt-control-height-md);
+  margin-bottom: 0.5rem;
+}
+
+.gbt-list-card__header:empty {
+  display: none;
+}
+
+@container gbt-list-card (max-width: 559px) {
+  .gbt-list-card__header {
+    gap: 0.5rem;
+  }
+}
+
+.gbt-list-card__box {
+  grid-area: gbt-list-card-box;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--gbt-card-border);
+  border-radius: var(--site-border-radius);
+  background: var(--bg-principal);
+}
+
+.gbt-list-card__body {
+  ::ng-deep > ul,
+  ::ng-deep > ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  ::ng-deep > [list-card-message] {
+    margin: 0;
+    padding: 2rem 1rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+}
+
+.gbt-list-card__skeleton-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+
+  & + & {
+    border-top: 1px solid var(--gbt-hairline);
+  }
+
+  > gbt-skeleton {
+    flex: none;
+    margin-top: 0.125rem;
+  }
+}
+
+.gbt-list-card__skeleton-lines {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+@media (pointer: coarse) {
+  .gbt-list-card ::ng-deep .gbt-empty-state__action .gbt-button {
+    min-height: 44px;
+  }
+}

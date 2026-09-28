@@ -24,3 +24,12 @@ with `data-theme="dark"` set, `body` renders `rgb(13, 27, 36)` and the
 label `rgb(247, 249, 251)`, measuring **16.59:1**. Token contrast is
 otherwise covered by `contrast.spec.ts`, independently of this
 rendering.
+
+## `hint` and the `checked` model
+
+| Criterion | Short title     | Verification                                                                                                                                                                                                                                        | Result                |
+| --------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| 11.1      | Label presence  | Unchanged: the `<label>` still holds the input and the label text only. The hint is a sibling `<p>` outside it and never joins the accessible name.                                                                                                 | Compliant             |
+| 11.2      | Label relevance | The hint is the accessible _description_ (`aria-describedby` → `<id>-hint`), present only when `hint` is set (`checkbox.spec.ts`, "Checkbox hint", 0 axe violations).                                                                               | Compliant             |
+| 3.2       | Text contrast   | Hint text is `--text-secondary` on the page background, covered by `contrast.spec.ts` in both themes.                                                                                                                                               | Compliant (delegated) |
+| 7.1       | Scripts         | The `checked` model only replaces an internal signal: the native input is still the control, its state is driven by `[checked]`/`change`. Specs cover `[checked]`, `(checkedChange)`, `[(checked)]` and the ControlValueAccessor path side by side. | Compliant             |

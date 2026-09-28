@@ -1,0 +1,14 @@
+<span class="gbt-save-status" role="status" [attr.data-state]="state()">
+  @switch (state()) {
+    @case ('saving') {
+      <span class="gbt-save-status__spinner" aria-hidden="true"></span>
+    }
+    @case ('saved') {
+      <gbt-icon name="check" />
+    }
+    @case ('error') {
+      <gbt-icon name="alert-circle" />
+    }
+  }
+  <span class="gbt-save-status__text">{{ text() }}</span>
+</span>

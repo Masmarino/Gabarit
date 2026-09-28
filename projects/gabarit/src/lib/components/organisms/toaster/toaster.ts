@@ -1,17 +1,22 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, effect, input, output } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+} from '@angular/core'
 import { Icon } from '../../atoms/icon/icon'
+import { GbtToastService } from './toast.service'
 
 const DEFAULT_DURATION_MS = 5000
 
 export type ToastVariant = 'success' | 'error' | 'warning' | 'info'
 
 export type ToasterPosition =
-  | 'top-right'
-  | 'top-left'
-  | 'top-center'
-  | 'bottom-right'
-  | 'bottom-left'
-  | 'bottom-center'
+  'top-right' | 'top-left' | 'top-center' | 'bottom-right' | 'bottom-left' | 'bottom-center'
 
 export interface ToastItem {
   id: string
@@ -38,17 +43,22 @@ const VARIANT_ICONS: Record<ToastVariant, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Toaster implements OnDestroy {
-  toasts = input.required<ToastItem[]>()
+  toasts = input<ToastItem[] | undefined>(undefined)
   position = input<ToasterPosition>('bottom-right')
   closeLabel = input<string>('Close')
 
   dismissed = output<string>()
 
+  private readonly service = inject(GbtToastService)
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>()
+
+  protected readonly items = computed(() => this.toasts() ?? this.service.toasts())
 
   constructor() {
     effect(() => {
-      const currentIds = new Set(this.toasts().map((toast) => toast.id))
+      const explicit = this.toasts()
+      const list = explicit ?? []
+      const currentIds = new Set(list.map((toast) => toast.id))
 
       for (const [id, timer] of this.timers) {
         if (!currentIds.has(id)) {
@@ -57,7 +67,7 @@ export class Toaster implements OnDestroy {
         }
       }
 
-      for (const toast of this.toasts()) {
+      for (const toast of list) {
         if (this.timers.has(toast.id)) {
           continue
         }
@@ -81,6 +91,13 @@ export class Toaster implements OnDestroy {
       clearTimeout(timer)
     }
     this.timers.clear()
+  }
+
+  protected close(id: string): void {
+    this.dismissed.emit(id)
+    if (this.toasts() === undefined) {
+      this.service.dismiss(id)
+    }
   }
 
   protected roleFor(variant: ToastVariant): 'alert' | 'status' {

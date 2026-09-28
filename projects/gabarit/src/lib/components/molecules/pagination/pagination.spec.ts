@@ -198,9 +198,9 @@ describe('Pagination', () => {
     fixture.componentRef.setInput('showItemsSummary', true)
     fixture.detectChanges()
 
-    expect(
-      fixture.nativeElement.querySelector('.gbt-pagination__summary').textContent.trim(),
-    ).toBe('10 of 95 items')
+    expect(fixture.nativeElement.querySelector('.gbt-pagination__summary').textContent.trim()).toBe(
+      '10 of 95 items',
+    )
   })
 
   it('accounts for a shorter last page in the items summary', () => {
@@ -211,9 +211,9 @@ describe('Pagination', () => {
     fixture.componentRef.setInput('showItemsSummary', true)
     fixture.detectChanges()
 
-    expect(
-      fixture.nativeElement.querySelector('.gbt-pagination__summary').textContent.trim(),
-    ).toBe('5 of 95 items')
+    expect(fixture.nativeElement.querySelector('.gbt-pagination__summary').textContent.trim()).toBe(
+      '5 of 95 items',
+    )
   })
 
   it('allows customizing the items summary text', () => {
@@ -227,9 +227,9 @@ describe('Pagination', () => {
     )
     fixture.detectChanges()
 
-    expect(
-      fixture.nativeElement.querySelector('.gbt-pagination__summary').textContent.trim(),
-    ).toBe('10 sur 95 éléments')
+    expect(fixture.nativeElement.querySelector('.gbt-pagination__summary').textContent.trim()).toBe(
+      '10 sur 95 éléments',
+    )
   })
 
   it('shows a page-size selector with the given options', () => {
@@ -388,9 +388,8 @@ describe('Pagination', () => {
     const emitted: number[] = []
     fixture.componentInstance.pageChange.subscribe((p: number) => emitted.push(p))
 
-    const pageButton: HTMLButtonElement = fixture.nativeElement.querySelector(
-      '.gbt-pagination__page',
-    )
+    const pageButton: HTMLButtonElement =
+      fixture.nativeElement.querySelector('.gbt-pagination__page')
     pageButton.click()
     fixture.detectChanges()
 

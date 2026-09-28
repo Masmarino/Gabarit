@@ -1,34 +1,76 @@
-<div [class]="cardClass()">
-  @if (heading()) {
-    <div class="gbt-card__header">
-      @switch (headingLevel()) {
-        @case (1) {
-          <h1 class="gbt-card__title"><ng-container *ngTemplateOutlet="headingContent" /></h1>
-        }
-        @case (3) {
-          <h3 class="gbt-card__title"><ng-container *ngTemplateOutlet="headingContent" /></h3>
-        }
-        @case (4) {
-          <h4 class="gbt-card__title"><ng-container *ngTemplateOutlet="headingContent" /></h4>
-        }
-        @case (5) {
-          <h5 class="gbt-card__title"><ng-container *ngTemplateOutlet="headingContent" /></h5>
-        }
-        @case (6) {
-          <h6 class="gbt-card__title"><ng-container *ngTemplateOutlet="headingContent" /></h6>
-        }
-        @default {
-          <h2 class="gbt-card__title"><ng-container *ngTemplateOutlet="headingContent" /></h2>
-        }
+@if (hasHeader()) {
+  <div class="gbt-card__header" [attr.data-tone]="tone() === 'default' ? null : tone()">
+    @if (hasCustomHeader()) {
+      <div class="gbt-card__header-slot">
+        <ng-container *ngTemplateOutlet="headerSlot" />
+      </div>
+    } @else {
+      @if (headerIcon()) {
+        <span class="gbt-card__icon" [class.gbt-card__icon--status]="!icon()">
+          <gbt-icon [name]="headerIcon()" aria-hidden="true" />
+        </span>
       }
-      <ng-content select="[card-header-actions]"></ng-content>
-    </div>
+      @if (description()) {
+        <div class="gbt-card__titles">
+          <ng-container *ngTemplateOutlet="titleTemplate" />
+          <p class="gbt-card__description">{{ description() }}</p>
+        </div>
+      } @else {
+        <ng-container *ngTemplateOutlet="titleTemplate" />
+      }
+    }
+    <ng-content select="[card-header-actions]"></ng-content>
+  </div>
+}
+<div
+  [class]="cardClass()"
+  [attr.data-variant]="variant() === 'elevated' ? null : variant()"
+  [attr.data-flush]="flush() ? '' : null"
+  [attr.data-selected]="selected() ? '' : null"
+  [attr.data-link]="linked() ? '' : null"
+>
+  @if (selected() && selectedLabel()) {
+    <span class="gbt-card__selected-label">{{ selectedLabel() }}</span>
   }
-  <ng-content></ng-content>
+  @if (!hasCustomHeader()) {
+    <ng-container *ngTemplateOutlet="headerSlot" />
+  }
+  @if (href() && !hasHeader()) {
+    <a gbtCardLink [attr.href]="href()" [attr.aria-label]="linkLabel()"></a>
+  }
+  <div class="gbt-card__body"><ng-content></ng-content></div>
 </div>
-<ng-template #headingContent>
-  @if (icon()) {
-    <gbt-icon [name]="icon()" aria-hidden="true" />
+
+<ng-template #headerSlot><ng-content select="[card-header]" /></ng-template>
+<ng-template #titleTemplate>
+  @switch (headingLevel()) {
+    @case (1) {
+      <h1 class="gbt-card__title"><ng-container *ngTemplateOutlet="titleContent" /></h1>
+    }
+    @case (3) {
+      <h3 class="gbt-card__title"><ng-container *ngTemplateOutlet="titleContent" /></h3>
+    }
+    @case (4) {
+      <h4 class="gbt-card__title"><ng-container *ngTemplateOutlet="titleContent" /></h4>
+    }
+    @case (5) {
+      <h5 class="gbt-card__title"><ng-container *ngTemplateOutlet="titleContent" /></h5>
+    }
+    @case (6) {
+      <h6 class="gbt-card__title"><ng-container *ngTemplateOutlet="titleContent" /></h6>
+    }
+    @default {
+      <h2 class="gbt-card__title"><ng-container *ngTemplateOutlet="titleContent" /></h2>
+    }
   }
-  {{ heading() }}
+</ng-template>
+<ng-template #titleContent>
+  @if (href()) {
+    <a gbtCardLink [attr.href]="href()">{{ heading() }}</a>
+  } @else {
+    {{ heading() }}
+  }
+  @if (count() !== null) {
+    <span class="gbt-card__count">{{ count() }}</span>
+  }
 </ng-template>

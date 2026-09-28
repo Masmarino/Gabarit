@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing'
 import { afterEach, beforeEach, vi } from 'vitest'
 import { Icon } from '../../atoms/icon/icon'
 import { expectNoA11yViolations } from '../../../../testing/expect-no-a11y-violations'
+import { GbtToastService } from './toast.service'
 import { Toaster, type ToastItem } from './toaster'
 
 describe('Toaster', () => {
@@ -64,9 +65,8 @@ describe('Toaster', () => {
     ] satisfies ToastItem[])
     fixture.detectChanges()
 
-    const items: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll(
-      '.gbt-toaster__item',
-    )
+    const items: NodeListOf<HTMLElement> =
+      fixture.nativeElement.querySelectorAll('.gbt-toaster__item')
     expect(items[0].getAttribute('role')).toBe('status')
     expect(items[1].getAttribute('role')).toBe('status')
   })
@@ -79,9 +79,8 @@ describe('Toaster', () => {
     ] satisfies ToastItem[])
     fixture.detectChanges()
 
-    const items: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll(
-      '.gbt-toaster__item',
-    )
+    const items: NodeListOf<HTMLElement> =
+      fixture.nativeElement.querySelectorAll('.gbt-toaster__item')
     expect(items[0].getAttribute('role')).toBe('alert')
     expect(items[1].getAttribute('role')).toBe('alert')
   })
@@ -204,6 +203,134 @@ describe('Toaster', () => {
       { id: '4', variant: 'info', message: 'Info' },
     ] satisfies ToastItem[])
     fixture.detectChanges()
+    await expectNoA11yViolations(fixture.nativeElement)
+  })
+})
+
+describe('Toaster bound to GbtToastService (no toasts input)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  function setup() {
+    const fixture = TestBed.createComponent(Toaster)
+    fixture.detectChanges()
+    const service = TestBed.inject(GbtToastService)
+    const items = () => [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('.gbt-toaster__item'),
+    ]
+    return { fixture, service, items }
+  }
+
+  it('shows the toasts of the service, and follows it', () => {
+    const { fixture, service, items } = setup()
+    expect(items()).toEqual([])
+
+    service.show('Saved')
+    service.show('Failed', 'error')
+    fixture.detectChanges()
+
+    expect(items().map((item) => item.textContent?.trim())).toEqual(['Saved', 'Failed'])
+    expect(items().map((item) => item.getAttribute('data-variant'))).toEqual(['success', 'error'])
+  })
+
+  it('has the live-region semantics of each kind: errors and warnings assertive, the rest polite', () => {
+    const { fixture, service, items } = setup()
+    for (const kind of ['success', 'error', 'info', 'warning'] as const) {
+      service.show(kind, kind, { duration: 0 })
+    }
+    fixture.detectChanges()
+
+    expect(items().map((item) => item.getAttribute('role'))).toEqual([
+      'status',
+      'alert',
+      'status',
+      'alert',
+    ])
+    expect(items().every((item) => item.getAttribute('aria-atomic') === 'true')).toBe(true)
+  })
+
+  it('removes a toast from the service when its close button is clicked, and emits dismissed', () => {
+    const { fixture, service, items } = setup()
+    const emitted: string[] = []
+    fixture.componentInstance.dismissed.subscribe((id) => emitted.push(id))
+    const id = service.show('Saved', 'success', { duration: 0 })
+    fixture.detectChanges()
+
+    items()[0].querySelector<HTMLButtonElement>('.gbt-toaster__close')!.click()
+    fixture.detectChanges()
+
+    expect(emitted).toEqual([id])
+    expect(service.toasts()).toEqual([])
+    expect(items()).toEqual([])
+  })
+
+  it('leaves the auto-dismiss to the service: it removes the toast on time, once', () => {
+    const { fixture, service, items } = setup()
+    const emitted: string[] = []
+    fixture.componentInstance.dismissed.subscribe((id) => emitted.push(id))
+    service.show('Saved', 'success', { duration: 1000 })
+    fixture.detectChanges()
+
+    // Only the service's timer: the toaster schedules none of its own.
+    expect(vi.getTimerCount()).toBe(1)
+    vi.advanceTimersByTime(1000)
+    fixture.detectChanges()
+
+    expect(items()).toEqual([])
+    expect(emitted).toEqual([])
+  })
+
+  it('still shows a toast the service holds from before the toaster was created', () => {
+    const service = TestBed.inject(GbtToastService)
+    service.show('Early', 'info', { duration: 0 })
+
+    const fixture = TestBed.createComponent(Toaster)
+    fixture.detectChanges()
+
+    expect(fixture.nativeElement.textContent).toContain('Early')
+  })
+
+  it('shows the explicit toasts input instead of the service, and never touches the service store', () => {
+    const service = TestBed.inject(GbtToastService)
+    service.show('From the service', 'info', { duration: 0 })
+    const fixture = TestBed.createComponent(Toaster)
+    fixture.componentRef.setInput('toasts', [
+      { id: 'x', variant: 'success', message: 'Explicit', duration: 0 },
+    ] satisfies ToastItem[])
+    fixture.detectChanges()
+
+    expect(fixture.nativeElement.textContent).toContain('Explicit')
+    expect(fixture.nativeElement.textContent).not.toContain('From the service')
+
+    fixture.nativeElement.querySelector('.gbt-toaster__close').click()
+    expect(service.toasts().length).toBe(1)
+  })
+
+  it('creates no timers of its own in service mode, and cleans up on destroy', () => {
+    const { fixture, service } = setup()
+    service.show('a', 'info', { duration: 0 })
+    fixture.detectChanges()
+
+    expect(vi.getTimerCount()).toBe(0)
+    fixture.destroy()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+})
+
+// axe schedules its own timers: it runs outside the fake-timer suite above.
+describe('Toaster bound to GbtToastService, accessibility', () => {
+  it('presents no accessibility violation', async () => {
+    const fixture = TestBed.createComponent(Toaster)
+    const service = TestBed.inject(GbtToastService)
+    service.show('Saved', 'success', { duration: 0 })
+    service.show('Failed', 'error', { duration: 0 })
+    fixture.detectChanges()
+
     await expectNoA11yViolations(fixture.nativeElement)
   })
 })

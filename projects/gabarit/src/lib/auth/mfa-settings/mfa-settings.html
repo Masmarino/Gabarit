@@ -1,0 +1,309 @@
+<gbt-card
+  variant="outlined"
+  [icon]="view() === 'ready' && !hasFactor() ? 'shield-alert' : 'shield-check'"
+  [heading]="heading()"
+  [description]="help()"
+>
+  @switch (view()) {
+    @case ('loading') {
+      <span class="sr-only" role="status">{{ text().loading }}</span>
+      <div class="gbt-mfa-settings__loading" aria-busy="true">
+        <div class="gbt-mfa-settings__skeleton-row" aria-hidden="true">
+          <div class="gbt-mfa-settings__skeleton-lines">
+            <gbt-skeleton width="9rem" height="0.875rem" />
+            <gbt-skeleton width="min(20rem, 100%)" height="0.75rem" />
+          </div>
+          <gbt-skeleton width="4.5rem" height="1.375rem" variant="rect" />
+        </div>
+        <div class="gbt-mfa-settings__skeleton-row" aria-hidden="true">
+          <div class="gbt-mfa-settings__skeleton-lines">
+            <gbt-skeleton width="7rem" height="0.875rem" />
+            <gbt-skeleton width="min(16rem, 100%)" height="0.75rem" />
+          </div>
+          <gbt-skeleton width="11rem" height="2.25rem" variant="rect" />
+        </div>
+      </div>
+    }
+
+    @case ('failed') {
+      <gbt-alert variant="error" appearance="subtle">
+        {{ text().loadFailed }}
+        <gbt-button
+          alert-actions
+          variant="secondary"
+          size="small"
+          [text]="text().retry"
+          (clicked)="load()"
+        />
+      </gbt-alert>
+    }
+
+    @case ('revoked') {
+      <div class="gbt-mfa-settings__anchor" data-mfa-anchor tabindex="-1">
+        <gbt-alert variant="info" appearance="subtle" iconAlign="start" live="off">{{
+          text().signedOut
+        }}</gbt-alert>
+      </div>
+    }
+
+    @case ('enrolling') {
+      <form ngNoForm class="gbt-mfa-settings__scan" (submit)="$event.preventDefault(); activate()">
+        <p class="gbt-mfa-settings__lead" data-mfa-anchor tabindex="-1">{{ text().scanLead }}</p>
+
+        <div class="gbt-mfa-settings__scan-grid">
+          <gbt-totp-qr
+            class="gbt-mfa-settings__qr"
+            [otpauthUrl]="otpauthUrl()"
+            [secret]="secret()"
+          />
+
+          <div class="gbt-mfa-settings__scan-side">
+            @if (notice()) {
+              <gbt-alert variant="error" appearance="subtle" iconAlign="start">{{
+                notice()
+              }}</gbt-alert>
+            }
+
+            <gbt-input
+              [id]="id + '-code'"
+              inputmode="numeric"
+              [spellcheck]="false"
+              autocapitalize="off"
+              enterkeyhint="go"
+              name="code"
+              autocomplete="one-time-code"
+              [label]="text().codeLabel"
+              [errorMessage]="codeError()"
+              [ngModel]="code()"
+              (ngModelChange)="setCode($event)"
+            />
+
+            <div class="gbt-mfa-settings__actions">
+              <gbt-button
+                type="submit"
+                [text]="text().activate"
+                [loading]="busy()"
+                [loadingLabel]="text().verifying"
+              />
+              <gbt-button
+                variant="secondary"
+                [text]="text().cancel"
+                [disabled]="busy()"
+                (clicked)="cancelEnrollment()"
+              />
+            </div>
+          </div>
+        </div>
+      </form>
+    }
+
+    @case ('codes') {
+      <div class="gbt-mfa-settings__stack">
+        <p class="gbt-mfa-settings__lead" data-mfa-anchor tabindex="-1">
+          {{
+            codesOrigin() === 'enrolled' ? text().codesLeadEnrolled : text().codesLeadRegenerated
+          }}
+        </p>
+        @if (!acknowledged()) {
+          <gbt-alert variant="warning" appearance="subtle" iconAlign="start" live="off">{{
+            text().dontLeave
+          }}</gbt-alert>
+        }
+        <div class="gbt-mfa-settings__codes">
+          <gbt-backup-codes [codes]="backupCodes()" [(acknowledged)]="acknowledged" />
+        </div>
+        <div class="gbt-mfa-settings__actions">
+          <gbt-button [text]="text().done" [disabled]="!acknowledged()" (clicked)="finishCodes()" />
+        </div>
+      </div>
+    }
+
+    @default {
+      @if (hasFactor()) {
+        <div class="gbt-mfa-settings__rows">
+          <div class="gbt-mfa-settings__row">
+            <div class="gbt-mfa-settings__row-head" data-mfa-anchor tabindex="-1">
+              @if (status().totpEnabled) {
+                <div class="gbt-mfa-settings__row-text">
+                  <div class="gbt-mfa-settings__title-line">
+                    <p class="gbt-mfa-settings__row-title">{{ text().appConfigured }}</p>
+                    <gbt-badge
+                      class="gbt-mfa-settings__badge"
+                      variant="success"
+                      icon="check-circle"
+                      >{{ text().enabled }}</gbt-badge
+                    >
+                  </div>
+                  <p class="gbt-mfa-settings__row-help">
+                    {{ hasPasskey() ? text().appHelpWithPasskey : text().appHelp }}
+                  </p>
+                </div>
+              } @else {
+                <div class="gbt-mfa-settings__row-text">
+                  <div class="gbt-mfa-settings__title-line">
+                    <p class="gbt-mfa-settings__row-title">{{ text().noApp }}</p>
+                    <gbt-badge class="gbt-mfa-settings__badge" variant="neutral">{{
+                      text().optional
+                    }}</gbt-badge>
+                  </div>
+                  <p class="gbt-mfa-settings__row-help">{{ text().noAppHelp }}</p>
+                </div>
+                @if (prompt() !== 'enroll') {
+                  <gbt-button
+                    class="gbt-mfa-settings__row-action"
+                    data-opener="enroll"
+                    variant="secondary"
+                    iconName="plus"
+                    [text]="text().addApp"
+                    (clicked)="openPrompt('enroll')"
+                  />
+                }
+              }
+            </div>
+            @if (!status().totpEnabled && prompt() === 'enroll') {
+              <ng-container [ngTemplateOutlet]="passwordPrompt" />
+            }
+          </div>
+
+          <div class="gbt-mfa-settings__row">
+            <div class="gbt-mfa-settings__row-head">
+              <div class="gbt-mfa-settings__row-text">
+                <p class="gbt-mfa-settings__row-title">{{ text().backupCodesTitle }}</p>
+                <p
+                  class="gbt-mfa-settings__codes-left"
+                  [attr.data-tone]="lowCodes() ? 'warning' : null"
+                >
+                  @if (lowCodes()) {
+                    <gbt-icon name="alert-triangle" aria-hidden="true" />
+                  }
+                  <span>{{ codesLeft() }}.</span>
+                  @if (lowCodes()) {
+                    <span>{{ text().lowCodes }}</span>
+                  }
+                </p>
+                <p class="gbt-mfa-settings__row-help">{{ text().backupCodesHelp }}</p>
+              </div>
+              @if (prompt() !== 'regenerate') {
+                <gbt-button
+                  class="gbt-mfa-settings__row-action"
+                  data-opener="regenerate"
+                  variant="secondary"
+                  iconName="refresh-cw"
+                  [text]="text().regenerateCodes"
+                  (clicked)="openPrompt('regenerate')"
+                />
+              }
+            </div>
+            @if (prompt() === 'regenerate') {
+              <ng-container [ngTemplateOutlet]="passwordPrompt" />
+            }
+          </div>
+
+          @if (status().totpEnabled) {
+            <div class="gbt-mfa-settings__row">
+              <div class="gbt-mfa-settings__row-head">
+                <div class="gbt-mfa-settings__row-text">
+                  <p class="gbt-mfa-settings__row-title">{{ removal().title }}</p>
+                  <p class="gbt-mfa-settings__row-help">{{ removal().help }}</p>
+                </div>
+                @if (prompt() !== 'disable') {
+                  <gbt-button
+                    class="gbt-mfa-settings__row-action gbt-mfa-settings__row-action--remove"
+                    data-opener="disable"
+                    variant="secondary"
+                    [text]="removal().action"
+                    (clicked)="openPrompt('disable')"
+                  />
+                }
+              </div>
+              @if (prompt() === 'disable') {
+                <ng-container [ngTemplateOutlet]="passwordPrompt" />
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="gbt-mfa-settings__stack">
+          <div class="gbt-mfa-settings__anchor" data-mfa-anchor tabindex="-1">
+            <gbt-alert variant="warning" appearance="subtle" iconAlign="start" live="off">{{
+              text().noFactorWarning
+            }}</gbt-alert>
+          </div>
+          @if (prompt() === 'enroll') {
+            <ng-container [ngTemplateOutlet]="passwordPrompt" />
+          } @else {
+            <div class="gbt-mfa-settings__actions">
+              <gbt-button
+                data-opener="enroll"
+                iconName="shield-check"
+                [text]="text().setUpNow"
+                (clicked)="openPrompt('enroll')"
+              />
+            </div>
+          }
+        </div>
+      }
+    }
+  }
+</gbt-card>
+
+@if (confirmingDisable()) {
+  <gbt-confirm-danger-modal
+    [isOpen]="true"
+    [heading]="removal().dialogHeading"
+    [message]="removal().dialogMessage"
+    [confirmLabel]="removal().action"
+    confirmIcon="trash-2"
+    [cancelLabel]="text().cancel"
+    [closeLabel]="text().close"
+    [busyLabel]="removal().busy"
+    [busy]="busy()"
+    (confirmed)="disable()"
+    (closed)="closeDisableDialog()"
+  />
+}
+
+<ng-template #passwordPrompt>
+  <form
+    ngNoForm
+    class="gbt-mfa-settings__prompt"
+    (submit)="$event.preventDefault(); submitPrompt()"
+  >
+    <p class="gbt-mfa-settings__prompt-lead">{{ promptCopy().lead }}</p>
+
+    @if (notice()) {
+      <gbt-alert variant="error" appearance="subtle" iconAlign="start">{{ notice() }}</gbt-alert>
+    }
+
+    <div class="gbt-mfa-settings__field">
+      <gbt-input
+        [id]="id + '-password'"
+        name="currentPassword"
+        type="password"
+        autocomplete="current-password"
+        [label]="text().currentPassword"
+        [showPasswordLabel]="text().showPassword"
+        [hidePasswordLabel]="text().hidePassword"
+        [errorMessage]="passwordError()"
+        [ngModel]="password()"
+        (ngModelChange)="setPassword($event)"
+      />
+    </div>
+
+    <div class="gbt-mfa-settings__actions">
+      <gbt-button
+        type="submit"
+        [variant]="promptCopy().variant"
+        [text]="promptCopy().submit"
+        [loading]="busy()"
+        [loadingLabel]="promptCopy().busy"
+      />
+      <gbt-button
+        variant="secondary"
+        [text]="text().cancel"
+        [disabled]="busy()"
+        (clicked)="cancelPrompt()"
+      />
+    </div>
+  </form>
+</ng-template>

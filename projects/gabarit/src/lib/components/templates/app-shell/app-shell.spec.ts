@@ -193,7 +193,7 @@ describe('AppShell', () => {
     const collapsedRule = utilities.slice(utilities.indexOf('.gbt-app-shell__nav--collapsed'))
     expect(collapsedRule).toContain('width: 0')
     expect(collapsedRule).toContain('opacity: 0')
-    expect(collapsedRule).toContain('transition: opacity')
+    expect(collapsedRule.replace(/\s+/g, ' ')).toContain('transition: opacity')
     expect(collapsedRule).toContain(':hover > span')
     expect(collapsedRule).toContain(':focus-visible > span')
 
@@ -228,11 +228,17 @@ describe('AppShell', () => {
     )
     expect(baseSpanRule).not.toContain('position: absolute')
 
+    // The flyout rule is the `flyout` mixin, included on focus and on a real hover.
     const hoverRule = collapsedBlock.slice(collapsedBlock.indexOf(':hover > span'))
-    expect(hoverRule).toContain('position: absolute')
+    expect(hoverRule).toContain('@include flyout')
+    const flyoutMixin = utilities.slice(
+      utilities.indexOf('@mixin flyout'),
+      utilities.indexOf('.gbt-app-shell__nav--collapsed'),
+    )
+    expect(flyoutMixin).toContain('position: absolute')
   })
 
-  it('keeps the two files\' desktop-only guards in sync (769px = 768px drawer breakpoint + 1)', () => {
+  it("keeps the two files' desktop-only guards in sync (769px = 768px drawer breakpoint + 1)", () => {
     const componentScss = readFileSync(
       join(process.cwd(), 'projects/gabarit/src/lib/components/templates/app-shell/app-shell.scss'),
       'utf8',
@@ -348,6 +354,36 @@ describe('AppShell', () => {
     expect(document.activeElement).toBe(firstLink)
   })
 
+  it('leaves out of the focus trap an element that is not rendered (the collapse toggle in the drawer)', () => {
+    const fixture = setup()
+    button(fixture).click()
+    fixture.detectChanges()
+
+    // jsdom has no layout; a real browser reports false for `display: none` (the collapse toggle is
+    // hidden in the mobile drawer), which is what the trap must skip.
+    const toggle = collapseToggle(fixture)
+    Object.defineProperty(toggle, 'checkVisibility', { configurable: true, value: () => false })
+    const nav = fixture.nativeElement.querySelector('nav')
+    const links = [...(nav.querySelectorAll('a[href]') as NodeListOf<HTMLAnchorElement>)]
+    const first = links[0]
+    const last = links[links.length - 1]
+    expect(nav.contains(toggle)).toBe(true)
+
+    // Shift+Tab on the first link goes to the last VISIBLE element, not to the hidden toggle.
+    first.focus()
+    nav.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }),
+    )
+    expect(document.activeElement).toBe(last)
+
+    // Tab on the last visible one wraps to the first instead of leaving the drawer.
+    const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })
+    last.focus()
+    nav.dispatchEvent(event)
+    expect(event.defaultPrevented).toBe(true)
+    expect(document.activeElement).toBe(first)
+  })
+
   it('is expanded by default, offering to collapse', () => {
     const fixture = setup()
     const nav: HTMLElement = fixture.nativeElement.querySelector('nav')
@@ -373,17 +409,17 @@ describe('AppShell', () => {
       fixture.debugElement.query(By.directive(Icon)).componentInstance.name() as string
 
     expect(iconName()).toBe('chevrons-left')
-    expect(collapseToggle(fixture).classList.contains('gbt-app-shell__collapse-toggle--collapsed')).toBe(
-      false,
-    )
+    expect(
+      collapseToggle(fixture).classList.contains('gbt-app-shell__collapse-toggle--collapsed'),
+    ).toBe(false)
 
     collapseToggle(fixture).click()
     fixture.detectChanges()
 
     expect(iconName()).toBe('chevrons-left')
-    expect(collapseToggle(fixture).classList.contains('gbt-app-shell__collapse-toggle--collapsed')).toBe(
-      true,
-    )
+    expect(
+      collapseToggle(fixture).classList.contains('gbt-app-shell__collapse-toggle--collapsed'),
+    ).toBe(true)
   })
 
   it('expands again on a second click', () => {
@@ -457,7 +493,9 @@ describe('AppShell', () => {
       standalone: true,
       imports: [AppShell],
       template: `
-        <button type="button" data-external-toggle (click)="collapsed.set(!collapsed())">Basculer</button>
+        <button type="button" data-external-toggle (click)="collapsed.set(!collapsed())">
+          Basculer
+        </button>
         <gbt-app-shell
           navLabel="Navigation principale"
           skipLabel="Aller au contenu principal"
@@ -503,5 +541,83 @@ describe('AppShell', () => {
     button(fixture).click()
     fixture.detectChanges()
     await expectNoA11yViolations(fixture.nativeElement)
+  })
+})
+
+describe('AppShell collapsed rail flyout', () => {
+  const root = join(process.cwd(), 'projects/gabarit/src/lib')
+
+  it('lets the flyout label out: neither the collapsed rail nor its links clip their box', () => {
+    const componentScss = readFileSync(
+      join(root, 'components/templates/app-shell/app-shell.scss'),
+      'utf8',
+    )
+    const collapsedRail = componentScss.slice(
+      componentScss.indexOf('&--collapsed {'),
+      componentScss.indexOf('&__brand'),
+    )
+    expect(collapsedRail).toContain('width: 64px')
+    expect(collapsedRail).toContain('overflow: visible')
+
+    const utilities = readFileSync(join(root, 'tokens/_utilities.scss'), 'utf8')
+    const collapsedLink = utilities.slice(
+      utilities.indexOf('.gbt-app-shell__nav--collapsed'),
+      utilities.indexOf('> span {', utilities.indexOf('.gbt-app-shell__nav--collapsed')),
+    )
+    expect(collapsedLink).toContain('overflow: visible')
+  })
+
+  it('still clips when expanded and in the drawer (the base rules are unchanged)', () => {
+    const componentScss = readFileSync(
+      join(root, 'components/templates/app-shell/app-shell.scss'),
+      'utf8',
+    )
+    const baseNav = componentScss.slice(
+      componentScss.indexOf('&__nav {'),
+      componentScss.indexOf('&--collapsed {'),
+    )
+    expect(baseNav).toContain('overflow: hidden')
+
+    const utilities = readFileSync(join(root, 'tokens/_utilities.scss'), 'utf8')
+    const baseLink = utilities.slice(
+      utilities.indexOf('.gbt-app-shell__link {'),
+      utilities.indexOf('@media (min-width: 769px)'),
+    )
+    expect(baseLink).toContain('overflow: hidden')
+  })
+
+  function flyoutSource(): string {
+    const utilities = readFileSync(join(root, 'tokens/_utilities.scss'), 'utf8')
+    const start = utilities.indexOf('@mixin flyout')
+    return utilities.slice(start, utilities.indexOf('@media (min-width: 769px)', start))
+  }
+
+  it('paints the flyout in the primary text colour, above the header, never in the white of the current link', () => {
+    const flyout = flyoutSource()
+    expect(flyout).toContain('color: var(--text-primary)')
+    const zIndex = Number(/z-index:\s*(\d+)/.exec(flyout)?.[1])
+    // The header is z-index 1010, the mobile drawer 1030 (which has no flyout).
+    expect(zIndex).toBeGreaterThan(1010)
+  })
+
+  it('shows the flyout on hover only where a pointer hovers, and on keyboard focus always', () => {
+    const utilities = readFileSync(join(root, 'tokens/_utilities.scss'), 'utf8')
+    const collapsed = utilities.slice(utilities.indexOf('.gbt-app-shell__nav--collapsed'))
+    const hoverMedia = collapsed.indexOf('@media (hover: hover)')
+    expect(hoverMedia).toBeGreaterThan(-1)
+    // Every `:hover > span` rule sits inside that media query; the focus rule sits outside it.
+    expect(collapsed.indexOf('&:hover > span')).toBeGreaterThan(hoverMedia)
+    expect(collapsed.indexOf('&:focus-visible > span')).toBeLessThan(hoverMedia)
+    expect(collapsed.match(/:hover > span/g)?.length).toBe(1)
+  })
+
+  it('bridges the gap between the link and the flyout, so the pointer can reach it', () => {
+    const flyout = flyoutSource()
+    const gap = Number(/left:\s*calc\(100% \+ ([\d.]+)rem\)/.exec(flyout)?.[1])
+    const bridge = flyout.slice(flyout.indexOf('&::before'))
+    const bridgeWidth = Number(/width:\s*([\d.]+)rem/.exec(bridge)?.[1])
+    expect(gap).toBeGreaterThan(0)
+    expect(bridge).toContain('right: 100%')
+    expect(bridgeWidth).toBeGreaterThanOrEqual(gap)
   })
 })

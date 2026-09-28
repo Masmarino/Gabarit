@@ -12,7 +12,15 @@
     >
       <svg class="gbt-chart-legend__swatch" viewBox="0 0 24 8" aria-hidden="true" focusable="false">
         @if (entry.color; as color) {
-          <rect class="gbt-chart-legend__fill" x="4" y="0" width="8" height="8" rx="2" [attr.fill]="color" />
+          <rect
+            class="gbt-chart-legend__fill"
+            x="4"
+            y="0"
+            width="8"
+            height="8"
+            rx="2"
+            [attr.fill]="color"
+          />
         } @else {
           <line
             class="gbt-chart-legend__line"

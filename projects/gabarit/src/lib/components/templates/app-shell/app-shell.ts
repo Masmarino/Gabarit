@@ -75,9 +75,11 @@ export class AppShell {
     const nav = this.nav()?.nativeElement
     if (!nav) return
 
-    const focusableElements = nav.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    )
+    const focusableElements = [
+      ...nav.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
+    ].filter((element) => !element.closest('[hidden]') && element.checkVisibility?.() !== false)
     if (focusableElements.length === 0) return
 
     const first = focusableElements[0]

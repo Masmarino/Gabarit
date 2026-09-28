@@ -1,0 +1,12 @@
+<span
+  class="gbt-icon-marker"
+  [attr.data-tone]="tone()"
+  [attr.data-size]="size()"
+  [attr.data-shape]="shape() === 'tile' ? 'tile' : null"
+  [attr.data-appearance]="appearance() === 'outline' ? 'outline' : null"
+  [attr.role]="label() ? 'img' : null"
+  [attr.aria-label]="label()"
+  [attr.aria-hidden]="label() ? null : 'true'"
+>
+  <gbt-icon [name]="icon()" />
+</span>

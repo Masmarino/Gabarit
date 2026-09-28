@@ -1,9 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  Directive,
   ElementRef,
   Injector,
   afterNextRender,
+  booleanAttribute,
+  contentChild,
   inject,
   input,
   output,
@@ -18,6 +21,12 @@ interface PopupPosition {
   right: string | null
 }
 
+@Directive({
+  selector: '[gbtMenuTrigger]',
+  standalone: true,
+})
+export class MenuTrigger {}
+
 @Component({
   selector: 'gbt-menu',
   standalone: true,
@@ -30,6 +39,7 @@ interface PopupPosition {
     '(focusout)': 'onFocusOut($event)',
     '(window:scroll)': 'updatePosition()',
     '(window:resize)': 'updatePosition()',
+    '[class.gbt-menu-host--custom]': '!triggerIcon() && !!customTrigger()',
   },
 })
 export class Menu {
@@ -39,10 +49,14 @@ export class Menu {
   label = input.required<string>()
   align = input<'start' | 'end'>('start')
   triggerIcon = input<string | null>(null)
+  triggerAriaLabel = input<string | null>(null)
+  chevron = input(true, { transform: booleanAttribute })
   opened = output<void>()
 
   protected readonly open = signal(false)
   protected readonly position = signal<PopupPosition | null>(null)
+
+  protected readonly customTrigger = contentChild(MenuTrigger)
 
   private readonly trigger = viewChild<ElementRef<HTMLButtonElement>>('trigger')
   private readonly list = viewChild<ElementRef<HTMLElement>>('list')
@@ -58,13 +72,21 @@ export class Menu {
 
   protected close(returnFocus: boolean): void {
     if (!this.open()) return
+    const active = document.activeElement
+    const focusIsFree =
+      !active || active === document.body || !!this.list()?.nativeElement.contains(active)
     this.open.set(false)
-    if (returnFocus) {
+    if (returnFocus && focusIsFree) {
       this.trigger()?.nativeElement.focus()
     }
   }
 
   protected onTriggerKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && this.open()) {
+      event.preventDefault()
+      this.close(true)
+      return
+    }
     if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
     event.preventDefault()
     const target = event.key === 'ArrowUp' ? 'last' : 'first'
@@ -104,8 +126,10 @@ export class Menu {
     }
   }
 
-  protected onListClick(): void {
-    this.close(false)
+  protected onListClick(event: MouseEvent): void {
+    const item = (event.target as Element | null)?.closest('[role="menuitem"]') ?? null
+    if (item?.getAttribute('aria-disabled') === 'true') return
+    this.close(item !== null)
   }
 
   protected onDocumentClick(event: MouseEvent): void {

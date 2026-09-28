@@ -10,18 +10,18 @@ a selection of its own.
 
 ## Inputs
 
-| Input           | Type                                | Default            | Role                                                                 |
-| --------------- | ----------------------------------- | ------------------ | -------------------------------------------------------------------- |
-| `stages`        | `JobGraphStage[]`                   | required           | The stages, in order, each with its jobs.                            |
-| `selectedJobId` | `string \| null`                    | `null`             | The job being viewed; gets `aria-current="true"` and a highlight.     |
-| `statusLabels`  | `Record<JobGraphStatus, string>`    | English labels     | Visually-hidden status text announced for each job (`Pending`, `Running`, `Succeeded`, `Failed`, `Canceled`). |
-| `needsLabel`    | `string`                            | `'Needs'`          | Visually-hidden prefix announced before a job's dependencies.        |
-| `ariaLabel`     | `string`                            | `'Pipeline jobs'`  | Accessible name of the list of stages.                               |
+| Input           | Type                             | Default           | Role                                                                                                          |
+| --------------- | -------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------- |
+| `stages`        | `JobGraphStage[]`                | required          | The stages, in order, each with its jobs.                                                                     |
+| `selectedJobId` | `string \| null`                 | `null`            | The job being viewed; gets `aria-current="true"` and a highlight.                                             |
+| `statusLabels`  | `Record<JobGraphStatus, string>` | English labels    | Visually-hidden status text announced for each job (`Pending`, `Running`, `Succeeded`, `Failed`, `Canceled`). |
+| `needsLabel`    | `string`                         | `'Needs'`         | Visually-hidden prefix announced before a job's dependencies.                                                 |
+| `ariaLabel`     | `string`                         | `'Pipeline jobs'` | Accessible name of the list of stages.                                                                        |
 
 ## Outputs
 
-| Output        | Payload  | Role                                            |
-| ------------- | -------- | ----------------------------------------------- |
+| Output        | Payload  | Role                                              |
+| ------------- | -------- | ------------------------------------------------- |
 | `jobSelected` | `string` | Emits the `id` of the job whose node was clicked. |
 
 ## Types
@@ -65,7 +65,9 @@ job simply draws no link.
 - Each job renders a glyph whose **shape** depends on its status
   (check for `success`, alert for `failed`, cross for `canceled`, a
   ring for `pending`, a spinning ring for `running`), so status never
-  relies on colour alone; a visually-hidden text also states it.
+  relies on colour alone; a visually-hidden text also states it. The glyph
+  is [`gbt-job-status`](../../atoms/job-status/README.md), which you can use on its own
+  (a pipeline sidebar, a job header).
 - The links are measured from the rendered nodes and redrawn when
   `stages` changes or the container is resized. They scroll with the
   content when the graph overflows horizontally. A link is drawn as

@@ -1,0 +1,278 @@
+<gbt-card
+  variant="outlined"
+  icon="key"
+  [heading]="text().heading"
+  [description]="text().description"
+  [count]="count()"
+>
+  @switch (view()) {
+    @case ('loading') {
+      <gbt-skeleton-list
+        [rows]="2"
+        leading="square"
+        leadingSize="2rem"
+        [padded]="false"
+        [loadingLabel]="text().loading"
+      />
+    }
+
+    @case ('failed') {
+      <gbt-alert variant="error" appearance="subtle">
+        {{ text().loadFailed }}
+        <gbt-button
+          alert-actions
+          variant="secondary"
+          size="small"
+          [text]="text().retry"
+          (clicked)="load()"
+        />
+      </gbt-alert>
+    }
+
+    @case ('revoked') {
+      <div class="gbt-passkey-settings__anchor" data-passkeys-anchor tabindex="-1">
+        <gbt-alert variant="info" appearance="subtle" iconAlign="start" live="off">{{
+          text().signedOut
+        }}</gbt-alert>
+      </div>
+    }
+
+    @default {
+      <div class="gbt-passkey-settings__stack">
+        @if (blockedReason(); as reason) {
+          <gbt-alert variant="info" appearance="subtle" iconAlign="start" live="off">{{
+            reason
+          }}</gbt-alert>
+        }
+
+        <div class="gbt-passkey-settings__anchor" data-passkeys-anchor tabindex="-1">
+          @if (passkeys().length === 0) {
+            <gbt-empty-state
+              size="compact"
+              icon="key"
+              [heading]="text().emptyHeading"
+              [message]="text().emptyMessage"
+            />
+          } @else {
+            <ul class="gbt-passkey-settings__rows" [attr.aria-label]="text().listLabel">
+              @for (passkey of passkeys(); track passkey.id) {
+                <li
+                  class="gbt-passkey-settings__row"
+                  [attr.data-passkey-id]="passkey.id"
+                  tabindex="-1"
+                >
+                  <div class="gbt-passkey-settings__row-head">
+                    <gbt-icon-marker shape="tile" icon="key" />
+                    <div class="gbt-passkey-settings__row-text">
+                      <p class="gbt-passkey-settings__name" [title]="passkey.name">
+                        {{ passkey.name }}
+                      </p>
+                      <p class="gbt-passkey-settings__meta">
+                        <span
+                          >{{ text().added(absolute(passkey.createdAt)) }}
+                          <time
+                            [attr.datetime]="passkey.createdAt"
+                            [title]="passkey.createdAt | gbtDateTime: dateOptions()"
+                            >{{ passkey.createdAt | gbtRelativeTime: relativeOptions() }}</time
+                          ></span
+                        >
+                        <span
+                          class="gbt-passkey-settings__last-used"
+                          [class.gbt-passkey-settings__last-used--never]="!passkey.lastUsedAt"
+                        >
+                          @if (passkey.lastUsedAt; as lastUsed) {
+                            {{ text().lastUsed(absolute(lastUsed)) }}
+                            <time
+                              [attr.datetime]="lastUsed"
+                              [title]="lastUsed | gbtDateTime: dateOptions()"
+                              >{{ lastUsed | gbtRelativeTime: relativeOptions() }}</time
+                            >
+                          } @else {
+                            {{ text().neverUsed }}
+                          }
+                        </span>
+                      </p>
+                    </div>
+                    @if (deleting()?.id !== passkey.id) {
+                      <gbt-button
+                        class="gbt-passkey-settings__row-action"
+                        data-opener="delete"
+                        variant="secondary"
+                        size="small"
+                        iconName="trash-2"
+                        [text]="text().delete"
+                        [ariaLabel]="text().deleteKey(passkey.name)"
+                        (clicked)="openDelete(passkey)"
+                      />
+                    }
+                  </div>
+                  @if (deleting()?.id === passkey.id) {
+                    <ng-container [ngTemplateOutlet]="deletePrompt" />
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+        <gbt-save-status
+          class="gbt-passkey-settings__result"
+          [class.sr-only]="!result()"
+          [state]="result() ? 'saved' : 'idle'"
+          [message]="result()"
+        />
+
+        @if (adding()) {
+          <ng-container [ngTemplateOutlet]="addForm" />
+        } @else {
+          <div
+            class="gbt-passkey-settings__actions"
+            [class.gbt-passkey-settings__actions--divided]="passkeys().length > 0"
+            [class.gbt-passkey-settings__actions--centered]="passkeys().length === 0"
+          >
+            <gbt-button
+              data-opener="add"
+              variant="secondary"
+              iconName="plus"
+              [text]="text().addPasskey"
+              [disabled]="!!blockedReason() || appBusy()"
+              (clicked)="openAdd()"
+            />
+            @if (appBusy()) {
+              <p class="gbt-passkey-settings__hint">{{ text().finishAppFirst }}</p>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+</gbt-card>
+
+@if (confirmingDelete()) {
+  <gbt-confirm-danger-modal
+    [isOpen]="true"
+    [heading]="text().deleteDialogHeading"
+    [message]="deleteMessage()"
+    [confirmLabel]="text().deleteConfirm"
+    confirmIcon="trash-2"
+    [cancelLabel]="text().cancel"
+    [closeLabel]="text().close"
+    [busyLabel]="text().deleting"
+    [busy]="deleteBusy()"
+    (confirmed)="delete()"
+    (closed)="closeDeleteDialog()"
+  />
+}
+
+<ng-template #addForm>
+  <form ngNoForm class="gbt-passkey-settings__form" (submit)="$event.preventDefault(); submitAdd()">
+    <p class="gbt-passkey-settings__form-lead">{{ text().addLead }}</p>
+
+    @if (notice()) {
+      <gbt-alert [variant]="noticeVariant()" appearance="subtle" iconAlign="start">{{
+        notice()
+      }}</gbt-alert>
+    }
+    @if (promptOpen()) {
+      <gbt-alert variant="info" appearance="subtle" iconAlign="start" live="polite">{{
+        text().promptOpen
+      }}</gbt-alert>
+    }
+
+    <div class="gbt-passkey-settings__fields">
+      <div class="gbt-passkey-settings__field">
+        <gbt-input
+          [id]="id + '-name'"
+          name="passkeyName"
+          autocomplete="off"
+          [label]="text().nameLabel"
+          [placeholder]="text().defaultPasskeyName"
+          [errorMessage]="nameError()"
+          [ngModel]="name()"
+          (ngModelChange)="setName($event)"
+        />
+      </div>
+      <div class="gbt-passkey-settings__field">
+        <gbt-input
+          [id]="id + '-password'"
+          name="currentPassword"
+          type="password"
+          autocomplete="current-password"
+          [label]="text().currentPassword"
+          [showPasswordLabel]="text().showPassword"
+          [hidePasswordLabel]="text().hidePassword"
+          [errorMessage]="passwordError()"
+          [ngModel]="password()"
+          (ngModelChange)="setPassword($event)"
+        />
+      </div>
+    </div>
+
+    <div class="gbt-passkey-settings__buttons">
+      <gbt-button
+        class="gbt-passkey-settings__submit"
+        type="submit"
+        iconName="key"
+        [text]="text().create"
+        [loading]="busy()"
+        [loadingLabel]="text().creating"
+      />
+      <gbt-button variant="secondary" [text]="text().cancel" (clicked)="cancelAdd()" />
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #deletePrompt>
+  <form
+    ngNoForm
+    class="gbt-passkey-settings__form"
+    (submit)="$event.preventDefault(); submitDelete()"
+  >
+    <p class="gbt-passkey-settings__form-lead">{{ text().deleteLead(deleting()?.name ?? '') }}</p>
+
+    @if (lastFactor()) {
+      <gbt-alert variant="warning" appearance="subtle" iconAlign="start">{{
+        text().lastFactorWarning
+      }}</gbt-alert>
+    }
+
+    @if (deleteNotice()) {
+      <gbt-alert variant="error" appearance="subtle" iconAlign="start">{{
+        deleteNotice()
+      }}</gbt-alert>
+    }
+
+    <div class="gbt-passkey-settings__fields">
+      <div class="gbt-passkey-settings__field">
+        <gbt-input
+          [id]="id + '-delete-password'"
+          name="currentPassword"
+          type="password"
+          autocomplete="current-password"
+          [label]="text().currentPassword"
+          [showPasswordLabel]="text().showPassword"
+          [hidePasswordLabel]="text().hidePassword"
+          [errorMessage]="deletePasswordError()"
+          [ngModel]="deletePassword()"
+          (ngModelChange)="setDeletePassword($event)"
+        />
+      </div>
+    </div>
+
+    <div class="gbt-passkey-settings__buttons">
+      <gbt-button
+        type="submit"
+        variant="secondary"
+        [text]="text().continue"
+        [loading]="deleteBusy()"
+        [loadingLabel]="text().checking"
+      />
+      <gbt-button
+        variant="secondary"
+        [text]="text().cancel"
+        [disabled]="deleteBusy()"
+        (clicked)="cancelDelete()"
+      />
+    </div>
+  </form>
+</ng-template>

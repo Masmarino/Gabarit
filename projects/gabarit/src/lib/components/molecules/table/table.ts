@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, TemplateRef, booleanAttribute, input, output } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  TemplateRef,
+  booleanAttribute,
+  input,
+  output,
+} from '@angular/core'
 import { NgTemplateOutlet } from '@angular/common'
 
 export interface TableColumn<T> {
@@ -7,6 +14,31 @@ export interface TableColumn<T> {
   format?: (row: T) => string
   cellTemplate?: TemplateRef<{ $implicit: T }>
 }
+
+const INTERACTIVE_TARGET_SELECTOR = [
+  'button',
+  'a[href]',
+  'input',
+  'select',
+  'textarea',
+  'label',
+  'summary',
+  '[contenteditable]:not([contenteditable="false"])',
+  '[role="button"]',
+  '[role="link"]',
+  '[role="checkbox"]',
+  '[role="switch"]',
+  '[role="radio"]',
+  '[role="tab"]',
+  '[role="option"]',
+  '[role="menuitem"]',
+  '[role="menuitemcheckbox"]',
+  '[role="menuitemradio"]',
+  '[role="textbox"]',
+  '[role="searchbox"]',
+  '[role="slider"]',
+  '[role="spinbutton"]',
+].join(', ')
 
 @Component({
   selector: 'gbt-table',
@@ -31,11 +63,21 @@ export class Table<T extends object> {
     return identify ? identify(row) : index
   }
 
+  protected onRowClick(event: MouseEvent, row: T): void {
+    if (!this.isInteractiveTarget(event)) {
+      this.rowClick.emit(row)
+    }
+  }
+
   protected onRowKeydown(event: KeyboardEvent, row: T): void {
-    if (event.key === 'Enter' || event.key === ' ') {
+    if ((event.key === 'Enter' || event.key === ' ') && !this.isInteractiveTarget(event)) {
       event.preventDefault()
       this.rowClick.emit(row)
     }
+  }
+
+  private isInteractiveTarget(event: Event): boolean {
+    return (event.target as HTMLElement).closest(INTERACTIVE_TARGET_SELECTOR) !== null
   }
 
   protected cellValue(row: T, column: TableColumn<T>): unknown {

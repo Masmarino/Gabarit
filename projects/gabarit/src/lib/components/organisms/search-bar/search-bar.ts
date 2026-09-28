@@ -1,10 +1,14 @@
 import {
+  afterNextRender,
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
   ElementRef,
   inject,
+  Injector,
   input,
+  model,
   output,
   signal,
   TemplateRef,
@@ -21,6 +25,12 @@ export interface SearchResultCategory<T = unknown> {
 
 let nextSearchBarId = 0
 
+export type SearchBarCollapsible = boolean | 'narrow'
+
+function collapsibleAttribute(value: boolean | string | null | undefined): SearchBarCollapsible {
+  return value === 'narrow' ? 'narrow' : booleanAttribute(value)
+}
+
 @Component({
   selector: 'gbt-search-bar',
   standalone: true,
@@ -31,10 +41,13 @@ let nextSearchBarId = 0
   host: {
     '(keydown)': 'onNavigationKeydown($event)',
     '(document:click)': 'handleClickOutside($event)',
+    '[attr.data-collapsible]': 'collapsibleMode()',
+    '[attr.data-expanded]': 'collapsibleMode() && expanded() ? "" : null',
   },
 })
 export class SearchBar<T = unknown> {
   private readonly elementRef = inject(ElementRef)
+  private readonly injector = inject(Injector)
 
   id = input<string>(`gbt-search-bar-${++nextSearchBarId}`)
   results = input<T[] | null>(null)
@@ -53,6 +66,12 @@ export class SearchBar<T = unknown> {
   navigateHint = input<string>('Navigate')
   selectHint = input<string>('Select')
   closeHint = input<string>('Close')
+  collapsible = input<SearchBarCollapsible, boolean | string | null | undefined>(false, {
+    transform: collapsibleAttribute,
+  })
+  expanded = model(false)
+  openLabel = input<string>('Search')
+  closeLabel = input<string>('Close search')
 
   queryChange = output<string>()
   itemSelected = output<T>()
@@ -64,6 +83,16 @@ export class SearchBar<T = unknown> {
   protected readonly activeIndex = signal(0)
 
   protected readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput')
+  private readonly toggleButton = viewChild<ElementRef<HTMLButtonElement>>('toggle')
+
+  protected readonly collapsibleMode = computed(() => {
+    const mode = this.collapsible()
+    return mode === 'narrow' ? 'narrow' : mode ? 'always' : null
+  })
+
+  protected readonly folded = computed(() => this.collapsibleMode() !== null && !this.expanded())
+
+  protected readonly triggerId = computed(() => `${this.id()}-trigger`)
 
   private readonly hasGroupedResultsInput = computed(() => !!this.groupedResults())
 
@@ -120,6 +149,17 @@ export class SearchBar<T = unknown> {
   protected readonly hasNoResults = computed(() => this.allVisibleItems().length === 0)
 
   protected onNavigationKeydown(event: KeyboardEvent): void {
+    if (
+      event.key === 'Escape' &&
+      this.collapsibleMode() !== null &&
+      this.expanded() &&
+      !this.showOverlay()
+    ) {
+      event.preventDefault()
+      this.fold(true)
+      return
+    }
+
     if (!this.isFocused() || !this.showOverlay()) return
 
     if (event.key === 'Escape') {
@@ -170,8 +210,34 @@ export class SearchBar<T = unknown> {
     if (this.searchQuery().length > 0) this.showResults.set(true)
   }
 
-  protected onBlur(): void {
+  protected expand(): void {
+    this.expanded.set(true)
+    afterNextRender(() => this.focusSearch(), { injector: this.injector })
+  }
+
+  private fold(returnFocus: boolean): void {
+    this.expanded.set(false)
+    if (returnFocus) {
+      afterNextRender(() => this.toggleButton()?.nativeElement.focus(), { injector: this.injector })
+    }
+  }
+
+  protected close(event: Event): void {
+    event.stopPropagation()
+    this.showResults.set(false)
+    this.fold(true)
+  }
+
+  protected onBlur(event?: FocusEvent): void {
     this.isFocused.set(false)
+    if (
+      this.collapsibleMode() !== null &&
+      this.expanded() &&
+      this.searchQuery().length === 0 &&
+      !this.elementRef.nativeElement.contains(event?.relatedTarget)
+    ) {
+      this.fold(false)
+    }
     setTimeout(() => {
       if (!this.elementRef.nativeElement.contains(document.activeElement)) {
         this.showResults.set(false)
@@ -200,5 +266,6 @@ export class SearchBar<T = unknown> {
     this.itemSelected.emit(item)
     this.showResults.set(false)
     this.searchQuery.set(this.keepQueryOnSelect() ? this.displayFn()(item) : '')
+    if (this.collapsibleMode() !== null && !this.keepQueryOnSelect()) this.fold(false)
   }
 }

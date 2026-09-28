@@ -3,8 +3,56 @@
   color: var(--text-secondary);
 }
 
+.gbt-confirm-danger-modal__summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+
+  .gbt-confirm-danger-modal__message {
+    min-width: 0;
+    padding-top: 0.375rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+}
+
+.gbt-confirm-danger-modal__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--color-error-bg);
+  color: var(--color-error-bg-text);
+
+  gbt-icon {
+    display: inline-flex;
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+.gbt-confirm-danger-modal__summary[data-tone='warning'] .gbt-confirm-danger-modal__icon {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-bg-text);
+}
+
+.gbt-confirm-danger-modal__summary[data-tone='neutral'] .gbt-confirm-danger-modal__icon {
+  background: var(--color-info-bg);
+  color: var(--color-info-bg-text);
+}
+
 .gbt-confirm-danger-modal__actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.5rem;
+}
+
+@media (pointer: coarse) {
+  .gbt-confirm-danger-modal__actions ::ng-deep .gbt-button {
+    min-height: 44px;
+  }
 }

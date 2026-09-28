@@ -1,0 +1,19 @@
+<div
+  class="gbt-stat-grid"
+  role="list"
+  [attr.aria-label]="ariaLabel()"
+  [attr.aria-hidden]="loading() ? 'true' : null"
+  [attr.data-columns]="columns()"
+>
+  @if (loading()) {
+    @for (index of placeholders(); track index) {
+      <div class="gbt-stat-grid__placeholder" role="listitem">
+        <gbt-skeleton width="3rem" height="1.75rem" />
+        <gbt-skeleton width="60%" height="0.75rem" />
+      </div>
+    }
+  } @else {
+    <ng-content />
+  }
+</div>
+<span class="sr-only" role="status">{{ loading() ? loadingLabel() : '' }}</span>

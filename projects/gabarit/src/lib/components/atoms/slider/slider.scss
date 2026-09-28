@@ -49,7 +49,6 @@ input[type='range'] {
     outline: none;
   }
 
-  // WebKit (Chrome, Safari, Edge)
   &::-webkit-slider-runnable-track {
     height: 4px;
     border-radius: 999px;
@@ -79,7 +78,6 @@ input[type='range'] {
     outline-offset: 2px;
   }
 
-  // Firefox
   &::-moz-range-track {
     height: 4px;
     border-radius: 999px;

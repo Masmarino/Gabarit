@@ -1,10 +1,22 @@
-import { ChangeDetectionStrategy, Component, ElementRef, booleanAttribute, input, model, viewChild } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  booleanAttribute,
+  input,
+  model,
+  viewChild,
+} from '@angular/core'
 
 export interface SegmentedControlOption<T = string> {
   value: T
   label: string
   disabled?: boolean
 }
+
+export type SegmentedControlSize = 'md' | 'sm'
+
+let nextSegmentedControlId = 0
 
 @Component({
   selector: 'gbt-segmented-control',
@@ -13,6 +25,10 @@ export interface SegmentedControlOption<T = string> {
   templateUrl: './segmented-control.html',
   styleUrl: './segmented-control.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.gbt-segmented-control-host--full]': 'fullWidth()',
+    '[class.gbt-segmented-control-host--labelled]': '!!label()',
+  },
 })
 export class SegmentedControl<T = string> {
   private readonly group = viewChild<ElementRef<HTMLElement>>('group')
@@ -21,6 +37,13 @@ export class SegmentedControl<T = string> {
   value = model.required<T>()
   ariaLabel = input<string>('')
   disabled = input(false, { transform: booleanAttribute })
+  label = input<string>('')
+  fullWidth = input(false, { transform: booleanAttribute })
+  wrap = input(false, { transform: booleanAttribute })
+  size = input<SegmentedControlSize>('md')
+  tinted = input(false, { transform: booleanAttribute })
+
+  protected readonly labelId = `gbt-segmented-control-label-${++nextSegmentedControlId}`
 
   protected isSelected(value: T): boolean {
     return this.value() === value

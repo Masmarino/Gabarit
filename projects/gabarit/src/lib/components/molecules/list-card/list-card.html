@@ -1,0 +1,67 @@
+<section class="gbt-list-card" [attr.aria-label]="ariaLabel()" [attr.data-state]="state()">
+  <span class="sr-only" role="status">{{ state() === 'loading' ? loadingLabel() : '' }}</span>
+  @switch (header()) {
+    @case ('skeleton') {
+      <div class="gbt-list-card__header" aria-hidden="true">
+        <gbt-skeleton variant="rect" width="14rem" height="var(--gbt-control-height-sm)" />
+      </div>
+    }
+    @case ('slot') {
+      <div class="gbt-list-card__header"><ng-content select="[list-card-header]" /></div>
+    }
+  }
+  <div class="gbt-list-card__box">
+    @switch (state()) {
+      @case ('loading') {
+        <div class="gbt-list-card__loading" aria-busy="true">
+          <div aria-hidden="true">
+            @for (width of placeholders(); track $index) {
+              <div class="gbt-list-card__skeleton-row">
+                <gbt-skeleton variant="circle" width="1rem" height="1rem" />
+                <div class="gbt-list-card__skeleton-lines">
+                  <gbt-skeleton [width]="width" height="0.875rem" />
+                  <gbt-skeleton width="36%" height="0.625rem" />
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+      @case ('failed') {
+        <div class="gbt-list-card__failed" role="alert">
+          <gbt-empty-state
+            size="compact"
+            tone="error"
+            icon="alert-triangle"
+            [heading]="failedHeading()"
+            [message]="failedMessage()"
+          >
+            @if (retryLabel(); as label) {
+              <gbt-button
+                variant="secondary"
+                size="small"
+                [text]="label"
+                (clicked)="retry.emit()"
+              />
+            }
+            <ng-content select="[list-card-failed]" />
+          </gbt-empty-state>
+        </div>
+      }
+      @case ('empty') {
+        <gbt-empty-state
+          [size]="emptyIllustration() ? 'default' : 'compact'"
+          [illustration]="emptyIllustration()"
+          [icon]="emptyIcon()"
+          [heading]="emptyHeading()"
+          [message]="emptyMessage()"
+        >
+          <ng-content select="[list-card-empty]" />
+        </gbt-empty-state>
+      }
+      @default {
+        <div class="gbt-list-card__body"><ng-content /></div>
+      }
+    }
+  </div>
+</section>

@@ -1,0 +1,24 @@
+<ng-template #glyph>
+  @switch (status()) {
+    @case ('success') {
+      <gbt-icon name="check-circle" />
+    }
+    @case ('failed') {
+      <gbt-icon name="alert-circle" />
+    }
+    @case ('canceled') {
+      <gbt-icon name="x" />
+    }
+    @default {
+      <span class="gbt-job-status__dot"></span>
+    }
+  }
+</ng-template>
+@if (label(); as text) {
+  <span class="gbt-job-status__glyph" aria-hidden="true">
+    <ng-container *ngTemplateOutlet="glyph" />
+  </span>
+  <span class="sr-only">{{ text }}</span>
+} @else {
+  <ng-container *ngTemplateOutlet="glyph" />
+}

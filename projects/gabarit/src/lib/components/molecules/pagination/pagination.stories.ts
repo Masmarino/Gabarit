@@ -15,7 +15,12 @@ type Story = StoryObj<Pagination>
   selector: 'gbt-story-few-pages-host',
   standalone: true,
   imports: [Pagination],
-  template: `<gbt-pagination [totalItems]="95" [pageSize]="10" [page]="page" (pageChange)="page = $event" />`,
+  template: `<gbt-pagination
+    [totalItems]="95"
+    [pageSize]="10"
+    [page]="page"
+    (pageChange)="page = $event"
+  />`,
 })
 class FewPagesHost {
   page = 1
@@ -25,7 +30,12 @@ class FewPagesHost {
   selector: 'gbt-story-many-pages-host',
   standalone: true,
   imports: [Pagination],
-  template: `<gbt-pagination [totalItems]="500" [pageSize]="10" [page]="page" (pageChange)="page = $event" />`,
+  template: `<gbt-pagination
+    [totalItems]="500"
+    [pageSize]="10"
+    [page]="page"
+    (pageChange)="page = $event"
+  />`,
 })
 class ManyPagesHost {
   page = 12

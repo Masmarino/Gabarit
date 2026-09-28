@@ -1,0 +1,19 @@
+<gbt-button
+  class="gbt-copy-button__button"
+  [variant]="variant()"
+  [size]="size()"
+  [iconName]="glyph()"
+  [iconOnly]="!text()"
+  [text]="text()"
+  [ariaLabel]="name()"
+  [disabled]="disabled()"
+  (clicked)="copy()"
+/>
+<span
+  class="gbt-copy-button__status"
+  role="status"
+  aria-live="polite"
+  [attr.data-status]="clipboard.status()"
+  [attr.data-feedback]="feedback()"
+  >{{ statusText() }}</span
+>

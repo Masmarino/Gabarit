@@ -10,10 +10,6 @@
   gap: 1rem;
 }
 
-// Equal-growing zones on either side of the <nav> keep the page numbers
-// truly centered on the row regardless of how much content sits in the
-// zones themselves — the summary and page-size selector never push the
-// nav off-center, they just move within their own half.
 .gbt-pagination__side {
   display: flex;
   align-items: center;

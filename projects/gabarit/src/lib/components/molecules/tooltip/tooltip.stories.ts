@@ -39,7 +39,7 @@ export const Open: Story = {
 export const Positions: Story = {
   render: () => ({
     template: `
-      <div style="display:flex;gap:4rem;padding:4rem">
+      <div style="display:flex;flex-wrap:wrap;gap:2rem 4rem;padding:4rem">
         <gbt-tooltip text="En haut" position="top">
           <button type="button" autofocus>top</button>
         </gbt-tooltip>

@@ -17,6 +17,9 @@ let nextSwitchId = 0
   templateUrl: './switch.html',
   styleUrl: './switch.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.gbt-switch-host--hint]': '!!hint()',
+  },
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -29,7 +32,9 @@ export class Switch implements ControlValueAccessor {
   id = input<string>(`gbt-switch-${++nextSwitchId}`)
   label = input<string>('')
   disabled = input(false, { transform: booleanAttribute })
+  hint = input<string>('')
 
+  protected readonly hintId = computed(() => `${this.id()}-hint`)
   protected readonly checked = signal(false)
 
   private readonly formDisabled = signal(false)

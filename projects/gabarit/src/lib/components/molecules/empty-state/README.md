@@ -9,11 +9,23 @@ here yet" from a plain "no results" text message.
 
 ## Inputs
 
-| Input          | Type                    | Default | Role                                                              |
-| -------------- | ----------------------- | ------- | ------------------------------------------------------------------ |
-| `illustration` | `EmptyStateIllustration`| —       | Required. One of `'folder' \| 'star' \| 'checklist' \| 'merge' \| 'pipeline' \| 'tag' \| 'book' \| 'server'`. |
-| `heading`      | `string`                | —       | Required. The primary message.                                    |
-| `message`      | `string`                | `''`    | Optional secondary text, e.g. a hint or call to action description.|
+| Input              | Type                                 | Default     | Role                                                                                                                                        |
+| ------------------ | ------------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `illustration`     | `EmptyStateIllustration`             | `null`      | One of `'folder' \| 'star' \| 'checklist' \| 'merge' \| 'pipeline' \| 'tag' \| 'book' \| 'server'`. Optional. |
+| `heading`          | `string`                             | —           | Required. The primary message.                                                                                                              |
+| `message`          | `string`                             | `''`        | Optional secondary text, e.g. a hint or call to action description.                                                                         |
+| `icon`             | `string \| null`                     | `null`      | A registered icon name on a soft disc, in place of the artwork (ignored when an `illustration` is set).                                    |
+| `size`             | `'default' \| 'compact'`             | `'default'` | `compact` is the in-card block: smaller disc/artwork, tighter padding and type.                                                             |
+| `tone`             | `'default' \| 'error'`               | `'default'` | `error` tints the disc (or the artwork) in the error colours — a list that could not be loaded.                                             |
+| `headingLevel`     | `1 \| 2 \| 3 \| 4 \| 5 \| 6 \| null` | `null`      | Renders the heading as an `h1`…`h6` (default: a `<p>`).                                                                                     |
+| `headingId`        | `string \| null`                     | `null`      | `id` of the heading element, so a region can use `aria-labelledby`.                                                                         |
+| `headingFocusable` | `boolean`                            | `false`     | Gives the heading `tabindex="-1"` (a programmatic focus target, not a tab stop; it shows no focus ring, being no control).                  |
+
+## Methods
+
+| Method           | Role                                                                                                                                    |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `focusHeading()` | Moves focus to the heading — needs `headingFocusable`. For a result page (activation done, link expired) that moves focus to its title. |
 
 ## Content
 
@@ -23,10 +35,43 @@ An optional action (typically a `<gbt-button>`) is projected via
 ## Example
 
 ```html
-<gbt-empty-state illustration="folder" heading="Aucun dépôt pour l'instant" message="Créez votre premier dépôt pour commencer.">
+<gbt-empty-state
+  illustration="folder"
+  heading="Aucun dépôt pour l'instant"
+  message="Créez votre premier dépôt pour commencer."
+>
   <gbt-button text="Nouveau dépôt" (clicked)="openCreate()" />
 </gbt-empty-state>
 ```
+
+## Icon, compact and in-card states
+
+The 96 px artwork suits a whole page or an empty list. Inside a card, use the
+compact block with an icon:
+
+```html
+<gbt-card variant="outlined" heading="Variables" flush>
+  <gbt-empty-state
+    size="compact"
+    icon="key"
+    heading="Aucune variable définie"
+    message="Les variables sont injectées dans chaque job."
+  />
+</gbt-card>
+
+<gbt-empty-state size="compact" tone="error" icon="alert-circle" heading="Chargement impossible">
+  <gbt-button variant="secondary" size="small" text="Réessayer" (clicked)="retry()" />
+</gbt-empty-state>
+```
+
+With neither `illustration` nor `icon` a compact state is a bare heading (and
+message): the "Not found." block.
+
+## Heading level
+
+By default the heading is a `<p>` — the component cannot know where it sits in
+your page outline. Pass `headingLevel` when the state stands for a section (or
+the whole page, `1`), and `headingId` to name a surrounding `<section>`.
 
 ## Choosing an illustration
 

@@ -5,17 +5,22 @@
     class="gbt-menu__trigger"
     [class.gbt-menu__trigger--open]="open()"
     [class.gbt-menu__trigger--icon-only]="triggerIcon()"
+    [class.gbt-menu__trigger--custom]="!triggerIcon() && customTrigger()"
     aria-haspopup="menu"
     [attr.aria-expanded]="open()"
-    [attr.aria-label]="triggerIcon() ? label() : null"
+    [attr.aria-label]="triggerIcon() ? label() : triggerAriaLabel()"
     (click)="toggle()"
     (keydown)="onTriggerKeydown($event)"
   >
     @if (triggerIcon(); as icon) {
       <gbt-icon [name]="icon" aria-hidden="true" />
     } @else {
-      <span class="gbt-menu__label">{{ label() }}</span>
-      <gbt-icon name="chevron-down" class="gbt-menu__chevron" aria-hidden="true" />
+      <ng-content select="[gbtMenuTrigger]">
+        <span class="gbt-menu__label">{{ label() }}</span>
+      </ng-content>
+      @if (chevron()) {
+        <gbt-icon name="chevron-down" class="gbt-menu__chevron" aria-hidden="true" />
+      }
     }
   </button>
 
@@ -30,7 +35,7 @@
       [style.left]="pos.left"
       [style.right]="pos.right"
       (keydown)="onListKeydown($event)"
-      (click)="onListClick()"
+      (click)="onListClick($event)"
     >
       <ng-content />
     </div>

@@ -95,10 +95,81 @@ export const Chips: Story = {
   }),
 }
 
+const COLUMN = 'display:grid; gap:1rem; max-width:26rem'
+
+export const WithHint: Story = {
+  args: {
+    label: 'Rôle',
+    options: ROLE_OPTIONS,
+    hint: 'Le rôle peut être changé plus tard.',
+  },
+}
+
+export const HintReplacedByError: Story = {
+  name: 'Hint gives way to the error',
+  render: () => ({
+    template: `
+      <div style="${COLUMN}">
+        <gbt-select label="Rôle" hint="Le rôle peut être changé plus tard." [options]="options" [formControl]="a" />
+        <gbt-select label="Rôle" hint="Le rôle peut être changé plus tard." errorMessage="Choisissez un rôle" [options]="options" [formControl]="b" />
+      </div>`,
+    moduleMetadata: { imports: [Select, ReactiveFormsModule] },
+    props: { options: ROLE_OPTIONS, a: new FormControl('write'), b: new FormControl(null) },
+  }),
+}
+
+export const HiddenLabel: Story = {
+  name: 'Hidden label (still names the field)',
+  render: () => ({
+    template: `
+      <div style="display:flex; gap:.75rem; align-items:flex-end; flex-wrap:wrap">
+        <gbt-select label="Trier par" [hideLabel]="true" size="sm" [options]="options" [formControl]="a" />
+        <gbt-select label="Trier par" size="sm" [options]="options" [formControl]="a" />
+      </div>`,
+    moduleMetadata: { imports: [Select, ReactiveFormsModule] },
+    props: {
+      options: [
+        { value: 'name', label: 'Nom' },
+        { value: 'updated', label: 'Dernière activité' },
+        { value: 'stars', label: 'Étoiles' },
+      ],
+      a: new FormControl('updated'),
+    },
+  }),
+}
+
+export const FullWidth: Story = {
+  name: 'Full width',
+  render: () => ({
+    template: `
+      <div style="display:flex; flex-direction:column; align-items:flex-start; gap:1rem; max-width:26rem; padding:1rem; border:1px solid var(--border-color); border-radius:var(--site-border-radius-sm); background:var(--bg-principal)">
+        <gbt-select label="Visibilité" [fullWidth]="true" [options]="options" [formControl]="a" hint="Qui peut voir ce dépôt." />
+        <gbt-select label="Rôle par défaut" [fullWidth]="true" size="sm" [options]="options" [formControl]="b" />
+        <gbt-select label="Sans fullWidth" [options]="options" [formControl]="b" />
+      </div>`,
+    moduleMetadata: { imports: [Select, ReactiveFormsModule] },
+    props: { options: ROLE_OPTIONS, a: new FormControl('read'), b: new FormControl('write') },
+  }),
+}
+
 export const Dark: Story = {
   args: {
     label: 'Rôle',
     options: ROLE_OPTIONS,
   },
+  decorators: [darkTheme],
+}
+
+export const DarkFields: Story = {
+  name: 'Dark — hint, error, full width',
+  render: () => ({
+    template: `
+      <div style="${COLUMN}">
+        <gbt-select label="Rôle" hint="Le rôle peut être changé plus tard." [fullWidth]="true" [options]="options" [formControl]="a" />
+        <gbt-select label="Rôle" hint="Le rôle peut être changé plus tard." errorMessage="Choisissez un rôle" [fullWidth]="true" [options]="options" [formControl]="b" />
+      </div>`,
+    moduleMetadata: { imports: [Select, ReactiveFormsModule] },
+    props: { options: ROLE_OPTIONS, a: new FormControl('write'), b: new FormControl(null) },
+  }),
   decorators: [darkTheme],
 }

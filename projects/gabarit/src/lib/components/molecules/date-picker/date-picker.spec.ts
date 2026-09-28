@@ -70,7 +70,9 @@ describe('DatePicker', () => {
     open(fixture)
 
     expect(panel(fixture)).not.toBeNull()
-    expect(fixture.nativeElement.querySelectorAll('.gbt-date-picker__day').length).toBeGreaterThan(0)
+    expect(fixture.nativeElement.querySelectorAll('.gbt-date-picker__day').length).toBeGreaterThan(
+      0,
+    )
   })
 
   it('renders a full 6-week grid (42 cells) for a month that genuinely needs one', () => {
@@ -122,7 +124,9 @@ describe('DatePicker', () => {
     const fixture = setup()
     open(fixture)
     const now = new Date()
-    const expected = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(now)
+    const expected = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(
+      now,
+    )
     expect(monthLabel(fixture)).toBe(expected)
   })
 
@@ -156,7 +160,9 @@ describe('DatePicker', () => {
     const fixture = setup()
     open(fixture)
 
-    fixture.nativeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    fixture.nativeElement.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    )
     fixture.detectChanges()
 
     expect(panel(fixture)).toBeNull()
@@ -182,7 +188,11 @@ describe('DatePicker', () => {
 
     const nav = fixture.nativeElement.querySelector('.gbt-date-picker__nav')
     expect(nav.querySelectorAll('.gbt-date-picker__month-heading').length).toBe(2)
-    expect(fixture.nativeElement.querySelector('.gbt-date-picker__month .gbt-date-picker__month-heading')).toBeNull()
+    expect(
+      fixture.nativeElement.querySelector(
+        '.gbt-date-picker__month .gbt-date-picker__month-heading',
+      ),
+    ).toBeNull()
   })
 
   describe('grid keyboard navigation', () => {
@@ -193,7 +203,9 @@ describe('DatePicker', () => {
     }
 
     function pressOnFocused(fixture: ReturnType<typeof setup>, key: string, shiftKey = false) {
-      focusedCell(fixture)!.dispatchEvent(new KeyboardEvent('keydown', { key, shiftKey, bubbles: true }))
+      focusedCell(fixture)!.dispatchEvent(
+        new KeyboardEvent('keydown', { key, shiftKey, bubbles: true }),
+      )
       fixture.detectChanges()
     }
 
@@ -449,7 +461,8 @@ describe('DatePicker', () => {
 
       const grids = [...fixture.nativeElement.querySelectorAll('.gbt-date-picker__grid')]
       const rowCounts = grids.map(
-        (g: HTMLElement) => g.querySelectorAll('.gbt-date-picker__row:not(.gbt-date-picker__row--head)').length,
+        (g: HTMLElement) =>
+          g.querySelectorAll('.gbt-date-picker__row:not(.gbt-date-picker__row--head)').length,
       )
       expect(rowCounts).toEqual([6, 6])
     })
@@ -461,7 +474,9 @@ describe('DatePicker', () => {
       fixture.detectChanges()
       open(fixture)
 
-      fixture.nativeElement.querySelector('.gbt-date-picker__nav-button[aria-label="Next month"]').click()
+      fixture.nativeElement
+        .querySelector('.gbt-date-picker__nav-button[aria-label="Next month"]')
+        .click()
       fixture.detectChanges()
 
       expect(monthLabel(fixture)).toBe('July 2024')
@@ -476,7 +491,9 @@ describe('DatePicker', () => {
       fixture.detectChanges()
       open(fixture)
 
-      focusedCell(fixture)!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
+      focusedCell(fixture)!.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+      )
       fixture.detectChanges()
 
       expect(monthLabel(fixture)).toBe('June 2024')
@@ -492,7 +509,9 @@ describe('DatePicker', () => {
       fixture.detectChanges()
       open(fixture)
 
-      focusedCell(fixture)!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
+      focusedCell(fixture)!.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+      )
       fixture.detectChanges()
 
       expect(monthLabel(fixture)).toBe('July 2024')

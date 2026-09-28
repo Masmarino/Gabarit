@@ -1,0 +1,53 @@
+<div
+  class="gbt-disclosure"
+  [attr.data-appearance]="appearance()"
+  [attr.data-open]="open() ? '' : null"
+>
+  @switch (headingLevel()) {
+    @case (2) {
+      <h2 class="gbt-disclosure__heading"><ng-container *ngTemplateOutlet="toggleButton" /></h2>
+    }
+    @case (3) {
+      <h3 class="gbt-disclosure__heading"><ng-container *ngTemplateOutlet="toggleButton" /></h3>
+    }
+    @case (4) {
+      <h4 class="gbt-disclosure__heading"><ng-container *ngTemplateOutlet="toggleButton" /></h4>
+    }
+    @case (5) {
+      <h5 class="gbt-disclosure__heading"><ng-container *ngTemplateOutlet="toggleButton" /></h5>
+    }
+    @case (6) {
+      <h6 class="gbt-disclosure__heading"><ng-container *ngTemplateOutlet="toggleButton" /></h6>
+    }
+    @default {
+      <ng-container *ngTemplateOutlet="toggleButton" />
+    }
+  }
+  <div
+    class="gbt-disclosure__panel"
+    [id]="panelId"
+    [attr.data-open]="open() ? '' : null"
+    [attr.inert]="open() ? null : ''"
+  >
+    <div class="gbt-disclosure__panel-inner">
+      <div class="gbt-disclosure__content"><ng-content /></div>
+    </div>
+  </div>
+</div>
+
+<ng-template #toggleButton>
+  <button
+    type="button"
+    class="gbt-disclosure__toggle"
+    [id]="buttonId"
+    [attr.aria-expanded]="open()"
+    [attr.aria-controls]="panelId"
+    (click)="toggle()"
+  >
+    @if (icon(); as name) {
+      <gbt-icon class="gbt-disclosure__icon" [name]="name" />
+    }
+    <span class="gbt-disclosure__label">{{ label() }}</span>
+    <gbt-icon class="gbt-disclosure__chevron" name="chevron-down" />
+  </button>
+</ng-template>

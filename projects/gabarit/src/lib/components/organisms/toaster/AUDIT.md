@@ -60,3 +60,18 @@ badge fills resolve to the identical `rgb(41, 160, 121)` /
 the light-themed host — confirming the theme-invariant tokens work as
 intended, not just the always-dark card itself
 (`background-color: rgb(13, 27, 36)`, `border: 0px none`).
+
+## Bound to `GbtToastService` (no `toasts` input)
+
+Verified in Storybook (`WithService`, `WithServiceDark`) and in `toaster.spec.ts` / `toast.service.spec.ts` (fake
+timers, real axe run outside them). The markup and roles are the same as with an explicit `toasts` array, so the
+criteria above hold unchanged:
+
+- 7.1 — the same per-kind roles: `role="alert"` for error and warning (assertive), `role="status"` for success and
+  info (polite), always with `aria-atomic="true"`. Tested in both modes.
+- 7.4 — a toast added through the service never steals focus; the service only changes a signal.
+- WCAG 2.2.1 — `duration: 0` or `Infinity` keeps a toast until it is closed (the service, like the explicit mode);
+  `GbtToastService.defaultDuration` sets the delay of the others. Closing is a native `<button>` in both modes, and
+  removes the toast from the service.
+- No timer leaks: the service clears its timers on `dismiss`, `clear` and when the injector is destroyed; the toaster
+  creates none in this mode (tested with fake timers).

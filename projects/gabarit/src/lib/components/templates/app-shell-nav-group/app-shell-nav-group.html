@@ -1,0 +1,18 @@
+<div class="gbt-app-shell-nav-group" [attr.data-expanded]="expanded() ? '' : null">
+  <button
+    type="button"
+    class="gbt-app-shell__link gbt-app-shell-nav-group__toggle"
+    [attr.aria-expanded]="expanded()"
+    [attr.aria-controls]="panelId"
+    (click)="toggle()"
+  >
+    @if (icon(); as name) {
+      <gbt-icon [name]="name" />
+    }
+    <span>{{ label() }}</span>
+    <gbt-icon name="chevron-down" class="gbt-app-shell-nav-group__chevron" />
+  </button>
+  <div class="gbt-app-shell-nav-group__panel" [id]="panelId" [hidden]="!expanded()">
+    <ng-content />
+  </div>
+</div>

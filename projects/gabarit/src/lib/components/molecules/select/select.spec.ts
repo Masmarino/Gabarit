@@ -86,6 +86,63 @@ describe('Select', () => {
     expect(fixture.nativeElement.textContent).toContain('Select…')
   })
 
+  describe('with no options', () => {
+    function setupEmpty() {
+      const fixture = TestBed.createComponent(Select)
+      fixture.componentRef.setInput('options', [])
+      fixture.detectChanges()
+      return fixture
+    }
+
+    it("doesn't point aria-activedescendant at a nonexistent option when opened", () => {
+      const fixture = setupEmpty()
+      const trigger: HTMLButtonElement = fixture.nativeElement.querySelector('.gbt-select__trigger')
+      trigger.click()
+      fixture.detectChanges()
+
+      expect(trigger.getAttribute('aria-activedescendant')).toBeNull()
+    })
+
+    it('shows a message instead of an empty listbox', () => {
+      const fixture = setupEmpty()
+      fixture.nativeElement.querySelector('.gbt-select__trigger').click()
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.querySelector('.gbt-select__option')).toBeNull()
+      expect(fixture.nativeElement.textContent).toContain('No options')
+    })
+
+    it('accepts a custom no-options message', () => {
+      const fixture = setupEmpty()
+      fixture.componentRef.setInput('noOptionsMessage', 'Aucune option')
+      fixture.nativeElement.querySelector('.gbt-select__trigger').click()
+      fixture.detectChanges()
+
+      expect(fixture.nativeElement.textContent).toContain('Aucune option')
+    })
+
+    it('ignores ArrowDown/ArrowUp without moving an active index that does not exist', () => {
+      const fixture = setupEmpty()
+      const trigger: HTMLButtonElement = fixture.nativeElement.querySelector('.gbt-select__trigger')
+      trigger.click()
+      fixture.detectChanges()
+
+      trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }))
+      fixture.detectChanges()
+      trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }))
+      fixture.detectChanges()
+
+      expect(trigger.getAttribute('aria-activedescendant')).toBeNull()
+    })
+
+    it('has no a11y violations when opened empty', async () => {
+      const fixture = setupEmpty()
+      fixture.nativeElement.querySelector('.gbt-select__trigger').click()
+      fixture.detectChanges()
+      await expectNoA11yViolations(fixture.nativeElement)
+    })
+  })
+
   it('opens the panel on trigger click and lists every option', () => {
     const fixture = TestBed.createComponent(SingleSelectHost)
     fixture.detectChanges()
@@ -236,6 +293,23 @@ describe('Select', () => {
 
     expect(accessibleName).toContain('Rôle')
     expect(label.getAttribute('id')).toBe(labelledBy!.split(' ')[0])
+  })
+
+  it('names an unlabelled trigger by its placeholder (a role="combobox" button gets no name from its content)', () => {
+    const fixture = TestBed.createComponent(Select<string>)
+    fixture.componentRef.setInput('options', ROLE_OPTIONS)
+    fixture.componentRef.setInput('placeholder', 'Filtrer par rôle')
+    fixture.detectChanges()
+
+    const trigger: HTMLButtonElement = fixture.nativeElement.querySelector('.gbt-select__trigger')
+    expect(trigger.getAttribute('aria-label')).toBe('Filtrer par rôle')
+    expect(trigger.hasAttribute('aria-labelledby')).toBe(false)
+
+    // A visible label wins: no aria-label next to the aria-labelledby.
+    fixture.componentRef.setInput('label', 'Rôle')
+    fixture.detectChanges()
+    expect(trigger.hasAttribute('aria-label')).toBe(false)
+    expect(trigger.hasAttribute('aria-labelledby')).toBe(true)
   })
 
   it('associates an error message with the trigger via aria-describedby/aria-invalid', () => {
@@ -649,6 +723,108 @@ describe('Select', () => {
       fixture.componentRef.setInput('label', 'Labels')
       fixture.detectChanges()
       await expectNoA11yViolations(fixture.nativeElement)
+    })
+  })
+
+  describe('additions: hint, hideLabel, fullWidth', () => {
+    function setup(inputs: Record<string, unknown> = {}) {
+      const fixture = TestBed.createComponent(Select)
+      fixture.componentRef.setInput('label', 'Rôle')
+      fixture.componentRef.setInput('options', ROLE_OPTIONS)
+      for (const [name, value] of Object.entries(inputs)) {
+        fixture.componentRef.setInput(name, value)
+      }
+      fixture.detectChanges()
+      const host: HTMLElement = fixture.nativeElement
+      return { fixture, host, trigger: host.querySelector('.gbt-select__trigger') as HTMLElement }
+    }
+
+    it("defaults keep today's rendering: visible label, no hint, an inline-sized host", () => {
+      const { host, trigger } = setup()
+      expect(host.querySelector('.gbt-select__label')!.className).toBe('gbt-select__label')
+      expect(host.querySelector('.gbt-select__hint')).toBeNull()
+      expect(host.classList.contains('gbt-select--full')).toBe(false)
+      expect(trigger.hasAttribute('aria-describedby')).toBe(false)
+      expect(getComputedStyle(host).display).toBe('inline-block')
+    })
+
+    describe('hint', () => {
+      it('renders the hint and describes the trigger with it', () => {
+        const { host, trigger } = setup({ hint: 'Le rôle peut être changé plus tard.' })
+        const hint: HTMLElement = host.querySelector('.gbt-select__hint')!
+        expect(hint.textContent).toContain('Le rôle peut être changé plus tard.')
+        expect(trigger.getAttribute('aria-describedby')).toBe(hint.id)
+      })
+
+      it('hides the hint, and drops it from aria-describedby, while an error shows', () => {
+        const { host, trigger } = setup({ hint: 'Aide', errorMessage: 'Choisissez un rôle' })
+        expect(host.querySelector('.gbt-select__hint')).toBeNull()
+        const error: HTMLElement = host.querySelector('.gbt-select__error')!
+        expect(trigger.getAttribute('aria-describedby')).toBe(error.id)
+      })
+
+      it('keeps the chip row in aria-describedby next to the hint', () => {
+        const { fixture, trigger } = setup({
+          hint: 'Aide',
+          multiple: true,
+          chips: true,
+        })
+        fixture.componentInstance.writeValue(['read'])
+        fixture.detectChanges()
+        const ids = trigger.getAttribute('aria-describedby')?.split(' ') ?? []
+        expect(ids.length).toBe(2)
+        for (const id of ids) {
+          expect(fixture.nativeElement.querySelector(`#${id}`), id).not.toBeNull()
+        }
+        expect(fixture.nativeElement.querySelector(`#${ids[1]}`).className).toContain(
+          'gbt-select__hint',
+        )
+      })
+
+      it('namespaces the hint id per instance', () => {
+        const { host } = setup({ id: 'role-select', hint: 'Aide' })
+        expect(host.querySelector('.gbt-select__hint')!.id).toBe('role-select-hint')
+      })
+
+      it('presents no accessibility violation with a hint, with and without an error', async () => {
+        const { fixture } = setup({ hint: 'Aide' })
+        await expectNoA11yViolations(fixture.nativeElement)
+        fixture.componentRef.setInput('errorMessage', 'Choisissez un rôle')
+        fixture.detectChanges()
+        await expectNoA11yViolations(fixture.nativeElement)
+      })
+    })
+
+    describe('hideLabel', () => {
+      it('keeps the label in the DOM, visually hidden, and still naming the trigger', async () => {
+        const { fixture, host, trigger } = setup({ hideLabel: true })
+        const label: HTMLElement = host.querySelector('.gbt-select__label')!
+        expect(label.classList.contains('gbt-select__label--hidden')).toBe(true)
+        expect(getComputedStyle(label).position).toBe('absolute')
+        expect(label.textContent).toContain('Rôle')
+        expect(trigger.getAttribute('aria-labelledby')!.split(' ')[0]).toBe(label.id)
+        await expectNoA11yViolations(fixture.nativeElement)
+      })
+    })
+
+    describe('fullWidth', () => {
+      it('adds a host class and stretches the host to its container', () => {
+        const { fixture, host } = setup()
+        expect(host.classList.contains('gbt-select--full')).toBe(false)
+
+        fixture.componentRef.setInput('fullWidth', true)
+        fixture.detectChanges()
+        expect(host.classList.contains('gbt-select--full')).toBe(true)
+        const style = getComputedStyle(host)
+        expect(style.display).toBe('block')
+        expect(style.width).toBe('100%')
+      })
+
+      it('combines with the sm size', () => {
+        const { host } = setup({ fullWidth: true, size: 'sm' })
+        expect(host.classList.contains('gbt-select--full')).toBe(true)
+        expect(host.classList.contains('gbt-select--sm')).toBe(true)
+      })
     })
   })
 })

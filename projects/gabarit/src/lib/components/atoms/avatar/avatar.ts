@@ -1,13 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core'
+import { ChangeDetectionStrategy, Component, computed, input, linkedSignal } from '@angular/core'
+import { computeInitials } from '../../../primitives'
+
+export { computeInitials }
 
 export type AvatarSize = 'sm' | 'md' | 'lg'
-
-export function computeInitials(name: string): string {
-  const words = name.trim().split(/\s+/).filter(Boolean)
-  if (words.length === 0) return ''
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase()
-  return (words[0][0] + words[words.length - 1][0]).toUpperCase()
-}
 
 @Component({
   selector: 'gbt-avatar',
@@ -24,7 +20,10 @@ export class Avatar {
   src = input<string | null>(null)
   size = input<AvatarSize>('md')
 
-  protected readonly imageFailed = signal(false)
+  protected readonly imageFailed = linkedSignal<string | null, boolean>({
+    source: this.src,
+    computation: () => false,
+  })
 
   protected readonly showImage = computed(() => !!this.src() && !this.imageFailed())
   protected readonly initials = computed(() => computeInitials(this.name()))

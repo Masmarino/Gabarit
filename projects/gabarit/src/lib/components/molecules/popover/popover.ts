@@ -104,6 +104,8 @@ export class Popover {
 
   private focusTrigger(): void {
     const trigger = this.triggerSlot()?.nativeElement
-    trigger?.querySelector<HTMLElement>('button, a[href], input, select, textarea, [tabindex]')?.focus()
+    trigger
+      ?.querySelector<HTMLElement>('button, a[href], input, select, textarea, [tabindex]')
+      ?.focus()
   }
 }

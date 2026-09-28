@@ -12,7 +12,7 @@ validation. Integrates with Angular forms via `ControlValueAccessor`
 | Input             | Type                                          | Default                                              | Role                                                       |
 | ------------------ | ------------------------------------------------ | ------------------------------------------------------- | --------------------------------------------------------------- |
 | `label`           | `string`                                         | `''`                                                     | Field label.                                                     |
-| `multiple`        | `boolean`                                        | `false`                                                   | Accept more than one file. Selecting again replaces the current file when `false`. |
+| `multiple`        | `boolean`                                        | `false`                                                   | Accept more than one file. Selecting again replaces the current file when `false` — dropping or picking several files at once also keeps only the first and reports the rest as rejected (`extraFileMessage`), the same way an oversized file is reported. |
 | `accept`          | `string`                                         | `''`                                                       | Native `accept` attribute (e.g. `'image/*'`) — a hint to the OS picker and drag source, not enforced by this component. |
 | `maxSizeMb`       | `number \| null`                                  | `null`                                                     | Rejects (and reports) a file larger than this, in megabytes.    |
 | `disabled`        | `boolean`                                        | `false`                                                     | —                                                                 |
@@ -20,6 +20,7 @@ validation. Integrates with Angular forms via `ControlValueAccessor`
 | `dropLabel`       | `string`                                         | `'Drag and drop a file here, or click to browse'`             | The dropzone's own instructional text.                            |
 | `removeLabel`     | `(name: string) => string`                       | `` (name) => `Remove ${name}` ``                              | Accessible name of each file's remove button.                    |
 | `oversizeMessage` | `(name: string, maxSizeMb: number) => string`    | `` (name, max) => `${name} exceeds ${max} MB and was not added.` `` | Message shown per rejected file.                                  |
+| `extraFileMessage` | `(name: string) => string`                      | `` (name) => `${name} was not added — only one file is allowed.` `` | Message shown per extra file when more than one is dropped/picked while `multiple` is `false`. |
 
 ## Example
 

@@ -5,9 +5,8 @@ in Storybook (stories `Empty`, `WithValue`, `Clearable`, `OneMonth`,
 `FrenchLocale`, `WithError`, `Disabled`, `Dark`) and by code review
 (`date-range-picker.ts`, `date-range-picker.html`,
 `date-range-picker.scss`, and the reused `date-picker-calendar.ts`).
-Given more time was budgeted for this audit than most, per the
-issue's own warning that this is a two-step keyboard interaction built
-on top of `DatePicker`'s already-complex one.
+This is a two-step keyboard interaction built on top of `DatePicker`'s
+already-complex one, so the checklist below is correspondingly detailed.
 
 ## Checklist
 
@@ -26,11 +25,9 @@ on top of `DatePicker`'s already-complex one.
 
 ## Why no `Shift+Arrow` to extend the selection
 
-The originating issue suggested validating a `Shift+Arrow`-extends
-mechanic against a WAI-ARIA "Date Range Picker Dialog" reference
-pattern. No such pattern exists in the APG — only a single-date "Date
-Picker Dialog" does — so there was nothing to validate against, and
-adding a second, bespoke interaction path (click *or* modifier-arrow)
+No WAI-ARIA "Date Range Picker Dialog" reference pattern exists in the
+APG — only a single-date "Date Picker Dialog" does. Adding a second,
+bespoke interaction path (a `Shift+Arrow`-extends mechanic, click *or* modifier-arrow)
 alongside the click-based one would double the surface a user has to
 discover and this audit has to cover, for a capability the click model
 already provides. `Enter`/`Space` on the focused day instead performs
@@ -40,7 +37,7 @@ convention `DatePicker` already established, extended to two steps.
 
 ## Why the range closes on completion rather than staying open for a separate "Apply"
 
-This was flagged explicitly during design and kept for parity with
+This keeps parity with
 `DatePicker`, which also closes immediately on a single click. Keeping
 the panel open after the second click would need a new "Apply" (or
 "Confirm") button and label this component doesn't otherwise need —
@@ -72,7 +69,7 @@ channel on the fill itself.
 
 ## Why an adjacent-month blank cell is an empty `role="gridcell"`, not `aria-hidden`
 
-Reuses `DatePicker`'s own fix verbatim, for the same reason: a
+Reuses `DatePicker`'s own approach verbatim, for the same reason: a
 wholly-blank trailing week (here, also produced when a shorter visible
 month is padded to match a taller sibling month's row count) can leave
 an entire `role="row"` made of nothing but these filler cells: marking
@@ -102,3 +99,14 @@ complete" states.
 Dark mode is visually confirmed in Storybook (`Dark` story) — the
 range fill, both caps, the preview state, and the trigger all remain
 legible, no contrast regression.
+
+## Shared implementation
+
+The panel and calendar-grid mechanics — `monthViews`, `panelLabel`, `weekdayLabels`, `monthOptions`,
+`yearOptions`, `cellId`, `isFocused`, opening/closing the panel, month/year navigation, the grid's
+keyboard handling, `Escape`, click-outside, and panel positioning (`floatingPanelAnchor()`, shared
+with `Select` and `Autocomplete`) — live in `../date-picker/calendar-panel.ts` (`CalendarPanel`), a
+plain class instantiated per component instance and shared with `DatePicker`. This component owns
+only its value model and range-selection logic (`draftStart`/`draftEnd`/`hoveredDate`/`previewBounds`/
+`isInRange`/`isRangeStartCap`/`isRangeEndCap`, `selectDay`'s two-click logic) and delegates the rest to
+`this.panel`. `DateRangePickerMonthView` is an alias of `CalendarPanel`'s own `CalendarPanelView`.

@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, contentChildren, effect, input, model } from '@angular/core'
+import {
+  ChangeDetectionStrategy,
+  Component,
+  contentChildren,
+  effect,
+  input,
+  model,
+} from '@angular/core'
 import { AccordionItem } from '../accordion-item/accordion-item'
 
 export type AccordionMode = 'single' | 'multiple'

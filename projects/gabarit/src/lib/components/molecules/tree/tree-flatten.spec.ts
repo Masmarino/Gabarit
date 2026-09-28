@@ -6,7 +6,11 @@ const TREE: TreeNode[] = [
     label: 'src',
     children: [
       { id: 'src/app.ts', label: 'app.ts' },
-      { id: 'src/utils', label: 'utils', children: [{ id: 'src/utils/date.ts', label: 'date.ts' }] },
+      {
+        id: 'src/utils',
+        label: 'utils',
+        children: [{ id: 'src/utils/date.ts', label: 'date.ts' }],
+      },
     ],
   },
   { id: 'readme', label: 'README.md' },
@@ -64,6 +68,8 @@ describe('flattenTree', () => {
 
   it('treats a node with an empty children array as having no children', () => {
     const flat = flattenTree([{ id: 'a', label: 'a', children: [] }], new Set(['a']))
-    expect(flat).toEqual([{ node: { id: 'a', label: 'a', children: [] }, depth: 0, hasChildren: false, parentId: null }])
+    expect(flat).toEqual([
+      { node: { id: 'a', label: 'a', children: [] }, depth: 0, hasChildren: false, parentId: null },
+    ])
   })
 })

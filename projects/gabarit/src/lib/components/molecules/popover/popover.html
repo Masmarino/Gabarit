@@ -2,7 +2,13 @@
   <ng-content></ng-content>
 </span>
 @if (open() && position(); as pos) {
-  <div class="gbt-popover__panel" [id]="panelId" [style.top]="pos.top" [style.left]="pos.left" [style.right]="pos.right">
+  <div
+    class="gbt-popover__panel"
+    [id]="panelId"
+    [style.top]="pos.top"
+    [style.left]="pos.left"
+    [style.right]="pos.right"
+  >
     <ng-content select="[popover-content]"></ng-content>
   </div>
 }

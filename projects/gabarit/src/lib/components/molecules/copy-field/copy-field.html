@@ -1,0 +1,23 @@
+@if (label(); as text) {
+  <span class="gbt-copy-field__label" [id]="labelId">{{ text }}</span>
+}
+<div
+  class="gbt-copy-field__box"
+  [attr.role]="label() ? 'group' : null"
+  [attr.aria-labelledby]="label() ? labelId : null"
+>
+  <!-- prettier-ignore -->
+  <code #code class="gbt-copy-field__value">@for (segment of segments(); track $index) {{{ segment }}<wbr />}</code>
+  <gbt-copy-button
+    class="gbt-copy-field__copy"
+    [value]="value()"
+    [ariaLabel]="copyLabel()"
+    [copiedText]="copiedText()"
+    [failedText]="failedText()"
+    [feedbackMs]="feedbackMs()"
+    [feedback]="feedback()"
+    [selectTarget]="code"
+    (copied)="copied.emit($event)"
+    (copyFailed)="copyFailed.emit()"
+  />
+</div>

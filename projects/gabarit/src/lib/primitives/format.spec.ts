@@ -63,3 +63,37 @@ describe('formatPercent', () => {
     expect(formatPercent(1, 'en-US', 0)).toBe('100%')
   })
 })
+
+describe('formatDuration days option', () => {
+  const HOUR = 3600_000
+  const DAY = 24 * HOUR
+
+  it('is off by default: long durations stay in hours, exactly as before', () => {
+    expect(formatDuration(25 * HOUR, 'en-US')).toBe('25 h')
+    expect(formatDuration(2 * DAY + 3 * HOUR + 30 * 60_000, 'en-US')).toBe('51 h 30 min')
+    expect(formatDuration(25 * HOUR, 'en-US', {})).toBe('25 h')
+    expect(formatDuration(25 * HOUR, 'en-US', { days: false })).toBe('25 h')
+  })
+
+  it.each([
+    [25 * HOUR, '1 d 1 h', '1 j 1 h'],
+    [DAY, '1 d', '1 j'],
+    [2 * DAY + 3 * HOUR, '2 d 3 h', '2 j 3 h'],
+    [2 * DAY + 3 * HOUR + 30 * 60_000, '2 d 3 h', '2 j 3 h'],
+    [2 * DAY + 30 * 60_000, '2 d', '2 j'],
+    [400 * DAY, '400 d', '400 j'],
+  ])('days: true breaks %d ms into %s (en) and %s (fr)', (ms, en, fr) => {
+    expect(formatDuration(ms, 'en-US', { days: true })).toBe(en)
+    expect(formatDuration(ms, 'fr-FR', { days: true })).toBe(fr)
+  })
+
+  it('leaves durations under a day unchanged', () => {
+    for (const ms of [0, 950, 90_000, 5_430_000, 23 * HOUR + 59 * 60_000]) {
+      expect(formatDuration(ms, 'fr-FR', { days: true })).toBe(formatDuration(ms, 'fr-FR'))
+    }
+  })
+
+  it('formats the day count with the locale', () => {
+    expect(formatDuration(2000 * DAY, 'en-US', { days: true })).toBe('2,000 d')
+  })
+})

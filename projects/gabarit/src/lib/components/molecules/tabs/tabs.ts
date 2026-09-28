@@ -36,10 +36,6 @@ export class Tabs {
       tabs.forEach((tab, i) => tab.setState(i, i === active, groupId))
     })
 
-    // Self-heals an out-of-range `activeIndex` — e.g. a consumer binds it to
-    // a URL query parameter and the stored value no longer matches any tab —
-    // instead of leaving every panel hidden and every trigger out of the
-    // keyboard tab order with no way to reach the component at all.
     effect(() => {
       const count = this.tabs().length
       if (count === 0) {

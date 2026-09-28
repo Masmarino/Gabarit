@@ -27,3 +27,19 @@ label `rgb(158, 189, 207)` (**8.87:1**), typed text
 `rgb(247, 249, 251)`, and the field's border `rgb(67, 106, 128)`.
 Token contrast is otherwise covered by `contrast.spec.ts`,
 independently of this rendering.
+
+## `hint`, `hideLabel`, leading icon, and touch-keyboard attributes
+
+Verified by `input.spec.ts` (including a check that default rendering is
+unaffected when these are left unset), by code review and in Storybook
+(stories `WithHint`, `HintReplacedByError`, `HiddenLabel`, `Small`,
+`Mono`, `LeadingIcon`, `Types`, `OneTimeCode`, `DarkFields`).
+
+| Criterion  | Short title              | Verification                                                                                                                                                                                                                                                                | Result                                                        |
+| ---------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| 3.2        | Text contrast            | The hint uses `--text-secondary` (7:1 on `--bg-principal` and on `--bg-panel`, both themes, `contrast.spec.ts`); the leading icon is decorative (`--text-discret`, `aria-hidden`). Monospace and `sm` sizes change the font only, not the colours.                          | Compliant                                                     |
+| 11.1       | Label presence           | `hideLabel` keeps the `<label for>` in the DOM and hides it with the clip-path pattern, so the field keeps its accessible name (`input.spec.ts`, axe `label` rule with a hidden label). It is for fields that are named by something else visible next to them (a heading). | Compliant                                                     |
+| 11.11      | Label/format with a hint | `hint` renders `<p id="<id>-hint">`, referenced by the input's `aria-describedby`; it is not a live region. While `errorMessage` is set the hint is removed and the description is the error alone (`role="alert"`), so the two never compete.                              | Compliant                                                     |
+| 11.13      | Relevant `autocomplete`  | Unchanged (`autocomplete` input). `inputmode`, `enterkeyhint`, `autocapitalize` and `spellcheck` are pass-through attributes for touch keyboards; nothing is hard-coded, all default to "attribute absent".                                                                 | Mechanism compliant; values are the consumer's responsibility |
+| 10.11      | 320px reflow             | The leading icon is absolutely positioned inside the wrapper; the input keeps `width: 100%`. Verified at 375px in Storybook (`Types`): no horizontal scroll.                                                                                                                | Compliant — verified at 375px                                 |
+| WCAG 2.5.8 | 24×24px target size      | Fields are 38px tall, 32px with `size="sm"` (measured in Storybook, `getBoundingClientRect`; the shared `--gbt-control-height-md` / `-sm` tokens), above the 24px minimum; the password toggle keeps its 24px hit area.                                                     | Compliant                                                     |

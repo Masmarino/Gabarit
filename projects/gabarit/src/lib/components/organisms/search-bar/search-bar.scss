@@ -2,6 +2,8 @@ $trigger-height: 40px;
 $trigger-width: 340px;
 $trigger-width-open: 420px;
 $panel-max-height: 460px;
+$toggle-size: 44px;
+$narrow-breakpoint: 768px;
 $easing: cubic-bezier(0.34, 1.56, 0.64, 1);
 $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -88,6 +90,107 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
 
   &:active {
     transform: scale(0.9);
+  }
+}
+
+.gbt-sb-trigger[hidden] {
+  display: none;
+}
+
+.gbt-sb-toggle {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: $toggle-size;
+  height: $toggle-size;
+  padding: 0;
+  border: none;
+  border-radius: var(--site-border-radius-sm);
+  background: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.15s $easing-std;
+
+  &:hover {
+    background: var(--bg-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+.gbt-sb-trigger__close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $toggle-size;
+  height: calc(100% + 2px);
+  margin: -1px 0 -1px -13px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 15px 0 0 15px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background 0.15s $easing-std,
+    color 0.15s $easing-std;
+
+  &:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+:host([data-collapsible][data-expanded]) .gbt-sb-trigger__icon {
+  display: none;
+}
+
+:host([data-collapsible]) .gbt-sb-trigger {
+  width: 100%;
+  height: $toggle-size;
+
+  &--open {
+    width: 100%;
+  }
+}
+
+@media (min-width: #{$narrow-breakpoint + 1}) {
+  :host([data-collapsible='narrow']) {
+    .gbt-sb-toggle,
+    .gbt-sb-trigger__close {
+      display: none;
+    }
+
+    .gbt-sb-trigger__icon {
+      display: inline-flex;
+    }
+
+    .gbt-sb-trigger[hidden] {
+      display: flex;
+    }
+
+    .gbt-sb-trigger {
+      width: $trigger-width;
+      height: $trigger-height;
+
+      &--open {
+        width: $trigger-width-open;
+      }
+    }
   }
 }
 
@@ -311,6 +414,10 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .gbt-sb-toggle {
+    transition: none;
+  }
+
   .gbt-sb-trigger {
     transition:
       border-color 0.15s,

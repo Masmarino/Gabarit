@@ -1,8 +1,25 @@
-<div class="gbt-alert" [attr.data-variant]="variant()" [attr.role]="role()" aria-atomic="true">
+<div
+  class="gbt-alert"
+  [attr.data-variant]="variant()"
+  [attr.data-heading]="heading() ? '' : null"
+  [attr.data-size]="size() === 'md' ? null : size()"
+  [attr.data-appearance]="appearance() === 'default' ? null : appearance()"
+  [attr.data-icon-align]="iconAlign() === 'auto' ? null : iconAlign()"
+  [attr.role]="role()"
+  [attr.aria-atomic]="role() ? 'true' : null"
+>
   <span class="gbt-alert__icon">
     <gbt-icon [name]="icon()" aria-hidden="true" />
   </span>
-  <div class="gbt-alert__content"><ng-content /></div>
+  <div class="gbt-alert__content">
+    <div class="gbt-alert__message">
+      @if (heading()) {
+        <p class="gbt-alert__heading">{{ heading() }}</p>
+      }
+      <ng-content />
+    </div>
+    <div class="gbt-alert__actions"><ng-content select="[alert-actions]" /></div>
+  </div>
   @if (dismissible()) {
     <button
       type="button"

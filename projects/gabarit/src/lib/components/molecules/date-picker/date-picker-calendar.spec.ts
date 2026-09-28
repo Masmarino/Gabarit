@@ -3,6 +3,7 @@ import {
   addYears,
   buildCalendarGrid,
   isSameDay,
+  shiftDays,
   startOfWeek,
 } from './date-picker-calendar'
 
@@ -32,6 +33,13 @@ describe('addMonths', () => {
   it('clamps an overflowing day to the shorter target month, instead of rolling into the month after', () => {
     // Jan 31 + 1 month must land on Feb 29 (2024 is a leap year), never March 2
     expect(addMonths(new Date(2024, 0, 31), 1)).toEqual(new Date(2024, 1, 29))
+  })
+})
+
+describe('shiftDays', () => {
+  it('adds and subtracts whole days, rolling over month and year boundaries', () => {
+    expect(shiftDays(new Date(2024, 1, 28), 1)).toEqual(new Date(2024, 1, 29)) // 2024 is a leap year
+    expect(shiftDays(new Date(2024, 0, 1), -1)).toEqual(new Date(2023, 11, 31))
   })
 })
 
@@ -74,9 +82,9 @@ describe('buildCalendarGrid', () => {
   it('marks days outside the target month', () => {
     const grid = buildCalendarGrid(2024, 2, 1)
     expect(grid[0].inCurrentMonth).toBe(false) // Feb 26
-    expect(grid.find((d) => d.date.getDate() === 1 && d.date.getMonth() === 2)?.inCurrentMonth).toBe(
-      true,
-    )
+    expect(
+      grid.find((d) => d.date.getDate() === 1 && d.date.getMonth() === 2)?.inCurrentMonth,
+    ).toBe(true)
   })
 
   it('marks exactly one day as today, when today falls within the grid', () => {
