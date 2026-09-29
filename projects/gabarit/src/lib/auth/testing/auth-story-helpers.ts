@@ -79,6 +79,7 @@ export function storyAuthPort(
     login: () => later(() => of({ token: 'session' })),
     register: () => later(() => of({ token: null, mfaToken: 'pending', mfaSetupRequired: true })),
     activate: () => later(() => of(undefined)),
+    resetPassword: () => later(() => of(undefined)),
     verifyMfa: (_token, proof) =>
       later(() =>
         'code' in proof && proof.code !== CODE ? portError(401, 'invalid code') : of(undefined),

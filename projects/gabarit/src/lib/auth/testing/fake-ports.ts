@@ -95,6 +95,7 @@ export function fakeAuthPort(): FakeAuthPort {
     login: call('login'),
     register: call('register'),
     activate: call('activate'),
+    resetPassword: call('resetPassword'),
     verifyMfa: call('verifyMfa'),
     startPasskeyChallenge: call('startPasskeyChallenge'),
     finishPasskeyChallenge: call('finishPasskeyChallenge'),

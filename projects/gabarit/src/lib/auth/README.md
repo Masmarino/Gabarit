@@ -1,7 +1,8 @@
 # Auth kit
 
 The public sign-in pages and the account's second-factor settings, as components an application uses
-as they are: login (with the MFA challenge), free registration, invitation activation, the mandatory
+as they are: login (with the MFA challenge), free registration, invitation activation, the new
+password after an administrator's reset, the mandatory
 first MFA enrolment (authenticator app or passkey, then backup codes), and the account cards for the
 authenticator app and the passkeys. Every application that uses them gets the same behaviour, the same
 accessibility and the same look, by construction.
@@ -16,6 +17,7 @@ the port's business) and **locale-agnostic** (every string is a label with an En
 | [`AuthLogin`](./login/README.md)                          | `gbt-auth-login`       | `AUTH_PORT`                              |
 | [`AuthRegister`](./register/README.md)                    | `gbt-auth-register`    | `AUTH_PORT`                              |
 | [`AuthActivate`](./activate/README.md)                    | `gbt-auth-activate`    | `AUTH_PORT`                              |
+| [`AuthResetPassword`](./reset-password/README.md)         | `gbt-auth-reset-password` | `AUTH_PORT`                           |
 | [`MfaEnrollment`](./mfa-enrollment/README.md)             | `gbt-mfa-enrollment`   | `AUTH_PORT`                              |
 | [`MfaSettings`](./mfa-settings/README.md)                 | `gbt-mfa-settings`     | `MFA_PORT`                               |
 | [`PasskeySettings`](./passkey-settings/README.md)         | `gbt-passkey-settings` | `MFA_PORT` (and `AUTH_PORT` if provided) |
@@ -60,8 +62,9 @@ Every page takes the application's logo in its `[auth-logo]` slot (an `img`, a `
 carrying the application's `routerLink` or `href`). A page without a projected footer link shows no
 footer.
 
-**`gbt-auth-register` and `gbt-auth-activate` also emit `(signIn)`**, from their own terminal states
-(registration closed, account created, activation succeeded, dead link), where "Sign in" is a button
+**`gbt-auth-register`, `gbt-auth-activate` and `gbt-auth-reset-password` also emit `(signIn)`**, from
+their own terminal states (registration closed, account created, activation succeeded, password
+changed, dead link), where "Sign in" is a button
 rather than the projected link. That output is in addition to the projected `[gbtAuthFooterLink]`,
 not instead of it: **wire both** (`(signIn)="router.navigateByUrl('/login')"` and the footer link)
 for every path to reach the sign-in page.
@@ -104,7 +107,7 @@ shape. The kit words every failure itself; the server's text is never shown. Wha
 | `register`                            | 400 `registration is disabled`                                                                                     | the closed state                                                             |
 | `register`                            | 400 `username is reserved` / `username …` / `email is not a valid address` / `password must be at least …` / other | the field concerned, else "check the fields"                                 |
 | `register`                            | 409 `email already in use` / other 409                                                                             | address taken / name taken                                                   |
-| `activate`                            | 400 `password must be at least …` / other 400                                                                      | weak password (the link still works) / dead link                             |
+| `activate`, `resetPassword`           | 400 `password must be at least …` / other 400                                                                      | weak password (the link still works) / dead link                             |
 
 An adapter for a backend that words these differently maps its answers onto them with `catchError`.
 
@@ -117,12 +120,13 @@ that revoked the session also turns inert ("You have been signed out", its `sign
 action left), so an unbound output never leaves a live card acting on a dead session; it cannot clear
 the application's stored session, though: binding `sessionRevoked` stays mandatory.
 
-## Activation links
+## Activation and password-reset links
 
-The mail should carry the token in the URL fragment (`/activate#token=…`), which no server ever
-sees. The application's wrapper reads it once with `activationToken(fragment, query)`, removes it
-from the address bar and history (`navigateByUrl('/activate', { replaceUrl: true })`), and hands
-it to `gbt-auth-activate`'s `token` input.
+The mail should carry the token in the URL fragment (`/activate#token=…`,
+`/reset-password#token=…`), which no server ever sees. The application's wrapper reads it once with
+`activationToken(fragment, query)`, removes it from the address bar and history
+(`navigateByUrl('/activate', { replaceUrl: true })`), and hands it to the `token` input of
+`gbt-auth-activate` or `gbt-auth-reset-password`.
 
 **The `token` input must be a one-time snapshot of the URL, never a value that reactively follows the
 URL (e.g. a signal derived from `route.fragment`): the component resets when it changes.** Scrubbing

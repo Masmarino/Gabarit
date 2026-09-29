@@ -1,0 +1,605 @@
+import { Component, type Provider, signal } from '@angular/core'
+import { TestBed } from '@angular/core/testing'
+import { By } from '@angular/platform-browser'
+import { expectNoA11yViolations } from '../../../testing/expect-no-a11y-violations'
+import { Button } from '../../components/atoms/button/button'
+import { type ResetPasswordLabels, provideAuthLabels } from '../auth-labels'
+import { AuthFooterLink } from '../auth-footer/auth-footer'
+import { AUTH_PORT } from '../ports/auth.port'
+import { activationToken } from '../shared/activation-link'
+import { MIN_PASSWORD_LENGTH } from '../shared/account-rules'
+import { fakeAuthPort } from '../testing/fake-ports'
+import { AuthResetPassword } from './reset-password'
+
+const TOKEN = 'ab12'.repeat(16)
+
+/**
+ * The page as an application mounts it: the token it read from its URL, its logo and its link to the
+ * sign-in page projected.
+ */
+@Component({
+  standalone: true,
+  imports: [AuthResetPassword, Button, AuthFooterLink],
+  template: `<gbt-auth-reset-password
+    [token]="token()"
+    [labels]="labels()"
+    [minPasswordLength]="minPasswordLength()"
+    (passwordReset)="passwordReset = passwordReset + 1"
+    (signIn)="signIn = signIn + 1"
+  >
+    <img auth-logo src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Acme" />
+    <a gbtButton variant="link" gbtAuthFooterLink href="/login">Sign in</a>
+  </gbt-auth-reset-password>`,
+})
+class Host {
+  token = signal<string | null>(null)
+  labels = signal<Partial<ResetPasswordLabels>>({})
+  minPasswordLength = signal(MIN_PASSWORD_LENGTH)
+  passwordReset = 0
+  signIn = 0
+}
+
+interface SetupOptions {
+  labels?: Partial<ResetPasswordLabels>
+  minPasswordLength?: number
+  providers?: Provider[]
+}
+
+describe('AuthResetPassword', () => {
+  /** The page given `token` (what the application's `activationToken` read from the link, or null). */
+  async function setup(token: string | null = TOKEN, options: SetupOptions = {}) {
+    const port = fakeAuthPort()
+    TestBed.configureTestingModule({
+      providers: [{ provide: AUTH_PORT, useValue: port }, ...(options.providers ?? [])],
+    })
+    const fixture = TestBed.createComponent(Host)
+    const host = fixture.componentInstance
+    host.token.set(token)
+    if (options.labels) host.labels.set(options.labels)
+    if (options.minPasswordLength) host.minPasswordLength.set(options.minPasswordLength)
+    fixture.detectChanges()
+    await fixture.whenStable()
+    fixture.detectChanges()
+    const component = fixture.debugElement.query(By.directive(AuthResetPassword))
+      .componentInstance as AuthResetPassword
+    return { fixture, host, component, port, el: fixture.nativeElement as HTMLElement }
+  }
+
+  /** The page opened from a link: the application reads the token with `activationToken`. */
+  const fromLink = (fragment: string | null, query: string | null = null) =>
+    setup(activationToken(fragment, query))
+
+  /** A field by the end of its per-instance id (`gbt-reset-password-<n>-password`). */
+  const field = (el: HTMLElement, suffix: string) =>
+    el.querySelector<HTMLInputElement>(`input[id^="gbt-reset-password-"][id$="-${suffix}"]`)!
+  /** The texts an input is described by (`aria-describedby`): its hint, or its error. */
+  const describedBy = (el: HTMLElement, suffix: string) =>
+    (field(el, suffix).getAttribute('aria-describedby') ?? '')
+      .split(' ')
+      .filter(Boolean)
+      .map((target) => el.querySelector(`#${target}`)?.textContent?.trim())
+  const alertText = (el: HTMLElement) =>
+    el.querySelector('gbt-alert [role="alert"]')?.textContent?.trim()
+  const fieldErrors = (el: HTMLElement) =>
+    Array.from(el.querySelectorAll('.gbt-input__error')).map((e) => e.textContent?.trim())
+  const heading = (el: HTMLElement) => el.querySelector('h1')?.textContent?.trim()
+  const fill = (
+    component: AuthResetPassword,
+    password = 'a-long-password',
+    confirmation = password,
+  ) => {
+    component['password'].set(password)
+    component['confirmation'].set(confirmation)
+  }
+  const INVALID_LINK =
+    'This password reset link is invalid or has expired. Ask an administrator to send you a new one.'
+  /** The server's one answer for an unknown, expired, used or malformed token. */
+  const DEAD_LINK_BODY = { error: 'invalid or expired password reset link' }
+
+  describe('the link', () => {
+    it('sends the token read from the fragment', async () => {
+      const { component, port } = await fromLink(`token=${TOKEN}`)
+      fill(component)
+
+      component.submit()
+
+      expect(port.calls.expectOne('resetPassword').args).toEqual([TOKEN, 'a-long-password'])
+    })
+
+    it('is tolerant of other parameters in the fragment', async () => {
+      const { component, port } = await fromLink(`token=${TOKEN}&utm=mail`)
+      fill(component)
+
+      component.submit()
+
+      expect(port.calls.expectOne('resetPassword').args).toEqual([TOKEN, 'a-long-password'])
+    })
+
+    it('treats a malformed token as a dead link without calling the API', async () => {
+      const { port, el } = await fromLink('token=not-a-token')
+
+      port.calls.expectNone('resetPassword')
+      expect(el.querySelector('h1')?.textContent?.trim()).toBe('This link does not work')
+    })
+
+    it('draws the dead link as an error state: the h1 focusable by script, the text, then the way back to the sign-in', async () => {
+      const { el } = await setup(null)
+
+      const state = el.querySelector('gbt-empty-state')!
+      expect(state.querySelector('.gbt-empty-state')?.getAttribute('data-tone')).toBe('error')
+      const h1 = state.querySelector('h1')!
+      expect(h1.getAttribute('tabindex')).toBe('-1')
+      expect(state.querySelector('.gbt-empty-state__icon')?.getAttribute('aria-hidden')).toBe(
+        'true',
+      )
+      const order = Array.from(
+        state.querySelectorAll('.gbt-empty-state__icon, h1, .gbt-empty-state__message, button'),
+      ).map((node) => node.className || node.tagName.toLowerCase())
+      expect(order).toEqual([
+        'gbt-empty-state__icon',
+        'gbt-empty-state__heading',
+        'gbt-empty-state__message',
+        expect.stringContaining('gbt-button'),
+      ])
+      expect(state.querySelector('button')?.textContent?.trim()).toBe('Sign in')
+    })
+
+    it('starts over with a new token after a spent one', async () => {
+      const { fixture, host, component, port, el } = await setup()
+      fill(component)
+      component.submit()
+      port.calls.expectOne('resetPassword').fail(400, DEAD_LINK_BODY)
+      fixture.detectChanges()
+      expect(heading(el)).toBe('This link does not work')
+
+      host.token.set('cd34'.repeat(16))
+      fixture.detectChanges()
+      expect(heading(el)).toBe('Choose a new password')
+      fill(component)
+      component.submit()
+      expect(port.calls.expectOne('resetPassword').args[0]).toBe('cd34'.repeat(16))
+    })
+  })
+
+  describe('the form', () => {
+    it('shows the heading, the intro, the two labelled password fields and the projected sign-in link', async () => {
+      const { el } = await setup()
+
+      expect(heading(el)).toBe('Choose a new password')
+      expect(el.textContent).toContain(
+        'An administrator has reset the password of your account. Choose a new one to sign in again.',
+      )
+      expect(el.querySelector('.gbt-auth-panel__logo img')?.getAttribute('alt')).toBe('Acme')
+      expect(
+        el
+          .querySelector('label[for^="gbt-reset-password-"][for$="-password"]')
+          ?.textContent?.trim(),
+      ).toBe('New password')
+      expect(
+        el
+          .querySelector('label[for^="gbt-reset-password-"][for$="-confirmation"]')
+          ?.textContent?.trim(),
+      ).toBe('Confirm the new password')
+      expect(field(el, 'password').type).toBe('password')
+      expect(field(el, 'password').getAttribute('autocomplete')).toBe('new-password')
+      expect(field(el, 'confirmation').getAttribute('autocomplete')).toBe('new-password')
+      expect(describedBy(el, 'password')).toEqual(['At least 8 characters.'])
+      expect(describedBy(el, 'confirmation')).toEqual([])
+      expect(el.querySelector('gbt-auth-footer')?.textContent).toContain(
+        'Already set your new password?',
+      )
+      const link = el.querySelector<HTMLAnchorElement>('gbt-auth-footer a')!
+      expect(link.textContent?.trim()).toBe('Sign in')
+      expect(link.getAttribute('href')).toBe('/login')
+    })
+
+    it('has a single, primary "Set new password" button', async () => {
+      const { el } = await setup()
+
+      const buttons = el.querySelectorAll('button.gbt-button')
+      expect(buttons.length).toBe(1)
+      expect(buttons[0].classList).toContain('gbt-button--primary')
+      expect(buttons[0].textContent?.trim()).toBe('Set new password')
+    })
+
+    it('starts in the new-password field', async () => {
+      const { el } = await setup()
+
+      expect(document.activeElement).toBe(field(el, 'password'))
+    })
+
+    it('never displays the token', async () => {
+      const { el } = await setup()
+
+      expect(el.innerHTML).not.toContain(TOKEN)
+      expect(
+        Array.from(el.querySelectorAll('input')).every((input) => !input.value.includes(TOKEN)),
+      ).toBe(true)
+    })
+
+    it('does not call the server just for opening', async () => {
+      const { port } = await setup()
+
+      port.calls.expectNone('resetPassword')
+      port.calls.verify()
+    })
+
+    it('submits when the form is submitted (Enter in a field)', async () => {
+      const { component, el, port } = await setup()
+      fill(component)
+
+      el.querySelector('form')!.dispatchEvent(new Event('submit'))
+
+      port.calls.expectOne('resetPassword')
+    })
+
+    it('shows no footer when the application projects no sign-in link', async () => {
+      TestBed.configureTestingModule({
+        providers: [{ provide: AUTH_PORT, useValue: fakeAuthPort() }],
+      })
+      const fixture = TestBed.createComponent(AuthResetPassword)
+      fixture.componentRef.setInput('token', TOKEN)
+      fixture.detectChanges()
+      const el = fixture.nativeElement as HTMLElement
+
+      expect(el.querySelector('form')).toBeTruthy()
+      expect(el.querySelector('gbt-auth-footer')).toBeNull()
+    })
+
+    it('has no accessibility violation', async () => {
+      const { el } = await setup()
+
+      await expectNoA11yViolations(el)
+    })
+  })
+
+  describe('checks before the request', () => {
+    it('shows nothing before the first attempt', async () => {
+      const { fixture, component, el } = await setup()
+      component['password'].set('x')
+      fixture.detectChanges()
+
+      expect(fieldErrors(el)).toEqual([])
+    })
+
+    it('sends nothing and names both fields after a first attempt with an empty form, focusing the first', async () => {
+      const { fixture, component, port, el } = await setup()
+
+      component.submit()
+      fixture.detectChanges()
+      await fixture.whenStable()
+
+      port.calls.expectNone('resetPassword')
+      expect(fieldErrors(el)).toEqual(['Enter a new password', 'Confirm your new password'])
+      expect(document.activeElement).toBe(field(el, 'password'))
+    })
+
+    it('refuses a password under 8 characters', async () => {
+      const { fixture, component, port, el } = await setup()
+      fill(component, 'short')
+
+      component.submit()
+      fixture.detectChanges()
+
+      port.calls.expectNone('resetPassword')
+      expect(fieldErrors(el)).toEqual(['At least 8 characters'])
+    })
+
+    it('refuses a confirmation that differs, says so under the confirmation, and focuses it', async () => {
+      const { fixture, component, port, el } = await setup()
+      fill(component, 'a-long-password', 'a-long-passwore')
+
+      component.submit()
+      fixture.detectChanges()
+      await fixture.whenStable()
+
+      port.calls.expectNone('resetPassword')
+      expect(fieldErrors(el)).toEqual(['The passwords do not match'])
+      expect(document.activeElement).toBe(field(el, 'confirmation'))
+    })
+
+    it('keeps checking live once an attempt was made, and lets the fixed form through', async () => {
+      const { fixture, component, port, el } = await setup()
+      fill(component, 'a-long-password', 'other')
+      component.submit()
+      fixture.detectChanges()
+      expect(fieldErrors(el)).toEqual(['The passwords do not match'])
+
+      component['confirmation'].set('a-long-password')
+      fixture.detectChanges()
+      expect(fieldErrors(el)).toEqual([])
+
+      component.submit()
+      port.calls.expectOne('resetPassword')
+    })
+
+    it('checks the password against minPasswordLength, and says so in the hint and the error', async () => {
+      const { fixture, component, port, el } = await setup(TOKEN, { minPasswordLength: 12 })
+
+      expect(describedBy(el, 'password')).toEqual(['At least 12 characters.'])
+      fill(component, 'eleven-char')
+      component.submit()
+      fixture.detectChanges()
+
+      port.calls.expectNone('resetPassword')
+      expect(fieldErrors(el)).toEqual(['At least 12 characters'])
+
+      fill(component, 'twelve-chars')
+      component.submit()
+      port.calls.expectOne('resetPassword')
+    })
+
+    it('has no accessibility violation with the field errors shown', async () => {
+      const { fixture, component, el } = await setup()
+      component.submit()
+      fixture.detectChanges()
+
+      await expectNoA11yViolations(el)
+    })
+  })
+
+  describe('setting the new password', () => {
+    it('sends the token from the link and the new password, once, through resetPassword and nothing else', async () => {
+      const { component, port } = await setup()
+      fill(component)
+
+      component.submit()
+      const call = port.calls.expectOne('resetPassword')
+
+      expect(call.args).toEqual([TOKEN, 'a-long-password'])
+      port.calls.expectNone('activate')
+      port.calls.verify()
+    })
+
+    it('shows a loading, disabled button while in flight and ignores a second submit', async () => {
+      const { fixture, component, port, el } = await setup()
+      fill(component)
+      const button = fixture.debugElement.query(By.css('form gbt-button')).injector.get(Button)
+
+      component.submit()
+      fixture.detectChanges()
+      expect(button.loading()).toBe(true)
+      expect(el.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(true)
+      expect(el.textContent).toContain('Setting the password')
+
+      component.submit()
+      port.calls.expectOne('resetPassword').fail(500, { error: 'internal error' })
+      fixture.detectChanges()
+
+      expect(button.loading()).toBe(false)
+    })
+
+    describe('on success', () => {
+      async function changed() {
+        const ctx = await setup()
+        fill(ctx.component)
+        ctx.component.submit()
+        ctx.port.calls.expectOne('resetPassword').flush()
+        ctx.fixture.detectChanges()
+        await ctx.fixture.whenStable()
+        ctx.fixture.detectChanges()
+        return ctx
+      }
+
+      it('says the password has been changed, with a single primary "Sign in" button that emits signIn', async () => {
+        const { fixture, el, host } = await changed()
+
+        expect(heading(el)).toBe('Your password has been changed')
+        expect(el.textContent).toContain('You can now sign in with your new password.')
+        expect(el.querySelector('form')).toBeNull()
+        const buttons = el.querySelectorAll('button.gbt-button')
+        expect(buttons.length).toBe(1)
+        expect(buttons[0].classList).toContain('gbt-button--primary')
+        expect(buttons[0].textContent?.trim()).toBe('Sign in')
+        expect(host.signIn).toBe(0)
+        ;(buttons[0] as HTMLButtonElement).click()
+        fixture.detectChanges()
+
+        expect(host.signIn).toBe(1)
+      })
+
+      it('emits passwordReset, and does not keep the passwords, nor open a session', async () => {
+        const { component, host, port } = await changed()
+
+        expect(host.passwordReset).toBe(1)
+        expect(component['password']()).toBe('')
+        expect(component['confirmation']()).toBe('')
+        expect(port.tokens).toEqual([])
+      })
+
+      it('moves the focus to the heading, so the change is announced', async () => {
+        const { el } = await changed()
+
+        expect(document.activeElement).toBe(el.querySelector('h1'))
+      })
+
+      it('draws the success as a state with the green glyph, the h1 being a focus target that is no tab stop', async () => {
+        const { el } = await changed()
+
+        const state = el.querySelector('gbt-empty-state')!
+        expect(state.classList).toContain('gbt-auth-panel__status--success')
+        expect(state.querySelector('.gbt-empty-state')?.getAttribute('data-tone')).toBeNull()
+        expect(state.querySelector('h1')?.getAttribute('tabindex')).toBe('-1')
+        expect(state.querySelector('.gbt-empty-state__icon')?.getAttribute('aria-hidden')).toBe(
+          'true',
+        )
+      })
+
+      it('cannot be submitted again: the token was spent', async () => {
+        const { component, port } = await changed()
+
+        component.submit()
+
+        port.calls.expectNone('resetPassword')
+      })
+
+      it('has no accessibility violation', async () => {
+        const { el } = await changed()
+
+        await expectNoA11yViolations(el)
+      })
+    })
+  })
+
+  describe('a link that does not work', () => {
+    it.each([[null], ['']])(
+      'is invalid, without calling the server, when the token is %j',
+      async (token) => {
+        const { el, port, component, host } = await setup(token)
+
+        port.calls.expectNone('resetPassword')
+        expect(heading(el)).toBe('This link does not work')
+        expect(el.textContent).toContain(INVALID_LINK)
+        expect(el.querySelector('form')).toBeNull()
+        expect(el.querySelector('input')).toBeNull()
+        component.submit()
+        port.calls.expectNone('resetPassword')
+        expect(host.passwordReset).toBe(0)
+      },
+    )
+
+    it('has a single, primary "Sign in" button that emits signIn', async () => {
+      const { fixture, el, host } = await setup(null)
+
+      const buttons = el.querySelectorAll('button.gbt-button')
+      expect(buttons.length).toBe(1)
+      expect(buttons[0].classList).toContain('gbt-button--primary')
+      ;(buttons[0] as HTMLButtonElement).click()
+      fixture.detectChanges()
+
+      expect(host.signIn).toBe(1)
+    })
+
+    it('moves the focus to the heading', async () => {
+      const { el } = await setup(null)
+
+      expect(document.activeElement).toBe(el.querySelector('h1'))
+    })
+
+    it.each([
+      ["the server's dead-link body", DEAD_LINK_BODY],
+      ['any other 400 body', { error: 'something else' }],
+      ['no body at all', null],
+    ])(
+      'is what an unknown, expired or used token turns the form into (%s): the passwords are dropped and the token is not sent again',
+      async (_case, body) => {
+        const { fixture, component, port, el, host } = await setup()
+        fill(component)
+
+        component.submit()
+        port.calls.expectOne('resetPassword').fail(400, body)
+        fixture.detectChanges()
+        await fixture.whenStable()
+        fixture.detectChanges()
+
+        expect(heading(el)).toBe('This link does not work')
+        expect(el.textContent).toContain(INVALID_LINK)
+        expect(component['password']()).toBe('')
+        expect(component['confirmation']()).toBe('')
+        expect(document.activeElement).toBe(el.querySelector('h1'))
+        expect(host.passwordReset).toBe(0)
+        // The refused token is spent: even with the form's view forced back, it is not sent again.
+        component.view.set('form')
+        fill(component)
+        component.submit()
+        port.calls.expectNone('resetPassword')
+      },
+    )
+
+    it('has no accessibility violation', async () => {
+      const { el } = await setup(null)
+
+      await expectNoA11yViolations(el)
+    })
+  })
+
+  describe('how the other failures are worded', () => {
+    async function failed(status: number, error: string) {
+      const ctx = await setup()
+      fill(ctx.component)
+      ctx.component.submit()
+      ctx.port.calls.expectOne('resetPassword').fail(status, { error })
+      ctx.fixture.detectChanges()
+      await ctx.fixture.whenStable()
+      ctx.fixture.detectChanges()
+      return ctx
+    }
+
+    it('keeps the form and names the rule on a weak-password 400 (the link is still good)', async () => {
+      const { el, component } = await failed(400, 'password must be at least 8 characters')
+
+      expect(heading(el)).toBe('Choose a new password')
+      expect(alertText(el)).toBe('The password must be at least 8 characters long')
+      expect(document.activeElement).toBe(field(el, 'password'))
+      expect(component.submitting()).toBe(false)
+    })
+
+    it('says to wait on a 429, keeps the form, and focuses the password', async () => {
+      const { el } = await failed(429, 'too many attempts, try again later')
+
+      expect(heading(el)).toBe('Choose a new password')
+      expect(alertText(el)).toBe('Too many attempts, try again in a few minutes')
+      expect(document.activeElement).toBe(field(el, 'password'))
+    })
+
+    it('says the password could not be set on a 500, and the same token can be retried', async () => {
+      const { fixture, el, component, port } = await failed(500, 'internal error')
+
+      expect(alertText(el)).toBe('The new password could not be set, try again.')
+      component.submit()
+      fixture.detectChanges()
+      expect(port.calls.expectOne('resetPassword').args).toEqual([TOKEN, 'a-long-password'])
+      expect(el.querySelector('gbt-alert')).toBeNull()
+    })
+
+    it('says the password could not be set on a network error', async () => {
+      const ctx = await setup()
+      fill(ctx.component)
+      ctx.component.submit()
+      ctx.port.calls.expectOne('resetPassword').fail(0)
+      ctx.fixture.detectChanges()
+
+      expect(alertText(ctx.el)).toBe('The new password could not be set, try again.')
+    })
+
+    it('has no accessibility violation with the alert shown', async () => {
+      const { el } = await failed(429, 'too many attempts, try again later')
+
+      await expectNoA11yViolations(el)
+    })
+  })
+
+  describe('localisation', () => {
+    it('takes its strings from the labels input', async () => {
+      const { el } = await setup(TOKEN, {
+        labels: { heading: 'Choisissez un nouveau mot de passe', submit: 'Enregistrer' },
+      })
+
+      expect(heading(el)).toBe('Choisissez un nouveau mot de passe')
+      expect(el.querySelector('button[type="submit"]')?.textContent?.trim()).toBe('Enregistrer')
+    })
+
+    it('takes its strings from provideAuthLabels, the labels input winning string by string', async () => {
+      const { el } = await setup(null, {
+        providers: [
+          provideAuthLabels({
+            resetPassword: { invalidHeading: 'Ce lien ne fonctionne pas', signIn: 'Se connecter' },
+          }),
+        ],
+        labels: { signIn: 'Connexion' },
+      })
+
+      expect(heading(el)).toBe('Ce lien ne fonctionne pas')
+      expect(el.querySelector('button')?.textContent?.trim()).toBe('Connexion')
+      expect(el.textContent).toContain(INVALID_LINK)
+    })
+
+    it("does not read the activation page's labels", async () => {
+      const { el } = await setup(TOKEN, {
+        providers: [provideAuthLabels({ activate: { heading: 'Activez votre compte' } })],
+      })
+
+      expect(heading(el)).toBe('Choose a new password')
+    })
+  })
+})

@@ -40,6 +40,8 @@ export interface AuthPort {
 
   activate(token: string, password: string): Observable<void>
 
+  resetPassword(token: string, password: string): Observable<void>
+
   verifyMfa(mfaToken: string, proof: MfaProof): Observable<void>
 
   startPasskeyChallenge(mfaToken: string): Observable<PasskeyChallenge>

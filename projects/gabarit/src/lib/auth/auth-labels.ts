@@ -367,6 +367,58 @@ export const DEFAULT_ACTIVATE_LABELS: Readonly<ActivateLabels> = Object.freeze<A
   tooManyAttempts: 'Too many attempts, try again in a few minutes',
 })
 
+export interface ResetPasswordLabels extends CommonFailureLabels {
+  heading: string
+  intro: string
+  password: string
+  passwordHint: (minLength: number) => string
+  confirmation: string
+  showPassword: string
+  hidePassword: string
+  submit: string
+  submitting: string
+  signInPrompt: string
+  successHeading: string
+  successMessage: string
+  invalidHeading: string
+  invalidMessage: string
+  signIn: string
+  passwordEmpty: string
+  passwordTooShort: (minLength: number) => string
+  confirmationEmpty: string
+  mismatch: string
+  weakPassword: (minLength: number) => string
+  failed: string
+}
+
+export const DEFAULT_RESET_PASSWORD_LABELS: Readonly<ResetPasswordLabels> =
+  Object.freeze<ResetPasswordLabels>({
+    heading: 'Choose a new password',
+    intro:
+      'An administrator has reset the password of your account. Choose a new one to sign in again.',
+    password: 'New password',
+    passwordHint: (minLength) => `At least ${minLength} characters.`,
+    confirmation: 'Confirm the new password',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
+    submit: 'Set new password',
+    submitting: 'Setting the password',
+    signInPrompt: 'Already set your new password?',
+    successHeading: 'Your password has been changed',
+    successMessage: 'You can now sign in with your new password.',
+    invalidHeading: 'This link does not work',
+    invalidMessage:
+      'This password reset link is invalid or has expired. Ask an administrator to send you a new one.',
+    signIn: 'Sign in',
+    passwordEmpty: 'Enter a new password',
+    passwordTooShort: (minLength) => `At least ${minLength} characters`,
+    confirmationEmpty: 'Confirm your new password',
+    mismatch: 'The passwords do not match',
+    weakPassword: (minLength) => `The password must be at least ${minLength} characters long`,
+    failed: 'The new password could not be set, try again.',
+    tooManyAttempts: 'Too many attempts, try again in a few minutes',
+  })
+
 export interface MfaSettingsLabels extends CommonFailureLabels {
   heading: string
   enrollingHeading: string
@@ -650,6 +702,7 @@ export interface AuthLabels {
   login?: Partial<LoginLabels>
   register?: Partial<RegisterLabels>
   activate?: Partial<ActivateLabels>
+  resetPassword?: Partial<ResetPasswordLabels>
   mfaSettings?: Partial<MfaSettingsLabels>
   passkeySettings?: Partial<PasskeySettingsLabels>
 }

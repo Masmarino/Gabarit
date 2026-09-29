@@ -314,6 +314,7 @@ export {
   DEFAULT_MFA_SETTINGS_LABELS,
   DEFAULT_PASSKEY_SETTINGS_LABELS,
   DEFAULT_REGISTER_LABELS,
+  DEFAULT_RESET_PASSWORD_LABELS,
   DEFAULT_TOTP_QR_LABELS,
   provideAuthLabels,
   type ActivateLabels,
@@ -325,6 +326,7 @@ export {
   type MfaSettingsLabels,
   type PasskeySettingsLabels,
   type RegisterLabels,
+  type ResetPasswordLabels,
   type TotpQrLabels,
 } from './lib/auth/auth-labels'
 export {
@@ -377,5 +379,6 @@ export { MfaEnrollment } from './lib/auth/mfa-enrollment/mfa-enrollment'
 export { AuthLogin } from './lib/auth/login/login'
 export { AuthRegister } from './lib/auth/register/register'
 export { AuthActivate } from './lib/auth/activate/activate'
+export { AuthResetPassword } from './lib/auth/reset-password/reset-password'
 export { MfaSettings } from './lib/auth/mfa-settings/mfa-settings'
 export { PasskeySettings } from './lib/auth/passkey-settings/passkey-settings'
