@@ -49,6 +49,7 @@ export {
 } from './lib/components/molecules/card/card'
 export { CardLink } from './lib/components/molecules/card/card-link'
 export { GbtInput } from './lib/components/atoms/input/input'
+export type { InputCombobox } from './lib/components/atoms/input/input'
 export { Checkbox } from './lib/components/atoms/checkbox/checkbox'
 export { Select, type SelectOption } from './lib/components/molecules/select/select'
 export { Modal } from './lib/components/organisms/modal/modal'

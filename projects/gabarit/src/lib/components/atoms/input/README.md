@@ -34,6 +34,7 @@ would collide with `@angular/core`'s `Input` decorator.
 | `enterkeyhint`      | `'enter' \| 'done' \| 'go' \| 'next' \| 'previous' \| 'search' \| 'send' \| null`             | `null`                    | Native `enterkeyhint` (label of the virtual keyboard's enter key).                                                                                                                   |
 | `maxlength`         | `number \| null`                                                                              | `null`                    | Native `maxlength`.                                                                                                                                                                  |
 | `min` / `max`       | `number \| string \| null`                                                                    | `null`                    | Native `min` / `max` (number, date types…).                                                                                                                                          |
+| `combobox`          | `InputCombobox \| null`                                                                       | `null`                    | Makes the field the combobox of a list of suggestions: `role`, `aria-autocomplete="list"`, `aria-expanded`, `aria-controls`, `aria-activedescendant` (see below).                     |
 
 Every optional input defaults to "off": a field that leaves them unset renders
 the same markup and the same pixels.
@@ -70,6 +71,26 @@ The hint sits under the field (`<p id="<id>-hint">`) and is the field's
 `aria-describedby`. While `errorMessage` is set the hint is not rendered at
 all and the error takes its place, so a screen reader only reads one
 description.
+
+## Search with suggestions
+
+The field does not render the suggestions: the caller keeps the listbox, the active option and the keys, and
+hands the field what it must announce. Keys typed in the field reach the host, so `(keydown)` listens to them.
+
+```html
+<gbt-input
+  label="Search packages"
+  [hideLabel]="true"
+  type="search"
+  leadingIcon="search"
+  [combobox]="{ expanded: open(), controls: 'suggestions', activeDescendant: activeId() }"
+  [ngModel]="text()"
+  (ngModelChange)="suggest($event)"
+  (keydown)="onKeydown($event)"
+  (committed)="close()"
+/>
+<ul id="suggestions" role="listbox" [hidden]="!open()">…</ul>
+```
 
 ## One-time code
 

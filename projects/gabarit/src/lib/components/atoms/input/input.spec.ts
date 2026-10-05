@@ -171,6 +171,11 @@ describe('GbtInput', () => {
         'max',
         'aria-describedby',
         'aria-invalid',
+        'role',
+        'aria-autocomplete',
+        'aria-expanded',
+        'aria-controls',
+        'aria-activedescendant',
       ]) {
         expect(field.hasAttribute(attribute), attribute).toBe(false)
       }
@@ -423,6 +428,77 @@ describe('GbtInput', () => {
         enterkeyhint: 'go',
         maxlength: 6,
       })
+      await expectNoA11yViolations(fixture.nativeElement)
+    })
+  })
+
+  describe('combobox', () => {
+    function render(combobox: unknown) {
+      const fixture = TestBed.createComponent(GbtInput)
+      fixture.componentRef.setInput('label', 'Rechercher un paquet')
+      fixture.componentRef.setInput('type', 'search')
+      fixture.componentRef.setInput('combobox', combobox)
+      fixture.detectChanges()
+      return { fixture, field: fixture.nativeElement.querySelector('input') as HTMLInputElement }
+    }
+
+    it('announces a closed list of suggestions', () => {
+      const { field } = render({ expanded: false, controls: 'suggestions', activeDescendant: null })
+
+      expect(field.getAttribute('role')).toBe('combobox')
+      expect(field.getAttribute('aria-autocomplete')).toBe('list')
+      expect(field.getAttribute('aria-expanded')).toBe('false')
+      expect(field.getAttribute('aria-controls')).toBe('suggestions')
+      expect(field.hasAttribute('aria-activedescendant')).toBe(false)
+    })
+
+    it('follows the list as it opens and an option is highlighted', () => {
+      const { fixture, field } = render({
+        expanded: false,
+        controls: 'suggestions',
+        activeDescendant: null,
+      })
+
+      fixture.componentRef.setInput('combobox', {
+        expanded: true,
+        controls: 'suggestions',
+        activeDescendant: 'suggestion-2',
+      })
+      fixture.detectChanges()
+
+      expect(field.getAttribute('aria-expanded')).toBe('true')
+      expect(field.getAttribute('aria-activedescendant')).toBe('suggestion-2')
+    })
+
+    it('lets the keys typed in the field reach the host', () => {
+      const { fixture, field } = render({
+        expanded: false,
+        controls: 'suggestions',
+        activeDescendant: null,
+      })
+      const keys: string[] = []
+      ;(fixture.nativeElement as HTMLElement).addEventListener('keydown', (event) =>
+        keys.push(event.key),
+      )
+
+      field.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }))
+
+      expect(keys).toEqual(['ArrowDown'])
+    })
+
+    it('presents no accessibility violation with its listbox', async () => {
+      const { fixture } = render({
+        expanded: true,
+        controls: 'suggestions',
+        activeDescendant: 'suggestion-0',
+      })
+      const listbox = document.createElement('ul')
+      listbox.id = 'suggestions'
+      listbox.setAttribute('role', 'listbox')
+      listbox.setAttribute('aria-label', 'Suggestions')
+      listbox.innerHTML = '<li id="suggestion-0" role="option" aria-selected="true">left-pad</li>'
+      ;(fixture.nativeElement as HTMLElement).append(listbox)
+
       await expectNoA11yViolations(fixture.nativeElement)
     })
   })

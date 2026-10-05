@@ -20,6 +20,19 @@ export type InputInputmode =
 export type InputAutocapitalize = 'off' | 'none' | 'on' | 'sentences' | 'words' | 'characters'
 export type InputEnterkeyhint = 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send'
 
+/**
+ * The field as the combobox of a list of suggestions it does not render itself: the caller owns the
+ * listbox, the keys (`(keydown)` on the host) and the active option.
+ */
+export interface InputCombobox {
+  /** Whether the listbox is shown. */
+  expanded: boolean
+  /** The id of the listbox. */
+  controls: string
+  /** The id of the highlighted option, `null` when none is. */
+  activeDescendant: string | null
+}
+
 @Component({
   selector: 'gbt-input',
   standalone: true,
@@ -58,6 +71,8 @@ export class GbtInput implements ControlValueAccessor {
   maxlength = input<number | null>(null)
   min = input<number | string | null>(null)
   max = input<number | string | null>(null)
+
+  combobox = input<InputCombobox | null>(null)
 
   showPasswordLabel = input<string>('Show password')
 

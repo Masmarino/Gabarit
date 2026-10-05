@@ -134,6 +134,28 @@ export const LeadingIcon: Story = {
   },
 }
 
+export const Combobox: Story = {
+  name: 'Combobox of a list of suggestions',
+  render: () => ({
+    template: `
+      <div style="position: relative; max-width: 24rem">
+        <gbt-input
+          label="Rechercher un paquet"
+          [hideLabel]="true"
+          type="search"
+          leadingIcon="search"
+          placeholder="Rechercher un paquet…"
+          [combobox]="{ expanded: true, controls: 'story-suggestions', activeDescendant: 'story-suggestion-1' }"
+        />
+        <ul id="story-suggestions" role="listbox" aria-label="Suggestions" style="list-style: none; margin: 0.25rem 0 0; padding: 0.25rem; border: 1px solid var(--border-color); border-radius: 0.375rem; background: var(--bg-principal); color: var(--text-primary)">
+          <li id="story-suggestion-0" role="option" aria-selected="false" style="padding: 0.5rem">left-pad</li>
+          <li id="story-suggestion-1" role="option" aria-selected="true" style="padding: 0.5rem; background: var(--bg-hover)">left-pad-cli</li>
+        </ul>
+      </div>`,
+    moduleMetadata: { imports: [GbtInput] },
+  }),
+}
+
 export const Types: Story = {
   name: 'Types number, search, url',
   render: () => ({

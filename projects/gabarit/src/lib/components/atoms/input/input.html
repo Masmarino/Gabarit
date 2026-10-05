@@ -32,6 +32,11 @@
       [value]="value()"
       [attr.aria-invalid]="errorMessage() ? true : null"
       [attr.aria-describedby]="describedBy()"
+      [attr.role]="combobox() ? 'combobox' : null"
+      [attr.aria-autocomplete]="combobox() ? 'list' : null"
+      [attr.aria-expanded]="combobox()?.expanded ?? null"
+      [attr.aria-controls]="combobox()?.controls ?? null"
+      [attr.aria-activedescendant]="combobox()?.activeDescendant ?? null"
       (input)="onInput($event)"
       (blur)="onBlur()"
     />
