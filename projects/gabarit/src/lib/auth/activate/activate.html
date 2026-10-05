@@ -1,6 +1,6 @@
 <gbt-auth-panel
   [heading]="view() === 'form' ? text().heading : ''"
-  [intro]="view() === 'form' ? text().intro : ''"
+  [intro]="view() === 'form' ? intro() : ''"
 >
   <ng-container ngProjectAs="[auth-logo]"><ng-content select="[auth-logo]" /></ng-container>
 
@@ -9,6 +9,19 @@
       <form class="gbt-auth-panel__form" (ngSubmit)="submit()" novalidate>
         @if (error()) {
           <gbt-alert variant="error" appearance="subtle" iconAlign="start">{{ error() }}</gbt-alert>
+        }
+
+        @if (chooseUsername()) {
+          <gbt-input
+            [id]="id + '-username'"
+            name="username"
+            autocomplete="username"
+            [label]="text().username"
+            [hint]="text().usernameHint"
+            [errorMessage]="usernameFieldError()"
+            [ngModel]="username()"
+            (ngModelChange)="username.set($event)"
+          />
         }
 
         <gbt-input

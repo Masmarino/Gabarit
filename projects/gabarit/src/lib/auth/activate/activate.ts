@@ -21,7 +21,12 @@ import { AuthFooter, AuthFooterLink } from '../auth-footer/auth-footer'
 import { AuthPanel } from '../auth-panel/auth-panel'
 import { AUTH_PORT } from '../ports/auth.port'
 import { classifyActivateFailure } from '../shared/account-errors'
-import { MIN_PASSWORD_LENGTH, passwordProblem } from '../shared/account-rules'
+import {
+  MIN_PASSWORD_LENGTH,
+  USERNAME_PATTERN,
+  passwordProblem,
+  usernameProblem,
+} from '../shared/account-rules'
 import { focusAfterRender, focusNow } from '../shared/focus-after-render'
 
 type View = 'form' | 'success' | 'invalid'
@@ -43,6 +48,9 @@ export class AuthActivate {
   token = input<string | null>(null)
   labels = input<Partial<ActivateLabels>>({})
   minPasswordLength = input(MIN_PASSWORD_LENGTH)
+  /** The invitee chooses their username along with the password, for servers that let them. */
+  chooseUsername = input(false)
+  usernamePattern = input<RegExp>(USERNAME_PATTERN)
   activated = output<void>()
   signIn = output<void>()
 
@@ -55,12 +63,27 @@ export class AuthActivate {
 
   private readonly spent = linkedSignal({ source: this.token, computation: () => false })
   view = linkedSignal<View>(() => (this.token() ? 'form' : 'invalid'))
+  protected username = signal('')
   protected password = signal('')
   protected confirmation = signal('')
   error = signal('')
   submitting = signal(false)
   private attempted = signal(false)
 
+  protected intro = computed(() =>
+    this.chooseUsername() ? this.text().introWithUsername : this.text().intro,
+  )
+  protected usernameFieldError = computed(() => {
+    if (!this.chooseUsername() || !this.attempted()) {
+      return null
+    }
+    const problem = usernameProblem(this.username(), this.usernamePattern())
+    return problem === 'empty'
+      ? this.text().usernameEmpty
+      : problem === 'invalid'
+        ? this.text().usernameInvalid
+        : null
+  })
   protected passwordFieldError = computed(() => {
     if (!this.attempted()) {
       return null
@@ -79,7 +102,7 @@ export class AuthActivate {
 
   constructor() {
     focusAfterRender(this.host, this.injector, () =>
-      this.view() === 'form' ? `#${this.id}-password` : 'h1',
+      this.view() === 'form' ? `#${this.id}-${this.firstField()}` : 'h1',
     )
   }
 
@@ -90,6 +113,11 @@ export class AuthActivate {
     }
     this.error.set('')
     this.attempted.set(true)
+    const chooseUsername = this.chooseUsername()
+    if (chooseUsername && usernameProblem(this.username(), this.usernamePattern())) {
+      focusNow(this.host, `#${this.id}-username`)
+      return
+    }
     if (passwordProblem(this.password(), this.minPasswordLength())) {
       focusNow(this.host, `#${this.id}-password`)
       return
@@ -99,7 +127,10 @@ export class AuthActivate {
       return
     }
     this.submitting.set(true)
-    this.auth.activate(token, this.password()).subscribe({
+    const activation = chooseUsername
+      ? this.auth.activate(token, this.password(), this.username().trim())
+      : this.auth.activate(token, this.password())
+    activation.subscribe({
       next: () => {
         this.submitting.set(false)
         this.spent.set(true)
@@ -117,6 +148,16 @@ export class AuthActivate {
           return
         }
         const text = this.text()
+        if (chooseUsername && failure.startsWith('username-')) {
+          this.fail(
+            failure === 'username-reserved'
+              ? text.usernameReserved
+              : failure === 'username-taken'
+                ? text.usernameTaken
+                : text.usernameInvalid,
+          )
+          return
+        }
         this.fail(
           failure === 'weak-password'
             ? text.weakPassword(this.minPasswordLength())
@@ -146,8 +187,12 @@ export class AuthActivate {
     focusAfterRender(this.host, this.injector, 'h1')
   }
 
+  private firstField(): 'username' | 'password' {
+    return this.chooseUsername() ? 'username' : 'password'
+  }
+
   private fail(message: string): void {
     this.error.set(message)
-    focusAfterRender(this.host, this.injector, `#${this.id}-password`)
+    focusAfterRender(this.host, this.injector, `#${this.id}-${this.firstField()}`)
   }
 }

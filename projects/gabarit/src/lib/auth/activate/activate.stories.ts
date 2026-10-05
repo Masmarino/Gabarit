@@ -25,7 +25,12 @@ const expectLayout = expectPanelLayout()
 
 /** The page as an application mounts it: the token it read, its logo and its link to the sign-in page. */
 const page = (linkText = 'Sign in') => `
-  <gbt-auth-activate [token]="token" [labels]="labels" [minPasswordLength]="minPasswordLength">
+  <gbt-auth-activate
+    [token]="token"
+    [labels]="labels"
+    [minPasswordLength]="minPasswordLength"
+    [chooseUsername]="chooseUsername"
+  >
     ${STORY_LOGO}
     <a gbtButton variant="link" gbtAuthFooterLink href="/login" (click)="$event.preventDefault()">${linkText}</a>
   </gbt-auth-activate>`
@@ -50,7 +55,7 @@ const meta: Meta<AuthActivate> = {
   tags: ['autodocs'],
   parameters: { layout: 'fullscreen' },
   decorators: [moduleMetadata({ imports: [Button, AuthFooterLink] })],
-  args: { token: TOKEN, labels: {}, minPasswordLength: MIN_PASSWORD_LENGTH },
+  args: { token: TOKEN, labels: {}, minPasswordLength: MIN_PASSWORD_LENGTH, chooseUsername: false },
   render: (args) => ({ props: args, template: page() }),
 }
 
@@ -91,6 +96,35 @@ export const Success: Story = {
       expect(canvas.getByRole('heading', { name: 'Your account is activated' })).toHaveFocus(),
     )
     await expect(canvas.getByRole('button', { name: 'Sign in' })).toBeVisible()
+    await expectLayout(context)
+  },
+}
+
+/** The administrator invited by e-mail only: the invitee chooses their username first. */
+export const ChooseUsername: Story = {
+  args: { chooseUsername: true },
+  decorators: [withAuthPort(storyAuthPort({ activate: () => NEVER }))],
+  play: async (context) => {
+    const canvas = within(context.canvasElement)
+    await waitFor(() => expect(canvas.getByLabelText('Username')).toHaveFocus())
+    await expectLayout(context)
+  },
+}
+
+/** The chosen username is already in use: the form stays, the focus back in the Username field. */
+export const UsernameTaken: Story = {
+  args: { chooseUsername: true },
+  decorators: [
+    withAuthPort(
+      storyAuthPort({ activate: () => later(() => portError(409, 'username already in use')) }),
+    ),
+  ],
+  play: async (context) => {
+    const canvas = within(context.canvasElement)
+    await userEvent.type(await canvas.findByLabelText('Username'), 'ada')
+    await fillAndSubmit(context.canvasElement)
+    await expect(await canvas.findByText('This username is already in use')).toBeVisible()
+    await waitFor(() => expect(canvas.getByLabelText('Username')).toHaveFocus())
     await expectLayout(context)
   },
 }

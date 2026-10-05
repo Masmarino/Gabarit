@@ -47,8 +47,24 @@ class HostWithoutLink {
   loggedIn = 0
 }
 
+/** An application with something to say above the form (a session that ended, a link that failed). */
+@Component({
+  standalone: true,
+  imports: [AuthLogin],
+  template: `<gbt-auth-login>
+    <img auth-logo src="${LOGO}" alt="Acme" />
+    <p auth-notice class="notice">Your sessions were ended.</p>
+  </gbt-auth-login>`,
+})
+class HostWithNotice {
+  labels = signal<Partial<LoginLabels>>({})
+  loggedIn = 0
+}
+
 describe('AuthLogin', () => {
-  function setup(options: { providers?: Provider[]; host?: Type<Host | HostWithoutLink> } = {}) {
+  function setup(
+    options: { providers?: Provider[]; host?: Type<Host | HostWithoutLink | HostWithNotice> } = {},
+  ) {
     const port: FakeAuthPort = fakeAuthPort()
     TestBed.configureTestingModule({
       providers: [
@@ -57,7 +73,9 @@ describe('AuthLogin', () => {
         ...(options.providers ?? []),
       ],
     })
-    const fixture = TestBed.createComponent<Host | HostWithoutLink>(options.host ?? Host)
+    const fixture = TestBed.createComponent<Host | HostWithoutLink | HostWithNotice>(
+      options.host ?? Host,
+    )
     fixture.detectChanges()
     const component = fixture.debugElement.query(By.directive(AuthLogin))
       .componentInstance as AuthLogin
@@ -285,6 +303,29 @@ describe('AuthLogin', () => {
       fixture.detectChanges()
 
       expect(link(el)).toBeNull()
+    })
+  })
+
+  describe('the notice ([auth-notice])', () => {
+    it('shows the projected notice first in the credentials form', () => {
+      const { el } = setup({ host: HostWithNotice })
+      const form = el.querySelector('form')!
+
+      expect(form.firstElementChild?.matches('[auth-notice]')).toBe(true)
+      expect(form.querySelector('.notice')?.textContent).toBe('Your sessions were ended.')
+    })
+
+    it('leaves it out of the MFA steps', async () => {
+      const { fixture, component, port, el } = setup({ host: HostWithNotice })
+      component.submit()
+      port.calls
+        .expectOne('login')
+        .flush({ token: null, mfaToken: 'pending', mfaSetupRequired: false })
+      fixture.detectChanges()
+      await fixture.whenStable()
+      fixture.detectChanges()
+
+      expect(el.querySelector('[auth-notice]')).toBeNull()
     })
   })
 

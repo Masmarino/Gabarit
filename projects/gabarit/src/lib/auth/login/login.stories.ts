@@ -3,6 +3,7 @@ import { moduleMetadata } from '@storybook/angular-vite'
 import { NEVER, of } from 'rxjs'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { darkTheme } from '../../../../.storybook/preview'
+import { Alert } from '../../components/molecules/alert/alert'
 import { Button } from '../../components/atoms/button/button'
 import type { LoginLabels } from '../auth-labels'
 import { AuthFooterLink } from '../auth-footer/auth-footer'
@@ -178,6 +179,26 @@ const meta: Meta<AuthLogin> = {
 
 export default meta
 type Story = StoryObj<AuthLogin>
+
+/** The application has something to say first (here, its sessions were ended): `[auth-notice]`. */
+export const WithNotice: Story = {
+  decorators: [backend(() => NEVER), moduleMetadata({ imports: [Alert] })],
+  render: (args) => ({
+    props: args,
+    template: `<gbt-auth-login [labels]="labels">
+      ${STORY_LOGO}
+      <gbt-alert auth-notice variant="info" appearance="subtle" iconAlign="start" live="off"
+        >Your sessions were ended. Sign in again.</gbt-alert
+      >
+    </gbt-auth-login>`,
+  }),
+  play: async (context) => {
+    const canvas = within(context.canvasElement)
+    await expect(canvas.getByText('Your sessions were ended. Sign in again.')).toBeVisible()
+    await waitFor(() => expect(canvas.getByLabelText('Username')).toHaveFocus())
+    await expectPanelLayout()(context)
+  },
+}
 
 /** The empty form, the username field focused. Registration is closed: no footer. */
 export const Default: Story = {

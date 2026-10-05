@@ -24,6 +24,7 @@ const TOKEN = 'ab12'.repeat(16)
     [token]="token()"
     [labels]="labels()"
     [minPasswordLength]="minPasswordLength()"
+    [chooseUsername]="chooseUsername()"
     (activated)="activated = activated + 1"
     (signIn)="signIn = signIn + 1"
   >
@@ -35,6 +36,7 @@ class Host {
   token = signal<string | null>(null)
   labels = signal<Partial<ActivateLabels>>({})
   minPasswordLength = signal(MIN_PASSWORD_LENGTH)
+  chooseUsername = signal(false)
   activated = 0
   signIn = 0
 }
@@ -42,6 +44,7 @@ class Host {
 interface SetupOptions {
   labels?: Partial<ActivateLabels>
   minPasswordLength?: number
+  chooseUsername?: boolean
   providers?: Provider[]
 }
 
@@ -57,6 +60,7 @@ describe('AuthActivate', () => {
     host.token.set(token)
     if (options.labels) host.labels.set(options.labels)
     if (options.minPasswordLength) host.minPasswordLength.set(options.minPasswordLength)
+    if (options.chooseUsername) host.chooseUsername.set(true)
     fixture.detectChanges()
     await fixture.whenStable()
     fixture.detectChanges()
@@ -552,6 +556,93 @@ describe('AuthActivate', () => {
 
     it('has no accessibility violation with the alert shown', async () => {
       const { el } = await failed(429, 'too many attempts, try again later')
+
+      await expectNoA11yViolations(el)
+    })
+  })
+
+  describe('choosing the username (chooseUsername)', () => {
+    const withUsername = () => setup(TOKEN, { chooseUsername: true })
+
+    it('asks for no username by default', async () => {
+      const { el } = await setup()
+
+      expect(el.querySelector('input[id$="-username"]')).toBeNull()
+    })
+
+    it('adds a labelled username field before the passwords, says so in the intro, and starts there', async () => {
+      const { el } = await withUsername()
+      const inputs = Array.from(el.querySelectorAll('input')).map((input) =>
+        input.id.split('-').pop(),
+      )
+
+      expect(inputs).toEqual(['username', 'password', 'confirmation'])
+      expect(
+        el.querySelector(`label[for="${field(el, 'username').id}"]`)?.textContent?.trim(),
+      ).toBe('Username')
+      expect(field(el, 'username').getAttribute('autocomplete')).toBe('username')
+      expect(describedBy(el, 'username')).toEqual([
+        '3 to 32 characters: letters, digits, - and _. Saved in lower case.',
+      ])
+      expect(el.textContent).toContain('Choose the username and the password of your account.')
+      expect(document.activeElement).toBe(field(el, 'username'))
+    })
+
+    it('checks the username before the passwords and sends nothing while it is wrong', async () => {
+      const { fixture, el, component, port } = await withUsername()
+      fill(component)
+
+      component.submit()
+      fixture.detectChanges()
+      expect(fieldErrors(el)).toEqual(['Enter a username'])
+      expect(document.activeElement).toBe(field(el, 'username'))
+
+      component['username'].set('1abc')
+      component.submit()
+      fixture.detectChanges()
+      expect(fieldErrors(el)).toEqual([
+        'Start with a letter; 3 to 32 characters: letters, digits, - and _',
+      ])
+      port.calls.verify()
+    })
+
+    it('sends the username, trimmed, after the token and the password', async () => {
+      const { component, port } = await withUsername()
+      component['username'].set('  Ada_L ')
+      fill(component)
+
+      component.submit()
+
+      expect(port.calls.expectOne('activate').args).toEqual([TOKEN, 'a-long-password', 'Ada_L'])
+    })
+
+    it.each([
+      [400, 'username is reserved', 'This username is not available'],
+      [409, 'username already in use', 'This username is already in use'],
+      [
+        400,
+        'username must start with a letter',
+        'Start with a letter; 3 to 32 characters: letters, digits, - and _',
+      ],
+    ])('keeps the form on a %i "%s" and focuses the username', async (status, error, message) => {
+      const { fixture, el, component, port } = await withUsername()
+      component['username'].set('admin')
+      fill(component)
+      component.submit()
+      port.calls.expectOne('activate').fail(status, { error })
+      fixture.detectChanges()
+      await fixture.whenStable()
+      fixture.detectChanges()
+
+      expect(heading(el)).toBe('Activate your account')
+      expect(alertText(el)).toBe(message)
+      expect(document.activeElement).toBe(field(el, 'username'))
+    })
+
+    it('has no accessibility violation', async () => {
+      const { fixture, el, component } = await withUsername()
+      component.submit()
+      fixture.detectChanges()
 
       await expectNoA11yViolations(el)
     })

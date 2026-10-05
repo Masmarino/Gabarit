@@ -37,6 +37,7 @@ The enrolment takes its strings from `provideAuthLabels({ mfaEnrollment, totpQr,
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `[auth-logo]`         | The application's logo (an `img`, a `picture`, an `svg`) at the top of the panel, on every state. Give it its `alt`.                                                                                                        |
 | `[gbtAuthFooterLink]` | The link to the application's registration page (`<a gbtButton variant="link" gbtAuthFooterLink routerLink="/register">`). Shown under the form, after "No account yet?", only when `authConfig` says registration is open. |
+| `[auth-notice]`       | Something the application has to say before the credentials (a session that ended, a sign-in link that failed), e.g. a `gbt-alert`. First in the form, on the credentials step only.                                        |
 
 ## Providers
 

@@ -3,6 +3,7 @@
 
   @if (mfaToken() === null) {
     <form class="gbt-auth-panel__form" (ngSubmit)="submit()">
+      <ng-content select="[auth-notice]" />
       @if (error()) {
         <gbt-alert variant="error" appearance="subtle" iconAlign="start">{{ error() }}</gbt-alert>
       }

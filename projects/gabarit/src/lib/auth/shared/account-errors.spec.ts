@@ -73,6 +73,21 @@ describe('classifyActivateFailure', () => {
     )
   })
 
+  it.each([
+    ['username is reserved', 'username-reserved'],
+    ['username must start with a letter', 'username-invalid'],
+    ['username must be 3 to 32 characters', 'username-invalid'],
+  ])(
+    'reads the 400 "%s" as %s, for a page where the invitee chooses their username',
+    (message, expected) => {
+      expect(classifyActivateFailure(http(400, message))).toBe(expected)
+    },
+  )
+
+  it('reads a 409 as a username already in use', () => {
+    expect(classifyActivateFailure(http(409, 'username already in use'))).toBe('username-taken')
+  })
+
   it('reads any other 400 as a dead link, the safe reading', () => {
     expect(classifyActivateFailure(http(400))).toBe('invalid-link')
   })

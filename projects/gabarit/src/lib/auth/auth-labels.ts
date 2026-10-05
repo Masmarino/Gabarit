@@ -318,6 +318,14 @@ export const DEFAULT_REGISTER_LABELS: Readonly<RegisterLabels> = Object.freeze<R
 export interface ActivateLabels extends CommonFailureLabels {
   heading: string
   intro: string
+  /** The intro when the invitee chooses their username too (`chooseUsername`). */
+  introWithUsername: string
+  username: string
+  usernameHint: string
+  usernameEmpty: string
+  usernameInvalid: string
+  usernameReserved: string
+  usernameTaken: string
   password: string
   passwordHint: (minLength: number) => string
   confirmation: string
@@ -343,6 +351,14 @@ export const DEFAULT_ACTIVATE_LABELS: Readonly<ActivateLabels> = Object.freeze<A
   heading: 'Activate your account',
   intro:
     'Choose the password of your account. Two-factor authentication will be set up the first time you sign in.',
+  introWithUsername:
+    'Choose the username and the password of your account. Two-factor authentication will be set up the first time you sign in.',
+  username: 'Username',
+  usernameHint: '3 to 32 characters: letters, digits, - and _. Saved in lower case.',
+  usernameEmpty: 'Enter a username',
+  usernameInvalid: 'Start with a letter; 3 to 32 characters: letters, digits, - and _',
+  usernameReserved: 'This username is not available',
+  usernameTaken: 'This username is already in use',
   password: 'New password',
   passwordHint: (minLength) => `At least ${minLength} characters.`,
   confirmation: 'Confirm the password',

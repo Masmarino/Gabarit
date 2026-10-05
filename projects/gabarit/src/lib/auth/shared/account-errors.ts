@@ -12,7 +12,14 @@ export type RegisterFailure =
   | 'rate-limited'
   | 'other'
 
-export type ActivateFailure = 'invalid-link' | 'weak-password' | 'rate-limited' | 'other'
+export type ActivateFailure =
+  | 'invalid-link'
+  | 'weak-password'
+  | 'username-invalid'
+  | 'username-reserved'
+  | 'username-taken'
+  | 'rate-limited'
+  | 'other'
 
 export function classifyRegisterFailure(err: unknown): RegisterFailure {
   if (!isAuthPortError(err)) {
@@ -49,11 +56,20 @@ export function classifyActivateFailure(err: unknown): ActivateFailure {
   if (!isAuthPortError(err)) {
     return 'other'
   }
+  const message = portErrorMessage(err)
   switch (err.status) {
     case 400:
-      return portErrorMessage(err)?.startsWith(AUTH_PORT_ERROR_BODIES.weakPasswordPrefix)
-        ? 'weak-password'
+      if (message?.startsWith(AUTH_PORT_ERROR_BODIES.weakPasswordPrefix)) {
+        return 'weak-password'
+      }
+      if (message === AUTH_PORT_ERROR_BODIES.usernameReserved) {
+        return 'username-reserved'
+      }
+      return message?.startsWith(AUTH_PORT_ERROR_BODIES.usernamePrefix)
+        ? 'username-invalid'
         : 'invalid-link'
+    case 409:
+      return 'username-taken'
     case 429:
       return 'rate-limited'
     default:

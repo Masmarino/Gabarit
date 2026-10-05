@@ -38,7 +38,8 @@ export interface AuthPort {
 
   register(username: string, email: string, password: string): Observable<LoginResponse>
 
-  activate(token: string, password: string): Observable<void>
+  /** `username` is passed only when the page lets the invitee choose it (`chooseUsername`). */
+  activate(token: string, password: string, username?: string): Observable<void>
 
   resetPassword(token: string, password: string): Observable<void>
 
