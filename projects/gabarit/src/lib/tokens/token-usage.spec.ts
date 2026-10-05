@@ -143,7 +143,7 @@ const INLINE_STYLES = collectInlineStyles(COMPONENTS_DIR)
 describe('token usage in component stylesheets', () => {
   it('derives palette families from the palette file itself', () => {
     expect(RAW_PALETTE_PREFIXES.length).toBeGreaterThan(0)
-    expect(RAW_PALETTE_PREFIXES).toContain('grey')
+    expect(RAW_PALETTE_PREFIXES).toContain('slate')
   })
 
   for (const { file, content } of INLINE_STYLES) {
@@ -198,12 +198,13 @@ describe('token usage in component stylesheets', () => {
   }
 })
 
-const SEMANTIC_FILE = join(ROOT, 'projects/gabarit/src/lib/tokens/_semantic.scss')
-const semanticSrc = readFileSync(SEMANTIC_FILE, 'utf8')
+const THEMES_FILE = join(ROOT, 'projects/gabarit/src/lib/tokens/_themes.scss')
+const themesSrc = readFileSync(THEMES_FILE, 'utf8')
 const paletteSrc = readFileSync(PALETTE_FILE, 'utf8')
-const darkStart = semanticSrc.indexOf('@mixin dark-tokens')
-const darkBody = semanticSrc.slice(darkStart)
-const lightBody = semanticSrc.slice(0, darkStart)
+const mixinBody = (name: string) =>
+  new RegExp(`@mixin ${name}\\s*\\{([\\s\\S]*?)\\n\\}`).exec(themesSrc)![1]
+const darkBody = mixinBody('dark-tokens')
+const lightBody = mixinBody('light-tokens')
 
 function flatten(rgba: string, over: string): string {
   const [r, g, b, a] = rgba.match(/[\d.]+/g)!.map(Number)

@@ -1,0 +1,28 @@
+// IBM Plex Sans, Sans Condensed and Mono, the faces the tokens name. Subset to Latin-1 plus typographic
+// punctuation: a glyph outside it (an emoji, a non-Latin name) falls back to the next font of the
+// stack. The application serves the files of this folder at $path, for instance with an Angular asset:
+//
+//   { "glob": "*.woff2", "input": "node_modules/@masmarino/gabarit/fonts", "output": "fonts/ibm-plex" }
+//
+// then `@use '@masmarino/gabarit/fonts' with ($path: '/fonts/ibm-plex/');`.
+
+$path: '/fonts/ibm-plex/' !default;
+
+$faces: (
+  ('IBM Plex Sans', 400, 'ibm-plex-sans-400'),
+  ('IBM Plex Sans', 500, 'ibm-plex-sans-500'),
+  ('IBM Plex Sans', 600, 'ibm-plex-sans-600'),
+  ('IBM Plex Sans Condensed', 600, 'ibm-plex-sans-condensed-600'),
+  ('IBM Plex Mono', 400, 'ibm-plex-mono-400'),
+  ('IBM Plex Mono', 500, 'ibm-plex-mono-500')
+);
+
+@each $family, $weight, $file in $faces {
+  @font-face {
+    font-family: $family;
+    font-style: normal;
+    font-weight: $weight;
+    font-display: swap;
+    src: url('#{$path}#{$file}.woff2') format('woff2');
+  }
+}

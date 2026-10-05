@@ -61,7 +61,15 @@
   }
 
   &--mono textarea {
-    font-family: var(--gbt-font-mono, ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace);
+    font-family: var(
+      --gbt-font-mono,
+      'IBM Plex Mono',
+      ui-monospace,
+      'SF Mono',
+      Menlo,
+      Consolas,
+      monospace
+    );
     font-size: 0.8125rem;
   }
 

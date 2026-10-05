@@ -114,7 +114,7 @@ unchanged.
   `collapsible` mode, and a class that sets `display: none` in `collapsible="narrow"`, where the CSS shows it again
   above 768 px and hides the button. The narrow field has no `hidden` attribute, so a field that is shown never
   claims to be hidden (Testing Library and other tools that read the attribute find it).
-- 10.7 — the button has a `:focus-visible` 2 px `--primary` outline.
+- 10.7 — the button has a `:focus-visible` 2px `--focus-ring` outline.
 - 3.2 — the icon is `--text-primary` on the header surface, 7:1 also under `--bg-hover` (`tokens/contrast.spec.ts`,
   "navigation").
 - 13.8 — the button's hover transition is removed under `prefers-reduced-motion: reduce`.

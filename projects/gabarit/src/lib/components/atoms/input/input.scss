@@ -79,7 +79,8 @@
 
   &--mono input {
     font-family:
-      var(--gbt-font-mono, ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace), serif;
+      var(--gbt-font-mono, 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace),
+      serif;
     font-size: 0.8125rem;
   }
 

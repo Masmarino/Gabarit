@@ -291,91 +291,132 @@ keep their source order); with `compare`, `desc` reverses the ascending result.
 
 ## Styles
 
-Import the tokens in the application's `styles.scss`:
+Gabarit carries the look of the Ferris family: white paper and near-black ink in the light theme, a
+cool graphite in the dark one, IBM Plex throughout, hairlines and square-ish corners. Neutrals carry
+the screens; the crab's rust is kept for the marks that are the brand's own (focus, the current page),
+patina green says success. Every text token reaches 7:1 on the page and on a panel, in both themes
+(`contrast.spec.ts`).
+
+Import the tokens, and the fonts, in the application's `styles.scss`:
 
 ```scss
-@use 'gabarit/tokens' as *;
+@use '@masmarino/gabarit/fonts' with ($path: '/fonts/ibm-plex/');
+@use '@masmarino/gabarit/tokens';
+
+// Optional: body, h1–h3, code and selection in the family's type.
+@include tokens.document-base;
 ```
 
-Gabarit declares **no** `@font-face` rule. The tokens expose
-`--font-family: 'Inter', sans-serif`, but serving and declaring the font
-is the application's responsibility.
+The fonts entry declares IBM Plex Sans (400, 500, 600), Sans Condensed (600) and Mono (400, 500),
+subset to Latin-1 (OFL licence beside the files). The application serves the files at `$path`, for
+instance with an Angular asset:
+
+```json
+{ "glob": "*.woff2", "input": "node_modules/@masmarino/gabarit/fonts", "output": "fonts/ibm-plex" }
+```
+
+Without them the stacks fall back to the system's sans and monospace.
+
+### The graphite frame
+
+`gbt-app-shell` draws its rail and its bar as one graphite frame, the same in both themes, with the
+page set into it as a sheet whose corner is rounded. The auth pages (`gbt-auth-panel`) open on the
+same graphite, their panel keeping the page's theme. An application can lay its own parts on the
+frame with the `frame-tokens` mixin, which sets the dark tokens on a deeper ground:
+
+```scss
+.public-header {
+  @include tokens.frame-tokens;
+  background: var(--bg-panel);
+}
+```
 
 ### Color tokens
 
-Every component exclusively reads the custom properties below, set on
-`:root` by `_semantic.scss`. **These, and only these, are what an
-application should override to re-theme itself** — the raw palette
-(`--brand-*`, `--grey-*`, `--red-*`…) is an internal detail, never
-referenced outside `_semantic.scss` (enforced by `token-usage.spec.ts`).
+Every component reads only the custom properties below, set on `:root` from the `light-tokens` and
+`dark-tokens` mixins (`_themes.scss`). **These are what an application overrides to re-theme
+itself**; the raw palette (`--slate-*`, `--graphite-*`, `--rust-*`…) is never referenced by a
+component (enforced by `token-usage.spec.ts`).
 
-| Category    | Token                                                                    | Role                                                             |
-| ----------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| Brand       | `--primary` / `--primary-hover`                                          | Action color (buttons, active links, focus) and its hover state  |
-| Backgrounds | `--bg-principal`                                                         | Page and surface background (cards, panels)                      |
-|             | `--bg-panel`                                                             | Background of persistent navigation areas (nav, header)          |
-|             | `--bg-hover`                                                             | Hover state of an interactive element on a neutral background    |
-|             | `--bg-track`                                                             | Track of a segmented control, visible on the page and on a panel |
-| Border      | `--border-color`                                                         | All borders                                                      |
-|             | `--gbt-hairline` / `--gbt-card-border`                                   | Quiet separators and card edges, derived from `--border-color`   |
-| Text        | `--text-primary` / `--text-secondary` / `--text-discret`                 | From most to least emphasized                                    |
-|             | `--text-on-primary` / `--text-on-error` / `--text-on-color`              | Text set on a `--primary` fill, an error fill, or a solid color  |
-| Success     | `--color-success-base` / `-hover` / `-text` / `-bg` / `-bg-text`         | Fill, hover, text, light background, text on that background     |
-| Warning     | `--color-warning-base` / `-hover` / `-text` / `-bg` / `-bg-text`         | Same                                                             |
-| Error       | `--color-error-base` / `-fill` / `-hover` / `-text` / `-bg` / `-bg-text` | Same (`-fill`: solid fill, e.g. an icon)                         |
-| Dataviz     | `--chart-series-1-base`, `-2-base`, `-3-base`                            | The three chart series, in order                                 |
-|             | `--chart-grid`                                                           | Chart grid and axes                                              |
+| Category    | Token                                                                    | Role                                                              |
+| ----------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| Brand       | `--primary` / `--primary-hover`                                          | Action colour (buttons, selected states): the ink                 |
+|             | `--accent` / `--accent-text`                                             | The rust, for marks; its text shade                               |
+|             | `--focus-ring`                                                           | Every focus outline                                               |
+| Backgrounds | `--bg-principal`                                                         | Surfaces: cards, panels, fields                                   |
+|             | `--bg-panel`                                                             | The page's ground                                                 |
+|             | `--bg-hover`                                                             | Hover state of an interactive element on a neutral background     |
+|             | `--bg-track`                                                             | Track of a segmented control, visible on the page and on a panel  |
+|             | `--frame`                                                                | The graphite of the shell and the auth pages, in both themes      |
+| Border      | `--border-color`                                                         | The edge of a field or a control (3:1)                            |
+|             | `--gbt-hairline` / `--gbt-card-border`                                   | Quiet separators and card edges                                   |
+| Text        | `--text-primary` / `--text-secondary` / `--text-discret`                 | From most to least emphasized                                     |
+|             | `--text-on-primary` / `--text-on-error` / `--text-on-color`              | Text set on a `--primary` fill, an error fill, or a solid colour  |
+| Success     | `--color-success-base` / `-hover` / `-text` / `-bg` / `-bg-text`         | Fill, hover, text, light background, text on that background      |
+| Warning     | `--color-warning-base` / `-hover` / `-text` / `-bg` / `-bg-text`         | Same                                                              |
+| Error       | `--color-error-base` / `-fill` / `-hover` / `-text` / `-bg` / `-bg-text` | Same (`-fill`: a solid fill, the danger button)                   |
+| Info        | `--color-info-bg` / `-bg-text` / `-vivid-base`                           | Light background, text on it, the mark                            |
+| Dataviz     | `--chart-series-1-base` … `-6-base`                                      | The chart series, in order                                        |
+|             | `--chart-grid`                                                           | Chart grid and axes                                               |
 
-Other tokens live on `:root` without being colors — border radii
-(`--site-border-radius*`), shadows (`--site-shadow-*`), transition
-durations (`--site-transition-*`), the monospace stack `--gbt-font-mono` — overridable the same way.
+Other tokens live on `:root` without being colours: border radii (`--site-border-radius*`, 3 to
+6px), shadows (`--site-shadow-*`, rings rather than drops), transitions (`--site-transition-*`) and
+the type stacks (`--font-family`, `--font-display`, `--gbt-font-mono`).
 
 ### Theming hooks
 
-A few more tokens are not set on `:root`: each component falls back to the
-value in the last column, resolved where it is used, so an app that leaves
-them alone looks the same. Set one to take that part of the look in hand.
+A few more tokens are not set on `:root`: each component falls back to the value in the last column,
+so an app that leaves them alone gets the family's look. Set one to take that part in hand.
 
-| Token                                           | Used by                                                                   | Fallback                                |
-| ----------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------- |
-| `--gbt-focus-ring`                              | Every focus outline                                                       | `var(--primary)`                        |
-| `--gbt-font-display`                            | Page titles, stat tile values, empty state, auth panel and modal headings | `inherit`                               |
-| `--gbt-radius-badge`                            | Badges, card and tab counts                                               | `999px` (a pill)                        |
-| `--gbt-radius-chip`                             | Mono badges, inline code in a list row, search bar keys                   | `6px`                                   |
-| `--gbt-radius-menu`                             | Select and autocomplete panels, menu items, search results                | `8px`                                   |
-| `--gbt-radius-tile`                             | Icon marker tiles, job graph nodes, avatar group overflow, TOTP QR code   | `8px` (`12px` for the QR)               |
-| `--gbt-radius-search`                           | The search bar field                                                      | `16px`                                  |
-| `--gbt-nav-active-bg` / `--gbt-nav-active-text` | The current page in the app shell navigation                              | `--primary` / its text                  |
-| `--gbt-nav-active-mark`                         | A 2px rule on the start edge of the current page link                     | `transparent`                           |
-| `--gbt-shell-border`                            | The app shell's navigation and header edges                               | `var(--border-color)`                   |
-| `--gbt-shell-header-bg`                         | The app shell's header                                                    | `transparent`                           |
-| `--gbt-shell-content-padding`                   | The app shell's main content area                                         | `1rem`                                  |
-| `--gbt-auth-panel-backdrop`                     | The page behind the auth panels (login, register…)                        | a soft `--primary` glow on `--bg-panel` |
-| `--gbt-auth-panel-radius`                       | The auth panel card                                                       | `12px`                                  |
+| Token                                           | Used by                                                                   | Fallback                             |
+| ----------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------ |
+| `--gbt-focus-ring`                              | Every focus outline                                                       | `var(--focus-ring)`                  |
+| `--gbt-font-display`                            | Page, card, panel, modal and drawer titles, stat tile values, empty state | `var(--font-display)`                |
+| `--gbt-radius-badge`                            | Badges, card and tab counts                                               | `3px`                                |
+| `--gbt-radius-chip`                             | Mono badges, inline code in a list row, search bar keys                   | `2px`                                |
+| `--gbt-radius-menu`                             | Select and autocomplete panels, menu items, search results                | `4px`                                |
+| `--gbt-radius-tile`                             | Icon marker tiles, job graph nodes, avatar group overflow, TOTP QR code   | `4px`                                |
+| `--gbt-radius-search`                           | The search bar field                                                      | `3px`                                |
+| `--gbt-nav-active-bg` / `--gbt-nav-active-text` | The current page in the app shell navigation                              | a 9% ink tint / `--text-primary`     |
+| `--gbt-nav-active-mark`                         | A 2px rule on the start edge of the current page link                     | `var(--accent)`                      |
+| `--gbt-shell-bar`                               | The height of the app shell's bar and of the logo's corner                | `4rem`                               |
+| `--gbt-shell-border`                            | The app shell's navigation and header edges                               | `transparent`                        |
+| `--gbt-shell-header-bg`                         | The app shell's header                                                    | the frame                            |
+| `--gbt-shell-content-padding`                   | The app shell's bar and main content area                                 | `clamp(1rem, 0.25rem + 2vw, 2rem)`   |
+| `--gbt-auth-panel-backdrop`                     | The page behind the auth panels (login, register…)                        | `var(--frame)`                       |
+| `--gbt-auth-panel-radius`                       | The auth panel card                                                       | `var(--site-border-radius-lg)`       |
 
 Overriding a token after the import:
 
 ```scss
-@use 'gabarit/tokens' as *;
+@use '@masmarino/gabarit/tokens';
 
 :root {
-  --primary: #7c3aed;
+  --accent: #7c3aed;
 }
 ```
 
-**Dark mode activates via `prefers-color-scheme` or `[data-theme='dark']`
-on `<html>`, and reapplies to the same tokens.** An override set on a bare
-`:root` applies to both themes indifferently; for a value specific to
-dark mode, redeclare it under the same conditions as Gabarit, after its
-import:
+**Dark mode activates via `prefers-color-scheme` or `[data-theme='dark']` on `<html>`, and
+reapplies to the same tokens.** An override set on a bare `:root` applies to both themes; for a value
+specific to dark mode, redeclare it under the same conditions as Gabarit, after its import:
 
 ```scss
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary: #a78bfa;
+    --accent: #a78bfa;
   }
 }
 ```
+
+### Upgrading from 1.x
+
+- The default look is the Ferris family's (palette, IBM Plex, radii, the graphite shell and auth
+  pages). An application that themed 1.x by mapping its own tokens onto Gabarit's can drop that map.
+- The raw palette is new (`--slate-*`, `--graphite-*`, `--rust-*`, `--patina-*`, `--amber-*`,
+  `--red-*`, `--indigo-*`); `--brand-*`, `--grey-*`, `--green-*` and `--emerald-*` are gone.
+- New tokens: `--accent`, `--accent-text`, `--focus-ring`, `--frame`, `--font-display`; new mixins:
+  `light-tokens`, `dark-tokens`, `frame-tokens`, `document-base`, `visually-hidden`, `focus-ring`.
+- `@masmarino/gabarit/fonts` replaces the font an application served for `'Inter'`.
 
 ## Internationalization
 

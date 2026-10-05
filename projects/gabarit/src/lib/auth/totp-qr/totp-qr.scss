@@ -20,7 +20,7 @@
   margin-inline: auto;
   padding: 0.5rem;
   border: 1px solid var(--gbt-card-border);
-  border-radius: var(--gbt-radius-tile, 12px);
+  border-radius: var(--gbt-radius-tile, 4px);
   background: #fff;
 
   img {
@@ -39,7 +39,7 @@
   margin: 0;
   padding: 0.625rem 0.75rem;
   border: 1px solid color-mix(in srgb, var(--color-warning-text) 30%, transparent);
-  border-radius: var(--gbt-radius-tile, 8px);
+  border-radius: var(--gbt-radius-tile, 4px);
   background: var(--color-warning-bg);
   color: var(--color-warning-text);
   font-size: 0.875rem;

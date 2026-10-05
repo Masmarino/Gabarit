@@ -1,144 +1,37 @@
+@use 'themes';
+
 :root {
-  --primary: var(--brand-600);
+  color-scheme: light;
+  @include themes.light-tokens;
 
-  --primary-hover: #32344e;
-  --bg-principal: #ffffff;
-  --bg-panel: #f5f5f7;
-  --bg-hover: rgba(0, 0, 0, 0.05);
-  --bg-track: var(--grey-200);
+  --frame: var(--graphite-950);
 
-  --border-color: #7798b3;
-  --gbt-hairline: color-mix(in srgb, var(--border-color) 45%, transparent);
-  --gbt-card-border: color-mix(in srgb, var(--border-color) 60%, transparent);
-
-  --text-primary: var(--grey-900);
-  --text-secondary: var(--grey-700);
-
-  --text-discret: #425c6b;
-  --text-on-color: #ffffff;
-
-  --text-on-primary: #ffffff;
-  --text-on-error: #ffffff;
-
-  --color-success-base: var(--green-500);
-  --color-success-text: #195e48;
-  --color-success-hover: var(--green-700);
-  --color-success-bg: var(--green-100);
-  --color-success-bg-text: var(--green-800);
-
-  --color-warning-base: #c38927;
-  --color-warning-text: #6f4d16;
-  --color-warning-hover: var(--amber-600);
-  --color-warning-bg: var(--amber-100);
-  --color-warning-bg-text: var(--amber-800);
-
-  --color-error-base: var(--red-500);
-  --color-error-fill: #a82727;
-  --color-error-text: #9e2525;
-  --color-error-hover: #8f2121;
-  --color-error-bg: var(--red-100);
-  --color-error-bg-text: var(--red-800);
-
-  --color-info-bg: #dbeafe;
-  --color-info-bg-text: #1e40af;
-
-  --bg-inverse: var(--grey-900);
-
-  --color-success-vivid-base: var(--green-500);
-  --color-warning-vivid-base: #c38927;
-  --color-error-vivid-base: var(--red-500);
-  --color-info-vivid-base: #2f6feb;
-
-  --chart-series-1-base: #bd8200;
-  --chart-series-2-base: #009e73;
-  --chart-series-3-base: #0072b2;
-  --chart-series-4-base: #a6410f;
-  --chart-series-5-base: #9c3f78;
-  --chart-series-6-base: #5b4fb0;
-  --chart-grid: var(--grey-200);
-
-  --site-border-radius: 14px;
-  --site-border-radius-sm: 10px;
-  --site-border-radius-lg: 24px;
+  --site-border-radius: 4px;
+  --site-border-radius-sm: 3px;
+  --site-border-radius-lg: 6px;
 
   --gbt-control-height-sm: 2rem;
   --gbt-control-height-md: 2.375rem;
   --gbt-control-height-lg: 2.75rem;
 
-  --site-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.06);
-  --site-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
-  --site-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
-
   --site-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --site-transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
-  --font-family: 'Inter', sans-serif;
-  --gbt-font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
-}
-
-@mixin dark-tokens {
-  --primary: #a7aeff;
-
-  --primary-hover: #c6caff;
-
-  --bg-principal: var(--grey-900);
-  --bg-panel: #0f1c26;
-  --bg-hover: rgba(255, 255, 255, 0.06);
-  --bg-track: var(--grey-800);
-  --border-color: #436a80;
-  --gbt-hairline: color-mix(in srgb, var(--border-color) 45%, transparent);
-  --gbt-card-border: color-mix(in srgb, var(--border-color) 60%, transparent);
-
-  --text-primary: var(--grey-50);
-
-  --text-secondary: #9ebdcf;
-  --text-discret: #86a9bb;
-  --text-on-color: #ffffff;
-
-  --text-on-primary: var(--grey-900);
-  --text-on-error: var(--grey-900);
-
-  --color-success-base: var(--green-400);
-  --color-success-text: #56b693;
-  --color-success-hover: var(--green-500);
-  --color-success-bg: var(--green-900);
-  --color-success-bg-text: var(--green-100);
-
-  --color-warning-base: var(--amber-400);
-  --color-warning-text: var(--amber-400);
-  --color-warning-hover: var(--amber-500);
-  --color-warning-bg: var(--amber-900);
-  --color-warning-bg-text: var(--amber-100);
-
-  --color-error-base: var(--red-400);
-  --color-error-fill: #e98989;
-  --color-error-text: #e98b8b;
-  --color-error-hover: #eea3a3;
-  --color-error-bg: var(--red-900);
-  --color-error-bg-text: var(--red-100);
-
-  --color-info-bg: #1e3a8a;
-  --color-info-bg-text: #dbeafe;
-
-  --chart-series-1-base: #e69f00;
-  --chart-series-2-base: #009e73;
-  --chart-series-3-base: #0072b2;
-  --chart-series-4-base: #e2703a;
-  --chart-series-5-base: #d691bd;
-  --chart-series-6-base: #9d94e0;
-  --chart-grid: var(--grey-800);
-
-  --site-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 4px rgba(0, 0, 0, 0.3);
-  --site-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
-  --site-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4), 0 4px 6px rgba(0, 0, 0, 0.3);
+  // IBM Plex, served by the application (see `@masmarino/gabarit/fonts`). Without it the stacks fall
+  // back to the system's sans and monospace.
+  --font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', 'Arial Narrow', Arial, sans-serif;
+  --gbt-font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    @include dark-tokens;
+    color-scheme: dark;
+    @include themes.dark-tokens;
   }
 }
 
 :root[data-theme='dark'] {
-  @include dark-tokens;
+  color-scheme: dark;
+  @include themes.dark-tokens;
 }

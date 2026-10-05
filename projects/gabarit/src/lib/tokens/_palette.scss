@@ -1,58 +1,59 @@
+// The raw colours of the Ferris family. Components never read these: they go through the semantic
+// tokens, which pick a step per theme.
 :root {
-  --brand-50: #e8e9fd;
-  --brand-100: #ced1f8;
-  --brand-200: #98a0f0;
-  --brand-300: #5b66e6;
-  --brand-400: #2938db;
-  --brand-500: #0d1ed3;
-  --brand-600: #44476a;
-  --brand-700: #091595;
-  --brand-800: #07106e;
-  --brand-900: #040943;
+  // Light neutrals, from the paper to the ink.
+  --slate-0: #ffffff;
+  --slate-50: #eff2f5;
+  --slate-100: #e9edf1;
+  --slate-200: #dce2e9;
+  --slate-300: #cfd5dc;
+  --slate-400: #a9b3c0;
+  --slate-500: #7d8794;
+  --slate-600: #4a525f;
+  --slate-700: #404954;
+  --slate-900: #10151c;
 
-  --emerald-400: #55b48b;
+  // Dark neutrals: the graphite of the frame and the dark theme.
+  --graphite-1000: #0c1015;
+  --graphite-950: #0b0f14;
+  --graphite-900: #11161c;
+  --graphite-850: #181f27;
+  --graphite-800: #1f2730;
+  --graphite-700: #28323d;
+  --graphite-500: #646c77;
+  --graphite-400: #a1a9b5;
+  --graphite-300: #b8bfca;
+  --graphite-200: #cdd3db;
+  --graphite-100: #e7ebf1;
 
-  --grey-50: #f7f9fb;
-  --grey-100: #edf1f5;
-  --grey-200: #d6e0e8;
-  --grey-300: #b4c6d2;
-  --grey-400: #8aafc5;
-  --grey-500: #62889d;
-  --grey-600: #3f6070;
-  --grey-700: #2a4250;
-  --grey-800: #192a34;
-  --grey-900: #0d1b24;
+  // The crab's rust, kept for the marks that are the brand's own (focus, current page).
+  --rust-300: #ff9469;
+  --rust-400: #f0622a;
+  --rust-500: #c2410c;
+  --rust-600: #a8360a;
 
-  --red-50: #fcf4f4;
-  --red-100: #fbe5e5;
-  --red-200: #f8d0d0;
-  --red-300: #f2afaf;
-  --red-400: #e88181;
-  --red-500: #d95a5a;
-  --red-600: #c04242;
-  --red-700: #a23333;
-  --red-800: #6e2e2e;
-  --red-900: #3c1313;
+  --patina-300: #7ed4b8;
+  --patina-400: #3fbf95;
+  --patina-600: #15805d;
+  --patina-700: #0d5d43;
+  --patina-800: #0c523b;
 
-  --amber-50: #fcf9ed;
-  --amber-100: #f7efce;
-  --amber-200: #eedd99;
-  --amber-300: #e5c764;
-  --amber-400: #dfb340;
-  --amber-500: #d5962b;
-  --amber-600: #bd7522;
-  --amber-700: #9c5621;
-  --amber-800: #673a20;
-  --amber-900: #3c1d0c;
+  --amber-300: #f6b649;
+  --amber-400: #f5b13d;
+  --amber-600: #9a5b04;
+  --amber-700: #774603;
+  --amber-800: #6a3e03;
 
-  --green-50: #effaf5;
-  --green-100: #d7f4e5;
-  --green-200: #b4e6cf;
-  --green-300: #83d2b3;
-  --green-400: #53b491;
-  --green-500: #29a079;
-  --green-600: #188362;
-  --green-700: #146850;
-  --green-800: #114436;
-  --green-900: #08261f;
+  --red-200: #f7aeaa;
+  --red-300: #f38c85;
+  --red-400: #f2857d;
+  --red-600: #c23a32;
+  --red-700: #a1302a;
+  --red-750: #942c26;
+  --red-800: #842822;
+
+  --indigo-200: #b3beff;
+  --indigo-400: #8b9bff;
+  --indigo-600: #2f49c9;
+  --indigo-800: #283da8;
 }

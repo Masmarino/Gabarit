@@ -1,0 +1,31 @@
+// The document's own elements, for an application that wants them in the family's type: include once,
+// at the root of its global styles (`@include tokens.document-base;`).
+@mixin document-base {
+  body {
+    margin: 0;
+    font-family: var(--font-family);
+    font-feature-settings: 'kern', 'liga';
+    background: var(--bg-panel);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  // Titles in Plex Condensed: a page and its panels read as a document.
+  h1,
+  h2,
+  h3 {
+    font-family: var(--gbt-font-display, var(--font-display));
+    letter-spacing: -0.005em;
+  }
+
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: var(--gbt-font-mono);
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+}

@@ -1,7 +1,9 @@
+@use '../fonts';
+@use '../src/lib/tokens';
+
+@include tokens.document-base;
+
 body {
-  font-family: var(--font-family);
-  color: var(--text-primary);
   background: var(--bg-principal);
-  margin: 0;
   padding: 1.5rem;
 }

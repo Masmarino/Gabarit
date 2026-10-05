@@ -26,7 +26,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0 12px;
   background: var(--bg-principal);
   border: 1px solid var(--border-color);
-  border-radius: var(--gbt-radius-search, 16px);
+  border-radius: var(--gbt-radius-search, 3px);
   transition:
     width 0.35s $easing,
     border-color 0.2s $easing-std,
@@ -78,7 +78,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: var(--gbt-radius-chip, 6px);
+  border-radius: var(--gbt-radius-chip, 2px);
   color: var(--text-secondary);
   cursor: pointer;
   transition:
@@ -136,8 +136,8 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: calc(var(--gbt-radius-search, 16px) - 1px) 0 0
-    calc(var(--gbt-radius-search, 16px) - 1px);
+  border-radius: calc(var(--gbt-radius-search, 3px) - 1px) 0 0
+    calc(var(--gbt-radius-search, 3px) - 1px);
   color: var(--text-secondary);
   cursor: pointer;
   transition:
@@ -265,7 +265,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   margin-left: auto;
   padding: 1px 7px;
   background: var(--bg-hover);
-  border-radius: var(--gbt-radius-badge, 10px);
+  border-radius: var(--gbt-radius-badge, 3px);
   font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
@@ -280,7 +280,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   padding: 9px 10px;
   background: transparent;
   border: none;
-  border-radius: var(--gbt-radius-menu, 8px);
+  border-radius: var(--gbt-radius-menu, 4px);
   text-align: left;
   cursor: pointer;
   transition: background 0.12s $easing-std;
@@ -351,7 +351,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
   border-bottom-width: 2px;
-  border-radius: var(--gbt-radius-chip, 5px);
+  border-radius: var(--gbt-radius-chip, 2px);
   color: var(--text-secondary);
   font-size: 11px;
   font-family: var(--gbt-font-mono);

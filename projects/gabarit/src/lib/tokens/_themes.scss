@@ -1,0 +1,144 @@
+// The themes as mixins, with no output of their own: _semantic puts them on :root, and the parts drawn
+// on the graphite frame (the shell's rail and bar, the sign-in page) take the frame's.
+//
+// Every text token reaches 7:1 on the page and on a panel (contrast.spec.ts), which is why a few of
+// them sit a shade darker (or lighter, in the dark) than the marks of the same colour. The status
+// tints are translucent, so they take the colour of the ground they sit on.
+
+@mixin light-tokens {
+  --primary: var(--slate-900);
+  --primary-hover: #383d43;
+  --bg-principal: var(--slate-0);
+  --bg-panel: var(--slate-50);
+  --bg-hover: rgba(16, 21, 28, 0.07);
+  --bg-track: var(--slate-200);
+  --bg-inverse: var(--slate-900);
+
+  // The edge of a field or a control, 3:1 on the page (WCAG 1.4.11); the hairlines stay lighter.
+  --border-color: var(--slate-500);
+  --gbt-hairline: var(--slate-300);
+  --gbt-card-border: var(--slate-300);
+
+  --text-primary: var(--slate-900);
+  --text-secondary: var(--slate-700);
+  --text-discret: var(--slate-600);
+  --text-on-color: var(--slate-0);
+  --text-on-primary: var(--slate-0);
+  --text-on-error: var(--slate-0);
+
+  --accent: var(--rust-500);
+  --accent-text: var(--rust-600);
+  --focus-ring: var(--rust-500);
+
+  --color-success-base: var(--patina-600);
+  --color-success-text: var(--patina-700);
+  --color-success-hover: #146b50;
+  --color-success-bg: rgba(21, 128, 93, 0.12);
+  --color-success-bg-text: var(--patina-800);
+  --color-success-vivid-base: var(--patina-600);
+
+  --color-warning-base: var(--amber-600);
+  --color-warning-text: var(--amber-700);
+  --color-warning-hover: #7e4d09;
+  --color-warning-bg: rgba(154, 91, 4, 0.1);
+  --color-warning-bg-text: var(--amber-800);
+  --color-warning-vivid-base: var(--amber-600);
+
+  --color-error-base: var(--red-600);
+  --color-error-fill: var(--red-700);
+  --color-error-text: var(--red-750);
+  --color-error-hover: #842b27;
+  --color-error-bg: rgba(194, 58, 50, 0.1);
+  --color-error-bg-text: var(--red-800);
+  --color-error-vivid-base: var(--red-600);
+
+  --color-info-bg: rgba(47, 73, 201, 0.09);
+  --color-info-bg-text: var(--indigo-800);
+  --color-info-vivid-base: var(--indigo-600);
+
+  --chart-series-1-base: #bd8200;
+  --chart-series-2-base: #009e73;
+  --chart-series-3-base: #0072b2;
+  --chart-series-4-base: #a6410f;
+  --chart-series-5-base: #9c3f78;
+  --chart-series-6-base: #5b4fb0;
+  --chart-grid: var(--slate-300);
+
+  --site-shadow-sm: none;
+  --site-shadow-md: 0 0 0 1px var(--slate-400);
+  --site-shadow-lg: 0 0 0 1px var(--slate-400), 0 12px 32px rgba(16, 21, 28, 0.16);
+}
+
+@mixin dark-tokens {
+  --primary: var(--graphite-100);
+  --primary-hover: #c0c5cb;
+  --bg-principal: var(--graphite-850);
+  --bg-panel: var(--graphite-900);
+  --bg-hover: rgba(231, 235, 241, 0.07);
+  --bg-track: var(--graphite-700);
+  --bg-inverse: var(--graphite-100);
+
+  --border-color: var(--graphite-500);
+  --gbt-hairline: rgba(205, 215, 230, 0.12);
+  --gbt-card-border: rgba(205, 215, 230, 0.12);
+
+  --text-primary: var(--graphite-100);
+  --text-secondary: var(--graphite-300);
+  --text-discret: var(--graphite-400);
+  --text-on-color: var(--graphite-1000);
+  --text-on-primary: var(--graphite-1000);
+  --text-on-error: var(--graphite-1000);
+
+  --accent: var(--rust-400);
+  --accent-text: var(--rust-300);
+  --focus-ring: var(--rust-400);
+
+  --color-success-base: var(--patina-400);
+  --color-success-text: var(--patina-400);
+  --color-success-hover: #61c8a7;
+  --color-success-bg: rgba(63, 191, 149, 0.16);
+  --color-success-bg-text: var(--patina-300);
+  --color-success-vivid-base: var(--patina-400);
+
+  --color-warning-base: var(--amber-400);
+  --color-warning-text: var(--amber-400);
+  --color-warning-hover: #f2bd61;
+  --color-warning-bg: rgba(245, 177, 61, 0.14);
+  --color-warning-bg-text: var(--amber-300);
+  --color-warning-vivid-base: var(--amber-400);
+
+  --color-error-base: var(--red-400);
+  --color-error-fill: var(--red-400);
+  --color-error-text: var(--red-300);
+  --color-error-hover: #f09994;
+  --color-error-bg: rgba(242, 133, 125, 0.16);
+  --color-error-bg-text: var(--red-200);
+  --color-error-vivid-base: var(--red-400);
+
+  --color-info-bg: rgba(139, 155, 255, 0.16);
+  --color-info-bg-text: var(--indigo-200);
+  --color-info-vivid-base: var(--indigo-400);
+
+  --chart-series-1-base: #e69f00;
+  --chart-series-2-base: #009e73;
+  --chart-series-3-base: #0072b2;
+  --chart-series-4-base: #e2703a;
+  --chart-series-5-base: #d691bd;
+  --chart-series-6-base: #9d94e0;
+  --chart-grid: rgba(205, 215, 230, 0.12);
+
+  --site-shadow-sm: none;
+  --site-shadow-md: 0 0 0 1px rgba(205, 215, 230, 0.26);
+  --site-shadow-lg: 0 0 0 1px rgba(205, 215, 230, 0.26), 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+// The graphite frame, the same in both themes: the dark tokens on a ground a little deeper than the
+// dark theme's own. The rail's links are a step brighter, since light thin text on graphite reads
+// paler than its ratio says.
+@mixin frame-tokens {
+  @include dark-tokens;
+  --bg-panel: var(--graphite-950);
+  --text-secondary: var(--graphite-200);
+  color-scheme: dark;
+  color: var(--text-primary);
+}

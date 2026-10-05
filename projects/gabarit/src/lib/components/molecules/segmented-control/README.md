@@ -47,7 +47,7 @@ selector, not a way to move between different page contents.
 
 - **Track token.** The default track is `--bg-panel`, which is the page background
   in the app shell and vanishes on a panel. `tinted` uses the semantic token
-  `--bg-track` (`grey-200` in light, `grey-800` in dark; `contrast.spec.ts` checks the
+  `--bg-track` (`slate-200` in light, `graphite-700` in dark; `contrast.spec.ts` checks the
   option text on it and that it stays distinguishable from the page and from
   `--bg-panel`).
 - `label` gives the group one visible name, referenced by `aria-labelledby` — the

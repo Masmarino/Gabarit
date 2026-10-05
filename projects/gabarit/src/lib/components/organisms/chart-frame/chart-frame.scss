@@ -44,6 +44,7 @@
   }
 
   &__title {
+    font-family: var(--gbt-font-display, var(--font-display));
     margin: 0;
     font-size: 0.875rem;
     font-weight: 600;

@@ -38,7 +38,13 @@
       "sass": "./src/lib/tokens/index.scss",
       "style": "./src/lib/tokens/index.scss",
       "default": "./src/lib/tokens/index.scss"
-    }
+    },
+    "./fonts": {
+      "sass": "./fonts/index.scss",
+      "style": "./fonts/index.scss",
+      "default": "./fonts/index.scss"
+    },
+    "./fonts/*": "./fonts/*"
   },
   "peerDependenciesMeta": {
     "@angular/router": {

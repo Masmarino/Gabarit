@@ -62,6 +62,7 @@
 }
 
 .gbt-card__title {
+  font-family: var(--gbt-font-display, var(--font-display));
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -96,7 +97,7 @@
   min-width: 1.25rem;
   box-sizing: border-box;
   padding: 0 0.375rem;
-  border-radius: var(--gbt-radius-badge, 999px);
+  border-radius: var(--gbt-radius-badge, 3px);
   background: color-mix(in srgb, var(--border-color) 8%, transparent);
   color: var(--text-primary);
   font-size: 0.75rem;
@@ -256,5 +257,17 @@
   .gbt-card,
   .gbt-card[data-link] {
     transition: none;
+  }
+}
+
+// In a narrow container (the nearest ancestor with `container-type: inline-size`) the card drops its
+// heading glyph and tightens its padding.
+@container (max-width: 519px) {
+  .gbt-card__header:not([data-tone]) > .gbt-card__icon {
+    display: none;
+  }
+
+  .gbt-card:not([data-flush]) {
+    padding: 1rem;
   }
 }

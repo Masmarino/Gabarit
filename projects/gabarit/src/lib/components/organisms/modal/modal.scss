@@ -35,7 +35,7 @@
   border-bottom: 1px solid var(--border-color);
 
   .gbt-modal__title {
-    font-family: var(--gbt-font-display, inherit);
+    font-family: var(--gbt-font-display, var(--font-display));
     font-size: 1rem;
     font-weight: 600;
     color: var(--text-primary);
@@ -117,4 +117,11 @@
 
 .gbt-modal__status {
   @include a11y.visually-hidden;
+}
+
+@media (pointer: coarse) {
+  .gbt-modal__footer {
+    --gbt-control-height-sm: 2.75rem;
+    --gbt-control-height-md: 2.75rem;
+  }
 }

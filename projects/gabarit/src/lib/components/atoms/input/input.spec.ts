@@ -327,7 +327,7 @@ describe('GbtInput', () => {
       const root: HTMLElement = fixture.nativeElement.querySelector('.gbt-input')
       expect(root.classList.contains('gbt-input--mono')).toBe(true)
       const scss = readFileSync(join(SCSS_DIR, 'input.scss'), 'utf8')
-      expect(scss).toMatch(/--gbt-font-mono,\s*ui-monospace/)
+      expect(scss).toMatch(/--gbt-font-mono,\s*'IBM Plex Mono',\s*ui-monospace/)
     })
 
     it('renders a decorative leading icon and makes room for it', () => {

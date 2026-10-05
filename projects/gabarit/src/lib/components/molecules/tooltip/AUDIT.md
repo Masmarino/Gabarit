@@ -24,9 +24,9 @@ the generic 7:1 pairing check in `token-usage.spec.ts` (already proven
 compliant for `Toaster`, same token pair, no new tokens needed).
 
 One difference from `Toaster`: a 1px `rgba(255, 255, 255, 0.15)`
-border keeps the bubble visible against a dark-themed host page —
-`--bg-inverse` and the dark theme's own `--bg-principal` both resolve
-to `--grey-900`, so box-shadow alone isn't enough separation. The
+border keeps the bubble visible against a dark host page whose
+`--bg-inverse` is re-themed close to its own ground (Gabarit's dark
+`--bg-inverse` is light, so the bubble stands out anyway). The
 border isn't a semantic token (it's a translucent white overlay, not a
 flat color), so it doesn't interact with `token-usage.spec.ts`'s
 palette/contrast checks — it's a visual affordance on top of the

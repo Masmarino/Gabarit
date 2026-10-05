@@ -291,7 +291,7 @@ describe('Textarea', () => {
           .classList.contains('gbt-textarea--mono'),
       ).toBe(true)
       const scss = readFileSync(join(SCSS_DIR, 'textarea.scss'), 'utf8')
-      expect(scss).toMatch(/--gbt-font-mono,\s*ui-monospace/)
+      expect(scss).toMatch(/--gbt-font-mono,\s*'IBM Plex Mono',\s*ui-monospace/)
     })
 
     it.each(['none', 'both', 'horizontal', 'vertical'] as const)(

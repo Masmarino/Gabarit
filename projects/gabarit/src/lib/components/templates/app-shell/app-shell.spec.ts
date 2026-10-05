@@ -96,7 +96,7 @@ describe('AppShell', () => {
     expect(componentScss).not.toContain('__link')
   })
 
-  it('gives the panel background to the whole page, content included', () => {
+  it('draws the graphite frame round the page and gives the content the panel ground', () => {
     const componentScss = readFileSync(
       join(process.cwd(), 'projects/gabarit/src/lib/components/templates/app-shell/app-shell.scss'),
       'utf8',
@@ -109,8 +109,9 @@ describe('AppShell', () => {
       componentScss.indexOf('&__content {'),
       componentScss.indexOf('&:focus-visible', componentScss.indexOf('&__content {')),
     )
-    expect(root).toContain('background: var(--bg-panel)')
-    expect(content).not.toContain('background:')
+    expect(root).toContain('background: var(--frame)')
+    expect(content).toContain('background: var(--bg-panel)')
+    expect(content).toContain('border-top-left-radius')
   })
 
   it('lets the nav blur with the page behind the search backdrop, except when the mobile drawer is open', () => {

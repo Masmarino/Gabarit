@@ -4,6 +4,7 @@ import { join } from 'node:path'
 const DIR = join(process.cwd(), 'projects/gabarit/src/lib/tokens')
 const palette = readFileSync(join(DIR, '_palette.scss'), 'utf8')
 const semantic = readFileSync(join(DIR, '_semantic.scss'), 'utf8')
+const themes = readFileSync(join(DIR, '_themes.scss'), 'utf8')
 
 function resolve(value: string): string {
   const trimmed = value.trim()
@@ -15,19 +16,36 @@ function resolve(value: string): string {
   return found[1]
 }
 
-const DARK_MIXIN = /@mixin dark-tokens\s*\{([\s\S]*?)\n\}/.exec(semantic)
-if (!DARK_MIXIN) throw new Error('@mixin dark-tokens not found in _semantic.scss')
-const DARK_SCOPE = DARK_MIXIN[1]
-const LIGHT_SCOPE = semantic.slice(0, semantic.indexOf('@mixin dark-tokens'))
+function mixin(name: string): string {
+  const found = new RegExp(`@mixin ${name}\\s*\\{([\\s\\S]*?)\\n\\}`).exec(themes)
+  if (!found) throw new Error(`@mixin ${name} not found in _themes.scss`)
+  return found[1]
+}
+// The light theme, plus what :root sets for both themes (the type stacks).
+const LIGHT_SCOPE = mixin('light-tokens') + semantic
+const DARK_SCOPE = mixin('dark-tokens')
 
-function token(name: string, theme: 'light' | 'dark'): string {
+// A translucent token (the status tints) is measured as painted on `ground`, the page by default.
+function token(name: string, theme: 'light' | 'dark', ground?: string): string {
   const scope = theme === 'light' ? LIGHT_SCOPE : DARK_SCOPE
   const matches = [...scope.matchAll(new RegExp(`--${name}:\\s*([^;]+);`, 'g'))]
   if (matches.length === 0) {
-    if (theme === 'dark') return token(name, 'light')
+    if (theme === 'dark') return token(name, 'light', ground)
     throw new Error(`token not found: --${name} (${theme})`)
   }
-  return resolve(matches[matches.length - 1][1])
+  const value = matches[matches.length - 1][1]
+  const rgba = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)$/.exec(value.trim())
+  if (!rgba) return resolve(value)
+  const base = hexChannels(ground ?? token('bg-principal', theme))
+  const alpha = Number(rgba[4])
+  const mixed = [rgba[1], rgba[2], rgba[3]].map((c, i) =>
+    Math.round(Number(c) * alpha + base[i] * (1 - alpha)),
+  )
+  return `#${mixed.map((c) => c.toString(16).padStart(2, '0')).join('')}`
+}
+
+function hexChannels(hex: string): number[] {
+  return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
 }
 
 function luminance(hex: string): number {
@@ -41,8 +59,8 @@ function ratio(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05)
 }
 
-const LIGHT_BG = '#ffffff'
-const DARK_BG = '#0d1b24'
+const LIGHT_BG = token('bg-principal', 'light')
+const DARK_BG = token('bg-principal', 'dark')
 const PANEL_BG_LIGHT = token('bg-panel', 'light')
 const PANEL_BG_DARK = token('bg-panel', 'dark')
 
@@ -296,6 +314,18 @@ describe('token contrast', () => {
     }
   })
 
+  it('status text stays readable on its translucent tint laid on a panel too, in both themes', () => {
+    for (const theme of ['light', 'dark'] as const) {
+      const panel = token('bg-panel', theme)
+      for (const tone of ['success', 'warning', 'error', 'info']) {
+        expect(
+          ratio(token(`color-${tone}-bg-text`, theme), token(`color-${tone}-bg`, theme, panel)),
+          `--color-${tone}-bg-text on --color-${tone}-bg over a panel (${theme})`,
+        ).toBeGreaterThanOrEqual(7)
+      }
+    }
+  })
+
   it('text on colored banner backgrounds stays readable', () => {
     expect(
       ratio(token('color-error-bg-text', 'light'), token('color-error-bg', 'light')),
@@ -328,19 +358,13 @@ describe('token contrast', () => {
     expect(token('bg-principal', 'dark')).not.toBe(token('bg-principal', 'light'))
     expect(token('border-color', 'dark')).not.toBe(token('border-color', 'light'))
 
-    expect(token('text-primary', 'dark')).toBe(resolve('var(--grey-50)'))
-    expect(token('bg-principal', 'dark')).toBe(resolve('var(--grey-900)'))
-    expect(token('border-color', 'dark')).toBe('#436a80')
+    expect(token('text-primary', 'dark')).toBe(resolve('var(--graphite-100)'))
+    expect(token('bg-principal', 'dark')).toBe(resolve('var(--graphite-850)'))
+    expect(token('border-color', 'dark')).toBe(resolve('var(--graphite-500)'))
   })
 })
 
 describe('layout tokens (page header, panel, list card and rows)', () => {
-  function mix(top: string, percent: number, base: string): string {
-    const a = [1, 3, 5].map((i) => parseInt(top.slice(i, i + 2), 16))
-    const b = [1, 3, 5].map((i) => parseInt(base.slice(i, i + 2), 16))
-    const out = a.map((c, i) => Math.round((c * percent + b[i] * (100 - percent)) / 100))
-    return `#${out.map((c) => c.toString(16).padStart(2, '0')).join('')}`
-  }
   function hoverOver(theme: 'light' | 'dark', base: string): string {
     const scope = theme === 'light' ? LIGHT_SCOPE : DARK_SCOPE
     const match = [
@@ -354,39 +378,34 @@ describe('layout tokens (page header, panel, list card and rows)', () => {
     )
     return `#${mixed.map((c) => c.toString(16).padStart(2, '0')).join('')}`
   }
-  function borderShare(name: string, theme: 'light' | 'dark'): number {
+  // A hairline is a hex colour, or a translucent one that takes the colour of what it sits on.
+  function lineOver(name: string, theme: 'light' | 'dark', surface: string): string {
     const scope = theme === 'light' ? LIGHT_SCOPE : DARK_SCOPE
-    const found = new RegExp(
-      `--${name}:\\s*color-mix\\(in srgb,\\s*var\\(--border-color\\)\\s+(\\d+)%,\\s*transparent\\)`,
-    ).exec(scope)
-    if (!found) throw new Error(`--${name} is not a border-color derivation (${theme})`)
-    return Number(found[1])
+    const found = [...scope.matchAll(new RegExp(`--${name}:\\s*([^;]+);`, 'g'))].pop()
+    if (!found) throw new Error(`--${name} not found (${theme})`)
+    const rgba = /rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/.exec(found[1])
+    if (!rgba) return token(name, theme)
+    const alpha = Number(rgba[4])
+    const base = [1, 3, 5].map((i) => parseInt(surface.slice(i, i + 2), 16))
+    const mixed = [rgba[1], rgba[2], rgba[3]].map((c, i) =>
+      Math.round(Number(c) * alpha + base[i] * (1 - alpha)),
+    )
+    return `#${mixed.map((c) => c.toString(16).padStart(2, '0')).join('')}`
   }
 
   for (const theme of ['light', 'dark'] as const) {
-    it(`--gbt-hairline and --gbt-card-border are declared in the ${theme} scope, derived from --border-color`, () => {
-      expect(borderShare('gbt-hairline', theme)).toBe(45)
-      expect(borderShare('gbt-card-border', theme)).toBe(60)
-    })
-
     it(`the hairline and the card border stay visible on the page and on a panel (${theme})`, () => {
       const page = token('bg-principal', theme)
       const panel = token('bg-panel', theme)
-      const edge = token('border-color', theme)
-      for (const [name, floor] of [
-        ['gbt-hairline', 1.3],
-        ['gbt-card-border', 1.4],
-      ] as const) {
+      // Hairlines, not frames: a card also stands apart from a panel by its own ground.
+      for (const name of ['gbt-hairline', 'gbt-card-border']) {
         for (const surface of [page, panel]) {
-          const line = mix(edge, borderShare(name, theme), surface)
-          expect(ratio(line, surface), `--${name} on ${surface} (${theme})`).toBeGreaterThanOrEqual(
-            floor,
-          )
+          expect(
+            ratio(lineOver(name, theme, surface), surface),
+            `--${name} on ${surface} (${theme})`,
+          ).toBeGreaterThanOrEqual(1.3)
         }
       }
-      expect(borderShare('gbt-card-border', theme)).toBeGreaterThan(
-        borderShare('gbt-hairline', theme),
-      )
     })
 
     it(`the list row's status glyph tones stay perceivable on the row hover fill (${theme})`, () => {
@@ -417,7 +436,7 @@ describe('layout tokens (page header, panel, list card and rows)', () => {
     const components = join(process.cwd(), 'projects/gabarit/src/lib/components/atoms')
     for (const file of ['input/input.scss', 'textarea/textarea.scss']) {
       const scss = readFileSync(join(components, file), 'utf8')
-      const used = /var\(--gbt-font-mono,\s*([^)]+)\)/.exec(scss)
+      const used = /var\(\s*--gbt-font-mono,\s*([^)]+)\)/.exec(scss)
       if (!used) throw new Error(`${file} does not read var(--gbt-font-mono, …)`)
       expect(normalize(used[1]), file).toBe(normalize(declared[1]))
     }

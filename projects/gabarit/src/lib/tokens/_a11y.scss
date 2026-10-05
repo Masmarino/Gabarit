@@ -1,4 +1,4 @@
-// Shared by the components' styles, not forwarded by the tokens' index.
+// Shared by the components' styles, and offered to applications through the tokens.
 
 // Out of sight, still read by assistive technology.
 @mixin visually-hidden {
@@ -15,7 +15,7 @@
 
 // The keyboard focus ring. `--gbt-focus-ring` lets a theme recolour every ring at once.
 @mixin focus-ring($offset: null) {
-  outline: 2px solid var(--gbt-focus-ring, var(--primary));
+  outline: 2px solid var(--gbt-focus-ring, var(--focus-ring));
   @if $offset != null {
     outline-offset: $offset;
   }

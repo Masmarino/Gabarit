@@ -8,19 +8,21 @@ describe('tokens', () => {
   it('the palette defines the raw scales', () => {
     const palette = read('_palette.scss')
     for (const token of [
-      '--brand-500',
-      '--emerald-400',
-      '--grey-900',
-      '--red-500',
-      '--amber-500',
-      '--green-500',
+      '--slate-0',
+      '--slate-900',
+      '--graphite-950',
+      '--rust-500',
+      '--patina-600',
+      '--amber-600',
+      '--red-600',
+      '--indigo-600',
     ]) {
       expect(palette).toContain(token)
     }
   })
 
   it('the semantic layer defines the tokens consumed by components', () => {
-    const semantic = read('_semantic.scss')
+    const semantic = read('_semantic.scss') + read('_themes.scss')
     for (const token of [
       '--primary',
       '--bg-panel',
@@ -95,6 +97,19 @@ describe('tokens', () => {
       expect(read('_semantic.scss'), hook).not.toContain(`${hook}:`)
     }
     expect(scss).not.toContain('outline: 2px solid var(--primary)')
+  })
+
+  it('offers IBM Plex as an opt-in entry, every face it declares shipped beside it', () => {
+    const fonts = join(process.cwd(), 'projects/gabarit/fonts')
+    const index = readFileSync(join(fonts, 'index.scss'), 'utf8')
+    const files = [...index.matchAll(/'(ibm-plex-[a-z0-9-]+)'\)/g)].map((m) => `${m[1]}.woff2`)
+    expect(files).toHaveLength(6)
+    const shipped = readdirSync(fonts)
+    for (const file of files) {
+      expect(shipped, file).toContain(file)
+    }
+    expect(shipped).toContain('OFL-ibm-plex.txt')
+    expect(index).toContain('$path: ')
   })
 
   it('keeps sr-only, a visual-hiding utility offered to applications', () => {

@@ -1,9 +1,9 @@
-$radius: 12px;
-
 :host {
   display: block;
 }
 
+// A graphite page in both themes, like the shell's frame; the panel keeps the page's theme, so it stays
+// a white sheet in light mode.
 .gbt-auth-panel {
   display: flex;
   box-sizing: border-box;
@@ -12,15 +12,7 @@ $radius: 12px;
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
-  background: var(
-    --gbt-auth-panel-backdrop,
-    radial-gradient(
-      ellipse 80% 55% at 50% 0%,
-      color-mix(in srgb, var(--primary) 8%, transparent),
-      transparent 70%
-    ),
-    var(--bg-panel)
-  );
+  background: var(--gbt-auth-panel-backdrop, var(--frame));
 }
 
 .gbt-auth-panel__panel {
@@ -29,7 +21,7 @@ $radius: 12px;
   max-width: 25rem;
   padding: 2rem 2rem 2.25rem;
   border: 1px solid var(--gbt-card-border);
-  border-radius: var(--gbt-auth-panel-radius, $radius);
+  border-radius: var(--gbt-auth-panel-radius, var(--site-border-radius-lg));
   background: var(--bg-principal);
   box-shadow: var(--site-shadow-md);
 }
@@ -58,7 +50,7 @@ $radius: 12px;
 
 :host ::ng-deep {
   .gbt-auth-panel__heading {
-    font-family: var(--gbt-font-display, inherit);
+    font-family: var(--gbt-font-display, var(--font-display));
     margin: 0;
     color: var(--text-primary);
     font-size: 1.25rem;
