@@ -85,6 +85,12 @@
   }
 }
 
+// Global, so it reaches the links the app projects: each piece of the rail keeps its height, and a rail taller than the
+// window scrolls rather than squeezing its links together.
+.gbt-app-shell__nav > * {
+  flex-shrink: 0;
+}
+
 .gbt-app-shell__link {
   position: relative;
   display: flex;

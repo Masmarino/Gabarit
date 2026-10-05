@@ -5,6 +5,11 @@ breakpoint, the navigation becomes a drawer: the button opens it, the
 backdrop or Escape closes it, focus is trapped inside while it's open
 and returns to the button on close.
 
+The header and the navigation are held to the window: while a long page
+scrolls, both stay in view, so the version and the collapse toggle are
+always in reach. Links that outgrow the window scroll inside the
+navigation, under its bottom (version and toggle), which stays put.
+
 **Selector**: `gbt-app-shell`
 
 ## Inputs

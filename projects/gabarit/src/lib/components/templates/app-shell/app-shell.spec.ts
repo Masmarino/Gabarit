@@ -142,7 +142,29 @@ describe('AppShell', () => {
     expect(desktopNav).toContain('&--collapsed')
     expect(desktopNav).toContain('width: 64px')
     expect(desktopNav).toContain('transition: width')
-    expect(desktopNav).toContain('overflow: hidden')
+    expect(desktopNav).toContain('overflow-x: hidden')
+  })
+
+  it('holds the rail and the header to the window, the rail scrolling on its own under a fixed bottom', () => {
+    const componentScss = readFileSync(
+      join(process.cwd(), 'projects/gabarit/src/lib/components/templates/app-shell/app-shell.scss'),
+      'utf8',
+    )
+    const rule = (selector: string) => {
+      const start = componentScss.indexOf(selector)
+      return componentScss.slice(start, componentScss.indexOf('\n  }', start))
+    }
+    const nav = rule('&__nav {')
+    expect(nav).toContain('position: sticky')
+    expect(nav).toContain('height: 100dvh')
+    expect(nav).toContain('overflow-y: auto')
+    const bottom = rule('&__bottom {')
+    expect(bottom).toContain('position: sticky')
+    expect(bottom).toContain('bottom: 0')
+    const header = rule('&__header {')
+    expect(header).toContain('position: sticky')
+    expect(header).toContain('top: 0')
+    expect(header).toContain('var(--gbt-shell-header-bg, var(--bg-panel))')
   })
 
   it('animates the collapse-toggle icon rotation, guarded by prefers-reduced-motion', () => {
@@ -576,7 +598,7 @@ describe('AppShell collapsed rail flyout', () => {
       componentScss.indexOf('&__nav {'),
       componentScss.indexOf('&--collapsed {'),
     )
-    expect(baseNav).toContain('overflow: hidden')
+    expect(baseNav).toContain('overflow-x: hidden')
 
     const utilities = readFileSync(join(root, 'tokens/_utilities.scss'), 'utf8')
     const baseLink = utilities.slice(

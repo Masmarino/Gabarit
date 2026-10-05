@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite'
+import { expect, waitFor } from 'storybook/test'
 import { darkTheme } from '../../../../../.storybook/preview'
 import { AppShell } from './app-shell'
 import { Card } from '../../molecules/card/card'
@@ -183,6 +184,39 @@ export const LongNavigation: Story = {
     `,
     moduleMetadata: { imports: [AppShell] },
   }),
+}
+
+/**
+ * A page taller than the window: the header and the rail stay where they are while it scrolls, so the version and the
+ * collapse toggle are always in reach.
+ */
+export const LongPage: Story = {
+  render: () => ({
+    props: {},
+    template: `
+      <gbt-app-shell ${labels}>
+        ${brand}
+        ${links}
+        <h1 shell-header style="margin:0;font-size:1rem">Journal d'audit</h1>
+        ${account}
+        ${Array.from({ length: 60 }, (_, i) => `<p>Événement ${i + 1} : un utilisateur a modifié un réglage.</p>`).join('\n')}
+      </gbt-app-shell>
+    `,
+    moduleMetadata: { imports: [AppShell, Menu] },
+  }),
+  play: async ({ canvasElement }) => {
+    const view = canvasElement.ownerDocument.defaultView!
+    view.scrollTo(0, canvasElement.ownerDocument.documentElement.scrollHeight)
+    await waitFor(() => expect(view.scrollY).toBeGreaterThan(0))
+    const header = canvasElement.querySelector('.gbt-app-shell__header')!.getBoundingClientRect()
+    const toggle = canvasElement
+      .querySelector('.gbt-app-shell__collapse-toggle')!
+      .getBoundingClientRect()
+    await expect(header.top).toBe(0)
+    await expect(toggle.bottom).toBeLessThanOrEqual(view.innerHeight)
+    await expect(toggle.top).toBeGreaterThanOrEqual(0)
+    view.scrollTo(0, 0)
+  },
 }
 
 export const NoHeader: Story = {
