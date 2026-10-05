@@ -836,6 +836,25 @@ describe('MfaEnrollment', () => {
         expect(ctx.port.tokens).toEqual([])
       })
 
+      it('completes at once, with the session token, when the server issues no backup codes', async () => {
+        browser(vi.fn().mockResolvedValue(fakeAttestation()))
+        const ctx = setup(true)
+        await toPasskey(ctx)
+        ctx.component.createPasskey()
+        ctx.port.calls
+          .expectOne('startPasskeySetup')
+          .flush({ challengeId: CHALLENGE_ID, publicKey: CREATION_OPTIONS })
+        await settle()
+        ctx.port.calls
+          .expectOne('finishPasskeySetup')
+          .flush({ token: 'session-jwt', backupCodes: [] })
+        ctx.fixture.detectChanges()
+
+        expect(ctx.completed).toEqual(['session-jwt'])
+        expect(ctx.fixture.debugElement.query(By.directive(BackupCodes))).toBeNull()
+        expect(ctx.port.tokens).toEqual([])
+      })
+
       it('shows a spinner with a note about the prompt while the browser waits, and ignores a second submit', async () => {
         browser(() => new Promise(() => undefined))
         const ctx = setup(true)

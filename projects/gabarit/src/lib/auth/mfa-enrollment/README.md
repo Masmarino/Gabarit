@@ -78,6 +78,8 @@ its own strings.
   dropped: the passkey and its backup codes may then exist on the server without the user ever seeing the
   codes: at the next sign-in the account already has that passkey, and regenerating the codes from the
   account settings replaces the unseen ones.
+- **No backup codes, no codes step.** A server that issues none with the chosen factor (an empty
+  `backupCodes`) ends the enrolment there: `completed` carries the session token at once.
 - **The session is held back** until the codes are acknowledged; the secret, the `otpauth://` URL and the code
   are dropped as soon as the factor is confirmed.
 - **Focus.** Each step opens on its heading (`h2`, `tabindex="-1"`), so the change is announced and the QR stays

@@ -130,12 +130,10 @@ export class MfaEnrollment {
     this.auth.confirmTotp(this.mfaToken(), code).subscribe({
       next: ({ token, backupCodes }) => {
         this.submitting.set(false)
-        this.sessionToken = token
-        this.backupCodes.set(backupCodes)
         this.secret.set('')
         this.otpauthUrl.set('')
         this.code.set('')
-        this.goTo('codes')
+        this.enrolled(token, backupCodes)
       },
       error: (err: unknown) => {
         this.submitting.set(false)
@@ -194,10 +192,8 @@ export class MfaEnrollment {
         next: ({ token, backupCodes }) => {
           this.submitting.set(false)
           this.promptOpen.set(false)
-          this.sessionToken = token
-          this.backupCodes.set(backupCodes)
           this.passkeyName.set('')
-          this.goTo('codes')
+          this.enrolled(token, backupCodes)
         },
         error: (err: unknown) => {
           if (run !== this.ceremony) {
@@ -223,6 +219,17 @@ export class MfaEnrollment {
       return
     }
     this.cancelled.emit()
+  }
+
+  /** A server that issues no backup codes with this factor has nothing to show: the enrolment ends there. */
+  private enrolled(token: string, backupCodes: string[]): void {
+    if (backupCodes.length === 0) {
+      this.completed.emit(token)
+      return
+    }
+    this.sessionToken = token
+    this.backupCodes.set(backupCodes)
+    this.goTo('codes')
   }
 
   finish(): void {
