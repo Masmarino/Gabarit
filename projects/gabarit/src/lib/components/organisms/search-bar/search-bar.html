@@ -17,7 +17,8 @@
 <div
   class="gbt-sb-trigger"
   [attr.id]="collapsibleMode() ? triggerId() : null"
-  [attr.hidden]="folded() ? '' : null"
+  [attr.hidden]="folded() && collapsibleMode() === 'always' ? '' : null"
+  [class.gbt-sb-trigger--folded]="folded()"
   [class.gbt-sb-trigger--open]="isFocused()"
   (click)="focusSearch()"
 >

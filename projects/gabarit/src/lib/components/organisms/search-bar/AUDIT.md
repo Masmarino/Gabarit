@@ -107,11 +107,13 @@ and in `search-bar.spec.ts` ("compact mode"). Off by default: none of the markup
 unchanged.
 
 - 7.1 / 7.3 — the icon button is a native `<button type="button">` named by `openLabel`, with `aria-expanded="false"`
-  and `aria-controls` pointing at the field's container (which is in the DOM but `hidden` while folded). It is
+  and `aria-controls` pointing at the field's container (which is in the DOM but not displayed while folded). It is
   removed while the field is shown. Expanding moves focus into the field; Escape folds it and returns focus to the
   button; leaving an empty field folds it without stealing focus; selecting a result folds it. Tested.
-- 12.11 — the folded field carries the `hidden` attribute, so it is out of the tab order and the accessibility tree
-  (in `collapsible="narrow"` above 768 px the CSS shows it again and hides the button).
+- 12.11 — the folded field is out of the tab order and the accessibility tree: it carries the `hidden` attribute in
+  `collapsible` mode, and a class that sets `display: none` in `collapsible="narrow"`, where the CSS shows it again
+  above 768 px and hides the button. The narrow field has no `hidden` attribute, so a field that is shown never
+  claims to be hidden (Testing Library and other tools that read the attribute find it).
 - 10.7 — the button has a `:focus-visible` 2 px `--primary` outline.
 - 3.2 — the icon is `--text-primary` on the header surface, 7:1 also under `--bg-hover` (`tokens/contrast.spec.ts`,
   "navigation").

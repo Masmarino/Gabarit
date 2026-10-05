@@ -93,7 +93,10 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
-.gbt-sb-trigger[hidden] {
+// Folded: `hidden` when it is folded at every width; in narrow mode a class instead, which the media query below
+// undoes, so the field shown above 768px never carries an attribute that says it is hidden.
+.gbt-sb-trigger[hidden],
+.gbt-sb-trigger--folded {
   display: none;
 }
 
@@ -133,7 +136,8 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: calc(var(--gbt-radius-search, 16px) - 1px) 0 0 calc(var(--gbt-radius-search, 16px) - 1px);
+  border-radius: calc(var(--gbt-radius-search, 16px) - 1px) 0 0
+    calc(var(--gbt-radius-search, 16px) - 1px);
   color: var(--text-secondary);
   cursor: pointer;
   transition:
@@ -179,7 +183,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
       display: inline-flex;
     }
 
-    .gbt-sb-trigger[hidden] {
+    .gbt-sb-trigger--folded {
       display: flex;
     }
 

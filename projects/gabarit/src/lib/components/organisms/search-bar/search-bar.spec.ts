@@ -634,6 +634,26 @@ describe('SearchBar compact mode (collapsible)', () => {
     expect(narrow).toContain('.gbt-sb-toggle')
     expect(narrow).toContain('display: none')
     expect(scss).toContain('.gbt-sb-trigger[hidden]')
+    expect(narrow).toContain('.gbt-sb-trigger--folded')
+    expect(narrow).not.toContain('[hidden]')
+  })
+
+  it('folds the narrow field with a class, not the hidden attribute, since CSS shows it above 768px', () => {
+    const { fixture, toggle, trigger } = render('narrow')
+
+    expect(trigger().hasAttribute('hidden')).toBe(false)
+    expect(trigger().classList).toContain('gbt-sb-trigger--folded')
+
+    toggle()!.click()
+    fixture.detectChanges()
+    expect(trigger().classList).not.toContain('gbt-sb-trigger--folded')
+  })
+
+  it('keeps the hidden attribute on a field folded at every width', () => {
+    const { trigger } = render(true)
+
+    expect(trigger().hasAttribute('hidden')).toBe(true)
+    expect(trigger().classList).toContain('gbt-sb-trigger--folded')
   })
 
   it('has no violation detected by axe, folded', async () => {
