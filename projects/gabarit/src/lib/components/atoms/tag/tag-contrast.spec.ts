@@ -26,18 +26,14 @@ describe('getReadableTextColor', () => {
   })
 
   it('clears 4.5:1 on a mid-grey background, where the former #1a1a1a endpoint did not', () => {
-    // On #7c7c7c the dark endpoint is the one picked, and that is exactly
-    // where the old #1a1a1a fell short: 4.17:1, below the 4.5:1 AA threshold
-    // Tag's 12px bold text has to meet. #000000 reaches 5.03:1.
+    // The old #1a1a1a only got 4.17:1 on #7c7c7c, below AA; #000000 gets 5.03:1.
     expect(getReadableTextColor('#7c7c7c')).toBe('#000000')
     expect(contrastRatio('#7c7c7c', '#000000')).toBeGreaterThanOrEqual(4.5)
     expect(contrastRatio('#7c7c7c', '#1a1a1a')).toBeLessThan(4.5)
   })
 
   it('reaches at least 4.5:1 against every background, including the global worst cases', () => {
-    // #cf0dcc is the worst background over all 16 777 216 sRGB colors
-    // (4.58:1); #757575 is the worst achromatic one (4.61:1, white text);
-    // the rest are backgrounds the old #1a1a1a endpoint failed on.
+    // #cf0dcc is the worst of all sRGB colours (4.58:1), #757575 the worst grey; the rest broke the old #1a1a1a.
     for (const background of ['#cf0dcc', '#757575', '#7c7c7c', '#808080', '#da25c3', '#946f9b']) {
       expect(contrastRatio(background, getReadableTextColor(background))).toBeGreaterThanOrEqual(
         4.5,
@@ -46,9 +42,7 @@ describe('getReadableTextColor', () => {
   })
 
   describe('malformed input', () => {
-    // Throwing rather than guessing: a malformed value used to produce NaN
-    // ratios, and `NaN >= NaN` being false returned dark text for *any*
-    // unparseable input — '#000' silently got dark text on black.
+    // A bad value used to give NaN ratios, so '#000' quietly got dark text on black. Throw instead.
     it('throws on a 3-digit shorthand hex', () => {
       expect(() => getReadableTextColor('#000')).toThrowError(/6-digit hex/)
     })

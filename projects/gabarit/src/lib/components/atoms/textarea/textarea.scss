@@ -1,3 +1,5 @@
+@use '../../../tokens/a11y';
+
 :host {
   display: block;
 }
@@ -32,8 +34,7 @@
     }
 
     &:focus-visible {
-      outline: 2px solid var(--gbt-focus-ring, var(--primary));
-      outline-offset: 1px;
+      @include a11y.focus-ring(1px);
     }
 
     &[data-resize='none'] {
@@ -53,9 +54,7 @@
     }
   }
 
-  // Grows with its content. `maxRows` (a custom property set by the component) caps the height:
-  // 1lh is one line, plus the padding (0.5rem × 2) and the border (1px × 2) of the border-box.
-  // Without the property the declaration is invalid at computed-value time and `none` applies.
+  // Grows with its content up to maxRows lines plus padding and border. Unset, the var() is invalid and none applies.
   &--autosize textarea {
     overflow-y: auto;
     max-height: calc(var(--gbt-textarea-max-rows) * 1lh + 1rem + 2px);
@@ -67,15 +66,7 @@
   }
 
   &__label--hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border: 0;
+    @include a11y.visually-hidden;
   }
 
   &__hint {

@@ -1,5 +1,6 @@
-// The nav column of a wide `gbt-page-layout`. Stacked layouts (768px and below) fold the sections
-// behind a toggle so a phone reaches the page first; the search field stays visible.
+@use '../../../../src/lib/tokens/a11y';
+
+// On 768px and below the sections fold behind a toggle so a phone gets to the page first. Search stays.
 
 :host {
   display: block;
@@ -37,8 +38,7 @@
   gap: 0.25rem;
 }
 
-// A plain `gbt-disclosure` sizes its toggle to the label and pads its content for prose. In a nav column
-// the toggle spans the column and the page links line up under it.
+// In a nav column the disclosure's toggle spans the column and the links line up under it.
 .gbt-docs-nav__section ::ng-deep {
   .gbt-disclosure__toggle {
     width: 100%;
@@ -71,12 +71,7 @@
 
   // The toggle already says what it shows; the heading is for screen readers.
   .gbt-docs-nav__heading {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+    @include a11y.visually-hidden;
   }
 
   .gbt-docs-nav__toggle {
@@ -99,8 +94,7 @@
     display: flex;
   }
 
-  // In a narrow `gbt-page-layout`, vertical nav tabs turn into a scrolling row (fine for settings pages).
-  // Behind this toggle the pages should stay a list, so restore the vertical look.
+  // A narrow page layout turns nav tabs into a scrolling row; behind this toggle they should stay a list.
   .gbt-docs-nav__section ::ng-deep {
     .gbt-nav-tabs[data-orientation='vertical'] div.gbt-nav-tabs__list {
       flex-direction: column;

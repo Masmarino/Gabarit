@@ -1,3 +1,5 @@
+@use '../../../tokens/a11y';
+
 .gbt-chart-empty {
   display: flex;
   flex-direction: column;
@@ -45,8 +47,7 @@
     }
 
     &:focus-visible {
-      outline: 2px solid var(--gbt-focus-ring, var(--primary));
-      outline-offset: 2px;
+      @include a11y.focus-ring(2px);
     }
   }
 }

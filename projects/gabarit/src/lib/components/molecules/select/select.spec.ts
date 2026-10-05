@@ -455,11 +455,7 @@ describe('Select', () => {
       )
     }
 
-    /**
-     * jsdom has no layout: every `getBoundingClientRect()` is all zeros, so
-     * panel positioning can only be exercised by giving the two anchors a
-     * real geometry.
-     */
+    /** jsdom has no layout, so the two anchors get a fake geometry. */
     function stubRect(element: HTMLElement, box: { bottom: number; left: number; width: number }) {
       element.getBoundingClientRect = () =>
         ({

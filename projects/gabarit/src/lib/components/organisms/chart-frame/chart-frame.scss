@@ -1,3 +1,5 @@
+@use '../../../tokens/a11y';
+
 :host {
   display: block;
 }
@@ -17,8 +19,7 @@
     position: relative;
 
     &:focus-visible {
-      outline: 2px solid var(--gbt-focus-ring, var(--primary));
-      outline-offset: 2px;
+      @include a11y.focus-ring(2px);
     }
   }
 

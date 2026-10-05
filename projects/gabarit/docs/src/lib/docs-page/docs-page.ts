@@ -59,11 +59,7 @@ type DocsView =
 
 const keyOf = (section: string | null, page: string | null) => `${section}/${page}`
 
-/**
- * One documentation page (`<root>/<section>/<page>`, read from the route): the navigation, the page with its
- * breadcrumb and neighbours, and on a wide screen the outline beside it. An unknown address gets a "not found" in the
- * same frame.
- */
+/** The routed page with its nav, breadcrumb, neighbours and outline, or a "not found" in the same frame. */
 @Component({
   selector: 'gbt-docs-page',
   standalone: true,
@@ -140,8 +136,7 @@ export class DocsPage {
       )
     })
 
-    // Params and fragment change one after the other within a navigation, so wait for both. The first visit leaves
-    // the focus alone; later ones move it, as a new page would.
+    // Params and fragment arrive one after the other, so wait for both. Leave the focus alone on the first visit.
     let first = true
     combineLatest([this.route.paramMap, this.route.fragment])
       .pipe(debounceTime(0), takeUntilDestroyed(inject(DestroyRef)))

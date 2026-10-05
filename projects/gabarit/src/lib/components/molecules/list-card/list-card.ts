@@ -33,10 +33,7 @@ export class ListCard {
   emptyIllustration = input<EmptyStateIllustration | null>(null)
   emptyIcon = input<string | null>(null)
 
-  /**
-   * What sits above the box: the projected `[list-card-header]` (ready), its placeholder (loading,
-   * unless `skeletonHeader` is off), or nothing (failed, empty).
-   */
+  /** The projected header when ready, its placeholder while loading (unless skeletonHeader is off), else nothing. */
   protected readonly header = computed<'slot' | 'skeleton' | null>(() => {
     switch (this.state()) {
       case 'loading':

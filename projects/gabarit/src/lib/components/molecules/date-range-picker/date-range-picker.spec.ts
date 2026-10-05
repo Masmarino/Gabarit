@@ -101,10 +101,7 @@ describe('DateRangePicker', () => {
   })
 
   it('moves the roving tabindex to the newly-picked start, so focus follows it', () => {
-    // The actual `.focus()` call is scheduled via `afterNextRender`, which
-    // doesn't reliably flush inside one synchronous `detectChanges()` here —
-    // same convention `DatePicker`'s and `Tree`'s own keyboard tests use.
-    // Verified for real in Storybook instead.
+    // focus() runs in afterNextRender, which doesn't flush reliably here; checked in Storybook instead.
     const fixture = setup()
     open(fixture)
     seedAnchor(fixture, new Date(2024, 5, 1))
@@ -370,12 +367,7 @@ describe('DateRangePicker', () => {
     })
 
     it('formats the full-range announcement once complete', () => {
-      // Completing the range closes the panel in the same tick (by design —
-      // see the README), which unmounts the status region along with the
-      // rest of the panel. The trigger's own updated text is what a user
-      // actually sees at that point (covered by its own test); this checks
-      // the message the region *would* show up to that instant, straight
-      // from its computed source.
+      // Completing the range closes the panel at once, status region included, so read the message from its source.
       const fixture = setup()
       open(fixture)
       seedAnchor(fixture, new Date(2024, 5, 1))

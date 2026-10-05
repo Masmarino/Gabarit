@@ -1,3 +1,5 @@
+@use '../../../tokens/a11y';
+
 $easing: cubic-bezier(0.4, 0, 0.2, 1);
 
 :host {
@@ -39,8 +41,7 @@ $easing: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--gbt-focus-ring, var(--primary));
-    outline-offset: -2px;
+    @include a11y.focus-ring(-2px);
   }
 
   .gbt-disclosure[data-appearance='plain'] & {

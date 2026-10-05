@@ -16,9 +16,8 @@ import { marked, type Token } from 'marked'
 import DOMPurify, { type Config, type DOMPurify as Purifier } from 'dompurify'
 import { docsLabels } from '../docs-labels'
 
-// Markdown may come from anyone who can write a page, so it is sanitised harder than DOMPurify's default: no
-// restyling the page (<style>, style="…"), no fake UI (forms, buttons, dialogs), no colliding ids. A dedicated
-// instance keeps these hooks off the global DOMPurify the app may use elsewhere. Made on first use, in a browser only.
+// Anyone who can write a page writes this Markdown, so it gets a stricter DOMPurify than the default: no restyling,
+// no fake UI, no colliding ids. Its own instance, so these hooks don't leak into the app's DOMPurify. Browser only.
 let purifier: Purifier | null = null
 
 function purify(): Purifier | null {
@@ -27,7 +26,7 @@ function purify(): Purifier | null {
   }
   purifier = DOMPurify(window)
 
-  // Only GFM task-list checkboxes survive; any other <input> (password, text, hidden…) goes.
+  // Only task-list checkboxes survive, every other <input> goes.
   purifier.addHook('uponSanitizeElement', (node, data) => {
     if (
       data.tagName === 'input' &&
@@ -42,16 +41,14 @@ function purify(): Purifier | null {
     if (node.nodeName === 'INPUT') {
       node.setAttribute('disabled', '')
     }
-    // Remote images are fine (badges, screenshots) but must not leak the page's URL to their host or load before
-    // they are scrolled into view.
+    // Remote images are fine, but they shouldn't send the page's URL to their host or load before they're seen.
     if (node.nodeName === 'IMG') {
       node.setAttribute('referrerpolicy', 'no-referrer')
       node.setAttribute('loading', 'lazy')
     }
   })
 
-  // Authors can't borrow the app's global classes (sr-only, skip links, tooltips…) to spoof its UI. Only the
-  // `language-*` classes of fenced code blocks survive, for syntax highlighting.
+  // Otherwise a page could borrow the app's own classes to fake its UI. Code blocks keep language-* for highlighting.
   purifier.addHook('uponSanitizeAttribute', (_node, data) => {
     if (data.attrName === 'class') {
       const kept = data.attrValue.split(/\s+/).filter((c) => /^language-[\w+#.-]+$/.test(c))
@@ -77,8 +74,7 @@ const SANITIZE_CONFIG: Config = {
     'fieldset',
     'dialog',
   ],
-  // `for` and aria IDREFs could point at the page's own controls (a <label for> toggling a real switch), and tabindex
-  // could hijack the tab order.
+  // IDREFs could reach the app's own controls (a <label for> flipping a real switch), tabindex the tab order.
   FORBID_ATTR: [
     'style',
     'popover',
@@ -91,7 +87,7 @@ const SANITIZE_CONFIG: Config = {
     'aria-labelledby',
     'aria-describedby',
   ],
-  // `id` and `name` become "user-content-…" so the Markdown can't clobber the page's ids.
+  // Prefixes id and name with user-content-, so the page's own ids stay safe.
   SANITIZE_NAMED_PROPS: true,
 }
 
@@ -117,9 +113,8 @@ export function headingSlug(text: string): string {
 }
 
 /**
- * Gives every rendered h1–h4 a stable `user-content-<slug>` id and returns the h2–h4 outline. Runs after sanitising so
- * ids are never the author's: an author id that would duplicate a heading id is removed. Headings in a quote or
- * `<details>` get an id but no outline entry.
+ * Stable ids on h1–h4 and the h2–h4 outline. Runs after sanitising, so an author's id can't clash with one of ours.
+ * Headings inside a quote or <details> get an id but stay out of the outline.
  */
 function applyHeadingIds(root: HTMLElement): MarkdownOutlineEntry[] {
   const headings = Array.from(root.querySelectorAll<HTMLHeadingElement>('h1, h2, h3, h4'))
@@ -171,11 +166,7 @@ export function findAnchorTarget(root: HTMLElement, rawFragment: string): HTMLEl
   return null
 }
 
-/**
- * A long code block or a wide table scrolls sideways, which a keyboard can only do once it takes the focus (WCAG
- * 2.1.1): each one becomes a named stop in the tab order. A table keeps its own role and gets only the stop and the
- * name.
- */
+/** A keyboard only scrolls a wide code block or table it has focused (WCAG 2.1.1): each gets a tab stop. */
 export function makeScrollableBlocksFocusable(
   container: HTMLElement,
   names: { codeBlock: string; table: string },
@@ -191,9 +182,7 @@ export function makeScrollableBlocksFocusable(
   }
 }
 
-/**
- * A task-list checkbox is named by its item's text, so a screen reader says what is done or still to do.
- */
+/** Names each task-list checkbox after its item, so a screen reader says what's done. */
 export function nameTaskCheckboxes(container: HTMLElement): void {
   for (const box of Array.from(
     container.querySelectorAll<HTMLInputElement>(
@@ -212,7 +201,7 @@ export function nameTaskCheckboxes(container: HTMLElement): void {
 @Component({
   selector: 'gbt-markdown-view',
   standalone: true,
-  // The click is delegated from the links inside, which take the focus and the keyboard themselves.
+  // Delegated from the links inside, which handle focus and keys themselves.
   template: `<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
     <div
       class="gbt-markdown-view"
@@ -228,10 +217,7 @@ export class MarkdownView {
   content = input.required<string>()
   /** Levels added to every heading (up to h6), so a `# Title` under the page's own headings keeps the outline. */
   headingOffset = input(0)
-  /**
-   * Links under this prefix (`/docs` → `/docs/install/configuration#variables`) go through the router instead of
-   * reloading the app. Off by default: a link in a README is left to the browser.
-   */
+  /** Links under this prefix (say `/docs`) go through the router instead of reloading the app. Off by default. */
   routedLinkPrefix = input<string | null>(null)
   /** The h2–h4 headings, emitted after each render once their ids are in the DOM. */
   outline = output<MarkdownOutlineEntry[]>()
@@ -254,8 +240,8 @@ export class MarkdownView {
   }
 
   /**
-   * In-content `#anchor` links would resolve against `<base href="/">` and load the home page, so a plain left click
-   * scrolls to the target inside this view and focuses it. Modified and middle clicks are left to the browser.
+   * A bare #anchor resolves against <base href="/"> and would load the home page, so a plain click scrolls here
+   * instead. Modified and middle clicks are the browser's.
    */
   protected onClick(event: MouseEvent): void {
     if (
@@ -307,8 +293,7 @@ export class MarkdownView {
     return rest !== null && (rest === '' || /^[/#?]/.test(rest)) ? href : null
   }
 
-  // marked.parse is synchronous unless an async extension is registered (none is), so the cast is safe. A
-  // `walkTokens` passed per call only applies to that call.
+  // marked.parse is sync without async extensions, hence the cast. A per-call walkTokens stays with that call.
   protected readonly renderedHtml = computed<SafeHtml>(() => {
     const offset = this.headingOffset()
     const walkTokens =

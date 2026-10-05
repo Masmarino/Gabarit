@@ -96,9 +96,7 @@ describe('buildCalendarGrid', () => {
   })
 
   it('produces consecutive calendar days with no gaps, safe across a DST transition', () => {
-    // The grid for March 2024 (US) spans the March 10 spring-forward
-    // transition, so a raw millisecond diff between local midnights would be
-    // 23h on that one day — comparing calendar dates instead sidesteps that.
+    // March 2024 (US) has a 23-hour day on the 10th, so compare dates, not milliseconds.
     const grid = buildCalendarGrid(2024, 2, 1)
     for (let i = 1; i < grid.length; i++) {
       const expected = new Date(grid[i - 1].date)

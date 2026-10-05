@@ -1,18 +1,17 @@
-// A documentation page in the main column of a wide `gbt-page-layout`: the Markdown view's reading styles, with
-// callouts and roomier tables and code.
+@use '../../../../src/lib/tokens/a11y';
+
+// The Markdown view's reading styles, plus callouts and roomier tables and code.
 
 :host {
   display: block;
 }
 
-// The widest preset stops at 1440px and none fills the page. The documentation uses the whole width so navigation,
-// text and outline have room on a large screen. The extra attribute beats the layout's own `:host([data-width])`.
+// Full width, so nav, text and outline all fit on a large screen. The extra attribute beats the layout's own rule.
 gbt-page-layout[data-width] {
   max-width: none;
 }
 
-// The outline needs the three-column layout (1101px and up). Below that the aside would land under the
-// page, far from what it outlines, so it goes; the breadcrumb and headings stay.
+// Below 1101px the outline would land under the page, far from what it outlines, so it goes.
 @container gbt-page-layout (max-width: 1100px) {
   :host ::ng-deep .gbt-page-layout__aside {
     display: none;
@@ -165,10 +164,5 @@ gbt-card ::ng-deep .gbt-card {
 
 // Announced while the page loads; the skeleton below is for the eye.
 .gbt-docs-page__status {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  @include a11y.visually-hidden;
 }

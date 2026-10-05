@@ -15,10 +15,7 @@ import { type DocsIndex, DocsService, docsPageCommands } from '../docs.service'
 
 let nextNavId = 0
 
-/**
- * The documentation's left column: the search field, then every section with its pages. Only the current section
- * starts open. On a narrow layout the sections fold behind a toggle and the search stays.
- */
+/** The left column: search, then the sections and their pages, only the current one open. */
 @Component({
   selector: 'gbt-docs-nav',
   standalone: true,

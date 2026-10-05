@@ -1,3 +1,5 @@
+@use '../../../tokens/a11y';
+
 :host {
   --gbt-card-radius: var(--site-border-radius-lg);
   --gbt-card-focus-offset: -2px;
@@ -192,12 +194,7 @@
 }
 
 .gbt-card__selected-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  @include a11y.visually-hidden;
 }
 
 .gbt-card[data-link] {
@@ -220,8 +217,8 @@
   }
 }
 
-// Link mode: the body's own controls sit above the stretched link's overlay (z-index 1), so they stay
-// clickable. Zero specificity (`:where()`), so a control's own position/z-index wins.
+// In link mode the body's controls sit above the link's overlay so they stay clickable.
+// :where() lets their own z-index win.
 :where(.gbt-card[data-link])
   ::ng-deep
   :where(
@@ -238,8 +235,7 @@
   z-index: 2;
 }
 
-// Same lift for the header's controls ([card-header-actions], a custom [card-header]): the overlay
-// covers the header row too if the host grid does not apply (e.g. `display` overridden on gbt-card).
+// Same for the header's controls, which the overlay covers too when the host grid is overridden.
 :where(.gbt-card__header:has(~ .gbt-card[data-link]))
   ::ng-deep
   :where(

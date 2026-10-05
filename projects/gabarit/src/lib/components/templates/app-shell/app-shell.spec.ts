@@ -235,15 +235,10 @@ describe('AppShell', () => {
       utilities.indexOf('.gbt-app-shell__nav--collapsed'),
       utilities.indexOf('.gbt-container'),
     )
-    // Re-centering the icon (justify-content) can't be transitioned, so while
-    // the rail is animating between 220px and 64px, an instant recenter would
-    // show as a jump independent of the smooth width change.
+    // justify-content can't animate, so re-centring the icon mid-collapse would jump.
     expect(collapsedBlock).not.toContain('justify-content')
 
-    // Only the hover/focus flyout reveal should pull the label out of flow —
-    // the base collapsed (not hovered) state must stay in normal flow so its
-    // opacity/width fade plays in sync with the rail's own width transition,
-    // instead of jumping to `position: absolute` the instant the class lands.
+    // Only the hover flyout takes the label out of flow; otherwise its fade wouldn't follow the rail's width.
     const baseSpanRule = collapsedBlock.slice(
       collapsedBlock.indexOf('> span {'),
       collapsedBlock.indexOf(':hover > span'),

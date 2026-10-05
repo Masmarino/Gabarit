@@ -1,5 +1,6 @@
-// Reading styles for rendered Markdown. Global (the HTML is injected) but scoped to the component, and at the
-// specificity of one class so an app can adjust them.
+@use '../../../../src/lib/tokens/a11y';
+
+// Global since the HTML is injected, but under one class so an app can still override them.
 gbt-markdown-view {
   display: block;
 }
@@ -140,7 +141,6 @@ gbt-markdown-view {
 
   // Code blocks and tables take the focus to scroll; the ring stays inside their edge.
   :where(pre, table):focus-visible {
-    outline: 2px solid var(--gbt-focus-ring, var(--primary));
-    outline-offset: 2px;
+    @include a11y.focus-ring(2px);
   }
 }

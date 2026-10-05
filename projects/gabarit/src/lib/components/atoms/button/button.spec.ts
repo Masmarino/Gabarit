@@ -95,10 +95,14 @@ describe('Button', () => {
     expect(html, 'button.html no longer uses .sr-only').toContain('class="sr-only"')
     const block = /\.sr-only\s*\{([^}]*)\}/.exec(scss)
     expect(block, '.sr-only is not defined in button.scss').not.toBeNull()
+    expect(block![1]).toContain('@include a11y.visually-hidden')
 
-    expect(block![1]).toContain('position: absolute')
-    expect(block![1]).toContain('width: 1px')
-    expect(block![1]).toMatch(/clip-path:|clip:/)
+    // The mixin comes from the tokens, which ship with the package.
+    const mixins = readFileSync(join(dir, '../../../tokens/_a11y.scss'), 'utf8')
+    const hidden = /@mixin visually-hidden\s*\{([^}]*)\}/.exec(mixins)![1]
+    expect(hidden).toContain('position: absolute')
+    expect(hidden).toContain('width: 1px')
+    expect(hidden).toMatch(/clip-path:|clip:/)
   })
 
   it('presents no violation as an icon-only button', async () => {

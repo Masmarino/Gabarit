@@ -28,9 +28,8 @@ function ruleBody(source: string, selector: string): string {
   throw new Error(`unclosed rule '${selector}'`)
 }
 
-// jsdom neither loads the tokens nor lays anything out, so these guard the stylesheets: every
-// single-line control takes its outer height from the one shared scale, so controls of the same
-// tier sit level in a row (measured in Storybook: see each component's AUDIT.md).
+// jsdom lays nothing out, so these read the stylesheets: every single-line control takes its height
+// from the shared scale, so controls of one tier line up (measured in Storybook, see the AUDITs).
 describe('control heights', () => {
   it('resolves the scale to 32 / 38 / 44px', () => {
     expect(controlHeightPx('sm')).toBe(32)

@@ -18,11 +18,7 @@ import { expectNoA11yViolations } from '../../../../testing/expect-no-a11y-viola
   `,
 })
 class HostComponent {
-  // A signal (rather than a plain field) so that mutating it via `.set()` in
-  // tests below correctly notifies Angular's zoneless change-detection
-  // scheduler — a plain field write is invisible to it, and `fixture.detectChanges()`
-  // is a no-op when nothing has marked the app dirty. Mirrors the pattern
-  // already used by modal.spec.ts's `KeptMountedHostComponent` for the same reason.
+  // A signal, since zoneless change detection doesn't see a plain field change.
   isOpen = signal(true)
   confirmedCount = 0
   closedCount = 0
@@ -158,10 +154,7 @@ describe('ConfirmDangerModal', () => {
 
     expect(confirmButton(fixture).disabled).toBe(true)
 
-    // NgModel writes the new value back into its ControlValueAccessor
-    // (GbtInput) on a microtask (see `NgModel._updateValue`'s
-    // `resolvedPromise.then(...)` in @angular/forms), so the rendered
-    // <input>'s DOM value only catches up after that microtask flushes.
+    // NgModel writes back on a microtask, so the <input> only catches up after it.
     await Promise.resolve()
     fixture.detectChanges()
 

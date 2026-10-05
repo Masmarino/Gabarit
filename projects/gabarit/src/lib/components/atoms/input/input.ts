@@ -20,10 +20,7 @@ export type InputInputmode =
 export type InputAutocapitalize = 'off' | 'none' | 'on' | 'sentences' | 'words' | 'characters'
 export type InputEnterkeyhint = 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send'
 
-/**
- * The field as the combobox of a list of suggestions it does not render itself: the caller owns the
- * listbox, the keys (`(keydown)` on the host) and the active option.
- */
+/** Makes the field the combobox of a suggestion list the caller renders, with its keys and active option. */
 export interface InputCombobox {
   /** Whether the listbox is shown. */
   expanded: boolean

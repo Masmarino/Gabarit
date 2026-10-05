@@ -23,9 +23,7 @@ class HostComponent {
 @Component({
   standalone: true,
   imports: [Tag],
-  // The ancestor click listener lives in `host` metadata rather than in the
-  // template so it stands in for a real clickable ancestor (e.g. `Select`'s
-  // trigger) without tripping the template accessibility lint rules.
+  // Listening in host metadata stands in for a clickable ancestor without upsetting the template a11y lint.
   host: { '(click)': 'ancestorClicks = ancestorClicks + 1' },
   template: `<gbt-tag [color]="color" [removable]="true" (removed)="removedCount = removedCount + 1"
     >Bug</gbt-tag
@@ -111,9 +109,7 @@ describe('Tag', () => {
     const fixture = TestBed.createComponent(ClickableAncestorHost)
     fixture.detectChanges()
 
-    // A click on the chip itself does reach the ancestor — the baseline that
-    // makes the assertion below meaningful (`Select` relies on this: a chip
-    // click may open the panel, a remove click must not).
+    // Baseline: the chip's own click does reach the ancestor (Select relies on it), only remove stops.
     const chip: HTMLElement = fixture.nativeElement.querySelector('.gbt-tag')
     chip.click()
     expect(fixture.componentInstance.ancestorClicks).toBe(1)

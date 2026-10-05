@@ -64,9 +64,14 @@
   border-top: 1px solid var(--gbt-hairline);
 }
 
+// The skeleton takes its height inline, so the phone size goes through a variable.
+:host {
+  --gbt-auth-register-input-height: var(--gbt-control-height-md);
+}
+
 @media (max-width: 480px) {
-  .gbt-auth-register__loading-input {
-    height: 2.75rem !important;
+  :host {
+    --gbt-auth-register-input-height: 2.75rem;
   }
 }
 

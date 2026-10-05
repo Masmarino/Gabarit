@@ -1,15 +1,12 @@
+@use '../../../../src/lib/tokens/a11y';
+
 :host {
   display: block;
 }
 
 // The placeholder and the navigation's heading above say what the field is for; the label stays for screen readers.
 .gbt-docs-search ::ng-deep .gbt-autocomplete__label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  @include a11y.visually-hidden;
 }
 
 // The result rows render in the floating panel but from this component's template, so these rules reach them.

@@ -76,10 +76,7 @@ function inlineText(line: string): string {
     .replace(/(\S)_(\s|$)/g, '$1$2')
 }
 
-/**
- * Title, headings and body text of one page. Heading ids follow `gbt-markdown-view`: `user-content-<slug>` on every
- * h1–h4, and `-2`, `-3`… on a repeated slug in document order.
- */
+/** Title, headings and text of a page. Heading ids must match gbt-markdown-view's (`-2`, `-3` on repeats). */
 export function parseDocsPage(markdown: string): {
   headings: { id: string; text: string }[]
   body: string
@@ -187,9 +184,8 @@ function excerptAround(field: Field, token: string): DocsSearchHit['excerpt'] | 
 }
 
 /**
- * Search over the whole documentation, in the browser. Nothing is fetched until the first search (or `prepare()`),
- * then every page once, kept by `DocsService`. Every word of the query must appear in the page; a word in the title
- * ranks higher than one in a heading, and a heading higher than the text.
+ * Searches every page in the browser, fetching them on first use. All words must match; title beats heading beats
+ * text.
  */
 @Injectable({ providedIn: 'root' })
 export class DocsSearchService {

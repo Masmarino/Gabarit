@@ -100,11 +100,7 @@ describe('Tree', () => {
   })
 
   describe('keyboard navigation', () => {
-    // The roving-tabindex attribute (rather than real DOM focus) is the
-    // assertion target here, the same convention `DatePicker`'s own grid
-    // keyboard tests use — the actual `.focus()` call is scheduled via
-    // `afterNextRender`, which doesn't reliably flush inside a single
-    // synchronous `detectChanges()` in this test environment.
+    // Checks the roving tabindex, not real focus: focus() runs in afterNextRender, which doesn't flush reliably here.
     it('ArrowDown moves the active node to the next visible node', () => {
       const fixture = setup()
       press(itemById(fixture, 'src'), 'ArrowDown')

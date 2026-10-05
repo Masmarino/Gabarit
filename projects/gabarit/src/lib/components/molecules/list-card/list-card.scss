@@ -3,9 +3,8 @@
   min-width: 0;
 }
 
-// The section is the landmark (named by `ariaLabel`) and the size container: it holds BOTH the
-// header and the box, so the header's tabs and filters stay inside the named region and the
-// container queries (the header's own, a page's) measure the whole card.
+// The section is both the landmark and the size container, so the header stays in the named region and container
+// queries measure the whole card.
 .gbt-list-card {
   position: relative;
   container: gbt-list-card / inline-size;
@@ -18,9 +17,7 @@
   min-width: 0;
 }
 
-// A plain heading row above the box (as gbt-card's): no background, border or padding of its own.
-// The min-height is the tallest single-line control a header holds (an input, a select), so the
-// loading placeholder and the ready header are the same height and nothing jumps between them.
+// The min-height is a header control's, so the loading placeholder and the real header match and nothing jumps.
 .gbt-list-card__header {
   grid-area: gbt-list-card-header;
   display: flex;

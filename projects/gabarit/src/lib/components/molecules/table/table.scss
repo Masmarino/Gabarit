@@ -1,3 +1,5 @@
+@use '../../../tokens/a11y';
+
 .gbt-table {
   width: 100%;
   border-collapse: collapse;
@@ -36,8 +38,7 @@
     }
 
     &:focus-visible {
-      outline: 2px solid var(--gbt-focus-ring, var(--primary));
-      outline-offset: -2px;
+      @include a11y.focus-ring(-2px);
     }
   }
 

@@ -17,11 +17,7 @@ export function controlHeightPx(tier: ControlHeightTier): number {
   return Number(match[1]) * 16
 }
 
-/**
- * jsdom neither loads the tokens nor resolves `var()`: a length set from the control-height scale
- * reads back as `var(--gbt-control-height-md)`. This turns such a computed value (or a plain `px`
- * one) into a pixel number, so a spec can still assert an exact height.
- */
+/** jsdom doesn't resolve var(), so this turns `var(--gbt-control-height-md)` (or a px value) into pixels for specs. */
 export function resolveControlHeight(computed: string): number {
   const token = computed.match(/^var\(--gbt-control-height-(sm|md|lg)\)$/)
   if (token) {

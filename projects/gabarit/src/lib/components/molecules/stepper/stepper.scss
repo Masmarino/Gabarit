@@ -1,3 +1,5 @@
+@use '../../../tokens/a11y';
+
 .gbt-stepper {
   display: flex;
   margin: 0;
@@ -113,15 +115,7 @@
 }
 
 .sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
+  @include a11y.visually-hidden;
 }
 
 .gbt-stepper__button {
@@ -145,8 +139,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--gbt-focus-ring, var(--primary));
-    outline-offset: 4px;
+    @include a11y.focus-ring(4px);
   }
 }
 

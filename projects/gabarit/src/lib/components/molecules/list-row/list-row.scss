@@ -1,3 +1,5 @@
+@use '../../../tokens/a11y';
+
 $title-line: 1.5rem;
 
 :host {
@@ -97,8 +99,7 @@ $title-line: 1.5rem;
     }
 
     &:focus-visible {
-      outline: 2px solid var(--gbt-focus-ring, var(--primary));
-      outline-offset: 2px;
+      @include a11y.focus-ring(2px);
       border-radius: 2px;
     }
   }
@@ -127,8 +128,7 @@ $title-line: 1.5rem;
     }
 
     &:focus-visible {
-      outline: 2px solid var(--gbt-focus-ring, var(--primary));
-      outline-offset: 1px;
+      @include a11y.focus-ring(1px);
       border-radius: 2px;
     }
   }

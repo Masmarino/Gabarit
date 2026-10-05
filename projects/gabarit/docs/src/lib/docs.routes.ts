@@ -3,10 +3,7 @@ import { type CanActivateFn, Router, type Routes } from '@angular/router'
 import { catchError, map, of } from 'rxjs'
 import { DocsService, firstDocsPage } from './docs.service'
 
-/**
- * The root opens the first page of the index. If the index can't be read or is empty, the reader shows that itself,
- * inside its own layout.
- */
+/** Sends the root to the first page. A broken or empty index is left for the reader to show. */
 export const docsHomeGuard: CanActivateFn = () => {
   const router = inject(Router)
   const docs = inject(DocsService)
@@ -19,11 +16,7 @@ export const docsHomeGuard: CanActivateFn = () => {
   )
 }
 
-/**
- * The reader's routes, to mount at the configured root: the root (to the first page), `<section>/<page>`, and any
- * other depth, which gets the reader's own "not found". `page` is the routed component that shows the reader (often
- * the app's own, wrapping `gbt-docs-page` in its layout).
- */
+/** The reader's routes, for the configured root. `page` loads the component that shows it (often the app's). */
 export function docsRoutes(page: () => Promise<unknown>): Routes {
   const loadComponent = page as Routes[number]['loadComponent']
   return [

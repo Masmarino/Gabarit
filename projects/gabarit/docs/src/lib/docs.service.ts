@@ -76,10 +76,7 @@ export function locateDocsPage(
 // An SPA's fallback answers an unknown path with its index.html, which isn't a Markdown page.
 const looksLikeHtml = (text: string) => /^\s*<!doctype html|^\s*<html[\s>]/i.test(text)
 
-/**
- * The documentation, shipped as static files under the configured root. The index and each page are fetched once
- * and kept, since they only change with a new version of the app. A failure isn't kept, so it gets retried.
- */
+/** Fetches the index and each page once; they only change with a new app version. Failures aren't cached. */
 @Injectable({ providedIn: 'root' })
 export class DocsService {
   private readonly http = inject(HttpClient)

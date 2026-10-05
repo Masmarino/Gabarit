@@ -1,3 +1,5 @@
+@use '../../../tokens/a11y';
+
 .gbt-drawer__backdrop {
   position: fixed;
   inset: 0;
@@ -22,8 +24,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--gbt-focus-ring, var(--primary));
-    outline-offset: -2px;
+    @include a11y.focus-ring(-2px);
   }
 
   &[data-edge='right'] {

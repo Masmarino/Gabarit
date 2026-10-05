@@ -1515,9 +1515,7 @@ describe('AuthLogin', () => {
         expect(host.loggedIn).toBe(1)
       })
 
-      // login does not forward its own `labels` input to the nested pieces: an application localises
-      // them through provideAuthLabels, which must reach three levels down (login → enrolment →
-      // totp-qr / backup-codes).
+      // login doesn't pass its labels down, so provideAuthLabels has to reach three levels deep.
       it('localises the nested enrolment, QR and backup codes from provideAuthLabels, three levels down', async () => {
         const ctx = setup({
           providers: [
@@ -1610,9 +1608,7 @@ describe('AuthLogin', () => {
       })
     })
 
-    // FerrisGit ran these two through its HTTP interceptor (a 401 logged out and navigated to /login),
-    // checking the page survived it. The kit has no interceptor and never navigates: what is left to
-    // prove is that a 401 of the challenge keeps the very same page instance and never reports a sign-in.
+    // The kit never navigates, so a 401 during the challenge must keep the same page and report no sign-in.
     describe('on a 401 of the challenge (the page never leaves on its own)', () => {
       it('shows the expired login on the credentials step, on the same page instance', async () => {
         const { component, fixture, port, el, host } = await toChallenge()

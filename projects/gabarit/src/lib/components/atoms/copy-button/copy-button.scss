@@ -1,3 +1,5 @@
+@use '../../../tokens/a11y';
+
 :host {
   position: relative;
   display: inline-flex;
@@ -47,15 +49,7 @@
   }
 
   &[data-feedback='hidden'] {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    border: 0;
-    white-space: nowrap;
+    @include a11y.visually-hidden;
   }
 }
 

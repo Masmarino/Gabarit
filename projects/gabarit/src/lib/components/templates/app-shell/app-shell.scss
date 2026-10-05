@@ -1,3 +1,5 @@
+@use '../../../tokens/a11y';
+
 $drawer-breakpoint: 768px;
 $nav-width: 220px;
 
@@ -25,13 +27,12 @@ $nav-width: 220px;
     &:focus-visible {
       left: 0.5rem;
       top: 0.5rem;
-      outline: 2px solid var(--gbt-focus-ring, var(--primary));
-      outline-offset: 2px;
+      @include a11y.focus-ring(2px);
     }
   }
 
-  // Held to the window, like the header: however long the page, the brand, the links, the version and the collapse
-  // toggle stay in view. Links that outgrow the window scroll inside the rail, under a bottom that stays put.
+  // Held to the window like the header, so the version and the collapse toggle never scroll away. Too many links
+  // scroll inside the rail.
   &__nav {
     position: sticky;
     top: 0;
@@ -103,8 +104,7 @@ $nav-width: 220px;
     }
 
     &:focus-visible {
-      outline: 2px solid var(--gbt-focus-ring, var(--primary));
-      outline-offset: 2px;
+      @include a11y.focus-ring(2px);
     }
 
     gbt-icon {
@@ -130,8 +130,7 @@ $nav-width: 220px;
     min-width: 0;
   }
 
-  // Stays at the top of the window while the page scrolls. Without a colour of its own it takes the page's, so the
-  // content never shows through.
+  // Sticky, with a background of its own so the page doesn't show through.
   &__header {
     position: sticky;
     top: 0;
@@ -156,8 +155,7 @@ $nav-width: 220px;
     cursor: pointer;
 
     &:focus-visible {
-      outline: 2px solid var(--gbt-focus-ring, var(--primary));
-      outline-offset: 2px;
+      @include a11y.focus-ring(2px);
     }
   }
 
@@ -194,8 +192,7 @@ $nav-width: 220px;
     padding: var(--gbt-shell-content-padding, 1rem);
 
     &:focus-visible {
-      outline: 2px solid var(--gbt-focus-ring, var(--primary));
-      outline-offset: -2px;
+      @include a11y.focus-ring(-2px);
     }
   }
 

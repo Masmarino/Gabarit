@@ -1,3 +1,5 @@
+@use '../../../../src/lib/tokens/a11y';
+
 :host {
   display: block;
 }
@@ -30,8 +32,7 @@
 
   &:focus-visible {
     border-radius: var(--site-border-radius-sm);
-    outline: 2px solid var(--gbt-focus-ring, var(--primary));
-    outline-offset: -2px;
+    @include a11y.focus-ring(-2px);
   }
 }
 

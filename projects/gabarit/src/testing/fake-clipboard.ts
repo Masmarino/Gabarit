@@ -1,8 +1,4 @@
-/**
- * Fake clipboard globals for specs. jsdom has neither `navigator.clipboard` nor
- * `document.execCommand`, so a spec that exercises a copy widget installs its own, and MUST call
- * `restore()` in `afterEach` so no fake leaks into another spec.
- */
+/** Clipboard fakes for specs, since jsdom has none. Call restore() in afterEach or the fake leaks into other specs. */
 export interface FakeClipboard {
   /** `navigator.clipboard.writeText`, resolved (or rejected when `clipboard: 'rejects'`). */
   writeText: ReturnType<typeof vi.fn>

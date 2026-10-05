@@ -9,10 +9,7 @@ export function hasOutline(entries: readonly MarkdownOutlineEntry[]): boolean {
   return entries.length >= 2
 }
 
-/**
- * The "On this page" panel beside rendered Markdown. Each entry links to `#user-content-…` on the current URL; the
- * router does no anchor scrolling, so the click scrolls to the heading and focuses it itself.
- */
+/** "On this page" for rendered Markdown. The router doesn't scroll to anchors, so a click does it here. */
 @Component({
   selector: 'gbt-markdown-outline',
   standalone: true,

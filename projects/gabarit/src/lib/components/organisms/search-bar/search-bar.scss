@@ -1,3 +1,5 @@
+@use '../../../tokens/a11y';
+
 $trigger-height: 40px;
 $trigger-width: 340px;
 $trigger-width-open: 420px;
@@ -93,8 +95,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
-// Folded: `hidden` when it is folded at every width; in narrow mode a class instead, which the media query below
-// undoes, so the field shown above 768px never carries an attribute that says it is hidden.
+// Narrow mode folds with a class, not `hidden`: above 768px the field shows and shouldn't claim to be hidden.
 .gbt-sb-trigger[hidden],
 .gbt-sb-trigger--folded {
   display: none;
@@ -120,8 +121,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--gbt-focus-ring, var(--primary));
-    outline-offset: 2px;
+    @include a11y.focus-ring(2px);
   }
 }
 
@@ -150,8 +150,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--gbt-focus-ring, var(--primary));
-    outline-offset: -2px;
+    @include a11y.focus-ring(-2px);
   }
 
   @media (prefers-reduced-motion: reduce) {

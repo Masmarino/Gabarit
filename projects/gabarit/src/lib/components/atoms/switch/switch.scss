@@ -1,3 +1,5 @@
+@use '../../../tokens/a11y';
+
 :host(.gbt-switch-host--hint) {
   display: block;
 }
@@ -52,8 +54,7 @@
 }
 
 .gbt-switch__input:focus-visible + .gbt-switch__track {
-  outline: 2px solid var(--gbt-focus-ring, var(--primary));
-  outline-offset: 2px;
+  @include a11y.focus-ring(2px);
 }
 
 .gbt-switch__thumb {
