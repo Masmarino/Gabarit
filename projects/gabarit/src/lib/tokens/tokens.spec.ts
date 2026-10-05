@@ -67,9 +67,9 @@ describe('tokens', () => {
   })
 
   it('reads every theming hook with its fallback, so an app that leaves them unset looks the same', () => {
-    const lib = join(process.cwd(), 'projects/gabarit/src/lib')
+    const lib = join(process.cwd(), 'projects/gabarit')
     const scss = (readdirSync(lib, { recursive: true }) as string[])
-      .filter((file) => file.endsWith('.scss'))
+      .filter((file) => file.endsWith('.scss') && !file.startsWith('fonts'))
       .map((file) => readFileSync(join(lib, file), 'utf8'))
       .join('\n')
       // A long fallback is wrapped by Prettier after the opening parenthesis.

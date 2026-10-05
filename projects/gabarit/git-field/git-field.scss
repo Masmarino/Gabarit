@@ -1,0 +1,166 @@
+@use '../src/lib/tokens/themes';
+
+// The field is drawn on the graphite frame in both themes, so it reads the frame's (dark) colours.
+:host {
+  @include themes.frame-tokens;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+// Behind a centred panel: the drawing fades out towards the middle, so the lines run around the panel and never under
+// its text.
+.gbt-git-field__svg {
+  mask-image: radial-gradient(
+    ellipse 42% 55% at 50% 50%,
+    transparent 0%,
+    rgba(0, 0, 0, 0.25) 55%,
+    #000 100%
+  );
+}
+
+// On a narrow screen the panel takes the whole width, so the drawing stays further back.
+@media (max-width: 47.99rem) {
+  :host {
+    opacity: 0.5;
+  }
+}
+
+// Two soft fields of colour, rust and blue, that drift slowly and in opposite directions.
+.gbt-git-field__wash {
+  position: absolute;
+  width: 60%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  will-change: transform;
+}
+
+.gbt-git-field__wash--a {
+  top: -30%;
+  right: 10%;
+  background: var(--accent);
+  animation: wash-a 26s ease-in-out infinite alternate;
+}
+
+.gbt-git-field__wash--b {
+  right: -20%;
+  bottom: -45%;
+  background: var(--color-info-vivid-base); // token-graphique-sans-texte
+  animation: wash-b 32s ease-in-out infinite alternate;
+}
+
+@keyframes wash-a {
+  to {
+    transform: translate3d(-18%, 20%, 0) scale(1.15);
+  }
+}
+
+@keyframes wash-b {
+  to {
+    transform: translate3d(-25%, -15%, 0) scale(0.9);
+  }
+}
+
+.gbt-git-field__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// The two tiles move left by one tile's width, then start again: the second has taken the first one's place.
+.gbt-git-field__track {
+  transform-box: fill-box;
+  animation: field-pan 120s linear infinite;
+}
+
+@keyframes field-pan {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+[data-color='brand'] {
+  --c: var(--accent);
+}
+
+[data-color='brand-2'] {
+  --c: var(--color-warning-vivid-base);
+}
+
+[data-color='indigo'] {
+  --c: var(--color-info-vivid-base);
+}
+
+[data-color='patina'] {
+  --c: var(--color-success-vivid-base);
+}
+
+.gbt-git-field__line {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 1.5;
+  stroke-opacity: 0.45;
+}
+
+// A push running along a lane: a bright stretch of line that travels from left to right.
+.gbt-git-field__pulse {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 70 930;
+  animation: pulse-run 10s linear infinite;
+}
+
+@keyframes pulse-run {
+  from {
+    stroke-dashoffset: 1000;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.gbt-git-field__commit {
+  fill: var(--c);
+  stroke: var(--c);
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0.55;
+  animation: commit-blink 6s ease-in-out infinite;
+
+  &.is-hollow {
+    fill: var(--bg-panel);
+  }
+}
+
+@keyframes commit-blink {
+  0%,
+  70%,
+  100% {
+    opacity: 0.55;
+    transform: none;
+  }
+
+  80% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+
+// Still when reduced motion is asked for: the graph stays drawn, nothing moves.
+@media (prefers-reduced-motion: reduce) {
+  .gbt-git-field__wash,
+  .gbt-git-field__track,
+  .gbt-git-field__pulse,
+  .gbt-git-field__commit {
+    animation: none;
+  }
+}

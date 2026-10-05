@@ -22,16 +22,13 @@ import {
   switchMap,
   tap,
 } from 'rxjs'
-import {
-  Alert,
-  Breadcrumb,
-  Button,
-  Card,
-  CardLink,
-  EmptyState,
-  PageLayout,
-  Skeleton,
-} from '@masmarino/gabarit'
+import { Alert } from '@masmarino/gabarit/alert'
+import { Breadcrumb } from '@masmarino/gabarit/breadcrumb'
+import { Button } from '@masmarino/gabarit/button'
+import { Card, CardLink } from '@masmarino/gabarit/card'
+import { EmptyState } from '@masmarino/gabarit/empty-state'
+import { PageLayout } from '@masmarino/gabarit/page-layout'
+import { Skeleton } from '@masmarino/gabarit/skeleton'
 import { DOCS_CONFIG, DOCS_TITLE } from '../docs-config'
 import { docsLabels } from '../docs-labels'
 import { DocsNav } from '../docs-nav/docs-nav'

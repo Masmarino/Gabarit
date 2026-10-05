@@ -1,8 +1,13 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 const ROOT = process.cwd()
-const COMPONENTS_DIR = join(ROOT, 'projects/gabarit/src/lib/components')
+const PACKAGE_DIR = join(ROOT, 'projects/gabarit')
+/** One folder per entry point (`ng-package.json`), the auth kit and the docs entry aside, as before the split. */
+const ENTRY_DIRS = readdirSync(PACKAGE_DIR)
+  .filter((name) => !/^(auth|mfa-|passkey-|docs$)/.test(name))
+  .map((name) => join(PACKAGE_DIR, name))
+  .filter((dir) => statSync(dir).isDirectory() && existsSync(join(dir, 'ng-package.json')))
 const UTILITIES_FILE = join(ROOT, 'projects/gabarit/src/lib/tokens/_utilities.scss')
 
 function collectScssFiles(dir: string): string[] {
@@ -137,8 +142,8 @@ function collectInlineStyles(dir: string): { file: string; content: string }[] {
   return found
 }
 
-const FILES_TO_CHECK = [...collectScssFiles(COMPONENTS_DIR), UTILITIES_FILE].sort()
-const INLINE_STYLES = collectInlineStyles(COMPONENTS_DIR)
+const FILES_TO_CHECK = [...ENTRY_DIRS.flatMap(collectScssFiles), UTILITIES_FILE].sort()
+const INLINE_STYLES = ENTRY_DIRS.flatMap(collectInlineStyles)
 
 describe('token usage in component stylesheets', () => {
   it('derives palette families from the palette file itself', () => {

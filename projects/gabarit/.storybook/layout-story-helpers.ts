@@ -1,6 +1,6 @@
 import { inject, provideAppInitializer } from '@angular/core'
 import { applicationConfig, componentWrapperDecorator } from '@storybook/angular-vite'
-import { IconRegistry } from '../src/lib/components/atoms/icon/icon-registry'
+import { IconRegistry } from '../icon/icon-registry'
 
 export const withLayoutIcons = applicationConfig({
   providers: [

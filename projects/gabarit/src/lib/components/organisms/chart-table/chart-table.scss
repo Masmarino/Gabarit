@@ -1,5 +1,0 @@
-@use '../../../tokens/a11y';
-
-.gbt-sr-only {
-  @include a11y.visually-hidden;
-}

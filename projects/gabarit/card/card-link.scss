@@ -1,0 +1,30 @@
+@use '../src/lib/tokens/a11y';
+
+:host {
+  color: inherit;
+  text-decoration: none;
+  border-radius: 2px;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    grid-area: gbt-card-box;
+    border-radius: var(--gbt-card-radius, 0);
+  }
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::after {
+      @include a11y.focus-ring;
+      outline-offset: var(--gbt-card-focus-offset, -2px);
+    }
+  }
+}

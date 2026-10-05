@@ -1,0 +1,112 @@
+@use '../src/lib/tokens/a11y';
+
+$easing: cubic-bezier(0.4, 0, 0.2, 1);
+
+:host {
+  display: block;
+}
+
+.gbt-disclosure[data-appearance='bordered'] {
+  border: 1px solid var(--gbt-card-border);
+  border-radius: var(--site-border-radius-sm);
+  background: var(--bg-principal);
+}
+
+.gbt-disclosure__heading {
+  margin: 0;
+  font: inherit;
+}
+
+.gbt-disclosure__toggle {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.875rem;
+  border: 0;
+  border-radius: var(--site-border-radius-sm);
+  background: none;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--bg-hover);
+  }
+
+  &:focus-visible {
+    @include a11y.focus-ring(-2px);
+  }
+
+  .gbt-disclosure[data-appearance='plain'] & {
+    width: auto;
+    min-height: 2rem;
+    padding-inline: 0.5rem;
+  }
+}
+
+.gbt-disclosure__icon {
+  flex: none;
+  color: var(--text-secondary);
+}
+
+.gbt-disclosure__label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.gbt-disclosure__chevron {
+  flex: none;
+  color: var(--text-secondary);
+  transition: transform 0.2s $easing;
+
+  .gbt-disclosure[data-open] & {
+    transform: rotate(180deg);
+  }
+}
+
+.gbt-disclosure__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 0.2s $easing,
+    visibility 0s linear 0.2s;
+
+  &[data-open] {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition:
+      grid-template-rows 0.2s $easing,
+      visibility 0s;
+  }
+}
+
+.gbt-disclosure__panel-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.gbt-disclosure__content {
+  padding: 0.875rem;
+
+  .gbt-disclosure[data-appearance='bordered'] & {
+    border-top: 1px solid var(--gbt-hairline);
+    border-radius: 0 0 var(--site-border-radius-sm) var(--site-border-radius-sm);
+    background: var(--bg-hover);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-disclosure__chevron,
+  .gbt-disclosure__panel,
+  .gbt-disclosure__panel[data-open] {
+    transition: none;
+  }
+}

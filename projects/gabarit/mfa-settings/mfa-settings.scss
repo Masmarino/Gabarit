@@ -1,0 +1,229 @@
+@use '../auth/shared/settings-card';
+
+:host {
+  display: block;
+  min-width: 0;
+
+  @include settings-card.card-container;
+}
+
+.gbt-mfa-settings__rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.gbt-mfa-settings__row {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-block: 1.25rem;
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+
+  & + & {
+    border-top: 1px solid var(--gbt-hairline);
+  }
+}
+
+.gbt-mfa-settings__row-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.gbt-mfa-settings__row-text {
+  display: flex;
+  flex: 1 1 18rem;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.gbt-mfa-settings__row-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5rem;
+}
+
+.gbt-mfa-settings__row-help {
+  @include settings-card.hint;
+}
+
+.gbt-mfa-settings__title-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.625rem;
+}
+
+.gbt-mfa-settings__badge {
+  flex: none;
+}
+
+.gbt-mfa-settings__row-action {
+  flex: none;
+}
+
+.gbt-mfa-settings__row-action--remove ::ng-deep .gbt-button:not(:disabled):hover {
+  border-color: var(--color-error-text);
+  color: var(--color-error-text);
+}
+
+.gbt-mfa-settings__codes-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.375rem;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+
+  gbt-icon {
+    align-self: center;
+    flex: none;
+    font-size: 0.75rem;
+  }
+
+  &[data-tone='warning'] {
+    color: var(--color-warning-text);
+  }
+}
+
+.gbt-mfa-settings__prompt {
+  @include settings-card.form;
+  gap: 1rem;
+  padding: 1rem 1.125rem 1.125rem;
+  border: 1px solid var(--gbt-card-border);
+  border-radius: var(--site-border-radius-sm);
+  background: var(--bg-panel);
+}
+
+.gbt-mfa-settings__prompt-lead {
+  @include settings-card.hint;
+}
+
+.gbt-mfa-settings__field {
+  @include settings-card.field;
+  max-width: 24rem;
+}
+
+.gbt-mfa-settings__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.gbt-mfa-settings__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.gbt-mfa-settings__anchor:focus,
+.gbt-mfa-settings__lead:focus {
+  outline: none;
+}
+
+.gbt-mfa-settings__lead {
+  max-width: 40rem;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.gbt-mfa-settings__codes {
+  max-width: 34rem;
+}
+
+.gbt-mfa-settings__scan {
+  @include settings-card.form;
+}
+
+.gbt-mfa-settings__scan-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 19rem) minmax(0, 1fr);
+  align-items: start;
+  gap: 1.5rem 2rem;
+}
+
+.gbt-mfa-settings__qr ::ng-deep .gbt-totp-qr__frame {
+  margin-inline: 0;
+}
+
+.gbt-mfa-settings__scan-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+  max-width: 26rem;
+}
+
+.gbt-mfa-settings__loading {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gbt-mfa-settings__skeleton-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.gbt-mfa-settings__skeleton-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+@container gbt-settings-card (max-width: 519px) {
+  .gbt-mfa-settings__scan-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .gbt-mfa-settings__qr ::ng-deep .gbt-totp-qr__frame {
+    margin-inline: auto;
+  }
+
+  .gbt-mfa-settings__scan-side,
+  .gbt-mfa-settings__field {
+    max-width: none;
+  }
+
+  .gbt-mfa-settings__prompt {
+    padding: 0.875rem;
+  }
+
+  .gbt-mfa-settings__row-action,
+  .gbt-mfa-settings__actions gbt-button {
+    display: block;
+    flex: 1 1 100%;
+    width: auto;
+
+    ::ng-deep .gbt-button {
+      width: 100%;
+      min-height: 2.75rem;
+    }
+  }
+}

@@ -1,0 +1,91 @@
+@use '../src/lib/tokens/a11y';
+
+:host {
+  display: block;
+}
+
+.gbt-textarea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  textarea {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-family);
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    background: var(--bg-principal);
+    border: 1px solid var(--border-color);
+    border-radius: var(--site-border-radius-sm);
+    resize: vertical;
+    transition: border-color var(--site-transition-fast);
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    &:focus-visible {
+      @include a11y.focus-ring(1px);
+    }
+
+    &[data-resize='none'] {
+      resize: none;
+    }
+    &[data-resize='both'] {
+      resize: both;
+    }
+    &[data-resize='horizontal'] {
+      resize: horizontal;
+    }
+
+    &:disabled {
+      background: var(--bg-panel);
+      cursor: not-allowed;
+      resize: none;
+    }
+  }
+
+  // Grows with its content up to maxRows lines plus padding and border. Unset, the var() is invalid and none applies.
+  &--autosize textarea {
+    overflow-y: auto;
+    max-height: calc(var(--gbt-textarea-max-rows) * 1lh + 1rem + 2px);
+  }
+
+  &--mono textarea {
+    font-family: var(
+      --gbt-font-mono,
+      'IBM Plex Mono',
+      ui-monospace,
+      'SF Mono',
+      Menlo,
+      Consolas,
+      monospace
+    );
+    font-size: 0.8125rem;
+  }
+
+  &__label--hidden {
+    @include a11y.visually-hidden;
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  &__error {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--color-error-text);
+  }
+}

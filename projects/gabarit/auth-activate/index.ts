@@ -1,0 +1,1 @@
+export { AuthActivate } from './activate'

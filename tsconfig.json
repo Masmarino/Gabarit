@@ -16,7 +16,8 @@
     "module": "preserve",
     "paths": {
       "@masmarino/gabarit": ["./projects/gabarit/src/public-api.ts"],
-      "@masmarino/gabarit/docs": ["./projects/gabarit/docs/src/public-api.ts"]
+      "@masmarino/gabarit/docs": ["./projects/gabarit/docs/src/public-api.ts"],
+      "@masmarino/gabarit/*": ["./projects/gabarit/*/index.ts"]
     }
   },
   "angularCompilerOptions": {

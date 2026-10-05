@@ -1,0 +1,286 @@
+@use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/themes';
+
+$drawer-breakpoint: 768px;
+$nav-width: 220px;
+$bar: var(--gbt-shell-bar, 4rem);
+$corner: var(--site-border-radius-lg);
+
+:host {
+  display: block;
+}
+
+// One graphite frame in both themes, an L made of the rail and the bar; the pages sit inside it on the
+// theme's paper, a sheet whose corner is rounded where the rail meets the bar.
+.gbt-app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--frame);
+
+  &__skip {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 1040;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--site-border-radius-sm);
+    background: var(--primary);
+    color: var(--text-on-primary);
+    font-size: 0.875rem;
+    text-decoration: none;
+
+    &:focus-visible {
+      left: 0.5rem;
+      top: 0.5rem;
+      @include a11y.focus-ring(2px);
+    }
+  }
+
+  // Held to the window like the header, so the version and the collapse toggle never scroll away. Too many links
+  // scroll inside the rail.
+  &__nav {
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    width: $nav-width;
+    height: 100vh;
+    height: 100dvh;
+    padding: 1rem 0.75rem;
+    @include themes.frame-tokens;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--gbt-shell-border, transparent);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    transition: width 0.2s ease;
+
+    @media (min-width: $drawer-breakpoint + 1) {
+      &--collapsed {
+        width: 64px;
+        overflow: visible;
+      }
+    }
+  }
+
+  // The logo fills the corner, as tall as the bar, so the top of the rail and the bar read as one strip.
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    box-sizing: border-box;
+    height: $bar;
+    margin: -1rem -0.75rem 1rem;
+    padding: 0 1rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  &__nav--collapsed &__brand {
+    justify-content: center;
+    padding: 0;
+  }
+
+  // Sticks to the foot of the rail when its links scroll, on the rail's colour so they pass under it.
+  &__bottom {
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
+    padding-top: 0.25rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    background: inherit;
+  }
+
+  &__collapse-toggle {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    width: 100%;
+    margin-top: auto;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: var(--site-border-radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--bg-hover);
+    }
+
+    &:focus-visible {
+      @include a11y.focus-ring(2px);
+    }
+
+    gbt-icon {
+      transition: transform 0.2s ease;
+    }
+
+    &--collapsed gbt-icon {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__version {
+    margin-top: auto;
+    padding: 0.5rem 0.75rem 0;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+
+  // Sticky, with a background of its own so the page doesn't show through.
+  &__header {
+    position: sticky;
+    top: 0;
+    z-index: 1010;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-sizing: border-box;
+    height: $bar;
+    padding: 0 var(--gbt-shell-content-padding, clamp(1rem, 0.25rem + 2vw, 2rem));
+    @include themes.frame-tokens;
+    background: var(--gbt-shell-header-bg, var(--bg-panel));
+    border-bottom: 1px solid var(--gbt-shell-border, transparent);
+
+    // The sheet's rounded corner, drawn again just under the bar, so it stays round over whatever
+    // scrolls beneath.
+    @media (min-width: $drawer-breakpoint + 1) {
+      &::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: $corner;
+        height: $corner;
+        background: radial-gradient(
+          circle at 100% 100%,
+          transparent calc(#{$corner} - 0.5px),
+          var(--frame) $corner
+        );
+        pointer-events: none;
+      }
+    }
+  }
+
+  &__toggle {
+    display: none;
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--site-border-radius-sm);
+    background: transparent;
+    cursor: pointer;
+
+    &:focus-visible {
+      @include a11y.focus-ring(2px);
+    }
+  }
+
+  &__burger {
+    display: block;
+    position: relative;
+    width: 1rem;
+    height: 2px;
+    margin: 0 auto;
+    background: var(--text-primary);
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--text-primary);
+    }
+
+    &::before {
+      top: -5px;
+    }
+
+    &::after {
+      top: 5px;
+    }
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+    padding: var(--gbt-shell-content-padding, clamp(1rem, 0.25rem + 2vw, 2rem));
+    background: var(--bg-panel);
+    border-top-left-radius: $corner;
+
+    &:focus-visible {
+      @include a11y.focus-ring(-2px);
+    }
+  }
+
+  @media (max-width: $drawer-breakpoint) {
+    &__toggle {
+      display: block;
+    }
+
+    &__nav {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 1030;
+      transform: translateX(-100%);
+      transition: transform 0.16s ease-out;
+
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
+
+      &--open {
+        transform: translateX(0);
+      }
+    }
+
+    &__scrim {
+      position: fixed;
+      inset: 0;
+      z-index: 1020;
+      background: rgb(0 0 0 / 0.4);
+    }
+
+    &__collapse-toggle {
+      display: none;
+    }
+
+    &__content {
+      border-top-left-radius: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__nav {
+      transition: none;
+    }
+
+    &__collapse-toggle gbt-icon {
+      transition: none;
+    }
+  }
+}

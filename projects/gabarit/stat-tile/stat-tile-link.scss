@@ -1,0 +1,26 @@
+@use '../src/lib/tokens/a11y';
+
+:host {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--site-border-radius);
+  }
+
+  &:focus-visible::after {
+    @include a11y.focus-ring(2px);
+  }
+}

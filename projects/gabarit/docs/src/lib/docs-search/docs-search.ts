@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, output, viewChild } from '@angular/core'
 import { Router } from '@angular/router'
-import { Autocomplete, type AutocompleteSearchFn } from '@masmarino/gabarit'
+import { Autocomplete, type AutocompleteSearchFn } from '@masmarino/gabarit/autocomplete'
 import { docsLabels } from '../docs-labels'
 import { type DocsSearchHit, DocsSearchService } from '../docs-search.service'
 

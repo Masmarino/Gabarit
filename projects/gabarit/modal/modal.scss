@@ -1,0 +1,127 @@
+@use '../src/lib/tokens/a11y';
+
+.gbt-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+
+.gbt-modal__dialog {
+  background: var(--bg-principal);
+  border-radius: var(--site-border-radius);
+  box-shadow: var(--site-shadow-lg);
+  width: min(90vw, 480px);
+  max-height: 90vh;
+  overflow-y: auto;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    @include a11y.focus-ring(2px);
+  }
+}
+
+.gbt-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+
+  .gbt-modal__title {
+    font-family: var(--gbt-font-display, var(--font-display));
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+}
+
+.gbt-modal__close {
+  position: relative;
+  display: inline-flex;
+  background: none;
+  border: none;
+  color: var(--text-discret);
+  cursor: pointer;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: max(100%, 24px);
+    height: max(100%, 24px);
+    transform: translate(-50%, -50%);
+  }
+
+  &[aria-disabled='true'] {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+@media (pointer: coarse) {
+  .gbt-modal__close {
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    margin-block: -0.75rem;
+    margin-inline-end: -0.75rem;
+    border-radius: var(--site-border-radius-sm);
+  }
+}
+
+.gbt-modal__body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  > form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+.gbt-modal__footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-principal);
+
+  &:empty {
+    display: none;
+  }
+
+  ::ng-deep > :is(div, footer, section)[modal-footer] {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+}
+
+.gbt-modal__status {
+  @include a11y.visually-hidden;
+}
+
+@media (pointer: coarse) {
+  .gbt-modal__footer {
+    --gbt-control-height-sm: 2.75rem;
+    --gbt-control-height-md: 2.75rem;
+  }
+}

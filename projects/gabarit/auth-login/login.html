@@ -1,0 +1,157 @@
+<gbt-auth-panel [heading]="heading()" [intro]="intro()" [wide]="enrolling()">
+  <ng-container ngProjectAs="[auth-backdrop]"><ng-content select="[auth-backdrop]" /></ng-container>
+  <ng-container ngProjectAs="[auth-logo]"><ng-content select="[auth-logo]" /></ng-container>
+
+  @if (mfaToken() === null) {
+    <form class="gbt-auth-panel__form" (ngSubmit)="submit()">
+      <ng-content select="[auth-notice]" />
+      @if (error()) {
+        <gbt-alert variant="error" appearance="subtle" iconAlign="start">{{ error() }}</gbt-alert>
+      }
+
+      <gbt-input
+        [id]="id + '-username'"
+        name="username"
+        autocomplete="username"
+        [label]="text().username"
+        [ngModel]="username()"
+        (ngModelChange)="username.set($event)"
+      />
+      <gbt-input
+        [id]="id + '-password'"
+        type="password"
+        name="password"
+        autocomplete="current-password"
+        [label]="text().password"
+        [showPasswordLabel]="text().showPassword"
+        [hidePasswordLabel]="text().hidePassword"
+        [ngModel]="password()"
+        (ngModelChange)="password.set($event)"
+      />
+
+      <gbt-button
+        class="gbt-auth-panel__submit"
+        block
+        type="submit"
+        size="large"
+        [text]="text().submit"
+        [loading]="submitting()"
+        [loadingLabel]="text().submitting"
+      />
+    </form>
+
+    @if (registrationEnabled() && registerLink()) {
+      <gbt-auth-footer [text]="text().registerPrompt"
+        ><ng-content select="[gbtAuthFooterLink]"
+      /></gbt-auth-footer>
+    }
+  } @else if (enrolling()) {
+    <gbt-mfa-enrollment
+      [mfaToken]="mfaToken()!"
+      [passkeysAvailable]="passkeysAvailable() === true"
+      (completed)="enrolled($event)"
+      (cancelled)="backToCredentials()"
+      (expired)="sessionExpired()"
+    />
+  } @else {
+    <form class="gbt-auth-panel__form" (ngSubmit)="verify()">
+      @if (passkeyBlocked()) {
+        <gbt-alert variant="warning" appearance="subtle" iconAlign="start" live="off">{{
+          blockedReason()
+        }}</gbt-alert>
+      }
+      @if (error()) {
+        <gbt-alert [variant]="errorVariant()" appearance="subtle" iconAlign="start">{{
+          error()
+        }}</gbt-alert>
+      }
+      @if (passkeyInFlight()) {
+        <gbt-alert variant="info" appearance="subtle" iconAlign="start" live="polite">{{
+          text().passkeyPrompt
+        }}</gbt-alert>
+      }
+
+      @if (showBackupCode()) {
+        <gbt-input
+          [id]="id + '-mfa-backup-code'"
+          inputmode="text"
+          [spellcheck]="false"
+          autocapitalize="off"
+          enterkeyhint="go"
+          name="backupCode"
+          autocomplete="off"
+          [label]="text().backupCodeLabel"
+          [ngModel]="backupCode()"
+          (ngModelChange)="backupCode.set($event)"
+        />
+
+        <gbt-button
+          class="gbt-auth-panel__submit"
+          block
+          type="submit"
+          size="large"
+          [text]="text().verify"
+          [loading]="submitting()"
+          [loadingLabel]="text().verifying"
+        />
+      } @else {
+        @if (canUsePasskey()) {
+          <gbt-button
+            [attr.id]="id + '-mfa-passkey'"
+            class="gbt-auth-panel__submit"
+            block
+            size="large"
+            iconName="key"
+            [text]="text().usePasskey"
+            [loading]="passkeyInFlight()"
+            [disabled]="submitting() && !passkeyInFlight()"
+            [loadingLabel]="text().passkeyValidating"
+            (clicked)="usePasskey()"
+          />
+        }
+
+        @if (canUsePasskey() && hasTotp()) {
+          <gbt-divider [label]="text().or" />
+        }
+
+        @if (hasTotp()) {
+          <gbt-input
+            [id]="id + '-mfa-code'"
+            inputmode="numeric"
+            [spellcheck]="false"
+            autocapitalize="off"
+            enterkeyhint="go"
+            name="code"
+            autocomplete="one-time-code"
+            [label]="text().codeLabel"
+            [ngModel]="code()"
+            (ngModelChange)="code.set($event)"
+          />
+
+          <gbt-button
+            class="gbt-auth-panel__submit"
+            block
+            type="submit"
+            size="large"
+            [text]="text().verify"
+            [variant]="canUsePasskey() ? 'secondary' : 'primary'"
+            [loading]="submitting() && !passkeyInFlight()"
+            [disabled]="passkeyInFlight()"
+            [loadingLabel]="text().verifying"
+          />
+        }
+      }
+
+      <div class="gbt-auth-panel__links">
+        @if (!passkeyBlocked()) {
+          <gbt-button
+            variant="link"
+            [text]="showBackupCode() ? backFromBackupLabel() : text().useBackupCode"
+            (clicked)="toggleBackupCode()"
+          />
+        }
+        <gbt-button variant="link" [text]="text().back" (clicked)="backToCredentials()" />
+      </div>
+    </form>
+  }
+</gbt-auth-panel>

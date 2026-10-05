@@ -433,7 +433,7 @@ describe('layout tokens (page header, panel, list card and rows)', () => {
     const declared = /--gbt-font-mono:\s*([^;]+);/.exec(LIGHT_SCOPE)
     if (!declared) throw new Error('--gbt-font-mono not found in _semantic.scss')
     const normalize = (stack: string) => stack.replace(/\s+/g, ' ').replace(/'/g, '"').trim()
-    const components = join(process.cwd(), 'projects/gabarit/src/lib/components/atoms')
+    const components = join(process.cwd(), 'projects/gabarit')
     for (const file of ['input/input.scss', 'textarea/textarea.scss']) {
       const scss = readFileSync(join(components, file), 'utf8')
       const used = /var\(\s*--gbt-font-mono,\s*([^)]+)\)/.exec(scss)

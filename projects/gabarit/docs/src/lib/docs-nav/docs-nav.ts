@@ -8,7 +8,9 @@ import {
   signal,
 } from '@angular/core'
 import { RouterLink } from '@angular/router'
-import { Button, Disclosure, NavTab, NavTabs } from '@masmarino/gabarit'
+import { Button } from '@masmarino/gabarit/button'
+import { Disclosure } from '@masmarino/gabarit/disclosure'
+import { NavTab, NavTabs } from '@masmarino/gabarit/nav-tabs'
 import { docsLabels } from '../docs-labels'
 import { DocsSearch } from '../docs-search/docs-search'
 import { type DocsIndex, DocsService, docsPageCommands } from '../docs.service'

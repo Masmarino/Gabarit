@@ -10,7 +10,7 @@
     "gabarit": {
       "projectType": "library",
       "root": "projects/gabarit",
-      "sourceRoot": "projects/gabarit/src",
+      "sourceRoot": "projects/gabarit",
       "prefix": "gbt",
       "schematics": {
         "@schematics/angular:component": {
@@ -34,7 +34,7 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "watch": false,
-            "include": ["**/*.spec.ts", "../docs/src/**/*.spec.ts"]
+            "include": ["**/*.spec.ts"]
           }
         },
         "lint": {

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core'
 import { RouterLink } from '@angular/router'
-import { Panel, type PanelHeadingLevel } from '@masmarino/gabarit'
+import { Panel, type PanelHeadingLevel } from '@masmarino/gabarit/panel'
 import { docsLabels } from '../docs-labels'
 import type { MarkdownOutlineEntry } from '../markdown-view/markdown-view'
 
