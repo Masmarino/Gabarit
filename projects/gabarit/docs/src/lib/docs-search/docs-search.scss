@@ -1,0 +1,60 @@
+:host {
+  display: block;
+}
+
+// The placeholder and the navigation's heading above say what the field is for; the label stays for screen readers.
+.gbt-docs-search ::ng-deep .gbt-autocomplete__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// The result rows render in the floating panel but from this component's template, so these rules reach them.
+.gbt-docs-search__result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+  text-align: left;
+}
+
+.gbt-docs-search__where {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.gbt-docs-search__title {
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.gbt-docs-search__heading {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.gbt-docs-search__excerpt {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+
+  mark {
+    padding: 0 0.0625rem;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--primary) 18%, transparent);
+    color: var(--text-primary);
+  }
+}

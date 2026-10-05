@@ -1,0 +1,38 @@
+<div class="gbt-docs-nav" [class.gbt-docs-nav--open]="navOpen()">
+  <div class="gbt-docs-nav__header">
+    <h2 class="gbt-docs-nav__heading">{{ labels().documentation }}</h2>
+    <gbt-button
+      class="gbt-docs-nav__toggle"
+      variant="secondary"
+      size="small"
+      iconName="list"
+      [text]="navOpen() ? labels().hideContents : labels().showContents"
+      [ariaExpanded]="navOpen()"
+      [ariaControls]="bodyId"
+      (clicked)="navOpen.set(!navOpen())"
+    />
+  </div>
+
+  <gbt-docs-search class="gbt-docs-nav__search" (opened)="close()" />
+
+  <div class="gbt-docs-nav__body" [id]="bodyId">
+    @for (section of sections(); track section.slug) {
+      <gbt-disclosure
+        class="gbt-docs-nav__section"
+        appearance="plain"
+        [headingLevel]="3"
+        [label]="section.title"
+        [open]="section.open"
+        (openChange)="setOpen(section.slug, $event)"
+      >
+        <gbt-nav-tabs orientation="vertical" [landmark]="false">
+          @for (page of section.pages; track page.slug) {
+            <a gbtNavTab [routerLink]="page.commands" [active]="page.current" (click)="close()">{{
+              page.title
+            }}</a>
+          }
+        </gbt-nav-tabs>
+      </gbt-disclosure>
+    }
+  </div>
+</div>

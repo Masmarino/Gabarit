@@ -5,6 +5,6 @@ storybook-static/
 .DS_Store
 .superpowers/
 .idea/
-docs/
+/docs/
 .claude/
 .worktrees/

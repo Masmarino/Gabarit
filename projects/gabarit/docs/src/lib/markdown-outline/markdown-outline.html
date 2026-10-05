@@ -1,0 +1,16 @@
+<gbt-panel [heading]="labels().onThisPage" [headingLevel]="headingLevel()">
+  <ul class="gbt-markdown-outline__list">
+    @for (entry of entries(); track entry.id) {
+      <li class="gbt-markdown-outline__item" [attr.data-level]="entry.level">
+        <a
+          class="gbt-markdown-outline__link"
+          [routerLink]="here"
+          [fragment]="entry.id"
+          [title]="entry.text"
+          (click)="goTo(entry.id)"
+          >{{ entry.text }}</a
+        >
+      </li>
+    }
+  </ul>
+</gbt-panel>

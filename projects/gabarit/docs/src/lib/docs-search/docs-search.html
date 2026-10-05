@@ -1,0 +1,34 @@
+<gbt-autocomplete
+  class="gbt-docs-search"
+  [label]="labels().searchLabel"
+  [placeholder]="labels().searchPlaceholder"
+  [search]="search"
+  [displayFn]="label"
+  [itemTemplate]="result"
+  [debounceMs]="150"
+  [minLength]="2"
+  [loadingMessage]="labels().searching"
+  [noResultsMessage]="labels().noResults"
+  [searchErrorMessage]="labels().searchFailed"
+  [resultsAnnouncement]="announce"
+  (focusin)="prepare()"
+  (itemSelected)="open($event)"
+/>
+
+<ng-template #result let-hit>
+  <span class="gbt-docs-search__result">
+    <span class="gbt-docs-search__where">{{ hit.sectionTitle }}</span>
+    <span class="gbt-docs-search__title">
+      {{ hit.pageTitle }}
+      @if (hit.heading) {
+        <span class="gbt-docs-search__heading">› {{ hit.heading }}</span>
+      }
+    </span>
+    @if (hit.excerpt.before || hit.excerpt.match) {
+      <span class="gbt-docs-search__excerpt"
+        >{{ hit.excerpt.before }}<mark>{{ hit.excerpt.match }}</mark
+        >{{ hit.excerpt.after }}</span
+      >
+    }
+  </span>
+</ng-template>

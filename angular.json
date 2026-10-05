@@ -33,7 +33,8 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "watch": false
+            "watch": false,
+            "include": ["**/*.spec.ts", "../docs/src/**/*.spec.ts"]
           }
         },
         "lint": {

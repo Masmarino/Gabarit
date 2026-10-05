@@ -135,6 +135,12 @@ but plain, without the layout the directive provides.
 | `MenuTrigger`  | `[gbtMenuTrigger]`   | `gbt-menu`: a custom trigger element instead of the default button.  |
 | `StatTileLink` | `a[gbtStatTileLink]` | `gbt-stat-tile`: the router-agnostic link, its text is the label.    |
 
+## Documentation reader
+
+`@masmarino/gabarit/docs` is a reader for documentation written in Markdown and shipped with an app (navigation,
+search, outline, neighbours), with `gbt-markdown-view` for Markdown anywhere else. It is a separate entry point
+because it needs `@angular/router`, `marked` and `dompurify`; see [its README](docs/README.md).
+
 ## Primitives and pipes
 
 Pure functions exported from `@masmarino/gabarit`, usable in any TypeScript
