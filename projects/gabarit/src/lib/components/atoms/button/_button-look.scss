@@ -40,6 +40,8 @@
     justify-content: center;
     gap: 0.5rem;
     box-sizing: border-box;
+    // A label that wraps (a long one in a block button) stays centred, line by line.
+    text-align: center;
     border: none;
     border-radius: var(--site-border-radius-sm);
     font-family: var(--font-family);
