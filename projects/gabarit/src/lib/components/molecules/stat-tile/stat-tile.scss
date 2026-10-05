@@ -49,6 +49,7 @@
 }
 
 .gbt-stat-tile__value {
+  font-family: var(--gbt-font-display, inherit);
   grid-area: value;
   min-width: 0;
   overflow: hidden;

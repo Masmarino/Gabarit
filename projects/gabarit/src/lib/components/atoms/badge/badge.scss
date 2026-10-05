@@ -10,7 +10,7 @@
   --gbt-badge-py: 0.125rem;
   --gbt-badge-px: 0.5rem;
   padding: var(--gbt-badge-py) var(--gbt-badge-px);
-  border-radius: 999px;
+  border-radius: var(--gbt-radius-badge, 999px);
   background: var(--bg-hover);
   color: var(--text-secondary);
   font-size: 0.75rem;
@@ -21,7 +21,7 @@
   &--mono {
     padding: 0 0.375rem;
     border: 1px solid var(--gbt-hairline);
-    border-radius: 6px;
+    border-radius: var(--gbt-radius-chip, 6px);
     background: var(--bg-hover);
     color: var(--text-primary);
     font-family: var(--gbt-font-mono);
@@ -144,7 +144,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--primary);
+    outline: 2px solid var(--gbt-focus-ring, var(--primary));
     outline-offset: 1px;
   }
 

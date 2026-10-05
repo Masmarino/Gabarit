@@ -33,7 +33,7 @@
   }
 
   &[data-shape='tile'] {
-    border-radius: 8px;
+    border-radius: var(--gbt-radius-tile, 8px);
   }
 
   &[data-tone='primary'] {

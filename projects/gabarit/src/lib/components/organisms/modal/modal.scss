@@ -21,7 +21,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--primary);
+    outline: 2px solid var(--gbt-focus-ring, var(--primary));
     outline-offset: 2px;
   }
 }
@@ -34,6 +34,7 @@
   border-bottom: 1px solid var(--border-color);
 
   .gbt-modal__title {
+    font-family: var(--gbt-font-display, inherit);
     font-size: 1rem;
     font-weight: 600;
     color: var(--text-primary);

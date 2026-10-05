@@ -260,9 +260,9 @@ describe('Card — the header sits above the box, outside it', () => {
 describe('Card — the box always has its full radius', () => {
   it('rounds the box on all four corners, whatever sits above it', () => {
     expect(ruleBody(CARD_SCSS, '.gbt-card')).toContain('border-radius: var(--gbt-card-radius);')
-    // No corner-splitting anywhere: every radius in the file is a single value.
+    // No corner-splitting anywhere: every radius in the file is a single value (a var() fallback is one value too).
     for (const [, value] of CARD_SCSS.matchAll(/border-radius:\s*([^;]+);/g)) {
-      expect(value.trim(), value).not.toMatch(/\s/)
+      expect(value.trim().replace(/\([^)]*\)/g, '()'), value).not.toMatch(/\s/)
     }
   })
 

@@ -52,7 +52,7 @@
 }
 
 .gbt-switch__input:focus-visible + .gbt-switch__track {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--gbt-focus-ring, var(--primary));
   outline-offset: 2px;
 }
 

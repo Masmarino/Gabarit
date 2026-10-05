@@ -38,7 +38,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--primary);
+    outline: 2px solid var(--gbt-focus-ring, var(--primary));
     outline-offset: 2px;
   }
 }
@@ -96,7 +96,7 @@
   padding: 6px 10px;
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--gbt-radius-tile, 8px);
   color: var(--text-primary);
   font-size: 14px;
   text-align: left;

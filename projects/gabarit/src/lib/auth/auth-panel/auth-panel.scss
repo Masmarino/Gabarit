@@ -12,13 +12,15 @@ $radius: 12px;
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
-  background:
+  background: var(
+    --gbt-auth-panel-backdrop,
     radial-gradient(
       ellipse 80% 55% at 50% 0%,
       color-mix(in srgb, var(--primary) 8%, transparent),
       transparent 70%
     ),
-    var(--bg-panel);
+    var(--bg-panel)
+  );
 }
 
 .gbt-auth-panel__panel {
@@ -27,7 +29,7 @@ $radius: 12px;
   max-width: 25rem;
   padding: 2rem 2rem 2.25rem;
   border: 1px solid var(--gbt-card-border);
-  border-radius: $radius;
+  border-radius: var(--gbt-auth-panel-radius, $radius);
   background: var(--bg-principal);
   box-shadow: var(--site-shadow-md);
 }
@@ -56,6 +58,7 @@ $radius: 12px;
 
 :host ::ng-deep {
   .gbt-auth-panel__heading {
+    font-family: var(--gbt-font-display, inherit);
     margin: 0;
     color: var(--text-primary);
     font-size: 1.25rem;

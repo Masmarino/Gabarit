@@ -324,6 +324,29 @@ Other tokens live on `:root` without being colors — border radii
 (`--site-border-radius*`), shadows (`--site-shadow-*`), transition
 durations (`--site-transition-*`), the monospace stack `--gbt-font-mono` — overridable the same way.
 
+### Theming hooks
+
+A few more tokens are not set on `:root`: each component falls back to the
+value in the last column, resolved where it is used, so an app that leaves
+them alone looks the same. Set one to take that part of the look in hand.
+
+| Token                                           | Used by                                                                   | Fallback                                |
+| ----------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------- |
+| `--gbt-focus-ring`                              | Every focus outline                                                       | `var(--primary)`                        |
+| `--gbt-font-display`                            | Page titles, stat tile values, empty state, auth panel and modal headings | `inherit`                               |
+| `--gbt-radius-badge`                            | Badges, card and tab counts                                               | `999px` (a pill)                        |
+| `--gbt-radius-chip`                             | Mono badges, inline code in a list row, search bar keys                   | `6px`                                   |
+| `--gbt-radius-menu`                             | Select and autocomplete panels, menu items, search results                | `8px`                                   |
+| `--gbt-radius-tile`                             | Icon marker tiles, job graph nodes, avatar group overflow, TOTP QR code   | `8px` (`12px` for the QR)               |
+| `--gbt-radius-search`                           | The search bar field                                                      | `16px`                                  |
+| `--gbt-nav-active-bg` / `--gbt-nav-active-text` | The current page in the app shell navigation                              | `--primary` / its text                  |
+| `--gbt-nav-active-mark`                         | A 2px rule on the start edge of the current page link                     | `transparent`                           |
+| `--gbt-shell-border`                            | The app shell's navigation and header edges                               | `var(--border-color)`                   |
+| `--gbt-shell-header-bg`                         | The app shell's header                                                    | `transparent`                           |
+| `--gbt-shell-content-padding`                   | The app shell's main content area                                         | `1rem`                                  |
+| `--gbt-auth-panel-backdrop`                     | The page behind the auth panels (login, register…)                        | a soft `--primary` glow on `--bg-panel` |
+| `--gbt-auth-panel-radius`                       | The auth panel card                                                       | `12px`                                  |
+
 Overriding a token after the import:
 
 ```scss

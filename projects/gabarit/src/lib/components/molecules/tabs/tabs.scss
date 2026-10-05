@@ -33,7 +33,7 @@
     }
 
     &:focus-visible {
-      outline: 2px solid var(--primary);
+      outline: 2px solid var(--gbt-focus-ring, var(--primary));
       outline-offset: -2px;
       border-radius: var(--site-border-radius-sm);
     }

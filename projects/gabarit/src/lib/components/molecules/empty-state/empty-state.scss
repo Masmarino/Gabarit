@@ -23,6 +23,7 @@
 }
 
 .gbt-empty-state__heading {
+  font-family: var(--gbt-font-display, inherit);
   margin: 0;
   font-size: 1rem;
   font-weight: 600;

@@ -25,7 +25,7 @@ $nav-width: 220px;
     &:focus-visible {
       left: 0.5rem;
       top: 0.5rem;
-      outline: 2px solid var(--primary);
+      outline: 2px solid var(--gbt-focus-ring, var(--primary));
       outline-offset: 2px;
     }
   }
@@ -39,7 +39,7 @@ $nav-width: 220px;
     width: $nav-width;
     padding: 1rem 0.75rem;
     background: var(--bg-panel);
-    border-right: 1px solid var(--border-color);
+    border-right: 1px solid var(--gbt-shell-border, var(--border-color));
     overflow: hidden;
     transition: width 0.2s ease;
 
@@ -89,7 +89,7 @@ $nav-width: 220px;
     }
 
     &:focus-visible {
-      outline: 2px solid var(--primary);
+      outline: 2px solid var(--gbt-focus-ring, var(--primary));
       outline-offset: 2px;
     }
 
@@ -123,7 +123,8 @@ $nav-width: 220px;
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border-color);
+    background: var(--gbt-shell-header-bg, transparent);
+    border-bottom: 1px solid var(--gbt-shell-border, var(--border-color));
   }
 
   &__toggle {
@@ -138,7 +139,7 @@ $nav-width: 220px;
     cursor: pointer;
 
     &:focus-visible {
-      outline: 2px solid var(--primary);
+      outline: 2px solid var(--gbt-focus-ring, var(--primary));
       outline-offset: 2px;
     }
   }
@@ -173,10 +174,10 @@ $nav-width: 220px;
   &__content {
     flex: 1;
     min-width: 0;
-    padding: 1rem;
+    padding: var(--gbt-shell-content-padding, 1rem);
 
     &:focus-visible {
-      outline: 2px solid var(--primary);
+      outline: 2px solid var(--gbt-focus-ring, var(--primary));
       outline-offset: -2px;
     }
   }

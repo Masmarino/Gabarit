@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 const DIR = join(process.cwd(), 'projects/gabarit/src/lib/tokens')
@@ -62,6 +62,39 @@ describe('tokens', () => {
     }
 
     expect(utilities).not.toContain('hg-')
+  })
+
+  it('reads every theming hook with its fallback, so an app that leaves them unset looks the same', () => {
+    const lib = join(process.cwd(), 'projects/gabarit/src/lib')
+    const scss = (readdirSync(lib, { recursive: true }) as string[])
+      .filter((file) => file.endsWith('.scss'))
+      .map((file) => readFileSync(join(lib, file), 'utf8'))
+      .join('\n')
+      // A long fallback is wrapped by Prettier after the opening parenthesis.
+      .replace(/var\(\s+/g, 'var(')
+    const hooks = [
+      '--gbt-focus-ring',
+      '--gbt-font-display',
+      '--gbt-radius-badge',
+      '--gbt-radius-chip',
+      '--gbt-radius-menu',
+      '--gbt-radius-tile',
+      '--gbt-radius-search',
+      '--gbt-nav-active-bg',
+      '--gbt-nav-active-text',
+      '--gbt-nav-active-mark',
+      '--gbt-shell-border',
+      '--gbt-shell-header-bg',
+      '--gbt-shell-content-padding',
+      '--gbt-auth-panel-backdrop',
+      '--gbt-auth-panel-radius',
+    ]
+    for (const hook of hooks) {
+      expect(scss, hook).toContain(`var(${hook},`)
+      expect(scss, hook).not.toMatch(new RegExp(`var\\(${hook}\\)`))
+      expect(read('_semantic.scss'), hook).not.toContain(`${hook}:`)
+    }
+    expect(scss).not.toContain('outline: 2px solid var(--primary)')
   })
 
   it('keeps sr-only, a visual-hiding utility offered to applications', () => {
