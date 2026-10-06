@@ -49,6 +49,14 @@ export {
   type SearchBarCollapsible,
   type SearchResultCategory,
 } from '@masmarino/gabarit/search-bar'
+export {
+  CommandPalette,
+  CommandPaletteTrigger,
+  matchCommand,
+  shortcutLabel,
+  type CommandGroup,
+  type CommandItem,
+} from '@masmarino/gabarit/command-palette'
 export { Tabs } from '@masmarino/gabarit/tabs'
 export { Tab } from '@masmarino/gabarit/tabs'
 export { arcPath, areaPath, linePath, type Arc, type Point } from '@masmarino/gabarit/chart'

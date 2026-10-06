@@ -17,6 +17,8 @@ describe('public surface', () => {
       'CardLink',
       'Checkbox',
       'CheckboxGroup',
+      'CommandPalette',
+      'CommandPaletteTrigger',
       'DatePicker',
       'DateRangePicker',
       'DescriptionList',

@@ -1,0 +1,258 @@
+@use '../src/lib/tokens/a11y';
+
+$easing-std: cubic-bezier(0.4, 0, 0.2, 1);
+
+.gbt-cp__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 12vh 16px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  animation: gbt-cp-fade-in 0.15s $easing-std both;
+}
+
+.gbt-cp {
+  display: flex;
+  flex-direction: column;
+  width: min(640px, 100%);
+  max-height: min(560px, 76vh);
+  overflow: hidden;
+  background: var(--bg-principal);
+  border: 1px solid var(--border-color);
+  border-radius: var(--site-border-radius);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.18),
+    0 4px 12px rgba(0, 0, 0, 0.08);
+  animation: gbt-cp-rise 0.18s $easing-std both;
+}
+
+.gbt-cp__field {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.gbt-cp__field-icon {
+  flex: none;
+  color: var(--text-secondary);
+}
+
+.gbt-cp__close {
+  display: none;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-inline-end: -12px;
+  padding: 0;
+  border: none;
+  border-radius: var(--gbt-radius-chip, 3px);
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:focus-visible {
+    @include a11y.focus-ring(2px);
+  }
+}
+
+.gbt-cp__input {
+  flex: 1;
+  min-width: 0;
+  height: 52px;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 16px;
+
+  &::placeholder {
+    color: var(--text-secondary);
+  }
+}
+
+.gbt-cp__list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px;
+  overscroll-behavior: contain;
+}
+
+.gbt-cp__group + .gbt-cp__group {
+  margin-top: 4px;
+}
+
+.gbt-cp__group-label {
+  padding: 8px 10px 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.gbt-cp__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 6px 10px;
+  border-radius: var(--gbt-radius-menu, 4px);
+  color: var(--text-primary);
+  cursor: pointer;
+
+  &--active {
+    background: color-mix(in srgb, var(--primary) 9%, transparent);
+  }
+
+  @media (forced-colors: active) {
+    &--active {
+      outline: 2px solid Highlight;
+      outline-offset: -2px;
+    }
+  }
+}
+
+.gbt-cp__item-icon {
+  flex: none;
+  color: var(--text-secondary);
+
+  .gbt-cp__item--active & {
+    color: var(--primary);
+  }
+}
+
+.gbt-cp__item-text {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.gbt-cp__item-label {
+  flex: none;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.gbt-cp__item-description {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 13px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.gbt-cp__item-shortcut {
+  display: inline-flex;
+  flex: none;
+  gap: 4px;
+}
+
+.gbt-cp__kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border: 1px solid var(--border-color);
+  border-radius: var(--gbt-radius-chip, 3px);
+  background: var(--bg-panel, var(--bg-principal));
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.gbt-cp__empty {
+  margin: 0;
+  padding: 32px 16px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-align: center;
+}
+
+.gbt-cp__footer {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.gbt-cp__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sr-only {
+  @include a11y.visually-hidden;
+}
+
+// On a phone the palette takes the screen's width from the top; keys mean nothing without a keyboard.
+@media (max-width: 599px) {
+  .gbt-cp__backdrop {
+    padding: 0;
+  }
+
+  .gbt-cp {
+    max-height: 100dvh;
+    border-width: 0 0 1px;
+    border-radius: 0;
+  }
+
+  .gbt-cp__item {
+    min-height: 44px;
+  }
+
+  .gbt-cp__close {
+    display: inline-flex;
+  }
+
+  .gbt-cp__footer,
+  .gbt-cp__item-shortcut {
+    display: none;
+  }
+}
+
+@keyframes gbt-cp-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes gbt-cp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-cp__backdrop,
+  .gbt-cp {
+    animation: none;
+  }
+}

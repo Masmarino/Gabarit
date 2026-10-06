@@ -1,0 +1,103 @@
+@if (open()) {
+  <div class="gbt-cp__backdrop" (mousedown)="onBackdropMousedown($event)">
+    <div
+      class="gbt-cp"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="ariaLabel()"
+      (keydown)="onKeydown($event)"
+    >
+      <div class="gbt-cp__field">
+        <gbt-icon name="search" class="gbt-cp__field-icon" aria-hidden="true" />
+        <input
+          #input
+          type="text"
+          class="gbt-cp__input"
+          role="combobox"
+          aria-expanded="true"
+          aria-autocomplete="list"
+          aria-haspopup="listbox"
+          [attr.aria-label]="ariaLabel()"
+          [attr.aria-controls]="listId"
+          [attr.aria-activedescendant]="activeId()"
+          [placeholder]="placeholder()"
+          [value]="query()"
+          (input)="onInput($event)"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        @if (loading()) {
+          <gbt-spinner size="sm" [label]="loadingLabel()" />
+        }
+        <!-- Shown on phones only: without a keyboard, nothing else closes a palette that fills the screen. -->
+        <button
+          type="button"
+          class="gbt-cp__close"
+          [attr.aria-label]="closeLabel()"
+          (click)="close()"
+        >
+          <gbt-icon name="x" aria-hidden="true" />
+        </button>
+      </div>
+
+      <!-- Clicking an option must not take the focus from the field. -->
+      <div
+        #list
+        class="gbt-cp__list"
+        role="listbox"
+        [id]="listId"
+        [attr.aria-label]="ariaLabel()"
+        (mousedown)="$event.preventDefault()"
+      >
+        @for (group of visibleGroups(); track group.labelId) {
+          <div class="gbt-cp__group" role="group" [attr.aria-labelledby]="group.labelId">
+            <div class="gbt-cp__group-label" [id]="group.labelId">{{ group.label }}</div>
+            @for (entry of group.items; track entry.item.id) {
+              <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+              <div
+                class="gbt-cp__item"
+                role="option"
+                [id]="optionId(entry.index)"
+                [attr.aria-selected]="optionId(entry.index) === activeId()"
+                [class.gbt-cp__item--active]="optionId(entry.index) === activeId()"
+                (mousemove)="activate(entry.index)"
+                (click)="select(entry.item)"
+              >
+                @if (entry.item.icon) {
+                  <gbt-icon class="gbt-cp__item-icon" [name]="entry.item.icon" aria-hidden="true" />
+                }
+                <span class="gbt-cp__item-text">
+                  <span class="gbt-cp__item-label">{{ entry.item.label }}</span>
+                  @if (entry.item.description) {
+                    <span class="gbt-cp__item-description">{{ entry.item.description }}</span>
+                  }
+                </span>
+                @if (entry.item.shortcut?.length) {
+                  <span class="gbt-cp__item-shortcut" aria-hidden="true">
+                    @for (key of entry.item.shortcut; track $index) {
+                      <kbd class="gbt-cp__kbd">{{ key }}</kbd>
+                    }
+                  </span>
+                }
+              </div>
+            }
+          </div>
+        } @empty {
+          <p class="gbt-cp__empty">{{ loading() ? loadingLabel() : emptyMessage() }}</p>
+        }
+      </div>
+
+      <div class="gbt-cp__footer" aria-hidden="true">
+        <span class="gbt-cp__hint"
+          ><kbd class="gbt-cp__kbd">↑</kbd><kbd class="gbt-cp__kbd">↓</kbd
+          >{{ navigateHint() }}</span
+        >
+        <span class="gbt-cp__hint"><kbd class="gbt-cp__kbd">↵</kbd>{{ selectHint() }}</span>
+        <span class="gbt-cp__hint"><kbd class="gbt-cp__kbd">Esc</kbd>{{ closeHint() }}</span>
+      </div>
+      <div class="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {{ announcement() }}
+      </div>
+    </div>
+  </div>
+}
