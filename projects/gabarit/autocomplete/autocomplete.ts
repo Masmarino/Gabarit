@@ -15,7 +15,7 @@ import {
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { NgTemplateOutlet } from '@angular/common'
 import { Subscription, isObservable, type Observable } from 'rxjs'
-import { floatingPanelAnchor } from '@masmarino/gabarit/floating-panel'
+import { floatingPanelAnchor, followPageScroll } from '@masmarino/gabarit/floating-panel'
 
 export type AutocompleteSearchFn<T> = (query: string) => Observable<T[]> | Promise<T[]>
 
@@ -29,7 +29,6 @@ let nextAutocompleteId = 0
   styleUrl: './autocomplete.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '(window:scroll)': 'updatePanelPosition()',
     '(window:resize)': 'updatePanelPosition()',
   },
   providers: [
@@ -180,6 +179,10 @@ export class Autocomplete<T = unknown> implements ControlValueAccessor, OnDestro
     } else {
       result.then(applyResults, applyError)
     }
+  }
+
+  constructor() {
+    followPageScroll(() => this.updatePanelPosition())
   }
 
   protected updatePanelPosition(): void {

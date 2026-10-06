@@ -235,7 +235,7 @@ export class DocsPage {
       if (heading) {
         this.focus(heading)
       }
-      this.host.nativeElement.ownerDocument.defaultView?.scrollTo?.({ top: 0 })
+      scrollToTop(this.host.nativeElement)
     }
   }
 
@@ -246,4 +246,17 @@ export class DocsPage {
     }
     element.focus({ preventScroll: true })
   }
+}
+
+/**
+ * Back to the top of the page, whichever box scrolls it: the window, or a scrolling ancestor such as the app shell's
+ * sheet, which scrolls its own content on a wide screen.
+ */
+function scrollToTop(from: HTMLElement): void {
+  for (let box = from.parentElement; box; box = box.parentElement) {
+    if (box.scrollTop > 0) {
+      box.scrollTop = 0
+    }
+  }
+  from.ownerDocument.defaultView?.scrollTo?.({ top: 0 })
 }

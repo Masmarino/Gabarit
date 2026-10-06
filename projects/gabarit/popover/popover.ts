@@ -7,6 +7,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core'
+import { followPageScroll } from '@masmarino/gabarit/floating-panel'
 
 export type PopoverAlign = 'start' | 'end'
 
@@ -31,7 +32,6 @@ let nextPopoverId = 0
     '(click)': 'onTriggerClick($event)',
     '(document:click)': 'handleClickOutside($event)',
     '(keydown)': 'onKeydown($event)',
-    '(window:scroll)': 'updatePosition()',
     '(window:resize)': 'updatePosition()',
   },
 })
@@ -70,6 +70,10 @@ export class Popover {
     if (trigger?.contains(event.target as Node)) {
       this.toggle()
     }
+  }
+
+  constructor() {
+    followPageScroll(() => this.updatePosition())
   }
 
   protected updatePosition(): void {

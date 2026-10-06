@@ -165,6 +165,29 @@ describe('AppShell', () => {
     expect(header).toContain('var(--gbt-shell-header-bg, var(--bg-panel))')
   })
 
+  it('on a wide screen, holds the frame still and lets the sheet scroll its own content, under its corner', () => {
+    const componentScss = readFileSync(
+      join(process.cwd(), 'projects/gabarit/app-shell/app-shell.scss'),
+      'utf8',
+    )
+    const block = (start: string, end: string) =>
+      componentScss.slice(componentScss.indexOf(start), componentScss.indexOf(end))
+    const frame = block('.gbt-app-shell {', '&__skip {')
+    expect(frame).toMatch(
+      /@media \(min-width: \$drawer-breakpoint \+ 1\) \{\s*height: 100vh;\s*height: 100dvh;\s*min-height: 0;\s*overflow: hidden;/,
+    )
+    const content = block('&__content {', '@media (max-width: $drawer-breakpoint)')
+    expect(content).toContain('border-top-left-radius: $corner')
+    expect(content).toMatch(
+      /@media \(min-width: \$drawer-breakpoint \+ 1\) \{\s*min-height: 0;\s*overflow-y: auto;/,
+    )
+    // The corner is the sheet's own: nothing redraws it over what scrolls.
+    expect(componentScss).not.toContain('radial-gradient')
+    // On paper, nothing is cut at the height of the screen.
+    expect(frame).toMatch(/@media print \{\s*height: auto;\s*overflow: visible;/)
+    expect(content).toMatch(/@media print \{\s*overflow: visible;/)
+  })
+
   it('animates the collapse-toggle icon rotation, guarded by prefers-reduced-motion', () => {
     const componentScss = readFileSync(
       join(process.cwd(), 'projects/gabarit/app-shell/app-shell.scss'),

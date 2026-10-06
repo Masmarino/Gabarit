@@ -10,6 +10,7 @@ import {
 } from '@angular/core'
 import { Avatar } from '@masmarino/gabarit/avatar'
 import { Icon } from '@masmarino/gabarit/icon'
+import { followPageScroll } from '@masmarino/gabarit/floating-panel'
 
 export interface AvatarGroupItem {
   name: string
@@ -26,7 +27,6 @@ export interface AvatarGroupItem {
   host: {
     '(document:click)': 'handleClickOutside($event)',
     '(keydown)': 'onKeydown($event)',
-    '(window:scroll)': 'updatePanelPosition()',
     '(window:resize)': 'updatePanelPosition()',
   },
 })
@@ -62,6 +62,10 @@ export class AvatarGroup<T extends AvatarGroupItem = AvatarGroupItem> {
     if (this.panelOpen()) {
       this.updatePanelPosition()
     }
+  }
+
+  constructor() {
+    followPageScroll(() => this.updatePanelPosition())
   }
 
   protected updatePanelPosition(): void {

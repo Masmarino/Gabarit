@@ -12,7 +12,7 @@ import {
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { Icon } from '@masmarino/gabarit/icon'
 import { Tag } from '@masmarino/gabarit/tag'
-import { floatingPanelAnchor } from '@masmarino/gabarit/floating-panel'
+import { floatingPanelAnchor, followPageScroll } from '@masmarino/gabarit/floating-panel'
 
 export interface SelectOption<T = string> {
   value: T
@@ -33,7 +33,6 @@ let nextSelectId = 0
   host: {
     '(document:click)': 'handleClickOutside($event)',
     '(keydown)': 'onKeydown($event)',
-    '(window:scroll)': 'updatePanelPosition()',
     '(window:resize)': 'updatePanelPosition()',
     '[class.gbt-select--sm]': "size() === 'sm'",
     '[class.gbt-select--full]': 'fullWidth()',
@@ -171,6 +170,10 @@ export class Select<T = string> implements ControlValueAccessor {
     } else {
       this.onTouched()
     }
+  }
+
+  constructor() {
+    followPageScroll(() => this.updatePanelPosition())
   }
 
   protected updatePanelPosition(): void {

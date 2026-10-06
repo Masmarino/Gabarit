@@ -1,4 +1,6 @@
-import { floatingPanelAnchor } from './floating-panel-position'
+import { Component } from '@angular/core'
+import { TestBed } from '@angular/core/testing'
+import { floatingPanelAnchor, followPageScroll } from './floating-panel-position'
 
 function trigger(rect: Partial<DOMRect>): HTMLElement {
   const el = document.createElement('button')
@@ -45,5 +47,37 @@ describe('floatingPanelAnchor', () => {
       Math.max(rect.bottom, 40),
     )
     expect(anchor?.bottom).toBe(106)
+  })
+})
+
+describe('followPageScroll', () => {
+  @Component({ standalone: true, template: '' })
+  class Panel {
+    follows = 0
+    constructor() {
+      followPageScroll(() => this.follows++)
+    }
+  }
+
+  it("follows the window's scroll, and a scrolling container's, whose scroll events don't bubble", () => {
+    const fixture = TestBed.createComponent(Panel)
+    const sheet = document.body.appendChild(document.createElement('main'))
+
+    window.dispatchEvent(new Event('scroll'))
+    document.dispatchEvent(new Event('scroll'))
+    sheet.dispatchEvent(new Event('scroll', { bubbles: false }))
+
+    expect(fixture.componentInstance.follows).toBe(3)
+    sheet.remove()
+  })
+
+  it('stops with its component', () => {
+    const fixture = TestBed.createComponent(Panel)
+    const panel = fixture.componentInstance
+    fixture.destroy()
+
+    document.body.dispatchEvent(new Event('scroll', { bubbles: false }))
+
+    expect(panel.follows).toBe(0)
   })
 })

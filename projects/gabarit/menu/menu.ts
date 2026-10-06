@@ -14,6 +14,7 @@ import {
   viewChild,
 } from '@angular/core'
 import { Icon } from '@masmarino/gabarit/icon'
+import { followPageScroll } from '@masmarino/gabarit/floating-panel'
 
 interface PopupPosition {
   top: string
@@ -37,7 +38,6 @@ export class MenuTrigger {}
   host: {
     '(document:click)': 'onDocumentClick($event)',
     '(focusout)': 'onFocusOut($event)',
-    '(window:scroll)': 'updatePosition()',
     '(window:resize)': 'updatePosition()',
     '[class.gbt-menu-host--custom]': '!triggerIcon() && !!customTrigger()',
   },
@@ -143,6 +143,10 @@ export class Menu {
     if (this.open() && !this.elementRef.nativeElement.contains(target)) {
       this.open.set(false)
     }
+  }
+
+  constructor() {
+    followPageScroll(() => this.updatePosition())
   }
 
   protected updatePosition(): void {

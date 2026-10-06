@@ -7,6 +7,7 @@ import {
   input,
   signal,
 } from '@angular/core'
+import { followPageScroll } from '@masmarino/gabarit/floating-panel'
 
 export type TooltipPosition = 'top' | 'bottom' | 'left' | 'right'
 
@@ -36,7 +37,6 @@ let nextId = 0
     '(focusin)': 'onFocusIn()',
     '(focusout)': 'hide()',
     '(keydown.escape)': 'hide()',
-    '(window:scroll)': 'updatePosition()',
     '(window:resize)': 'updatePosition()',
   },
 })
@@ -74,6 +74,10 @@ export class Tooltip implements OnDestroy {
     this.closing.set(false)
     this.updatePosition()
     this.visible.set(true)
+  }
+
+  constructor() {
+    followPageScroll(() => this.updatePosition())
   }
 
   protected updatePosition(): void {

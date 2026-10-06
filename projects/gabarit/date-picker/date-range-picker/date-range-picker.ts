@@ -14,6 +14,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { Icon } from '@masmarino/gabarit/icon'
 import { CalendarPanel, type CalendarPanelView } from '../calendar-panel'
 import { WeekStartsOn, isSameDay } from '../date-picker-calendar'
+import { followPageScroll } from '@masmarino/gabarit/floating-panel'
 
 export type DateRangeVisibleMonths = 1 | 2
 
@@ -38,7 +39,6 @@ const CURRENT_YEAR = new Date().getFullYear()
   host: {
     '(document:click)': 'handleClickOutside($event)',
     '(keydown)': 'onEscape($event)',
-    '(window:scroll)': 'updatePanelPosition()',
     '(window:resize)': 'updatePanelPosition()',
   },
   providers: [
@@ -284,6 +284,10 @@ export class DateRangePicker implements ControlValueAccessor {
 
   protected handleClickOutside(event: MouseEvent): void {
     this.panel.handleClickOutside(event)
+  }
+
+  constructor() {
+    followPageScroll(() => this.updatePanelPosition())
   }
 
   protected updatePanelPosition(): void {

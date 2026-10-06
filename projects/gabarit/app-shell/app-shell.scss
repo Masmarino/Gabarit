@@ -11,11 +11,26 @@ $corner: var(--site-border-radius-lg);
 }
 
 // One graphite frame in both themes, an L made of the rail and the bar; the pages sit inside it on the
-// theme's paper, a sheet whose corner is rounded where the rail meets the bar.
+// theme's paper, a sheet whose corner is rounded where the rail meets the bar. On a wide screen the frame
+// holds still and the sheet scrolls its own content, under its corner; below the drawer breakpoint the
+// window scrolls, under a sticky bar, and the sheet has no corner.
 .gbt-app-shell {
   display: flex;
   min-height: 100vh;
   background: var(--frame);
+
+  @media (min-width: $drawer-breakpoint + 1) {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  // On paper, the page runs on: nothing is cut at the height of the screen.
+  @media print {
+    height: auto;
+    overflow: visible;
+  }
 
   &__skip {
     position: absolute;
@@ -159,25 +174,6 @@ $corner: var(--site-border-radius-lg);
     @include themes.frame-tokens;
     background: var(--gbt-shell-header-bg, var(--bg-panel));
     border-bottom: 1px solid var(--gbt-shell-border, transparent);
-
-    // The sheet's rounded corner, drawn again just under the bar, so it stays round over whatever
-    // scrolls beneath.
-    @media (min-width: $drawer-breakpoint + 1) {
-      &::after {
-        content: '';
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: $corner;
-        height: $corner;
-        background: radial-gradient(
-          circle at 100% 100%,
-          transparent calc(#{$corner} - 0.5px),
-          var(--frame) $corner
-        );
-        pointer-events: none;
-      }
-    }
   }
 
   &__toggle {
@@ -229,6 +225,16 @@ $corner: var(--site-border-radius-lg);
     padding: var(--gbt-shell-content-padding, clamp(1rem, 0.25rem + 2vw, 2rem));
     background: var(--bg-panel);
     border-top-left-radius: $corner;
+
+    // The sheet is the scroller: what scrolls stays inside its rounded corner.
+    @media (min-width: $drawer-breakpoint + 1) {
+      min-height: 0;
+      overflow-y: auto;
+    }
+
+    @media print {
+      overflow: visible;
+    }
 
     &:focus-visible {
       @include a11y.focus-ring(-2px);
