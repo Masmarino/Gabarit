@@ -41,6 +41,8 @@ describe('copyToClipboard', () => {
     const dialog = document.createElement('dialog')
     const button = document.createElement('button')
     dialog.appendChild(button)
+    // Open, or its button can't take the focus (jsdom has no showModal()).
+    dialog.setAttribute('open', '')
     document.body.appendChild(dialog)
     button.focus()
     let parentAtCopy: Element | null = null

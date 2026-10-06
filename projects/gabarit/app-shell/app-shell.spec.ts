@@ -322,16 +322,25 @@ describe('AppShell', () => {
   })
 
   it('closes on Escape and returns focus to the button', () => {
-    const fixture = setup()
-    button(fixture).focus()
-    button(fixture).click()
-    fixture.detectChanges()
+    // The button only shows up to 768px, and jsdom (1024px wide, its media queries blind to resizing) won't focus a
+    // hidden element any more than a browser does: show it as a phone would.
+    const phone = document.createElement('style')
+    phone.textContent = '.gbt-app-shell__toggle { display: block !important; }'
+    document.head.appendChild(phone)
+    try {
+      const fixture = setup()
+      button(fixture).focus()
+      button(fixture).click()
+      fixture.detectChanges()
 
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-    fixture.detectChanges()
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      fixture.detectChanges()
 
-    expect(button(fixture).getAttribute('aria-expanded')).toBe('false')
-    expect(document.activeElement).toBe(button(fixture))
+      expect(button(fixture).getAttribute('aria-expanded')).toBe('false')
+      expect(document.activeElement).toBe(button(fixture))
+    } finally {
+      phone.remove()
+    }
   })
 
   it('closes on a click in the backdrop, and not on a click in the drawer', () => {
