@@ -27,8 +27,8 @@ public func gRowButton(_ title: String, destructive: Bool = false, action: @esca
 /// A sheet's title (Mac's `GSheetTitle`): a back arrow if `back`, the title large and its sentence discreet, the cross
 /// on the right.
 @MainActor
-public func gSheetTitle(_ title: String, summary: String, closeTooltip: String = "Close (Esc)", closeLabel: String = "Close",
-                        backTooltip: String = "Back",
+public func gSheetTitle(_ title: String, summary: String, closeTooltip: String = GStrings.text("Close (Esc)"), closeLabel: String = GStrings.text("Close"),
+                        backTooltip: String = GStrings.text("Back"),
                         back: (() -> Void)? = nil, dismiss: @escaping () -> Void) -> GWidget {
     var children: [GWidget] = []
     if let back {
@@ -52,11 +52,11 @@ public func gSheetTitle(_ title: String, summary: String, closeTooltip: String =
 }
 
 /// A sheet: a modal window over `parent`, Gabarit's title and cross on top, then the content on the page's ground.
-/// Escape closes it. Returns the window (`gtk_window_close` to close it from the content).
+/// Escape closes it. Returns the window (`gtk_window_close` to close it from the content). `focus`: what has the
+/// keyboard first (a field; otherwise GTK's first, which may be the back arrow or the cross); `defaultButton`: what
+/// Return triggers from a field.
 @MainActor
 @discardableResult
-/// `focus`: what has the keyboard first (a field; otherwise GTK's first, which may be the back arrow or the cross);
-/// `defaultButton`: what Return triggers from a field.
 public func gSheet(parent: GWidget, title: String, summary: String, size: (width: Int32, height: Int32) = (560, 640),
                    content: GWidget, focus: GWidget? = nil, defaultButton: GWidget? = nil,
                    onClose: (() -> Void)? = nil) -> GWidget {
@@ -89,7 +89,7 @@ public func gSheet(parent: GWidget, title: String, summary: String, size: (width
 /// An error's alert over `parent` (a small modal window, as Gabarit draws it): the title, the message, "OK". Return
 /// and Escape close it.
 @MainActor
-public func gErrorAlert(parent: GWidget, title: String, message: String, ok: String = "OK") {
+public func gErrorAlert(parent: GWidget, title: String, message: String, ok: String = GStrings.text("OK")) {
     let window = gtk_window_new()!
     let gtkWindow: UnsafeMutablePointer<GtkWindow>? = cast(window)
     gStyle(window, "g-window", "g-alert")
@@ -201,8 +201,8 @@ public struct GCommandGroup {
 /// Opens the quick search over the host: a field, then the entries that match, by group; the arrows choose, Return
 /// opens, Escape (or a click beside it) closes.
 @MainActor
-public func gCommandPalette(_ host: GWidget, prompt: String = "Search", nothing: String = "Nothing matches.",
-                            name: String = "Quick search", groups: [GCommandGroup]) {
+public func gCommandPalette(_ host: GWidget, prompt: String = GStrings.text("Search"), nothing: String = GStrings.text("Nothing matches."),
+                            name: String = GStrings.text("Quick search"), groups: [GCommandGroup]) {
     let palette = GCommandPaletteView(host: host, prompt: prompt, nothing: nothing, name: name, groups: groups)
     palette.open()
 }
@@ -272,7 +272,7 @@ final class GCommandPaletteView {
         }
         g_signal_connect_data(UnsafeMutableRawPointer(keys), "key-pressed", unsafeBitCast(pressed, to: GCallback.self),
                               Unmanaged.passUnretained(self).toOpaque(), nil, GConnectFlags(rawValue: 0))
-        let escape = gtk_label_new("Esc")!
+        let escape = gtk_label_new(GStrings.text("Esc"))!
         gStyle(escape, "g-mono", "g-text-discret")
         gAccessibleHidden(escape)
         // A click on "Esc" closes it too, as on the Mac.

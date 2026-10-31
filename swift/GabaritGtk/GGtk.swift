@@ -17,6 +17,10 @@ public enum GScheme: Sendable { case light, dark, system }
 public enum GGtk {
     private static var colours: OpaquePointer?
     private static var installed = false
+    /// The appearance asked for: `.system` follows the desktop's changes while the app runs.
+    private static var scheme = GScheme.system
+    /// GNOME's interface settings, watched for `color-scheme` (kept for the app's life).
+    private static var desktop: UnsafeMutablePointer<GSettings>?
 
     /// Registers the IBM Plex fonts with fontconfig, then loads the style sheets for the default display. Once: a
     /// second call only applies `scheme`.
@@ -49,6 +53,8 @@ public enum GGtk {
 
     /// Changes the appearance (light or dark colours) of every window.
     public static func apply(_ scheme: GScheme) {
+        self.scheme = scheme
+        watchDesktop()
         let dark = scheme == .dark || (scheme == .system && desktopPrefersDark())
         if let colours, let display = gdk_display_get_default() {
             gtk_style_context_remove_provider_for_display(display, colours)
@@ -59,6 +65,18 @@ public enum GGtk {
             gSet(UnsafeMutableRawPointer(settings).assumingMemoryBound(to: GObject.self), "gtk-application-prefer-dark-theme", dark)
         }
         colours = load(dark ? "gabarit-dark" : "gabarit-light", priority: UInt32(GTK_STYLE_PROVIDER_PRIORITY_APPLICATION) - 1)
+    }
+
+    /// Follows GNOME's light or dark choice as it changes, for an app in `.system`.
+    private static func watchDesktop() {
+        guard desktop == nil, let source = g_settings_schema_source_get_default(),
+              let schema = g_settings_schema_source_lookup(source, "org.gnome.desktop.interface", 1) else { return }
+        defer { g_settings_schema_unref(schema) }
+        guard g_settings_schema_has_key(schema, "color-scheme") != 0, let settings = g_settings_new("org.gnome.desktop.interface") else { return }
+        desktop = settings
+        gConnect(UnsafeMutableRawPointer(settings), "changed::color-scheme") {
+            if GGtk.scheme == .system { GGtk.apply(.system) }
+        }
     }
 
     /// The desktop's choice (GNOME's `color-scheme`, `prefer-dark`), when its settings are there.
@@ -283,7 +301,10 @@ public func gClamp(_ child: GWidget, maximum: Int32) -> GWidget {
             gtk_widget_measure(child, orientation, forSize, &low, &high, nil, nil)
             high = max(low, limit)
         } else {
-            let width = forSize < 0 ? forSize : min(forSize, limit)
+            // Measured at the width it will be given (`allocate`): never under its own minimum.
+            var least: Int32 = 0
+            gtk_widget_measure(child, GTK_ORIENTATION_HORIZONTAL, -1, &least, nil, nil, nil)
+            let width = forSize < 0 ? forSize : max(least, min(forSize, limit))
             gtk_widget_measure(child, orientation, width, &low, &high, nil, nil)
         }
         minimum?.pointee = low
@@ -304,9 +325,9 @@ public func gClamp(_ child: GWidget, maximum: Int32) -> GWidget {
     return box
 }
 
-/// A label in one of Gabarit's text styles (`body`, `headline`, `title2`…), aligned to the leading edge.
+/// A label in one of Gabarit's text styles (`body`, `headline`, `title2`…), aligned to the leading edge. `heading`: a
+/// title's level (1 the page's, 2 a section's…), said as such by screen readers.
 @MainActor
-/// `heading`: a title's level (1 the page's, 2 a section's…), said as such by screen readers.
 public func gLabel(_ text: String, style: String = "body", classes: [String] = [], wraps: Bool = false,
                    heading: Int? = nil) -> GWidget {
     let label: GWidget
@@ -333,9 +354,9 @@ public func gIconName(_ name: String) -> String {
 }
 
 /// An icon, by the Mac's name (`"bell"`, `"gearshape.fill"`), drawn by Phosphor (see `gIconName`). `size`: as an SF
-/// Symbol's font size; Phosphor draws in a wider margin, so its icon is asked a quarter larger to look the same.
+/// Symbol's font size; Phosphor draws in a wider margin, so its icon is asked a quarter larger to look the same. Hidden
+/// from screen readers unless `decorative` is false (an icon that says something no text beside it says).
 @MainActor
-/// Hidden from screen readers unless `decorative` is false (an icon that says something no text beside it says).
 public func gIcon(_ name: String, size: Int32 = 16, decorative: Bool = true) -> GWidget {
     let image = gtk_image_new_from_icon_name(gIconName(name))!
     gtk_image_set_pixel_size(cast(image), name.hasSuffix("-symbolic") ? size : (size * 5 + 2) / 4)

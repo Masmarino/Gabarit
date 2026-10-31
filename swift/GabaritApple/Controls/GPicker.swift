@@ -57,6 +57,7 @@ public struct GPicker<Value: Hashable>: View {
 private struct GMenuFace: View {
     let title: String
     var active = false
+    @ScaledMetric(relativeTo: .body) private var chevron: CGFloat = 10
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.colorSchemeContrast) private var contrast
 
@@ -65,7 +66,7 @@ private struct GMenuFace: View {
         HStack(spacing: 8) {
             Text(title).font(GFont.body).foregroundStyle(GColor.textPrimary).lineLimit(1)
             Image(systemName: "chevron.up.chevron.down")
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: chevron, weight: .semibold))
                 .foregroundStyle(GColor.textDiscret)
         }
         .padding(.leading, 10).padding(.trailing, 8)
@@ -107,6 +108,9 @@ private struct GMenuField<Value: Hashable>: View {
     let options: [(value: Value, title: String)]
     @State private var open = false
     @State private var hovering = false
+    /// The line the arrows point at in the open list (Return chooses it).
+    @State private var highlighted: Int?
+    @FocusState private var listFocused: Bool
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -126,14 +130,27 @@ private struct GMenuField<Value: Hashable>: View {
                 VStack(spacing: 0) {
                     ForEach(Array(options.enumerated()), id: \.element.value) { index, option in
                         if index > 0 { Rectangle().fill(GColor.hairline).frame(height: 1) }
-                        GMenuRow(title: option.title, checked: option.value == selection) {
-                            selection = option.value
-                            open = false
+                        GMenuRow(title: option.title, checked: option.value == selection, highlighted: highlighted == index) {
+                            choose(option.value)
                         }
                     }
                 }
             }
             .scrollBounceBehavior(.basedOnSize)
+            // The keyboard in the list: the arrows move, Return chooses, Escape closes (the bubble's own).
+            .focusable()
+            .focusEffectDisabled()
+            .focused($listFocused)
+            .onAppear {
+                highlighted = options.firstIndex { $0.value == selection }
+                listFocused = true
+            }
+            .onKeyPress(.downArrow) { highlight(1); return .handled }
+            .onKeyPress(.upArrow) { highlight(-1); return .handled }
+            .onKeyPress(.return) {
+                if let highlighted { choose(options[highlighted].value) }
+                return .handled
+            }
             .frame(minWidth: 220, maxHeight: 340)
             .fixedSize(horizontal: false, vertical: options.count <= 8)
             .background(GColor.surface)
@@ -146,17 +163,28 @@ private struct GMenuField<Value: Hashable>: View {
         guard let index = options.firstIndex(where: { $0.value == selection }) else { return }
         selection = options[min(max(index + offset, 0), options.count - 1)].value
     }
+
+    private func highlight(_ offset: Int) {
+        guard !options.isEmpty else { return }
+        highlighted = min(max((highlighted ?? -1) + offset, 0), options.count - 1)
+    }
+
+    private func choose(_ value: Value) {
+        selection = value
+        open = false
+    }
 }
 
 /// A line of a choice's list: its name, a rust tick if it is the current choice, the veil on hover.
 private struct GMenuRow: View {
     let title: String
     let checked: Bool
+    var highlighted = false
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            GHover { hovering in row(hovering) }
+            GHover { hovering in row(hovering || highlighted) }
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(checked ? .isSelected : [])

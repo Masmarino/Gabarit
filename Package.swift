@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.4
 import PackageDescription
 
 // Gabarit's native packages. GabaritCommon: the tokens as plain values, for every platform (Apple, Windows,
@@ -7,7 +7,7 @@ import PackageDescription
 let package = Package(
     name: "Gabarit",
     defaultLocalization: "en",
-    platforms: [.macOS(.v26), .iOS(.v26)],
+    platforms: [.macOS(.v27), .iOS(.v27)],
     products: [
         .library(name: "GabaritCommon", targets: ["GabaritCommon"]),
         .library(name: "GabaritApple", targets: ["GabaritApple"]),

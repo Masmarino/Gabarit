@@ -15,6 +15,8 @@ public struct GWindow<Icon: View, Content: View>: View {
     var close: (() -> Void)?
     @ViewBuilder var icon: Icon
     @ViewBuilder var content: Content
+    /// The window that holds it: the cross closes this one, not whichever has the keyboard.
+    @State private var window: NSWindow?
 
     /// `close`: what the cross does; by default, it closes the window.
     public init(title: String, subtitle: String? = nil, close: (() -> Void)? = nil, @ViewBuilder icon: () -> Icon,
@@ -31,13 +33,14 @@ public struct GWindow<Icon: View, Content: View>: View {
             GWindowHeader(title: title, subtitle: subtitle) {
                 icon
             } trailing: {
-                GCloseButton { (close ?? { NSApp.keyWindow?.performClose(nil) })() }
+                GCloseButton { (close ?? { window?.performClose(nil) })() }
             }
             VStack(spacing: 0) { content }.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         // Up to the top of the window: the title bar, transparent and empty, keeps no room.
         .ignoresSafeArea(.container, edges: .top)
         .gWindowChrome()
+        .background(GWindowReader { window = $0 })
     }
 }
 
@@ -218,6 +221,28 @@ public enum GWindows {
         window.center()
         if let autosave { window.setFrameAutosaveName(autosave) }
         return window
+    }
+}
+/// Gives the window that holds it, once it is in one.
+struct GWindowReader: NSViewRepresentable {
+    let found: (NSWindow) -> Void
+
+    func makeNSView(context: Context) -> NSView { Reader(found: found) }
+    func updateNSView(_ view: NSView, context: Context) {}
+
+    private final class Reader: NSView {
+        let found: (NSWindow) -> Void
+        init(found: @escaping (NSWindow) -> Void) {
+            self.found = found
+            super.init(frame: .zero)
+        }
+
+        @available(*, unavailable) required init?(coder: NSCoder) { nil }
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            if let window { found(window) }
+        }
     }
 }
 #endif

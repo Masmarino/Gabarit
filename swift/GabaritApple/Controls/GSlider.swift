@@ -117,6 +117,7 @@ public struct GStepper: View {
     let title: String
     @Binding var value: Int
     let range: ClosedRange<Int>
+    @ScaledMetric(relativeTo: .body) private var glyph: CGFloat = 11
 
     public init(_ title: String, value: Binding<Int>, in range: ClosedRange<Int>) {
         self.title = title
@@ -163,7 +164,7 @@ public struct GStepper: View {
 
     private func step(_ symbol: String, by delta: Int) -> some View {
         Button { value = min(max(value + delta, range.lowerBound), range.upperBound) } label: {
-            Image(systemName: symbol).font(.system(size: 11, weight: .semibold)).foregroundStyle(GColor.textPrimary)
+            Image(systemName: symbol).font(.system(size: glyph, weight: .semibold)).foregroundStyle(GColor.textPrimary)
                 .frame(width: GControlMetrics.compact + 8, height: GControlMetrics.compact)
                 .contentShape(Rectangle())
                 .gTouchTarget(height: GControlMetrics.compact)

@@ -65,6 +65,8 @@ public struct GEmptyState: View {
     let actionTitle: String?
     let actionSystemImage: String?
     let action: (() -> Void)?
+    @ScaledMetric(relativeTo: .title3) private var glyph: CGFloat = 32
+    @ScaledMetric(relativeTo: .title3) private var square: CGFloat = 80
 
     public init(systemImage: String, title: String, message: String, actionTitle: String? = nil,
                 actionSystemImage: String? = nil, action: (() -> Void)? = nil) {
@@ -79,9 +81,9 @@ public struct GEmptyState: View {
     public var body: some View {
         VStack(spacing: GSpacing.xl) {
             Image(systemName: systemImage)
-                .font(.system(size: 32, weight: .light))
+                .font(.system(size: glyph, weight: .light))
                 .foregroundStyle(GColor.textSecondary)
-                .frame(width: 80, height: 80)
+                .frame(width: square, height: square)
                 .gSurface(RoundedRectangle(cornerRadius: GRadius.lg, style: .continuous))
                 .accessibilityHidden(true)
             VStack(spacing: GSpacing.xs) {

@@ -93,6 +93,9 @@ public struct GCloseButton: View {
     /// On the dark frame (a window's header); otherwise on the page's ground, in the appearance's colours.
     var onFrame: Bool
     let action: () -> Void
+    /// The cross and its circle grow with the text size (iPhone, iPad).
+    @ScaledMetric(relativeTo: .caption) private var glyph: CGFloat = 11
+    @ScaledMetric(relativeTo: .caption) private var circle: CGFloat = 28
 
     public init(title: String? = nil, onFrame: Bool = true, action: @escaping () -> Void) {
         self.title = title ?? gText("Close")
@@ -115,9 +118,9 @@ public struct GCloseButton: View {
 
     private func cross(_ hovering: Bool) -> some View {
         Image(systemName: "xmark")
-            .font(.system(size: 11, weight: .bold))
+            .font(.system(size: glyph, weight: .bold))
             .foregroundStyle(onFrame ? GFrameColor.text : GColor.textSecondary)
-            .frame(width: 28, height: 28)
+            .frame(width: circle, height: circle)
             .background(hovering ? (onFrame ? GFrameColor.closeHover : GColor.hover) : Color.clear, in: Circle())
             .overlay { Circle().strokeBorder(onFrame ? GFrameColor.rim : GColor.hairline, lineWidth: 1) }
             #if os(iOS)

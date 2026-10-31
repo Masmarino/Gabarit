@@ -28,10 +28,10 @@ public func gButton(_ title: String, icon: String? = nil, variant: GButtonVarian
     return button
 }
 
-/// Gabarit's close button: a cross in a circle with a fine rim (on the dark frame when in a `g-frame`).
+/// Gabarit's close button: a cross in a circle with a fine rim (on the dark frame when in a `g-frame`). `label`: its
+/// name for screen readers ("Close"); `tooltip` adds the key ("Close (Esc)"), said as a shortcut.
 @MainActor
-/// `label`: its name for screen readers ("Close"); `tooltip` adds the key ("Close (Esc)"), said as a shortcut.
-public func gCloseButton(tooltip: String, label: String = "Close", action: @escaping () -> Void) -> GWidget {
+public func gCloseButton(tooltip: String, label: String = GStrings.text("Close"), action: @escaping () -> Void) -> GWidget {
     let button = gtk_button_new_from_icon_name(gIconName("xmark"))!
     gStyle(button, "g-close")
     gPointer(button)
@@ -159,8 +159,8 @@ public func gSlider(value: Double, in range: ClosedRange<Double>, step: Double? 
 
 /// A number to raise or lower: the title on the left, then two buttons on either side of the value, in a field.
 @MainActor
-public func gStepper(_ title: String, value: Int, in range: ClosedRange<Int>, decrease: String = "Decrease",
-                     increase: String = "Increase", onChange: @escaping (Int) -> Void) -> GWidget {
+public func gStepper(_ title: String, value: Int, in range: ClosedRange<Int>, decrease: String = GStrings.text("Decrease"),
+                     increase: String = GStrings.text("Increase"), onChange: @escaping (Int) -> Void) -> GWidget {
     let state = GStepperState(value)
     let number = gLabel("\(value)", classes: ["g-stepper-value"])
     gtk_label_set_xalign(cast(number), 0.5)
@@ -418,7 +418,7 @@ public func gForm(title: String, summary: String, sections: [GWidget]) -> GWidge
 /// button (Tab reaches it, screen readers say it whole and whether it is the chosen one).
 @MainActor
 public func gSidebarRow(_ title: String, icon: String, selected: Bool, detail: String? = nil, warns: Bool = false,
-                        warning: String = "Needs attention", action: (() -> Void)? = nil) -> GWidget {
+                        warning: String = GStrings.text("Needs attention"), action: (() -> Void)? = nil) -> GWidget {
     let name = gLabel(title)
     gtk_widget_set_hexpand(name, 1)
     let symbol = gIcon(icon)

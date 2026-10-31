@@ -47,7 +47,7 @@ public func gWindowHeader(title: String, subtitle: String? = nil, icon: String? 
 /// the page's ground. Escape closes it, as on the Mac.
 @MainActor
 public func gWindow(application: OpaquePointer?, title: String, subtitle: String? = nil, icon: String? = nil,
-                    size: (width: Int32, height: Int32), content: GWidget, closeTooltip: String = "Close (Esc)") -> GWidget {
+                    size: (width: Int32, height: Int32), content: GWidget, closeTooltip: String = GStrings.text("Close (Esc)")) -> GWidget {
     let window = gtk_application_window_new(cast(application))!
     gStyle(window, "g-window")
     gtk_window_set_title(cast(window), title)
@@ -125,7 +125,7 @@ public func gRailSquareButton(icon: String, tooltip: String, action: @escaping (
 
 /// The rail's quick search button: a magnifier and the whole shortcut ("Ctrl + K" on Linux).
 @MainActor
-public func gCommandKButton(shortcut: String = "Ctrl + K", tooltip: String = "Quick search (Ctrl + K)",
+public func gCommandKButton(shortcut: String = "Ctrl + K", tooltip: String = GStrings.text("Quick search (Ctrl + K)"),
                             action: @escaping () -> Void) -> GWidget {
     let label = gLabel(shortcut, style: "caption")
     gtk_label_set_xalign(cast(label), 0.5)
