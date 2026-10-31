@@ -153,5 +153,5 @@ object GSpacing {
 }
 
 object GOpacity {
-    const val disabled = 0.38f
+    const val disabled = 0.45f
 }

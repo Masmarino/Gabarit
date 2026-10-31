@@ -243,7 +243,7 @@
     <x:Double x:Key="GSpacingXxxl">40</x:Double>
     <x:Double x:Key="GSpacingXxxxl">64</x:Double>
     <x:Double x:Key="GSpacingXxxxxl">96</x:Double>
-    <x:Double x:Key="GOpacityDisabled">0.38</x:Double>
+    <x:Double x:Key="GOpacityDisabled">0.45</x:Double>
     <FontFamily x:Key="GFontText">/Fonts/IBMPlexSans-Regular.ttf#IBM Plex Sans</FontFamily>
     <FontFamily x:Key="GFontDisplay">/Fonts/IBMPlexSansCondensed-SemiBold.ttf#IBM Plex Sans Condensed</FontFamily>
     <FontFamily x:Key="GFontMono">/Fonts/IBMPlexMono-Regular.ttf#IBM Plex Mono</FontFamily>

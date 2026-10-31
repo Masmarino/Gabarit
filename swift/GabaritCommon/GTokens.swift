@@ -132,7 +132,7 @@ public enum GSpacing {
 }
 
 public enum GOpacity {
-    public static let disabled: Double = 0.38
+    public static let disabled: Double = 0.45
 }
 
 public struct GShadowSpec: Sendable, Hashable {

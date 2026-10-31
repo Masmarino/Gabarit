@@ -126,6 +126,7 @@ public struct GNavTabs<Tab: Hashable>: View {
             Spacer(minLength: 0)
         }
         .overlay(alignment: .bottom) { Rectangle().fill(GColor.hairline).frame(height: 1) }
+        .gDimmedWhenDisabled()
     }
 }
 

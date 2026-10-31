@@ -26,7 +26,10 @@ button.g-danger { background-color: @g_error; color: @g_onPrimary; border: none;
 button.g-danger:hover { background-color: alpha(@g_error, 0.9); }
 button.g-danger:active { background-color: alpha(@g_error, 0.8); }
 button.g-secondary.g-destructive, button.g-ghost.g-destructive { color: @g_error; }
-button.g-button:disabled { opacity: 0.45; }
+/* Disabled: dimmed, the same for every control (GOpacity.disabled) */
+button.g-button:disabled, button.g-close:disabled, button.g-chip:disabled, button.g-nav-tab:disabled,
+button.g-rail-item:disabled, switch.g-switch:disabled, entry.g-field:disabled, dropdown.g-menu:disabled,
+scale.g-slider:disabled { opacity: 0.45; }
 
 /* The close button: a cross in a circle with a fine rim (on the dark frame, or on the page) */
 

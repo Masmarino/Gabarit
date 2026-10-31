@@ -5,6 +5,9 @@ import SwiftUI
 // the pointing hand over them on the Mac (`gPointer`).
 
 public extension View {
+    /// Dimmed when disabled (`GOpacity.disabled`), the same for every control.
+    func gDimmedWhenDisabled() -> some View { modifier(GDimmed()) }
+
     /// The pointing hand over this view on the Mac: it can be clicked.
     @ViewBuilder func gPointer() -> some View {
         #if os(macOS)
@@ -30,6 +33,14 @@ public struct GHover<Content: View>: View {
             .onHover { hovering = $0 }
             .gPointer()
             .animation(.easeOut(duration: 0.12), value: hovering)
+    }
+}
+
+private struct GDimmed: ViewModifier {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func body(content: Content) -> some View {
+        content.opacity(isEnabled ? 1 : GOpacity.disabled)
     }
 }
 #endif

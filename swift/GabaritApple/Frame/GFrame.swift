@@ -76,6 +76,7 @@ public struct GRailItem: View {
             GHover { hovering in item(hovering: hovering) }
         }
         .buttonStyle(.plain)
+        .gDimmedWhenDisabled()
         .environment(\.colorScheme, .dark)
         .accessibilityLabel(title)
         .accessibilityAddTraits(current ? .isSelected : [])

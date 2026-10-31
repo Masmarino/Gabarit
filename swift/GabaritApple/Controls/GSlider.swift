@@ -68,7 +68,7 @@ private struct GSliderTrack: View {
         }
         .frame(height: GControlMetrics.compact - 8)
         .frame(minWidth: 120)
-        .opacity(isEnabled ? 1 : 0.45)
+        .opacity(isEnabled ? 1 : GOpacity.disabled)
         // The keyboard: Tab reaches it, the arrows move it a step (a twentieth with no step).
         .focusable(isEnabled)
         .onKeyPress(.leftArrow) { nudge(-1); return .handled }

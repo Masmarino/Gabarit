@@ -23,6 +23,7 @@ public struct GMenuItem: View {
             GHover { hovering in row.background(hovering ? GColor.hover : Color.clear) }
         }
         .buttonStyle(.plain)
+        .gDimmedWhenDisabled()
     }
 
     private var row: some View {

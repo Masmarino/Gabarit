@@ -28,7 +28,7 @@ public struct GFieldFrame: ViewModifier {
             .frame(minHeight: GControlMetrics.height)
             .background(GColor.background, in: shape)
             .overlay { shape.strokeBorder(focused ? GColor.accent : GColor.hairline, lineWidth: focused ? 1.5 : 1) }
-            .opacity(isEnabled ? 1 : 0.5)
+            .opacity(isEnabled ? 1 : GOpacity.disabled)
             .animation(.easeOut(duration: 0.12), value: focused)
     }
 }

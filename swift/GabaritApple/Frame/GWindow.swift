@@ -150,6 +150,7 @@ public struct GRailButton: View {
             }
         }
         .buttonStyle(.plain)
+        .gDimmedWhenDisabled()
         .help(value.map { "\(help) : \($0)" } ?? help)
         .accessibilityLabel(help)
         .accessibilityValue(value ?? "")
@@ -181,6 +182,7 @@ public struct GRailSquareButton: View {
             }
         }
         .buttonStyle(.plain)
+        .gDimmedWhenDisabled()
         .help(help)
         .accessibilityLabel(help)
     }

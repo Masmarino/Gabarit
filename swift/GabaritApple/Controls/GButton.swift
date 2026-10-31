@@ -44,7 +44,7 @@ public struct GButtonStyle: ButtonStyle {
                 .frame(minHeight: compact ? GControlMetrics.button : 44)
                 .background(background(pressed: configuration.isPressed, hovering: hovering), in: shape)
                 .overlay { if variant == .secondary { shape.strokeBorder(GColor.border.opacity(hovering ? 0.8 : 0.6), lineWidth: 1) } }
-                .opacity(isEnabled ? 1 : 0.45)
+                .opacity(isEnabled ? 1 : GOpacity.disabled)
                 .contentShape(shape)
         }
     }
@@ -80,7 +80,7 @@ public struct GPressStyle: ButtonStyle {
         GHover { hovering in
             configuration.label
                 .background(configuration.isPressed ? GColor.track : (hovering ? GColor.hover : Color.clear))
-                .opacity(isEnabled ? 1 : 0.35)
+                .opacity(isEnabled ? 1 : GOpacity.disabled)
         }
     }
 }
@@ -117,6 +117,7 @@ public struct GCloseButton: View {
                 #endif
         }
         .buttonStyle(.plain)
+        .gDimmedWhenDisabled()
         .keyboardShortcut(.cancelAction)
         .gPointer()
         #if os(macOS)

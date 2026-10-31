@@ -72,7 +72,7 @@ private struct GMenuFace: View {
         .background(GColor.background, in: shape)
         .overlay { shape.strokeBorder(active ? GColor.accent : GColor.hairline, lineWidth: active ? 1.5 : 1) }
         .contentShape(shape)
-        .opacity(isEnabled ? 1 : 0.5)
+        .opacity(isEnabled ? 1 : GOpacity.disabled)
     }
 }
 
@@ -186,6 +186,7 @@ private struct GChips<Value: Hashable>: View {
                 .accessibilityAddTraits(current ? .isSelected : [])
             }
         }
+        .gDimmedWhenDisabled()
         .fixedSize()
     }
 }

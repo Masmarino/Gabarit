@@ -42,7 +42,7 @@ private struct GToggleRow: View {
             Spacer(minLength: 12)
             GSwitch(isOn: configuration.isOn)
         }
-        .opacity(isEnabled ? 1 : 0.5)
+        .opacity(isEnabled ? 1 : GOpacity.disabled)
         .contentShape(Rectangle())
     }
 }
