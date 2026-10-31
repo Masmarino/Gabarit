@@ -58,11 +58,13 @@ public enum GShellPageGround: Sendable {
 
 /// The main window's layout, as on the iPad: always dark (the rail on the left, the top band under the window's
 /// buttons); the page follows the appearance, in a sheet with a rounded top-left corner.
-public struct GAppShell<Rail: View, Bar: View, Page: View>: View {
+public struct GAppShell<Rail: View, Bar: View, Page: View, Over: View>: View {
     var ground: GShellPageGround
     @ViewBuilder var rail: Rail
     @ViewBuilder var bar: Bar
     @ViewBuilder var page: Page
+    /// Over the band and the page, not the rail (an assistant's bubble).
+    @ViewBuilder var over: Over
 
     /// The rail's width: enough for a section's name in bold.
     public static var railWidth: CGFloat { 92 }
@@ -70,11 +72,12 @@ public struct GAppShell<Rail: View, Bar: View, Page: View>: View {
     public static var barHeight: CGFloat { 52 }
 
     public init(ground: GShellPageGround = .background, @ViewBuilder rail: () -> Rail, @ViewBuilder bar: () -> Bar,
-                @ViewBuilder page: () -> Page) {
+                @ViewBuilder page: () -> Page, @ViewBuilder over: () -> Over) {
         self.ground = ground
         self.rail = rail()
         self.bar = bar()
         self.page = page()
+        self.over = over()
     }
 
     public var body: some View {
@@ -102,10 +105,18 @@ public struct GAppShell<Rail: View, Bar: View, Page: View>: View {
                     }
                     .clipShape(corner)
             }
+            .overlay { over }
         }
         // Up to the top of the window: the page's title beside the window's buttons.
         .ignoresSafeArea(.container, edges: .top)
         .background(GPalette.graphite950.ignoresSafeArea())
+    }
+}
+
+public extension GAppShell where Over == EmptyView {
+    init(ground: GShellPageGround = .background, @ViewBuilder rail: () -> Rail, @ViewBuilder bar: () -> Bar,
+         @ViewBuilder page: () -> Page) {
+        self.init(ground: ground, rail: rail, bar: bar, page: page) { EmptyView() }
     }
 }
 
