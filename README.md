@@ -563,6 +563,13 @@ cross, the windows' dark header, the rail, cards). See `swift/GabaritWinUI/READM
 The gallery draws every component, light and dark, to PNG files, to compare a pre-release with the previous
 one: `cd galerie/apple && swift run GabaritGallery <folder>`.
 
+How they answer: every clickable thing has a hovered state (`GHover`), the pointing hand on the Mac (`gPointer`), the
+keyboard's focus (the switch's row is a button, the slider moves with the arrows), one dimming when disabled
+(`gDimmedWhenDisabled`, `GOpacity.disabled`), 44-point touch targets on iPhone and iPad (`gTouchTarget`), and no
+movement when the system asks for reduced motion (`gWithAnimation`). The apps' colours are checked against WCAG,
+light and dark, by `GContrastTests`; the states' texts (`successText`…, `successOnTint`…) and the side columns'
+selection and hover (`selectedFill`, `rowHover`) are roles of the apps' set, the same on every platform.
+
 An application's colour themes replace the grounds through `GTheme.current` (`background`, `surface`,
 `sidebar`, `track`, `hairline`). Their own strings are in English and French.
 
