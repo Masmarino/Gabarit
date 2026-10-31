@@ -25,6 +25,16 @@ public enum GGtk {
                 _ = FcConfigAppFontAddFile(nil, path)
             }
         }
+        // Text drawn as on the Mac: letters at their exact place and shape, not snapped to the pixel (GTK 4.14's hinting
+        // thins them and shuffles their spacing).
+        if let settings = gtk_settings_get_default() {
+            let object = UnsafeMutableRawPointer(settings).assumingMemoryBound(to: GObject.self)
+            gSet(object, "gtk-hint-font-metrics", false)
+            gSet(object, "gtk-xft-hinting", 0)
+            gSet(object, "gtk-xft-hintstyle", "hintnone")
+            gSet(object, "gtk-xft-antialias", 1)
+            gSet(object, "gtk-xft-rgba", "none")
+        }
         // Gabarit's own icons (the choice's two chevrons), beside the desktop's theme.
         if let icons = Bundle.module.path(forResource: "icons", ofType: nil), let display = gdk_display_get_default() {
             gtk_icon_theme_add_search_path(gtk_icon_theme_get_for_display(display), icons)
@@ -66,6 +76,21 @@ public enum GGtk {
 }
 
 // MARK: Plumbing
+
+/// Sets a GObject property (a boolean, a number or a string), if the object has it.
+@MainActor
+func gSet(_ object: UnsafeMutablePointer<GObject>, _ name: String, _ value: Any) {
+    guard g_object_class_find_property(UnsafeMutableRawPointer(object.pointee.g_type_instance.g_class)?.assumingMemoryBound(to: GObjectClass.self), name) != nil else { return }
+    var gvalue = GValue()
+    switch value {
+    case let flag as Bool: g_value_init(&gvalue, GType(5 << 2)); g_value_set_boolean(&gvalue, flag ? 1 : 0)
+    case let number as Int: g_value_init(&gvalue, GType(6 << 2)); g_value_set_int(&gvalue, gint(number))
+    case let text as String: g_value_init(&gvalue, GType(16 << 2)); g_value_set_string(&gvalue, text)
+    default: return
+    }
+    g_object_set_property(object, name, &gvalue)
+    g_value_unset(&gvalue)
+}
 
 /// GTK's functions take each widget as its own type (GtkBox, GtkLabel…): a widget passed for another, as in C.
 @inlinable func cast<T, U>(_ pointer: UnsafeMutablePointer<U>?) -> UnsafeMutablePointer<T>? {
