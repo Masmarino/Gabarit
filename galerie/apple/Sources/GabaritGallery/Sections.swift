@@ -93,3 +93,42 @@ struct FormsSection: View {
         }
     }
 }
+
+struct FrameSection: View {
+    @State private var tab = "Overview"
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            GPageBand(symbol: "bell", title: "Notifications", summary: "What reaches you, and when.")
+                .clipShape(RoundedRectangle(cornerRadius: GRadius.lg))
+            HStack(alignment: .top, spacing: 18) {
+                VStack(spacing: 6) {
+                    GRailItem(title: "Today", systemImage: "sun.max", current: false) {}
+                    GRailItem(title: "Messages", systemImage: "bubble.left.and.bubble.right", current: true, badge: 4) {}
+                    GRailItem(title: "Spaces", systemImage: "square.grid.2x2", current: false) {}
+                }
+                .frame(width: 84)
+                .padding(8)
+                .background(GPalette.graphite950, in: RoundedRectangle(cornerRadius: GRadius.lg))
+                VStack(alignment: .leading, spacing: 18) {
+                    GNavTabs(tabs: ["Overview", "Members", "Roles"], title: { $0 }, selection: $tab)
+                    GMenu {
+                        GMenuItem(title: "Mark as read", systemImage: "envelope.open") {}
+                        GMenuItem(title: "Mute", systemImage: "bell.slash", checked: true) {}
+                        GMenuItem(title: "Leave", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) {}
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: GRadius.md))
+                    .overlay { RoundedRectangle(cornerRadius: GRadius.md).strokeBorder(GColor.hairline) }
+                }
+            }
+            GWindowHeader(title: "Settings", subtitle: "SkollN") {
+                Image(systemName: "gearshape").foregroundStyle(GPalette.graphite100)
+            } trailing: {
+                GCloseButton {}
+            }
+            .clipShape(RoundedRectangle(cornerRadius: GRadius.lg))
+        }
+        .padding(24)
+        .background(GColor.background)
+    }
+}

@@ -30,4 +30,5 @@ MainActor.assumeIsolated {
     GFonts.register()
     draw("controls", ControlsSection())
     draw("forms", FormsSection())
+    draw("frame", FrameSection())
 }

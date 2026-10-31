@@ -528,6 +528,10 @@ The forms: `GForm` and `GFormLayout` (the page's title from `gFormTitle`, sectio
 for a row out of its card), `GPageTitle`, `GPageContainer`, `GFormButtons`, `GSheetButton`, `GSheetTitle`,
 `GLabeledContentStyle`, `GSidebarRow`, `GSidebarIcon`, `GSidebarLabelStyle`, `GRowHover` and `GFormMetrics`.
 
+The frame: `gFrameToolbar()`, `GToolbarItem` and `GToolbarItemGroup` (flat bar buttons), `GBarTitle`,
+`GNavTabs`, `GTabBar` and `GTab` (iPhone), `GMenu` and `GMenuItem` (bubble menus), `GPageBand`, `GRailItem`,
+and on the Mac `GWindowHeader` and `gWindowChrome()`.
+
 The gallery draws every component, light and dark, to PNG files, to compare a pre-release with the previous
 one: `cd galerie/apple && swift run GabaritGallery <folder>`.
 
