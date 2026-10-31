@@ -93,6 +93,7 @@ public struct GNavTabs<Tab: Hashable>: View {
     let tabs: [Tab]
     let title: (Tab) -> String
     @Binding var selection: Tab
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(tabs: [Tab], title: @escaping (Tab) -> String, selection: Binding<Tab>) {
         self.tabs = tabs
@@ -104,7 +105,7 @@ public struct GNavTabs<Tab: Hashable>: View {
         HStack(spacing: 20) {
             ForEach(tabs, id: \.self) { tab in
                 let current = tab == selection
-                Button { withAnimation(.snappy(duration: 0.2)) { selection = tab } } label: {
+                Button { gWithAnimation(.snappy(duration: 0.2), reduceMotion: reduceMotion) { selection = tab } } label: {
                     GHover { hovering in
                         Text(title(tab))
                             .font(GFont.body.weight(current ? .semibold : .medium))

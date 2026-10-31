@@ -217,6 +217,7 @@ public extension View {
                     .zIndex(200)
             }
         }
+        // A fade, not a movement: kept with reduced motion.
         .animation(.easeOut(duration: 0.15), value: isPresented.wrappedValue)
         .background {
             // The keyboard shortcut, even with no visible button (an iPad with a keyboard).

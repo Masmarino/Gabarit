@@ -141,14 +141,16 @@ public struct GSkeleton: View {
 /// Three dots that wave while an answer is being written. `label`: what a screen reader says.
 public struct GTypingDots: View {
     let label: String
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(label: String) {
         self.label = label
     }
 
     public var body: some View {
-        TimelineView(.animation(minimumInterval: 1 / 30)) { context in
-            let t = context.date.timeIntervalSinceReferenceDate
+        // With reduced motion, the dots stay still (the label still says it).
+        TimelineView(.animation(minimumInterval: 1 / 30, paused: reduceMotion)) { context in
+            let t = reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate
             HStack(spacing: 4) {
                 ForEach(0..<3) { i in
                     let wave = (sin(t * 6 - Double(i) * 0.9) + 1) / 2

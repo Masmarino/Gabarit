@@ -14,10 +14,11 @@ public struct GToggleStyle: ToggleStyle {
 private struct GToggleRow: View {
     let configuration: ToggleStyleConfiguration
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         // A button: reached by the keyboard (Tab, then Space), not only by a click or a tap.
-        Button { withAnimation(.snappy(duration: 0.18)) { configuration.isOn.toggle() } } label: { row }
+        Button { gWithAnimation(.snappy(duration: 0.18), reduceMotion: reduceMotion) { configuration.isOn.toggle() } } label: { row }
             .buttonStyle(.plain)
             .disabled(!isEnabled)
             .gPointer()
@@ -50,6 +51,7 @@ private struct GToggleRow: View {
 /// A switch's track and knob (a little larger under the finger).
 public struct GSwitch: View {
     let isOn: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     #if os(macOS)
     private let size = CGSize(width: 36, height: 20)
     #else
@@ -72,7 +74,7 @@ public struct GSwitch: View {
                     .shadow(color: .black.opacity(0.18), radius: 1.5, y: 1)
                     .padding(2)
             }
-            .animation(.snappy(duration: 0.18), value: isOn)
+            .animation(reduceMotion ? nil : .snappy(duration: 0.18), value: isOn)
             .accessibilityHidden(true)
     }
 }

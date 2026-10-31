@@ -4,6 +4,12 @@ import SwiftUI
 // How Gabarit's clickable things answer the pointer: a hover state (Mac, iPad with a trackpad), read by `GHover`, and
 // the pointing hand over them on the Mac (`gPointer`).
 
+/// Runs `change` animated, or at once when the system asks for reduced motion.
+@MainActor
+public func gWithAnimation(_ animation: Animation, reduceMotion: Bool, _ change: () -> Void) {
+    if reduceMotion { change() } else { withAnimation(animation, change) }
+}
+
 public extension View {
     /// Dimmed when disabled (`GOpacity.disabled`), the same for every control.
     func gDimmedWhenDisabled() -> some View { modifier(GDimmed()) }

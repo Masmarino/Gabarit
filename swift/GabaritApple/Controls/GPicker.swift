@@ -164,13 +164,14 @@ private struct GMenuRow: View {
 private struct GChips<Value: Hashable>: View {
     @Binding var selection: Value
     let options: [(value: Value, title: String)]
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         HStack(spacing: 6) {
             ForEach(options, id: \.value) { option in
                 let current = option.value == selection
                 let shape = RoundedRectangle(cornerRadius: GRadius.sm, style: .continuous)
-                Button { withAnimation(.snappy(duration: 0.15)) { selection = option.value } } label: {
+                Button { gWithAnimation(.snappy(duration: 0.15), reduceMotion: reduceMotion) { selection = option.value } } label: {
                     GHover { hovering in
                         Text(option.title)
                             .font(GFont.callout.weight(current ? .semibold : .medium))
