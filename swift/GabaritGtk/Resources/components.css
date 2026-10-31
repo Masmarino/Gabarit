@@ -135,3 +135,9 @@ headerbar.g-frame { background-color: @g_graphite950; background-image: none; co
                     min-height: 52px; }
 headerbar.g-frame windowcontrols button { color: @g_graphite300; }
 headerbar.g-frame windowcontrols button:hover { background-color: alpha(@g_graphite100, 0.12); }
+
+/* The keyboard's focus: a rust ring around what has it (only when reached by the keyboard) */
+
+button.g-button:focus-visible, button.g-close:focus-visible, button.g-chip:focus-visible, button.g-nav-tab:focus-visible,
+button.g-rail-item:focus-visible, switch.g-switch:focus-visible, dropdown.g-menu > button:focus-visible,
+scale.g-slider:focus-visible > trough > slider { outline: 2px solid alpha(@g_accent, 0.7); outline-offset: 2px; }

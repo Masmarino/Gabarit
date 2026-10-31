@@ -16,6 +16,17 @@ private struct GToggleRow: View {
     @Environment(\.isEnabled) private var isEnabled
 
     var body: some View {
+        // A button: reached by the keyboard (Tab, then Space), not only by a click or a tap.
+        Button { withAnimation(.snappy(duration: 0.18)) { configuration.isOn.toggle() } } label: { row }
+            .buttonStyle(.plain)
+            .disabled(!isEnabled)
+            .gPointer()
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isToggle)
+            .accessibilityValue(configuration.isOn ? gText("on") : gText("off"))
+    }
+
+    private var row: some View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Group(subviews: configuration.label) { parts in
@@ -33,12 +44,6 @@ private struct GToggleRow: View {
         }
         .opacity(isEnabled ? 1 : 0.5)
         .contentShape(Rectangle())
-        .gPointer()
-        .onTapGesture { if isEnabled { withAnimation(.snappy(duration: 0.18)) { configuration.isOn.toggle() } } }
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(.isToggle)
-        .accessibilityValue(configuration.isOn ? gText("on") : gText("off"))
-        .accessibilityAction { if isEnabled { configuration.isOn.toggle() } }
     }
 }
 

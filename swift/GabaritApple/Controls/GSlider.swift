@@ -69,12 +69,20 @@ private struct GSliderTrack: View {
         .frame(height: GControlMetrics.compact - 8)
         .frame(minWidth: 120)
         .opacity(isEnabled ? 1 : 0.45)
+        // The keyboard: Tab reaches it, the arrows move it a step (a twentieth with no step).
+        .focusable(isEnabled)
+        .onKeyPress(.leftArrow) { nudge(-1); return .handled }
+        .onKeyPress(.rightArrow) { nudge(1); return .handled }
+        .onKeyPress(.downArrow) { nudge(-1); return .handled }
+        .onKeyPress(.upArrow) { nudge(1); return .handled }
         .accessibilityElement()
         .accessibilityValue("\(Int((fraction * 100).rounded())) %")
-        .accessibilityAdjustableAction { direction in
-            let unit = step ?? (range.upperBound - range.lowerBound) / 20
-            value = min(max(value + (direction == .increment ? unit : -unit), range.lowerBound), range.upperBound)
-        }
+        .accessibilityAdjustableAction { direction in nudge(direction == .increment ? 1 : -1) }
+    }
+
+    private func nudge(_ steps: Double) {
+        let unit = step ?? (range.upperBound - range.lowerBound) / 20
+        value = min(max(value + steps * unit, range.lowerBound), range.upperBound)
     }
 
     private func set(_ fraction: Double) {
