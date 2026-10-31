@@ -7,7 +7,7 @@ import PackageDescription
 let package = Package(
     name: "Gabarit",
     defaultLocalization: "en",
-    platforms: [.macOS(.v27), .iOS(.v27)],
+    platforms: [.macOS(.v26), .iOS(.v26)],
     products: [
         .library(name: "GabaritCommon", targets: ["GabaritCommon"]),
         .library(name: "GabaritApple", targets: ["GabaritApple"]),

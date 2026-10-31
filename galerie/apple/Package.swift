@@ -5,7 +5,7 @@ import PackageDescription
 // pre-release with the previous one and with the apps. `swift run GabaritGallery <folder>`.
 let package = Package(
     name: "GabaritGallery",
-    platforms: [.macOS(.v27)],
+    platforms: [.macOS(.v26)],
     dependencies: [.package(name: "Gabarit", path: "../..")],
     targets: [
         .executableTarget(name: "GabaritGallery", dependencies: [.product(name: "GabaritApple", package: "Gabarit")]),
