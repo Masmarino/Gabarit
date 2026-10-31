@@ -33,7 +33,7 @@ public struct GWindow<Icon: View, Content: View>: View {
             } trailing: {
                 GCloseButton { (close ?? { NSApp.keyWindow?.performClose(nil) })() }
             }
-            content.frame(maxWidth: .infinity, maxHeight: .infinity)
+            VStack(spacing: 0) { content }.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         // Up to the top of the window: the title bar, transparent and empty, keeps no room.
         .ignoresSafeArea(.container, edges: .top)
