@@ -46,6 +46,7 @@ public struct GButtonStyle: ButtonStyle {
                 .overlay { if variant == .secondary { shape.strokeBorder(GColor.border.opacity(hovering ? 0.8 : 0.6), lineWidth: 1) } }
                 .opacity(isEnabled ? 1 : GOpacity.disabled)
                 .contentShape(shape)
+                .gTouchTarget(height: compact ? GControlMetrics.button : 44)
         }
     }
 

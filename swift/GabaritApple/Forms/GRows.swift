@@ -53,6 +53,7 @@ public struct GSidebarRow: View {
         .padding(.horizontal, 10)
         .frame(height: GSidebarRow.height)
         .contentShape(Rectangle())
+        .gTouchTarget(height: GSidebarRow.height)
         .background {
             RoundedRectangle(cornerRadius: GRadius.md, style: .continuous)
                 .fill(selected ? Self.selectedFill : (hovering ? Self.hoverFill : Color.clear))

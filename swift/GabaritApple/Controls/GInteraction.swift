@@ -11,6 +11,17 @@ public func gWithAnimation(_ animation: Animation, reduceMotion: Bool, _ change:
 }
 
 public extension View {
+    /// Under the finger (iPhone, iPad), a target of 44 points at least around a control drawn `height` high: the drawing
+    /// does not change, only where a touch lands. Nothing on the Mac.
+    @ViewBuilder func gTouchTarget(height: CGFloat) -> some View {
+        #if os(iOS)
+        let inset = max(0, (44 - height) / 2)
+        padding(.vertical, inset).contentShape(Rectangle()).padding(.vertical, -inset)
+        #else
+        self
+        #endif
+    }
+
     /// Dimmed when disabled (`GOpacity.disabled`), the same for every control.
     func gDimmedWhenDisabled() -> some View { modifier(GDimmed()) }
 

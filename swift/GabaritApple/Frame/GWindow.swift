@@ -147,6 +147,7 @@ public struct GRailButton: View {
                     .background(isOn ? GPalette.graphite100.opacity(0.09) : (hovering ? GPalette.graphite100.opacity(0.05) : .clear),
                                 in: .rect(cornerRadius: GRadius.sm))
                     .contentShape(Rectangle())
+                    .gTouchTarget(height: 32)
             }
         }
         .buttonStyle(.plain)

@@ -119,6 +119,7 @@ public struct GNavTabs<Tab: Hashable>: View {
                                 }
                             }
                             .contentShape(Rectangle())
+                            .gTouchTarget(height: 38)
                     }
                 }
                 .buttonStyle(.plain)

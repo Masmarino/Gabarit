@@ -89,6 +89,7 @@ private struct GMenuField<Value: Hashable>: View {
             }
         } label: {
             GMenuFace(title: options.first { $0.value == selection }?.title ?? "—")
+                .gTouchTarget(height: GControlMetrics.compact)
         }
         .buttonStyle(.plain)
         .accessibilityValue(options.first { $0.value == selection }?.title ?? "")
@@ -181,6 +182,7 @@ private struct GChips<Value: Hashable>: View {
                             .background(current ? GColor.accent.opacity(0.12) : (hovering ? GColor.hover : GColor.background), in: shape)
                             .overlay { shape.strokeBorder(current ? GColor.accent.opacity(0.7) : (hovering ? GColor.border.opacity(0.5) : GColor.hairline), lineWidth: 1) }
                             .contentShape(shape)
+                            .gTouchTarget(height: GControlMetrics.compact)
                     }
                 }
                 .buttonStyle(.plain)

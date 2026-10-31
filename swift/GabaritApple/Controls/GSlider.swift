@@ -67,6 +67,7 @@ private struct GSliderTrack: View {
                 .onEnded { _ in dragging = false })
         }
         .frame(height: GControlMetrics.compact - 8)
+        .gTouchTarget(height: GControlMetrics.compact - 8)
         .frame(minWidth: 120)
         .opacity(isEnabled ? 1 : GOpacity.disabled)
         // The keyboard: Tab reaches it, the arrows move it a step (a twentieth with no step).
@@ -146,6 +147,7 @@ public struct GStepper: View {
             Image(systemName: symbol).font(.system(size: 11, weight: .semibold)).foregroundStyle(GColor.textPrimary)
                 .frame(width: GControlMetrics.compact + 8, height: GControlMetrics.compact)
                 .contentShape(Rectangle())
+                .gTouchTarget(height: GControlMetrics.compact)
         }
         .buttonStyle(GPressStyle())
     }
