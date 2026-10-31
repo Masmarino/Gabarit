@@ -34,7 +34,7 @@ struct ControlsSection: View {
             GStepper("Reminders", value: $count, in: 0...10)
             HStack {
                 ForEach([GTone.success, .warning, .error, .info], id: \.self) { tone in
-                    Text("state").font(GFont.caption).padding(6).foregroundStyle(tone.base).background(tone.tint, in: Capsule())
+                    Text("state").font(GFont.caption).padding(6).foregroundStyle(tone.tintText).background(tone.tint, in: Capsule())
                 }
             }
         }

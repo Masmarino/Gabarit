@@ -569,7 +569,10 @@ GNOME prefers), then use:
   `gRailSquareButton`, `gCommandKButton`, `gBandTitle`, `gPageBand`; `gWindow` (a secondary window: `gWindowHeader`,
   its cross, Escape closes it);
 - over a page: `gSheet` and `gSheetTitle` (a modal window), `gErrorAlert`, and, in a `gOverlayHost`, `gShowToast` and
-  the quick search, `gCommandPalette` (Ctrl + K with `gCommandShortcut`).
+  the quick search, `gCommandPalette` (Ctrl + K with `gCommandShortcut`);
+- for screen readers: titles are headings (`gLabel(heading:)`), `gNew` gives a widget its role, `gAccessibleLabel`,
+  `gAccessibleText`, `gAccessibleState` and `gAccessibleHidden` its name, value and states, `gAnnounce` says a
+  sentence (only through AT-SPI: GTK 4.14 crashes when another accessibility context is asked to announce).
 
 Its gallery draws the Mac gallery's sections, plus the quick search, to PNG files at twice their size, light and dark,
 to compare side by side: `galerie/gtk/capture.sh <folder>` builds it in a Linux image with GTK 4 (Podman).

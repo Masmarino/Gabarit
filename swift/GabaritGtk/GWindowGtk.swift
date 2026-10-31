@@ -91,6 +91,7 @@ public func gRailItem(_ title: String, icon: String, current: Bool, badge: Int =
     gPointer(button)
     gAccessibleLabel(button, badge > 0 ? "\(title), \(badge)" : title)
     if current { gtk_widget_add_css_class(button, "g-current") }
+    gAccessibleState(button, GTK_ACCESSIBLE_STATE_SELECTED, current)
     gConnect(UnsafeMutableRawPointer(button), "clicked", action)
     return button
 }

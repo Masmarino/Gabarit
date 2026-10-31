@@ -18,7 +18,8 @@ button.g-button { min-height: 28px; padding: 0 12px; border: 1px solid transpare
                   background-image: none; transition: background-color 120ms ease-out; }
 button.g-button.g-regular { min-height: 42px; padding: 0 16px; }
 button.g-primary { background-color: @g_primary; color: @g_onPrimary; border-color: transparent; }
-button.g-primary:hover, button.g-primary:active { background-color: @g_primaryHover; }
+button.g-primary:hover { background-color: @g_primaryHover; }
+button.g-primary:active { background-color: alpha(@g_primaryHover, 0.85); }
 button.g-secondary { background-color: @g_surface; color: @g_textPrimary; border: 1px solid alpha(@g_border, 0.6); }
 button.g-secondary:hover, button.g-ghost:hover { background-color: @g_hover; }
 button.g-secondary:hover { border-color: alpha(@g_border, 0.8); }
@@ -32,7 +33,8 @@ button.g-secondary.g-destructive, button.g-ghost.g-destructive { color: @g_error
 button.g-button:disabled, button.g-close:disabled, button.g-chip:disabled, button.g-nav-tab:disabled,
 button.g-rail-item:disabled, button.g-rail-button:disabled, button.g-rail-square:disabled, button.g-command-k:disabled,
 button.g-menu-item:disabled, switch.g-switch:disabled, entry.g-field:disabled, dropdown.g-menu:disabled,
-scale.g-slider:disabled { opacity: 0.45; }
+scale.g-slider:disabled, button.g-row-button:disabled, button.g-sheet-back:disabled, button.g-command-row:disabled,
+menubutton.g-menu-button:disabled, button.g-sidebar-row:disabled { opacity: 0.45; }
 
 /* The close button: a cross in a circle with a fine rim (on the dark frame, or on the page) */
 
@@ -49,7 +51,7 @@ switch.g-switch { min-width: 34px; min-height: 18px; padding: 0; border-radius: 
 switch.g-switch:hover { border-color: alpha(@g_border, 0.6); }
 switch.g-switch:checked { background-color: @g_accent; border-color: transparent; }
 switch.g-switch > image { color: transparent; }
-switch.g-switch > slider { min-width: 16px; min-height: 16px; margin: 1px; border-radius: 999px; background-color: #FFFFFF;
+switch.g-switch > slider { min-width: 16px; min-height: 16px; margin: 1px; border-radius: 999px; background-color: #FFFFFF; background-image: none;
                            border: none; box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.18); }
 
 /* Text fields: the ground, a fine rim, rust when it has the focus */
@@ -89,7 +91,7 @@ scale.g-slider { min-height: 20px; padding: 0 8px; }
 scale.g-slider > trough { min-height: 4px; padding: 0; margin: 0; border-radius: 999px; background-color: @g_track; border: none; outline: none; }
 scale.g-slider > trough > highlight { min-height: 4px; margin: 0; padding: 0; background-color: @g_accent; border-radius: 999px; border: none; }
 /* The knob, 16 in all with its rim; its negative margin keeps the trough at 4 (GTK makes the trough as tall as the knob) */
-scale.g-slider > trough > slider { min-width: 14px; min-height: 14px; margin: -6px; border-radius: 999px; background-color: #FFFFFF;
+scale.g-slider > trough > slider { min-width: 14px; min-height: 14px; margin: -6px; border-radius: 999px; background-color: #FFFFFF; background-image: none;
                                    border: 1px solid alpha(@g_border, 0.5); box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.15); }
 
 /* The stepper: two buttons on either side of the value, in a field */
@@ -107,9 +109,8 @@ button.g-stepper-step:disabled { opacity: 0.45; }
 
 .g-page-title { color: @g_textPrimary; }
 .g-page-summary { color: @g_textDiscret; }
-.g-section-title { font-weight: 600; color: @g_textPrimary; }
+.g-section-title { font-weight: 600; color: @g_textPrimary; margin-bottom: 4px; }
 .g-section-footer { color: @g_textDiscret; margin: 0 2px; }
-.g-section-title { margin-bottom: 4px; }
 .g-card { background-color: @g_surface; border: 1px solid @g_hairline; border-radius: 12px; }
 .g-row { min-height: 28px; padding: 8px 16px; }
 .g-row-value { color: @g_textSecondary; font-feature-settings: "tnum"; }
@@ -129,7 +130,7 @@ button.g-stepper-step:disabled { opacity: 0.45; }
 
 /* The frame: always dark (the rail, the top band, a window's header); the page in a sheet with a rounded corner */
 
-.g-frame { background-color: @g_graphite950; color: @g_graphite100; }
+.g-frame { background-color: @g_frame; color: @g_graphite100; }
 .g-rail { min-width: 92px; padding: 0 6px; }
 .g-rail-item { min-height: 52px; padding: 0; border-radius: 6px; color: @g_graphite400; background: transparent; background-image: none;
                 box-shadow: none; border: none; }
@@ -220,7 +221,7 @@ popover.g-menu-popover > contents { padding: 0; background-color: @g_surface; bo
 
 /* The header bar, dark like the frame, with the desktop's window buttons */
 
-headerbar.g-frame { background-color: @g_graphite950; background-image: none; color: @g_graphite100; box-shadow: none; border: none;
+headerbar.g-frame { background-color: @g_frame; background-image: none; color: @g_graphite100; box-shadow: none; border: none;
                     min-height: 52px; }
 headerbar.g-frame windowcontrols button { color: @g_graphite300; }
 headerbar.g-frame windowcontrols button:hover { background-color: alpha(@g_graphite100, 0.12); }
@@ -229,8 +230,37 @@ headerbar.g-frame windowcontrols button:hover { background-color: alpha(@g_graph
 
 button.g-button:focus-visible, button.g-close:focus-visible, button.g-chip:focus-visible, button.g-nav-tab:focus-visible,
 button.g-rail-item:focus-visible, button.g-rail-button:focus-visible, button.g-rail-square:focus-visible,
-button.g-command-k:focus-visible, button.g-menu-item:focus-visible, button.g-stepper-step:focus-visible, button.g-menu-button > button:focus-visible, switch.g-switch:focus-visible, dropdown.g-menu > button:focus-visible,
+button.g-command-k:focus-visible, menubutton.g-menu-button > button:focus-visible, switch.g-switch:focus-visible,
+dropdown.g-menu > button:focus-visible, button.g-row-button:focus-visible, button.g-sheet-back:focus-visible,
+button.g-sidebar-row:focus-visible,
 scale.g-slider:focus-visible > trough > slider { outline: 2px solid alpha(@g_accent, 0.7); outline-offset: 2px; }
+/* Inside what clips (the stepper's field, a menu's bubble, a list): the ring drawn inward, so it shows. */
+button.g-stepper-step:focus-visible, button.g-menu-item:focus-visible, button.g-command-row:focus-visible,
+dropdown.g-menu popover listview > row:focus-visible { outline: 2px solid alpha(@g_accent, 0.7); outline-offset: -2px; }
+
+/* Pressed: the track's grey on the page, a stronger veil on the dark frame (as the buttons) */
+
+button.g-close:active, button.g-chip:active, button.g-menu-item:active, button.g-command-row:active,
+button.g-sheet-back:active, button.g-sidebar-row:active { background-color: @g_track; }
+button.g-nav-tab:active { color: @g_textPrimary; }
+.g-frame button.g-close:active, button.g-rail-item:active, button.g-rail-button:active, button.g-rail-square:active,
+button.g-command-k:active { background-color: alpha(@g_graphite100, 0.12); }
+
+/* A menu button: the ghost button's look */
+
+menubutton.g-menu-button > button { min-height: 28px; padding: 0 8px; border-radius: 6px; border: none; background: transparent;
+                                    background-image: none; box-shadow: none; color: @g_textSecondary; }
+menubutton.g-menu-button > button:hover { background-color: @g_hover; }
+menubutton.g-menu-button > button:checked, menubutton.g-menu-button > button:active { background-color: @g_track; }
+
+/* A side column's section as a button: no frame of its own */
+
+button.g-sidebar-row { border: none; box-shadow: none; background-image: none; background-color: transparent; }
+
+/* Text: the selection in the accent's tint, the caret in the accent */
+
+entry.g-field, entry.g-command-field { caret-color: @g_accent; }
+entry.g-field selection, entry.g-command-field selection, label selection { background-color: alpha(@g_accent, 0.25); color: @g_textPrimary; }
 
 /* A card's clickable row: its text in rust (red if it destroys), the veil on hover */
 
@@ -277,4 +307,4 @@ window.g-alert { background-color: @g_surface; border-radius: 12px; }
 
 /* Without a compositor (no shadow), GTK frames its windows: dark like Gabarit's frame, not white */
 
-window.g-window.solid-csd { border-color: @g_graphite700; box-shadow: inset 0 0 0 4px @g_graphite950, inset 0 0 0 3px @g_graphite950; }
+window.g-window.solid-csd { border-color: @g_graphite700; box-shadow: inset 0 0 0 4px @g_frame; }

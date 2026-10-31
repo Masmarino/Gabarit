@@ -178,10 +178,10 @@ let folder = CommandLine.arguments.dropFirst().first ?? "."
 /// What only the gallery draws: the states' samples, a menu's rim, the logo.
 let galleryStyle = """
 .g-gallery-state { padding: 6px; border-radius: 999px; }
-.g-gallery-state.g-success { color: @g_success; background-color: alpha(@g_success, 0.14); }
-.g-gallery-state.g-warning { color: @g_warning; background-color: alpha(@g_warning, 0.14); }
-.g-gallery-state.g-error { color: @g_error; background-color: alpha(@g_error, 0.14); }
-.g-gallery-state.g-info { color: @g_info; background-color: alpha(@g_info, 0.14); }
+.g-gallery-state.g-success { color: @g_successOnTint; background-color: alpha(@g_success, 0.14); }
+.g-gallery-state.g-warning { color: @g_warningOnTint; background-color: alpha(@g_warning, 0.14); }
+.g-gallery-state.g-error { color: @g_errorOnTint; background-color: alpha(@g_error, 0.14); }
+.g-gallery-state.g-info { color: @g_infoOnTint; background-color: alpha(@g_info, 0.14); }
 .g-gallery-bordered { border: 1px solid @g_hairline; }
 .g-gallery-logo { color: @g_accent; }
 """
@@ -204,32 +204,20 @@ let galleryStyle = """
     let gtkWindow = UnsafeMutableRawPointer(window).assumingMemoryBound(to: GtkWindow.self)
     guard let child = gtk_window_get_child(gtkWindow), let paintable = gtk_widget_paintable_new(child),
           let snapshot = gtk_snapshot_new() else { return }
+    defer { g_object_unref(UnsafeMutableRawPointer(paintable)) }
     let width = Double(gtk_widget_get_width(child)), height = Double(gtk_widget_get_height(child))
     gtk_snapshot_scale(snapshot, 2, 2)
     gdk_paintable_snapshot(paintable, snapshot, width, height)
-    guard let node = gtk_snapshot_free_to_node(snapshot),
-          let renderer = gtk_native_get_renderer(OpaquePointer(window)) else { return }
+    guard let node = gtk_snapshot_free_to_node(snapshot) else { return }
+    defer { gsk_render_node_unref(node) }
+    guard let renderer = gtk_native_get_renderer(OpaquePointer(window)) else { return }
     var bounds = graphene_rect_t()
     graphene_rect_init(&bounds, 0, 0, Float(width * 2), Float(height * 2))
     if let texture = gsk_renderer_render_texture(renderer, node, &bounds) {
         _ = gdk_texture_save_to_png(texture, path)
+        g_object_unref(UnsafeMutableRawPointer(texture))
         print(path)
     }
-}
-
-@MainActor func later(_ milliseconds: UInt32, _ run: @escaping () -> Void) {
-    let box = Unmanaged.passRetained(Later(run)).toOpaque()
-    let fire: @convention(c) (UnsafeMutableRawPointer?) -> gboolean = { data in
-        let later = Unmanaged<Later>.fromOpaque(data!).takeRetainedValue()
-        MainActor.assumeIsolated { later.run() }
-        return 0
-    }
-    g_timeout_add(milliseconds, fire, box)
-}
-
-final class Later {
-    let run: () -> Void
-    init(_ run: @escaping () -> Void) { self.run = run }
 }
 
 let activate: @convention(c) (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?) -> Void = { application, _ in
@@ -238,16 +226,17 @@ let activate: @convention(c) (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?
         if let provider = gtk_css_provider_new(), let display = gdk_display_get_default() {
             gtk_css_provider_load_from_string(provider, galleryStyle)
             gtk_style_context_add_provider_for_display(display, OpaquePointer(provider), 900)
+            g_object_unref(provider)
         }
         let app = OpaquePointer(application)
         let sections: [(String, GWidget)] = [("controls", controls()), ("forms", forms()), ("frame", frame()),
                                              ("feedback", feedback()), ("window", window()), ("overlays", overlays()),
                                              ("search", search())]
         let windows = sections.map { (name: $0.0, window: open(app, $0.1)) }
-        later(1500) {
+        gAfter(1500) {
             for item in windows { save(item.window, "\(folder)/\(item.name)-light.png") }
             GGtk.apply(.dark)
-            later(1000) {
+            gAfter(1000) {
                 for item in windows { save(item.window, "\(folder)/\(item.name)-dark.png") }
                 // The real windows open too (GTK says on stderr what goes wrong): the main one, a secondary one, a sheet,
                 // an alert.
@@ -263,7 +252,7 @@ let activate: @convention(c) (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?
                 gtk_window_present(UnsafeMutableRawPointer(settings).assumingMemoryBound(to: GtkWindow.self))
                 gSheet(parent: main, title: "New space", summary: "A place to share.", content: gBox(GTK_ORIENTATION_VERTICAL, []))
                 gErrorAlert(parent: main, title: "Could not send", message: "The network is down.")
-                later(1500) {
+                gAfter(1500) {
                     print("windows: opened")
                     g_application_quit(UnsafeMutableRawPointer(application)?.assumingMemoryBound(to: GApplication.self))
                 }
