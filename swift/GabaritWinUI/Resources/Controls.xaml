@@ -283,7 +283,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="Veil.Background" Value="{ThemeResource GFrameSelectedBrush}"/>
+                                        <Setter Target="Veil.Background" Value="{ThemeResource GFrameCloseHoverBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
@@ -381,7 +381,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="Veil.Background" Value="{ThemeResource GFrameHoverBrush}"/>
+                                        <Setter Target="Veil.Background" Value="{ThemeResource GFrameCloseHoverBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
@@ -635,7 +635,8 @@
     </Style>
 
     <!-- A switch row: a Grid, the title (GTextBody) and its sentence (GSwitchDetailStyle) on the left, a ToggleSwitch
-         with this style on the right (no header, no "On"/"Off"); its AutomationProperties.Name is the title. -->
+         with this style on the right (no header, no "On"/"Off"); its AutomationProperties.Name is the title. To check on
+         Windows: WinUI's template may keep a small gap after the knob. -->
     <Style x:Key="GSwitchStyle" TargetType="ToggleSwitch">
         <Setter Property="OnContent" Value=""/>
         <Setter Property="OffContent" Value=""/>

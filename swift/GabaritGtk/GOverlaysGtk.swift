@@ -39,13 +39,24 @@ public func gSheetTitle(_ title: String, summary: String, closeTooltip: String =
         gAccessibleLabel(arrow, backTooltip)
         gPointer(arrow)
         gConnect(UnsafeMutableRawPointer(arrow), "clicked", back)
-        // Alt + Left, the desktop's "back" (the Mac's ⌘[), from anywhere in the sheet.
+        // Alt + Left (Right when the text reads right to left), the desktop's "back" (the Mac's ⌘[), from anywhere in
+        // the sheet, unless the quick search is open over it.
+        let key = gtk_widget_get_default_direction() == GTK_TEXT_DIR_RTL ? "Right" : "Left"
         let keys = gtk_shortcut_controller_new()!
         gtk_shortcut_controller_set_scope(keys, GTK_SHORTCUT_SCOPE_MANAGED)
-        gtk_shortcut_controller_add_shortcut(keys, gtk_shortcut_new(gtk_shortcut_trigger_parse_string("<Alt>Left"),
-                                                                    gtk_activate_action_get()))
+        let box = Unmanaged.passRetained(GClosureBox {
+            if GCommandPaletteView.current == nil { gtk_widget_activate(arrow) }
+        }).toOpaque()
+        let run: @convention(c) (UnsafeMutablePointer<GtkWidget>?, OpaquePointer?, gpointer?) -> gboolean = { _, _, data in
+            let closure = Unmanaged<GClosureBox>.fromOpaque(data!).takeUnretainedValue()
+            MainActor.assumeIsolated { closure.run() }
+            return 1
+        }
+        let release: @convention(c) (gpointer?) -> Void = { data in Unmanaged<GClosureBox>.fromOpaque(data!).release() }
+        gtk_shortcut_controller_add_shortcut(keys, gtk_shortcut_new(gtk_shortcut_trigger_parse_string("<Alt>\(key)"),
+                                                                    gtk_callback_action_new(run, box, release)))
         gtk_widget_add_controller(arrow, keys)
-        gAccessibleText(arrow, GTK_ACCESSIBLE_PROPERTY_KEY_SHORTCUTS, "Alt+Left")
+        gAccessibleText(arrow, GTK_ACCESSIBLE_PROPERTY_KEY_SHORTCUTS, "Alt+\(key)")
         children.append(arrow)
     }
     let texts = gBox(GTK_ORIENTATION_VERTICAL, spacing: 4, [gLabel(title, style: "title", classes: ["g-sheet-title"], heading: 1),
@@ -155,12 +166,14 @@ public func gShowToast(_ host: GWidget, _ text: String, icon: String, seconds: D
     gtk_widget_set_can_target(toast, 0)
     gtk_overlay_add_overlay(cast(host), toast)
     gAnnounce(toast, text)
-    // Kept alive until then: the window may close first, and the message is removed only if it is still there.
+    // Both kept alive until then: the window may close first, and the message is removed only if it is still there.
     g_object_ref(UnsafeMutableRawPointer(toast))
+    g_object_ref(UnsafeMutableRawPointer(host))
     gAfter(UInt32(seconds * 1000)) {
         if gtk_widget_get_parent(toast) == host { gtk_overlay_remove_overlay(cast(host), toast) }
         if g_object_get_data(hostObject, "g-toast") == UnsafeMutableRawPointer(toast) { g_object_set_data(hostObject, "g-toast", nil) }
         g_object_unref(UnsafeMutableRawPointer(toast))
+        g_object_unref(UnsafeMutableRawPointer(host))
     }
 }
 
@@ -392,10 +405,11 @@ final class GCommandPaletteView {
         gAccessibleLabel(button, spoken)
         gPointer(button)
         gConnect(UnsafeMutableRawPointer(button), "clicked", run)
-        // The pointer makes a row the chosen one: one highlighted row, as on the Mac.
+        // The pointer makes a row the chosen one: one highlighted row, as on the Mac. On its movement only: rows rebuilt
+        // under a still pointer (typing) do not take the choice from the best match.
         let motion = gtk_event_controller_motion_new()!
-        gConnect(UnsafeMutableRawPointer(motion), "enter") { [weak self] in
-            guard let self, let index = self.shown.firstIndex(where: { $0.row == button }) else { return }
+        gConnect(UnsafeMutableRawPointer(motion), "motion") { [weak self] in
+            guard let self, let index = self.shown.firstIndex(where: { $0.row == button }), index != self.active else { return }
             self.select(index, announce: false)
         }
         gtk_widget_add_controller(button, motion)
@@ -437,6 +451,9 @@ final class GCommandPaletteView {
     }
 
     func close() {
+        // Taken first: removing the layer destroys it, and its "destroy" releases what it still holds.
+        let previousFocus = self.previousFocus
+        self.previousFocus = nil
         if let layer, let parent = gtk_widget_get_parent(layer) {
             gtk_overlay_remove_overlay(cast(parent), layer)
             if let page = gtk_overlay_get_child(cast(host)) { gtk_widget_set_can_focus(page, 1) }
@@ -445,7 +462,6 @@ final class GCommandPaletteView {
         if let previousFocus {
             if gtk_widget_get_root(previousFocus) != nil { gtk_widget_grab_focus(previousFocus) }
             g_object_unref(UnsafeMutableRawPointer(previousFocus))
-            self.previousFocus = nil
         }
         if Self.current === self { Self.current = nil }
     }

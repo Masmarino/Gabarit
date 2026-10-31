@@ -295,6 +295,8 @@ private struct GSideDrawer<Drawer: View>: ViewModifier {
                         // Horizontal drags only: a list in the drawer keeps its vertical scroll.
                         .simultaneousGesture(DragGesture(minimumDistance: 10)
                             .onChanged { drag in
+                                // A new drag (a cancelled one never reached onEnded): its direction decided afresh.
+                                if dragged == nil, hypot(drag.translation.width, drag.translation.height) < 14 { horizontal = nil }
                                 if horizontal == nil { horizontal = abs(drag.translation.width) > abs(drag.translation.height) }
                                 guard horizontal == true else { return }
                                 dragged = min(0, max(-width, drag.translation.width))
@@ -317,6 +319,7 @@ private struct GSideDrawer<Drawer: View>: ViewModifier {
                             // A horizontal swipe from the edge (the strip takes the touches that start in it).
                             .gesture(DragGesture(minimumDistance: 10)
                                 .onChanged { drag in
+                                    if dragged == nil, hypot(drag.translation.width, drag.translation.height) < 14 { horizontal = nil }
                                     if horizontal == nil { horizontal = drag.translation.width > abs(drag.translation.height) }
                                     guard horizontal == true else { return }
                                     dragged = -width + min(width, drag.translation.width)
