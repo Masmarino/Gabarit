@@ -9,6 +9,7 @@
   "scripts": {
     "ng": "ng",
     "build": "ng build gabarit",
+    "tokens": "python3 tools/tokens.py",
     "test": "ng test gabarit",
     "lint": "ng lint gabarit",
     "storybook": "ng run gabarit:storybook",

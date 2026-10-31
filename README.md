@@ -498,6 +498,28 @@ names collides with it. Inside the library's own components
 (specificity 0-2-0) beats the unscoped global rule (0-1-0). The other
 utilities in the same file do carry the `gbt-` prefix.
 
+## Tokens and native packages
+
+Gabarit 3 is no longer only for the web. Its tokens have one source, `tokens/gabarit.json`, and
+`npm run tokens` (`python3 tools/tokens.py`) writes them for every platform; `--check` fails when a
+generated file is out of date (CI). Never edit a generated file.
+
+| Generated file                                                    | For                                     |
+| ----------------------------------------------------------------- | --------------------------------------- |
+| `projects/gabarit/src/lib/tokens/_palette.scss`, `_themes.scss`   | the web (its own set of roles, `web`)   |
+| `swift/GabaritCommon/GTokens.swift`                               | Swift, every platform: plain values     |
+| `swift/GabaritApple/GTokens+SwiftUI.swift`                        | SwiftUI: `GColor`, `GFont`, `GAnimation` |
+| `swift/GabaritGtk/Resources/gabarit-light.css`, `-dark.css`, `gabarit.css` | GTK 4                          |
+| `swift/GabaritWinUI/Resources/Gabarit.xaml`                       | WinUI 3                                 |
+| `android/gabarit/src/main/kotlin/com/masmarino/gabarit/GTokens.kt` | Jetpack Compose                         |
+
+The palette is shared. The colours by role come in two sets: `apps` (SkollN's design, the reference for
+the native apps) and `web` (this package's roles and names, kept as they are). Native names take the
+`G` prefix (`GColor.background`, `GRadius.md`, `GFont.body`), so they never clash with SwiftUI's own.
+
+The Swift packages are at the root (`Package.swift`): add `https://github.com/Masmarino/Gabarit` in
+Xcode or SwiftPM and use `GabaritApple` (call `GFonts.register()` once at launch) or `GabaritCommon`.
+
 ## Release
 
 The version lives in **five files**, bumped together in one commit:

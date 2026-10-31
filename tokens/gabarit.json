@@ -1,0 +1,806 @@
+{
+  "_": "Gabarit: the one source of the tokens of every platform. tools/tokens.py turns it into the web SCSS, the Swift (GabaritCommon, GabaritApple), the GTK CSS, the WinUI XAML and the Kotlin; never edit the generated files. For the apps, SkollN's design is the reference.",
+  "palette": [
+    {
+      "comment": "Light neutrals, from the paper to the ink.",
+      "colors": {
+        "slate0": "#FFFFFF",
+        "slate50": "#EFF2F5",
+        "slate100": "#E4E8ED",
+        "slate200": "#DCE2E9",
+        "slate300": "#CFD5DC",
+        "slate400": "#A9B3C0",
+        "slate500": "#7D8794",
+        "slate600": "#4A525F",
+        "slate700": "#404954",
+        "slate900": "#10151C"
+      }
+    },
+    {
+      "comment": "Dark neutrals: the graphite of the frame and the dark theme.",
+      "colors": {
+        "graphite1000": "#0C1015",
+        "graphite950": "#0B0F14",
+        "graphite900": "#11161C",
+        "graphite850": "#181F27",
+        "graphite800": "#1F2730",
+        "graphite700": "#28323D",
+        "graphite500": "#646C77",
+        "graphite400": "#A1A9B5",
+        "graphite300": "#B8BFCA",
+        "graphite200": "#CDD3DB",
+        "graphite100": "#E7EBF1"
+      }
+    },
+    {
+      "comment": "The crab's rust, kept for the marks that are the brand's own (focus, current page).",
+      "colors": {
+        "rust300": "#FF9469",
+        "rust400": "#F0622A",
+        "rust500": "#C2410C",
+        "rust600": "#A8360A"
+      }
+    },
+    {
+      "colors": {
+        "patina300": "#7ED4B8",
+        "patina400": "#3FBF95",
+        "patina600": "#15805D",
+        "patina700": "#0D5D43",
+        "patina800": "#0C523B"
+      }
+    },
+    {
+      "colors": {
+        "amber300": "#F6B649",
+        "amber400": "#F5B13D",
+        "amber600": "#9A5B04",
+        "amber700": "#774603",
+        "amber800": "#6A3E03"
+      }
+    },
+    {
+      "colors": {
+        "red200": "#F7AEAA",
+        "red300": "#F38C85",
+        "red400": "#F2857D",
+        "red600": "#C23A32",
+        "red700": "#A1302A",
+        "red750": "#942C26",
+        "red800": "#842822"
+      }
+    },
+    {
+      "colors": {
+        "indigo200": "#B3BEFF",
+        "indigo400": "#8B9BFF",
+        "indigo600": "#2F49C9",
+        "indigo800": "#283DA8"
+      }
+    }
+  ],
+  "semantic": {
+    "_": "Two sets of colours by role, on the one palette: \"apps\" (SkollN's: Apple, WinUI, GTK, Compose) and \"web\" (the Angular package, its roles and names kept as they are). A value is a palette name, \"name/opacity\", or a CSS colour.",
+    "apps": {
+      "background": {
+        "light": "slate50",
+        "dark": "graphite900"
+      },
+      "surface": {
+        "light": "slate0",
+        "dark": "graphite850"
+      },
+      "sidebar": {
+        "light": "slate100",
+        "dark": "graphite850"
+      },
+      "hover": {
+        "light": "slate900/0.07",
+        "dark": "graphite100/0.07"
+      },
+      "track": {
+        "light": "slate200",
+        "dark": "graphite700"
+      },
+      "border": {
+        "light": "slate500",
+        "dark": "graphite500"
+      },
+      "hairline": {
+        "light": "slate300",
+        "dark": "#CDD7E6/0.12"
+      },
+      "textPrimary": {
+        "light": "slate900",
+        "dark": "graphite100"
+      },
+      "textSecondary": {
+        "light": "slate700",
+        "dark": "graphite300"
+      },
+      "textDiscret": {
+        "light": "slate600",
+        "dark": "graphite400"
+      },
+      "primary": {
+        "light": "slate900",
+        "dark": "graphite100"
+      },
+      "primaryHover": {
+        "light": "#383D43",
+        "dark": "#C0C5CB"
+      },
+      "onPrimary": {
+        "light": "slate0",
+        "dark": "graphite1000"
+      },
+      "accent": {
+        "light": "rust500",
+        "dark": "rust400"
+      },
+      "accentText": {
+        "light": "rust600",
+        "dark": "rust300"
+      },
+      "success": {
+        "light": "patina600",
+        "dark": "patina400"
+      },
+      "warning": {
+        "light": "amber600",
+        "dark": "amber400"
+      },
+      "error": {
+        "light": "red600",
+        "dark": "red400"
+      },
+      "info": {
+        "light": "indigo600",
+        "dark": "indigo400"
+      },
+      "frame": {
+        "light": "graphite950",
+        "dark": "graphite950"
+      }
+    },
+    "web": {
+      "light": [
+        {
+          "name": "primary",
+          "value": "slate900"
+        },
+        {
+          "name": "primary-hover",
+          "value": "#383d43"
+        },
+        {
+          "name": "bg-principal",
+          "value": "slate0"
+        },
+        {
+          "name": "bg-panel",
+          "value": "slate50"
+        },
+        {
+          "name": "bg-hover",
+          "value": "rgba(16, 21, 28, 0.07)"
+        },
+        {
+          "name": "bg-track",
+          "value": "slate200"
+        },
+        {
+          "name": "bg-inverse",
+          "value": "slate900"
+        },
+        {
+          "blank": true
+        },
+        {
+          "comment": "The edge of a field or a control, 3:1 on the page (WCAG 1.4.11); the hairlines stay lighter."
+        },
+        {
+          "name": "border-color",
+          "value": "slate500"
+        },
+        {
+          "name": "gbt-hairline",
+          "value": "slate300"
+        },
+        {
+          "name": "gbt-card-border",
+          "value": "slate300"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "text-primary",
+          "value": "slate900"
+        },
+        {
+          "name": "text-secondary",
+          "value": "slate700"
+        },
+        {
+          "name": "text-discret",
+          "value": "slate600"
+        },
+        {
+          "name": "text-on-color",
+          "value": "slate0"
+        },
+        {
+          "name": "text-on-primary",
+          "value": "slate0"
+        },
+        {
+          "name": "text-on-error",
+          "value": "slate0"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "accent",
+          "value": "rust500"
+        },
+        {
+          "name": "accent-text",
+          "value": "rust600"
+        },
+        {
+          "name": "focus-ring",
+          "value": "rust500"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "color-success-base",
+          "value": "patina600"
+        },
+        {
+          "name": "color-success-text",
+          "value": "patina700"
+        },
+        {
+          "name": "color-success-hover",
+          "value": "#146b50"
+        },
+        {
+          "name": "color-success-bg",
+          "value": "rgba(21, 128, 93, 0.12)"
+        },
+        {
+          "name": "color-success-bg-text",
+          "value": "patina800"
+        },
+        {
+          "name": "color-success-vivid-base",
+          "value": "patina600"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "color-warning-base",
+          "value": "amber600"
+        },
+        {
+          "name": "color-warning-text",
+          "value": "amber700"
+        },
+        {
+          "name": "color-warning-hover",
+          "value": "#7e4d09"
+        },
+        {
+          "name": "color-warning-bg",
+          "value": "rgba(154, 91, 4, 0.1)"
+        },
+        {
+          "name": "color-warning-bg-text",
+          "value": "amber800"
+        },
+        {
+          "name": "color-warning-vivid-base",
+          "value": "amber600"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "color-error-base",
+          "value": "red600"
+        },
+        {
+          "name": "color-error-fill",
+          "value": "red700"
+        },
+        {
+          "name": "color-error-text",
+          "value": "red750"
+        },
+        {
+          "name": "color-error-hover",
+          "value": "#842b27"
+        },
+        {
+          "name": "color-error-bg",
+          "value": "rgba(194, 58, 50, 0.1)"
+        },
+        {
+          "name": "color-error-bg-text",
+          "value": "red800"
+        },
+        {
+          "name": "color-error-vivid-base",
+          "value": "red600"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "color-info-bg",
+          "value": "rgba(47, 73, 201, 0.09)"
+        },
+        {
+          "name": "color-info-bg-text",
+          "value": "indigo800"
+        },
+        {
+          "name": "color-info-vivid-base",
+          "value": "indigo600"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "chart-series-1-base",
+          "value": "#bd8200"
+        },
+        {
+          "name": "chart-series-2-base",
+          "value": "#009e73"
+        },
+        {
+          "name": "chart-series-3-base",
+          "value": "#0072b2"
+        },
+        {
+          "name": "chart-series-4-base",
+          "value": "#a6410f"
+        },
+        {
+          "name": "chart-series-5-base",
+          "value": "#9c3f78"
+        },
+        {
+          "name": "chart-series-6-base",
+          "value": "#5b4fb0"
+        },
+        {
+          "name": "chart-grid",
+          "value": "slate300"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "site-shadow-sm",
+          "value": "none"
+        },
+        {
+          "name": "site-shadow-md",
+          "value": "0 0 0 1px var(--slate-400)"
+        },
+        {
+          "name": "site-shadow-lg",
+          "value": "0 0 0 1px var(--slate-400), 0 12px 32px rgba(16, 21, 28, 0.16)"
+        }
+      ],
+      "dark": [
+        {
+          "name": "primary",
+          "value": "graphite100"
+        },
+        {
+          "name": "primary-hover",
+          "value": "#c0c5cb"
+        },
+        {
+          "name": "bg-principal",
+          "value": "graphite850"
+        },
+        {
+          "name": "bg-panel",
+          "value": "graphite900"
+        },
+        {
+          "name": "bg-hover",
+          "value": "rgba(231, 235, 241, 0.07)"
+        },
+        {
+          "name": "bg-track",
+          "value": "graphite700"
+        },
+        {
+          "name": "bg-inverse",
+          "value": "graphite100"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "border-color",
+          "value": "graphite500"
+        },
+        {
+          "name": "gbt-hairline",
+          "value": "rgba(205, 215, 230, 0.12)"
+        },
+        {
+          "name": "gbt-card-border",
+          "value": "rgba(205, 215, 230, 0.12)"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "text-primary",
+          "value": "graphite100"
+        },
+        {
+          "name": "text-secondary",
+          "value": "graphite300"
+        },
+        {
+          "name": "text-discret",
+          "value": "graphite400"
+        },
+        {
+          "name": "text-on-color",
+          "value": "graphite1000"
+        },
+        {
+          "name": "text-on-primary",
+          "value": "graphite1000"
+        },
+        {
+          "name": "text-on-error",
+          "value": "graphite1000"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "accent",
+          "value": "rust400"
+        },
+        {
+          "name": "accent-text",
+          "value": "rust300"
+        },
+        {
+          "name": "focus-ring",
+          "value": "rust400"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "color-success-base",
+          "value": "patina400"
+        },
+        {
+          "name": "color-success-text",
+          "value": "patina400"
+        },
+        {
+          "name": "color-success-hover",
+          "value": "#61c8a7"
+        },
+        {
+          "name": "color-success-bg",
+          "value": "rgba(63, 191, 149, 0.16)"
+        },
+        {
+          "name": "color-success-bg-text",
+          "value": "patina300"
+        },
+        {
+          "name": "color-success-vivid-base",
+          "value": "patina400"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "color-warning-base",
+          "value": "amber400"
+        },
+        {
+          "name": "color-warning-text",
+          "value": "amber400"
+        },
+        {
+          "name": "color-warning-hover",
+          "value": "#f2bd61"
+        },
+        {
+          "name": "color-warning-bg",
+          "value": "rgba(245, 177, 61, 0.14)"
+        },
+        {
+          "name": "color-warning-bg-text",
+          "value": "amber300"
+        },
+        {
+          "name": "color-warning-vivid-base",
+          "value": "amber400"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "color-error-base",
+          "value": "red400"
+        },
+        {
+          "name": "color-error-fill",
+          "value": "red400"
+        },
+        {
+          "name": "color-error-text",
+          "value": "red300"
+        },
+        {
+          "name": "color-error-hover",
+          "value": "#f09994"
+        },
+        {
+          "name": "color-error-bg",
+          "value": "rgba(242, 133, 125, 0.16)"
+        },
+        {
+          "name": "color-error-bg-text",
+          "value": "red200"
+        },
+        {
+          "name": "color-error-vivid-base",
+          "value": "red400"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "color-info-bg",
+          "value": "rgba(139, 155, 255, 0.16)"
+        },
+        {
+          "name": "color-info-bg-text",
+          "value": "indigo200"
+        },
+        {
+          "name": "color-info-vivid-base",
+          "value": "indigo400"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "chart-series-1-base",
+          "value": "#e69f00"
+        },
+        {
+          "name": "chart-series-2-base",
+          "value": "#009e73"
+        },
+        {
+          "name": "chart-series-3-base",
+          "value": "#0072b2"
+        },
+        {
+          "name": "chart-series-4-base",
+          "value": "#e2703a"
+        },
+        {
+          "name": "chart-series-5-base",
+          "value": "#d691bd"
+        },
+        {
+          "name": "chart-series-6-base",
+          "value": "#9d94e0"
+        },
+        {
+          "name": "chart-grid",
+          "value": "rgba(205, 215, 230, 0.12)"
+        },
+        {
+          "blank": true
+        },
+        {
+          "name": "site-shadow-sm",
+          "value": "none"
+        },
+        {
+          "name": "site-shadow-md",
+          "value": "0 0 0 1px rgba(205, 215, 230, 0.26)"
+        },
+        {
+          "name": "site-shadow-lg",
+          "value": "0 0 0 1px rgba(205, 215, 230, 0.26), 0 12px 32px rgba(0, 0, 0, 0.4)"
+        }
+      ]
+    }
+  },
+  "radius": {
+    "xs": 4,
+    "sm": 6,
+    "md": 8,
+    "lg": 12,
+    "xl": 14,
+    "xxl": 16,
+    "xxxl": 20,
+    "pill": 100
+  },
+  "spacing": {
+    "xxs": 4,
+    "xs": 8,
+    "sm": 12,
+    "smd": 14,
+    "md": 16,
+    "lg": 20,
+    "xl": 24,
+    "xxl": 32,
+    "xxxl": 40,
+    "xxxxl": 64,
+    "xxxxxl": 96
+  },
+  "opacity": {
+    "disabled": 0.38
+  },
+  "shadows": {
+    "floating": {
+      "color": "#000000/0.16",
+      "radius": 16,
+      "x": 0,
+      "y": 12
+    }
+  },
+  "animations": {
+    "bouncy": {
+      "curve": "spring",
+      "response": 0.4,
+      "damping": 0.7
+    },
+    "smooth": {
+      "curve": "easeInOut",
+      "duration": 0.25
+    },
+    "quick": {
+      "curve": "easeOut",
+      "duration": 0.15
+    },
+    "pane": {
+      "curve": "spring",
+      "response": 0.38,
+      "damping": 0.9
+    },
+    "linear": {
+      "curve": "linear",
+      "duration": 0.1
+    }
+  },
+  "families": {
+    "text": {
+      "name": "IBM Plex Sans",
+      "files": {
+        "regular": "IBMPlexSans-Regular.ttf",
+        "medium": "IBMPlexSans-Medium.ttf",
+        "semibold": "IBMPlexSans-SemiBold.ttf",
+        "italic": "IBMPlexSans-Italic.ttf"
+      }
+    },
+    "display": {
+      "name": "IBM Plex Sans Condensed",
+      "files": {
+        "semibold": "IBMPlexSansCondensed-SemiBold.ttf"
+      }
+    },
+    "mono": {
+      "name": "IBM Plex Mono",
+      "files": {
+        "regular": "IBMPlexMono-Regular.ttf",
+        "medium": "IBMPlexMono-Medium.ttf"
+      }
+    }
+  },
+  "text": {
+    "largeTitle": {
+      "family": "display",
+      "weight": "semibold",
+      "phone": 34,
+      "desktop": 26,
+      "system": "largeTitle"
+    },
+    "title": {
+      "family": "display",
+      "weight": "semibold",
+      "phone": 28,
+      "desktop": 22,
+      "system": "title"
+    },
+    "title2": {
+      "family": "display",
+      "weight": "semibold",
+      "phone": 22,
+      "desktop": 17,
+      "system": "title2"
+    },
+    "title3": {
+      "family": "display",
+      "weight": "semibold",
+      "phone": 20,
+      "desktop": 15,
+      "system": "title3"
+    },
+    "headline": {
+      "family": "text",
+      "weight": "semibold",
+      "phone": 17,
+      "desktop": 13,
+      "system": "headline"
+    },
+    "subheadline": {
+      "family": "text",
+      "weight": "regular",
+      "phone": 15,
+      "desktop": 11,
+      "system": "subheadline"
+    },
+    "body": {
+      "family": "text",
+      "weight": "regular",
+      "phone": 17,
+      "desktop": 13,
+      "system": "body"
+    },
+    "callout": {
+      "family": "text",
+      "weight": "regular",
+      "phone": 16,
+      "desktop": 12,
+      "system": "callout"
+    },
+    "footnote": {
+      "family": "text",
+      "weight": "regular",
+      "phone": 13,
+      "desktop": 10,
+      "system": "footnote"
+    },
+    "caption": {
+      "family": "text",
+      "weight": "regular",
+      "phone": 12,
+      "desktop": 10,
+      "system": "caption"
+    },
+    "caption2": {
+      "family": "text",
+      "weight": "regular",
+      "phone": 11,
+      "desktop": 10,
+      "system": "caption2"
+    },
+    "mono": {
+      "family": "mono",
+      "weight": "regular",
+      "phone": 13,
+      "desktop": 12,
+      "system": "footnote"
+    }
+  }
+}

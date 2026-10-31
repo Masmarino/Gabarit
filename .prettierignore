@@ -1,3 +1,9 @@
 # Hand-maintained docs (README.md/AUDIT.md): wide GFM tables and embedded code samples
 # are deliberately formatted by hand; out of scope for the ts/html/scss enforcement pass.
 *.md
+
+# The native packages and their generated resources (tools/tokens.py writes them; the SCSS it writes is
+# formatted as prettier wants).
+.build/
+swift/
+android/

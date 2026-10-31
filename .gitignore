@@ -8,3 +8,5 @@ storybook-static/
 /docs/
 .claude/
 .worktrees/
+.build/
+.swiftpm/
