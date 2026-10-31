@@ -269,3 +269,12 @@ button.g-command-row.g-active { background-image: linear-gradient(@g_accent, @g_
                                 background-position: left center; background-repeat: no-repeat; }
 button.g-command-row.g-active image { color: @g_accent; }
 .g-command-empty { padding: 24px; }
+
+/* An error's alert: a small window on the surface */
+
+window.g-alert { background-color: @g_surface; border-radius: 12px; }
+.g-alert-content { padding: 24px; min-width: 320px; }
+
+/* Without a compositor (no shadow), GTK frames its windows: dark like Gabarit's frame, not white */
+
+window.g-window.solid-csd { border-color: @g_graphite700; box-shadow: inset 0 0 0 4px @g_graphite950, inset 0 0 0 3px @g_graphite950; }

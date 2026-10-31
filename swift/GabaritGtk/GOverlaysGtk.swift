@@ -80,19 +80,36 @@ public func gSheet(parent: GWidget, title: String, summary: String, size: (width
     return window
 }
 
-/// An error's alert over `parent`: the title, the message, "OK".
+/// An error's alert over `parent` (a small modal window, as Gabarit draws it): the title, the message, "OK". Return
+/// and Escape close it.
 @MainActor
 public func gErrorAlert(parent: GWidget, title: String, message: String, ok: String = "OK") {
-    guard let object = g_object_new_with_properties(gtk_alert_dialog_get_type(), 0, nil, nil) else { return }
-    let dialog = OpaquePointer(object)
-    gtk_alert_dialog_set_message(dialog, title)
-    gtk_alert_dialog_set_detail(dialog, message)
-    ok.withCString { label in
-        var buttons: [UnsafePointer<CChar>?] = [label, nil]
-        buttons.withUnsafeMutableBufferPointer { gtk_alert_dialog_set_buttons(dialog, $0.baseAddress) }
-    }
-    gtk_alert_dialog_show(dialog, cast(parent))
-    g_object_unref(object)
+    let window = gtk_window_new()!
+    let gtkWindow: UnsafeMutablePointer<GtkWindow>? = cast(window)
+    gStyle(window, "g-window", "g-alert")
+    gtk_window_set_title(gtkWindow, title)
+    gtk_window_set_modal(gtkWindow, 1)
+    gtk_window_set_transient_for(gtkWindow, cast(parent))
+    gtk_window_set_destroy_with_parent(gtkWindow, 1)
+    gtk_window_set_resizable(gtkWindow, 0)
+    let none = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)!
+    gtk_widget_set_visible(none, 0)
+    gtk_window_set_titlebar(gtkWindow, none)
+    let button = gButton(ok, variant: .primary) { gtk_window_close(gtkWindow) }
+    gtk_widget_set_halign(button, GTK_ALIGN_END)
+    let text = gLabel(message, classes: ["g-text-secondary"], wraps: true)
+    gtk_label_set_max_width_chars(cast(text), 48)
+    let column = gBox(GTK_ORIENTATION_VERTICAL, spacing: 8, [gLabel(title, style: "title3"), text])
+    gtk_widget_set_margin_bottom(column, 12)
+    gtk_window_set_child(gtkWindow, gStyle(gBox(GTK_ORIENTATION_VERTICAL, [column, button]), "g-alert-content"))
+    gtk_window_set_default_widget(gtkWindow, button)
+    let escape = gtk_shortcut_controller_new()!
+    gtk_shortcut_controller_add_shortcut(escape, gtk_shortcut_new(gtk_shortcut_trigger_parse_string("Escape"),
+                                                                  gtk_named_action_new("window.close")))
+    gtk_widget_add_controller(window, escape)
+    gtk_accessible_announce(OpaquePointer(window), "\(title). \(message)", GTK_ACCESSIBLE_ANNOUNCEMENT_PRIORITY_HIGH)
+    gtk_window_present(gtkWindow)
+    gtk_widget_grab_focus(button)
 }
 
 // MARK: The host

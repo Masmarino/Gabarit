@@ -249,7 +249,24 @@ let activate: @convention(c) (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?
             GGtk.apply(.dark)
             later(1000) {
                 for item in windows { save(item.window, "\(folder)/\(item.name)-dark.png") }
-                g_application_quit(UnsafeMutableRawPointer(application)?.assumingMemoryBound(to: GApplication.self))
+                // The real windows open too (GTK says on stderr what goes wrong): the main one, a secondary one, a sheet,
+                // an alert.
+                let host = gOverlayHost(gStyle(gBox(GTK_ORIENTATION_VERTICAL, []), "g-page"))
+                let main = gAppShell(application: app, title: "SkollN", band: [gBandTitle("Messages")],
+                                     rail: [gRailItem("Messages", icon: "mail-unread-symbolic", current: true) {}], page: host,
+                                     size: (900, 600))
+                gtk_window_present(UnsafeMutableRawPointer(main).assumingMemoryBound(to: GtkWindow.self))
+                gCommandShortcut(window: main, host: host) { [] }
+                gShowToast(host, "Link copied", icon: "insert-link-symbolic")
+                let settings = gWindow(application: app, title: "Settings", subtitle: "SkollN", icon: "emblem-system-symbolic",
+                                       size: (600, 500), content: gForm(title: "Settings", summary: "Everything.", sections: []))
+                gtk_window_present(UnsafeMutableRawPointer(settings).assumingMemoryBound(to: GtkWindow.self))
+                gSheet(parent: main, title: "New space", summary: "A place to share.", content: gBox(GTK_ORIENTATION_VERTICAL, []))
+                gErrorAlert(parent: main, title: "Could not send", message: "The network is down.")
+                later(1500) {
+                    print("windows: opened")
+                    g_application_quit(UnsafeMutableRawPointer(application)?.assumingMemoryBound(to: GApplication.self))
+                }
             }
         }
     }
