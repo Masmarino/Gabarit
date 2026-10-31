@@ -1,0 +1,129 @@
+/* Gabarit's components for GTK 4, from SkollN's design (the reference), as GabaritApple draws them on the Mac.
+   Load after gabarit-light.css or gabarit-dark.css (the colours) and gabarit.css (the text styles): GGtk.install does.
+   GTK 4.14 has no CSS variables: the colours are @define-color names (g_background, g_accent…). */
+
+/* The page and its surfaces */
+
+window.g-window, .g-page { background-color: @g_background; color: @g_textPrimary; font-family: "IBM Plex Sans"; font-size: 13px; }
+.g-surface { background-color: @g_surface; border: 1px solid @g_hairline; border-radius: 12px; }
+.g-hairline { background-color: @g_hairline; min-height: 1px; min-width: 1px; }
+.g-text-secondary { color: @g_textSecondary; }
+.g-text-discret { color: @g_textDiscret; }
+
+/* Buttons: ink (primary), fine frame (secondary), no ground (ghost), red (danger) */
+
+button.g-button { min-height: 30px; padding: 0 12px; border-radius: 6px; font-weight: 600; box-shadow: none; text-shadow: none;
+                  background-image: none; transition: background-color 120ms ease-out; }
+button.g-button.g-regular { min-height: 44px; padding: 0 16px; }
+button.g-primary { background-color: @g_primary; color: @g_onPrimary; border: none; }
+button.g-primary:hover { background-color: @g_primaryHover; }
+button.g-secondary { background-color: @g_surface; color: @g_textPrimary; border: 1px solid alpha(@g_border, 0.6); }
+button.g-secondary:hover, button.g-ghost:hover { background-color: @g_hover; }
+button.g-ghost { background-color: transparent; color: @g_textSecondary; border: none; }
+button.g-danger { background-color: @g_error; color: @g_onPrimary; border: none; }
+button.g-secondary.g-destructive, button.g-ghost.g-destructive { color: @g_error; }
+button.g-button:disabled { opacity: 0.45; }
+
+/* The close button: a cross in a circle with a fine rim (on the dark frame, or on the page) */
+
+button.g-close { min-width: 28px; min-height: 28px; padding: 0; border-radius: 999px; background: transparent; box-shadow: none;
+                 border: 1px solid @g_hairline; color: @g_textSecondary; }
+button.g-close:hover { background-color: @g_hover; }
+.g-frame button.g-close { border-color: @g_graphite700; color: @g_graphite100; }
+.g-frame button.g-close:hover { background-color: alpha(@g_graphite100, 0.12); }
+
+/* The switch: a flat track (rust when on, the track's grey when off), a white knob */
+
+switch.g-switch { min-width: 36px; min-height: 20px; padding: 0; border-radius: 999px; background-color: @g_track;
+                  border: 1px solid alpha(@g_border, 0.35); box-shadow: none; }
+switch.g-switch:checked { background-color: @g_accent; border-color: transparent; }
+switch.g-switch > slider { min-width: 16px; min-height: 16px; margin: 1px; border-radius: 999px; background-color: #FFFFFF;
+                           border: none; box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.18); }
+
+/* Text fields: the ground, a fine rim, rust when it has the focus */
+
+entry.g-field, textview.g-field { min-height: 30px; padding: 0 10px; border-radius: 6px; background-color: @g_background;
+                                  color: @g_textPrimary; border: 1px solid @g_hairline; box-shadow: none; outline: none; }
+entry.g-field:focus-within { border: 1.5px solid @g_accent; }
+entry.g-field > text > placeholder { color: @g_textDiscret; }
+.g-field-title { font-size: 10px; font-weight: 600; color: @g_textSecondary; }
+
+/* A choice: the current one in a field (the list in a bubble), or chips side by side */
+
+dropdown.g-menu > button { color: @g_textPrimary; min-height: 28px; padding: 0 8px 0 10px; border-radius: 6px; background-color: @g_background;
+                           border: 1px solid @g_hairline; box-shadow: none; background-image: none; }
+dropdown.g-menu > button:hover { background-color: @g_hover; border-color: @g_accent; }
+dropdown.g-menu popover > contents { color: @g_textPrimary; background-color: @g_surface; border: 1px solid @g_hairline; border-radius: 8px; }
+dropdown.g-menu popover listview > row:selected { background-color: transparent; color: @g_accentText; font-weight: 600; }
+dropdown.g-menu popover listview > row:hover { background-color: @g_hover; }
+
+button.g-chip { min-height: 28px; padding: 0 12px; border-radius: 6px; background-color: @g_background; color: @g_textSecondary;
+                border: 1px solid @g_hairline; font-size: 12px; font-weight: 500; box-shadow: none; background-image: none; }
+button.g-chip:checked { background-color: alpha(@g_accent, 0.12); color: @g_accentText; border-color: alpha(@g_accent, 0.7); font-weight: 600; }
+
+/* The slider: a thin track, the filled part in rust, a white knob with a rim */
+
+scale.g-slider > trough { min-height: 4px; border-radius: 999px; background-color: @g_track; border: none; }
+scale.g-slider > trough > highlight { background-color: @g_accent; border-radius: 999px; border: none; }
+scale.g-slider > trough > slider { min-width: 16px; min-height: 16px; margin: -6px; border-radius: 999px; background-color: #FFFFFF;
+                                   border: 1px solid alpha(@g_border, 0.5); box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.15); }
+
+/* Forms: the page's title, sections as cards, rows of a constant height split by a fine line */
+
+.g-page-title { font-family: "IBM Plex Sans Condensed"; font-size: 26px; font-weight: 600; color: @g_textPrimary; }
+.g-page-summary { color: @g_textDiscret; }
+.g-section-title { font-weight: 600; color: @g_textPrimary; }
+.g-section-footer { font-size: 12px; color: @g_textDiscret; }
+.g-card { background-color: @g_surface; border: 1px solid @g_hairline; border-radius: 12px; }
+.g-row { min-height: 28px; padding: 8px 16px; }
+.g-row-detail { font-size: 10px; color: @g_textDiscret; }
+.g-row-value { color: @g_textSecondary; }
+
+/* Side columns: a section's icon and name; the chosen one in rust on a soft ground */
+
+.g-sidebar { background-color: @g_sidebar; }
+.g-sidebar-row { min-height: 28px; padding: 0 10px; border-radius: 8px; color: @g_textSecondary; }
+.g-sidebar-row:hover { background-color: alpha(@g_textPrimary, 0.04); }
+.g-sidebar-row.g-selected { background-color: alpha(@g_accent, 0.12); color: @g_accentText; font-weight: 600; }
+.g-sidebar-row.g-selected image { color: @g_accent; }
+
+/* The frame: always dark (the rail, the top band, a window's header); the page in a sheet with a rounded corner */
+
+.g-frame { background-color: @g_graphite950; color: @g_graphite100; }
+.g-rail { min-width: 92px; padding: 0 6px; }
+.g-rail-item { min-height: 52px; border-radius: 6px; color: @g_graphite400; font-size: 10px; font-weight: 500; }
+.g-rail-item:hover { background-color: alpha(@g_graphite100, 0.05); }
+.g-rail-item.g-current { color: @g_accent; background-color: alpha(@g_graphite100, 0.09); font-weight: 600;
+                         box-shadow: inset 2px 0 0 @g_accent; }
+.g-band { min-height: 52px; padding: 0 16px; }
+.g-band-title { font-family: "IBM Plex Sans Condensed"; font-size: 15px; font-weight: 600; color: @g_graphite100; }
+.g-band-subtitle { font-size: 10px; color: @g_graphite400; }
+.g-shell-page { background-color: @g_background; border-top-left-radius: 12px; }
+.g-window-header { min-height: 52px; padding: 0 14px 0 16px; border-bottom: 1px solid alpha(@g_graphite700, 0.7); }
+
+/* Underlined tabs: the text, a rust line under the current tab */
+
+.g-nav-tabs { border-bottom: 1px solid @g_hairline; }
+button.g-nav-tab { padding: 8px 0; margin-right: 20px; border-radius: 0; background: transparent; background-image: none;
+                   box-shadow: none; outline: none; border: none; border-bottom: 2px solid transparent; color: @g_textSecondary;
+                   font-weight: 500; }
+button.g-nav-tab:checked { color: @g_textPrimary; font-weight: 600; border-bottom-color: @g_accent; }
+
+/* Feedback: badges, passing messages, empty states */
+
+.g-badge { padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; background-color: @g_hover; color: @g_textSecondary; }
+.g-badge.g-success { background-color: alpha(@g_success, 0.14); color: @g_success; }
+.g-badge.g-warning { background-color: alpha(@g_warning, 0.14); color: @g_warning; }
+.g-badge.g-error { background-color: alpha(@g_error, 0.14); color: @g_error; }
+.g-badge.g-info { background-color: alpha(@g_info, 0.14); color: @g_info; }
+.g-toast { padding: 12px 20px; border-radius: 8px; background-color: @g_primary; color: @g_onPrimary; font-size: 11px; font-weight: 500;
+           box-shadow: 0 12px 16px rgba(0, 0, 0, 0.16); }
+.g-empty-icon { min-width: 80px; min-height: 80px; border-radius: 12px; background-color: @g_surface; border: 1px solid @g_hairline;
+                color: @g_textSecondary; }
+
+/* The header bar, dark like the frame, with the desktop's window buttons */
+
+headerbar.g-frame { background-color: @g_graphite950; background-image: none; color: @g_graphite100; box-shadow: none; border: none;
+                    min-height: 52px; }
+headerbar.g-frame windowcontrols button { color: @g_graphite300; }
+headerbar.g-frame windowcontrols button:hover { background-color: alpha(@g_graphite100, 0.12); }

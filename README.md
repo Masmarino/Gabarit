@@ -548,6 +548,14 @@ The windows (Mac): `GWindow` (a secondary window without macOS's decoration, Gab
 The quick search (⌘K): `gCommandPalette(isPresented:prompt:groups:)`, `GCommandPalette`, `GCommandItem`,
 `GCommandGroup`, `GCommandKButton`; its matching, `GCommandSearch`, is in `GabaritCommon` for every platform.
 
+`GabaritGtk` (Linux) builds the same components with GTK 4's widgets, dressed by Gabarit's style sheets
+(`swift/GabaritGtk/Resources`: the generated colours and text styles, and `components.css`). Call
+`GGtk.install()` once at launch (IBM Plex through fontconfig, light or dark as GNOME prefers), then use `gButton`,
+`gSwitchRow`, `gTextField`, `gPicker`, `gSlider`, `gFormSection`, `gForm`, `gSidebarRow`, `gNavTabs`, `gBadge`,
+`gToast`, `gEmptyState`, and the windows: `gWindow` (a secondary window, its dark header with the desktop's
+buttons) and `gAppShell` (the main window: the band, the rail, the page under a rounded corner). Its gallery:
+`galerie/gtk/capture.sh <folder>` builds and captures it in the SkollN Linux workshop (Podman).
+
 The gallery draws every component, light and dark, to PNG files, to compare a pre-release with the previous
 one: `cd galerie/apple && swift run GabaritGallery <folder>`.
 

@@ -35,9 +35,10 @@ jobs:
     container: swift:6.4.1-noble
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - run: apt-get update && apt-get install -y --no-install-recommends python3
+      - run: apt-get update && apt-get install -y --no-install-recommends python3 libgtk-4-dev
       - run: python3 tools/tokens.py --check
       - run: swift test
+      - run: swift build --product GabaritGtk
 
   audit:
     name: npm audit

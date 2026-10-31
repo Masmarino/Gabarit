@@ -1,10 +1,6 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
-/// How a choice shows: a menu (the current choice in a field, the list in a bubble), or chips side by side (two to four
-/// short options).
-public enum GPickerStyle: Sendable { case menu, chips }
-
 /// A choice among options, its value and its name: the title on the left, Gabarit's menu or chips on the right.
 public struct GPicker<Value: Hashable>: View {
     let title: String

@@ -1,11 +1,8 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
-/// The states (success, warning, error, information), rather than the system's colours.
-public enum GTone: Sendable, CaseIterable {
-    case success, warning, error, info
-
-    public var base: Color {
+public extension GTone {
+    var base: Color {
         switch self {
         case .success: GColor.success
         case .warning: GColor.warning
@@ -15,7 +12,7 @@ public enum GTone: Sendable, CaseIterable {
     }
 
     /// The translucent ground of a badge in this state.
-    public var tint: Color { base.opacity(0.14) }
+    var tint: Color { base.opacity(0.14) }
 }
 
 public extension View {
@@ -25,8 +22,6 @@ public extension View {
             .overlay { shape.strokeBorder(tint?.opacity(0.4) ?? GColor.hairline, lineWidth: 1) }
     }
 }
-
-public enum GButtonVariant: Sendable { case primary, secondary, ghost, danger }
 
 /// Gabarit's buttons: ink (primary), fine frame (secondary), no ground (ghost), red (danger).
 public struct GButtonStyle: ButtonStyle {
