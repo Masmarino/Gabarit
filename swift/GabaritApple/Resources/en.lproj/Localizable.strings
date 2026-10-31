@@ -9,3 +9,5 @@
 "Back" = "Back";
 /* A warning dot on a sidebar row. */
 "Needs attention" = "Needs attention";
+/* An error alert's button. */
+"OK" = "OK";

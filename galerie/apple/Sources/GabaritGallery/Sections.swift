@@ -132,3 +132,34 @@ struct FrameSection: View {
         .background(GColor.background)
     }
 }
+
+struct FeedbackSection: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(spacing: 8) {
+                GBadge("Article", systemImage: "doc.text")
+                GBadge("Synced", tone: .success)
+                GBadge("Offline", tone: .warning)
+                GBadge("Error", tone: .error)
+                GBadge("New", systemImage: "sparkles", tone: .info)
+            }
+            VStack(alignment: .leading, spacing: 8) {
+                GSkeleton(height: 16).frame(width: 260)
+                GSkeleton(height: 16).frame(width: 200)
+                GSkeleton(height: 60, cornerRadius: GRadius.md)
+            }
+            GTypingDots(label: "Writing")
+            Label("Link copied", systemImage: "link")
+                .font(GFont.subheadline.weight(.medium))
+                .foregroundStyle(GColor.onPrimary)
+                .padding(.horizontal, GSpacing.lg).padding(.vertical, GSpacing.sm)
+                .background(GColor.primary, in: .rect(cornerRadius: GRadius.md))
+                .gShadow(GShadowValues.floating)
+            GEmptyState(systemImage: "tray", title: "No messages yet", message: "Start a conversation with a contact.",
+                        actionTitle: "New conversation", actionSystemImage: "square.and.pencil") {}
+                .frame(height: 260)
+        }
+        .padding(24)
+        .background(GColor.background)
+    }
+}

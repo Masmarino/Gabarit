@@ -31,4 +31,5 @@ MainActor.assumeIsolated {
     draw("controls", ControlsSection())
     draw("forms", FormsSection())
     draw("frame", FrameSection())
+    draw("feedback", FeedbackSection())
 }

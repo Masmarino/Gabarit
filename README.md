@@ -532,6 +532,9 @@ The frame: `gFrameToolbar()`, `GToolbarItem` and `GToolbarItemGroup` (flat bar b
 `GNavTabs`, `GTabBar` and `GTab` (iPhone), `GMenu` and `GMenuItem` (bubble menus), `GPageBand`, `GRailItem`,
 and on the Mac `GWindowHeader` and `gWindowChrome()`.
 
+The feedback: `GBadge` (with `GTone.tintText`), `GEmptyState`, `GSkeleton`, `GTypingDots`, passing messages
+(`GToastCenter`, `gToastOverlay(_:)`), `gErrorAlert(_:message:)` and `gSideDrawer(isPresented:drawer:)`.
+
 The gallery draws every component, light and dark, to PNG files, to compare a pre-release with the previous
 one: `cd galerie/apple && swift run GabaritGallery <folder>`.
 
