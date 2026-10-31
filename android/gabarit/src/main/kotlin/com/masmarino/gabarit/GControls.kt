@@ -1,0 +1,520 @@
+package com.masmarino.gabarit
+
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
+
+// Gabarit's controls for Compose, as GabaritApple draws them on the iPhone: drawn by Gabarit, not the system's, at the
+// finger's sizes (44 high at least for what is touched).
+
+/** The controls' heights: a field, a compact control (a menu, chips, the stepper), a button. */
+object GControlMetrics {
+    val height = 44.dp
+    val compact = 36.dp
+    val button = 38.dp
+    /** Under the finger: what a touch reaches, at least. */
+    val touchTarget = 44.dp
+}
+
+private val phosphor = FontFamily(Font(R.font.phosphor))
+private val phosphorFill = FontFamily(Font(R.font.phosphor_fill))
+
+/**
+ * An icon, by the Mac's name (`"bell"`, `"lock.fill"`), drawn by Phosphor. `size`: as an SF Symbol's point size;
+ * Phosphor draws in a wider margin, so its icon is asked a quarter larger to look the same. In the content's colour.
+ * Hidden from screen readers unless it has a `description`.
+ */
+@Composable
+fun GIcon(name: String, modifier: Modifier = Modifier, size: Float = 17f, color: Color = LocalContentColor.current,
+          weight: FontWeight = FontWeight.Normal, description: String? = null) {
+    val glyph = GSymbols.glyph(name) ?: GSymbols.glyph("questionmark") ?: return
+    Text(glyph.first.toString(), color = color, fontFamily = if (glyph.second) phosphorFill else phosphor, fontWeight = weight,
+        fontSize = (size * 1.25f).sp, lineHeight = (size * 1.25f).sp,
+        modifier = modifier.then(if (description == null) Modifier.clearAndSetSemantics {}
+        else Modifier.clearAndSetSemantics { contentDescription = description }))
+}
+
+// MARK: Buttons
+
+/** Gabarit's buttons: ink (primary), fine frame (secondary), no ground (ghost), red (danger). */
+enum class GButtonVariant { Primary, Secondary, Ghost, Danger }
+
+/**
+ * A Gabarit button. `compact` false: full height (44), a sheet's main button. `destructive`: a secondary or ghost button
+ * whose text is red ("Delete", "Leave").
+ */
+@Composable
+fun GButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    variant: GButtonVariant = GButtonVariant.Secondary,
+    compact: Boolean = true,
+    enabled: Boolean = true,
+    destructive: Boolean = false,
+    content: @Composable RowScope.() -> Unit,
+) {
+    val colors = G.colors
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val shape = RoundedCornerShape(GRadius.sm)
+    val ground = when (variant) {
+        GButtonVariant.Primary -> if (pressed) colors.primaryHover.copy(alpha = 0.85f).compositeOverSafe(colors.background) else colors.primary
+        GButtonVariant.Secondary -> if (pressed) colors.track else colors.surface
+        GButtonVariant.Ghost -> if (pressed) colors.track else Color.Transparent
+        GButtonVariant.Danger -> colors.error.copy(alpha = if (pressed) 0.8f else 1f)
+    }
+    // The text's red on the press's ground too (4.5:1).
+    val foreground = when {
+        destructive && (variant == GButtonVariant.Secondary || variant == GButtonVariant.Ghost) -> colors.errorText
+        variant == GButtonVariant.Primary || variant == GButtonVariant.Danger -> colors.onPrimary
+        variant == GButtonVariant.Secondary -> colors.textPrimary
+        else -> colors.textSecondary
+    }
+    val height = if (compact) GControlMetrics.button else 44.dp
+    Row(
+        modifier
+            .alpha(if (enabled) 1f else GOpacity.disabled)
+            .heightIn(min = height)
+            .clip(shape)
+            .background(ground, shape)
+            .then(if (variant == GButtonVariant.Secondary) Modifier.border(1.dp, colors.border.copy(alpha = 0.6f), shape) else Modifier)
+            .clickable(interaction, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
+            .padding(horizontal = if (compact) 12.dp else 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        CompositionLocalProvider(LocalContentColor provides foreground) {
+            ProvideTextStyle(G.type.body.copy(fontWeight = FontWeight.SemiBold, color = foreground)) { content() }
+        }
+    }
+}
+
+/** A text button, an icon before it if `icon` (the Mac's name). */
+@Composable
+fun GButton(
+    title: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    variant: GButtonVariant = GButtonVariant.Secondary,
+    icon: String? = null,
+    compact: Boolean = true,
+    enabled: Boolean = true,
+    destructive: Boolean = false,
+) = GButton(onClick, modifier, variant, compact, enabled, destructive) {
+    if (icon != null) GIcon(icon, size = 15f)
+    Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+}
+
+/** A sheet's main button: full width, full height (44). */
+@Composable
+fun GSheetButton(title: String, onClick: () -> Unit, variant: GButtonVariant = GButtonVariant.Primary, enabled: Boolean = true,
+                 destructive: Boolean = false) =
+    GButton(title, onClick, Modifier.fillMaxWidth(), variant, compact = false, enabled = enabled, destructive = destructive)
+
+/**
+ * Gabarit's close button: a cross in a circle with a fine rim (on the dark frame when `onFrame`), a 44 target under the
+ * finger. `title`: what screen readers say.
+ */
+@Composable
+fun GCloseButton(title: String, onFrame: Boolean = false, onClick: () -> Unit) {
+    val colors = G.colors
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    Box(
+        Modifier.size(GControlMetrics.touchTarget)
+            .clickable(interaction, indication = null, role = Role.Button, onClick = onClick)
+            .semantics { contentDescription = title },
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            Modifier.size(28.dp).clip(CircleShape)
+                .background(if (pressed) (if (onFrame) GFrameColor.closeHover else colors.hover) else Color.Transparent)
+                .border(1.dp, if (onFrame) GFrameColor.rim else colors.hairline, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) { GIcon("xmark", size = 11f, weight = FontWeight.Bold, color = if (onFrame) GFrameColor.text else colors.textSecondary) }
+    }
+}
+
+// MARK: Switches
+
+/** A switch's track and knob (46 × 28 under the finger): rust when on, the track's grey and a soft rim when off. */
+@Composable
+fun GSwitch(isOn: Boolean, modifier: Modifier = Modifier) {
+    val colors = G.colors
+    val still = gReduceMotion()
+    val track by animateColorAsState(if (isOn) colors.accent else colors.track, if (still) snap() else tween(180), label = "switch")
+    val knob by animateDpAsState(if (isOn) 20.dp else 2.dp, if (still) snap() else tween(180), label = "switch")
+    val shape = RoundedCornerShape(14.dp)
+    Box(
+        modifier.size(width = 46.dp, height = 28.dp).clip(shape).background(track)
+            .then(if (isOn) Modifier else Modifier.border(1.dp, colors.border.copy(alpha = 0.35f), shape))
+            .clearAndSetSemantics {},
+    ) {
+        Box(Modifier.offset(x = knob, y = 2.dp).size(24.dp).shadow(1.5.dp, CircleShape).background(Color.White, CircleShape))
+    }
+}
+
+/**
+ * A switch row: its title, the sentence that explains it more discreet below, the switch on the right. The whole row
+ * is the switch (a touch anywhere, said as one switch).
+ */
+@Composable
+fun GToggleRow(title: String, isOn: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier, detail: String? = null,
+               enabled: Boolean = true) {
+    val colors = G.colors
+    Row(
+        modifier.fillMaxWidth().heightIn(min = GControlMetrics.touchTarget)
+            .alpha(if (enabled) 1f else GOpacity.disabled)
+            .clickable(enabled = enabled, role = Role.Switch) { onChange(!isOn) }
+            .semantics(mergeDescendants = true) { toggleableState = ToggleableState(isOn) },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title, style = G.type.body, color = colors.textPrimary)
+            if (detail != null) Text(detail, style = G.type.caption, color = colors.textDiscret)
+        }
+        GSwitch(isOn)
+    }
+}
+
+// MARK: Text
+
+/** A field's frame: the ground, a fine rim, rust and thicker when it has the focus. */
+@Composable
+fun GFieldFrame(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    prompt: String = "",
+    singleLine: Boolean = true,
+    enabled: Boolean = true,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    onSubmit: (() -> Unit)? = null,
+) {
+    val colors = G.colors
+    val shape = RoundedCornerShape(GRadius.sm)
+    val interaction = remember { MutableInteractionSource() }
+    val focused by interaction.collectIsFocusedAsState()
+    BasicTextField(
+        value, onValueChange, modifier.fillMaxWidth().alpha(if (enabled) 1f else GOpacity.disabled),
+        enabled = enabled, singleLine = singleLine, minLines = if (singleLine) 1 else 3, maxLines = if (singleLine) 1 else 8,
+        interactionSource = interaction, keyboardOptions = keyboardOptions,
+        keyboardActions = KeyboardActions(onDone = { onSubmit?.invoke() }, onGo = { onSubmit?.invoke() }),
+        textStyle = G.type.body.copy(color = colors.textPrimary), cursorBrush = SolidColor(colors.accent),
+        decorationBox = { field ->
+            Box(Modifier.fillMaxWidth().heightIn(min = GControlMetrics.height).background(colors.background, shape)
+                .border(if (focused) 1.5.dp else 1.dp, if (focused) colors.accent else colors.hairline, shape)
+                .padding(horizontal = 10.dp, vertical = 6.dp), contentAlignment = Alignment.CenterStart) {
+                if (value.isEmpty() && prompt.isNotEmpty()) Text(prompt, style = G.type.body, color = colors.textDiscret, maxLines = 1)
+                field()
+            }
+        },
+    )
+}
+
+/**
+ * A text field with its title: the title above (small, discreet), the field below, full width, `prompt` as the
+ * placeholder. The title names the field for screen readers (said once). `trailing`: a button at the field's end.
+ */
+@Composable
+fun GTextField(
+    title: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    prompt: String = "",
+    singleLine: Boolean = true,
+    enabled: Boolean = true,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    onSubmit: (() -> Unit)? = null,
+    trailing: @Composable RowScope.() -> Unit = {},
+) {
+    val colors = G.colors
+    Column(modifier.fillMaxWidth().padding(vertical = 2.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        if (title.isNotEmpty()) {
+            Text(title, style = G.type.caption.copy(fontWeight = FontWeight.SemiBold), color = colors.textSecondary,
+                modifier = Modifier.clearAndSetSemantics {})
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            GFieldFrame(value, onValueChange, Modifier.weight(1f).semantics { contentDescription = title }, prompt, singleLine, enabled,
+                keyboardOptions, onSubmit)
+            trailing()
+        }
+    }
+}
+
+// MARK: Choices
+
+/** A choice's face: the current choice in a field, the two arrows on the right; rust rim while the list is open. */
+@Composable
+fun GMenuFace(text: String, modifier: Modifier = Modifier, open: Boolean = false) {
+    val colors = G.colors
+    val shape = RoundedCornerShape(GRadius.sm)
+    Row(
+        modifier.widthIn(max = 260.dp).heightIn(min = GControlMetrics.compact).clip(shape)
+            .background(if (open) colors.hover.compositeOverSafe(colors.background) else colors.background, shape)
+            .border(if (open) 1.5.dp else 1.dp, if (open) colors.accent else colors.hairline, shape)
+            .padding(start = 10.dp, end = 8.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(text, style = G.type.body, color = colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f, fill = false))
+        GIcon("chevron.up.chevron.down", size = 10f, weight = FontWeight.SemiBold, color = colors.textDiscret)
+    }
+}
+
+/** A line of a choice's list: its name, a rust tick if it is the current choice. */
+@Composable
+fun GMenuRow(title: String, checked: Boolean, onClick: () -> Unit) {
+    val colors = G.colors
+    Row(
+        Modifier.fillMaxWidth().semantics { selected = checked }
+            .clickable(role = Role.RadioButton, onClick = onClick)
+            .heightIn(min = GControlMetrics.touchTarget).padding(horizontal = 14.dp, vertical = 9.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(title, style = G.type.body.copy(fontWeight = if (checked) FontWeight.SemiBold else FontWeight.Normal), color = colors.textPrimary,
+            maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+        GIcon("checkmark", size = 15f, weight = FontWeight.SemiBold, color = colors.accent, modifier = Modifier.alpha(if (checked) 1f else 0f))
+    }
+}
+
+/** The current choice in a Gabarit field; the list opens below in a bubble, split by fine lines, the current one ticked. */
+@Composable
+fun <T> GMenuField(options: List<T>, selection: T, title: (T) -> String, onSelect: (T) -> Unit, modifier: Modifier = Modifier,
+                   label: String? = null, enabled: Boolean = true) {
+    val colors = G.colors
+    var open by remember { mutableStateOf(false) }
+    Box(modifier) {
+        GMenuFace(title(selection), open = open,
+            modifier = Modifier.alpha(if (enabled) 1f else GOpacity.disabled).clip(RoundedCornerShape(GRadius.sm))
+                .clickable(enabled = enabled, role = Role.DropdownList) { open = !open }
+                .semantics {
+                    if (label != null) contentDescription = label
+                    stateDescription = title(selection)
+                })
+        DropdownMenu(open, { open = false }, offset = DpOffset(0.dp, 4.dp), containerColor = G.surfaceOpaque,
+            shape = RoundedCornerShape(GRadius.md)) {
+            Column(Modifier.widthIn(min = 220.dp)) {
+                options.forEachIndexed { index, option ->
+                    if (index > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(colors.hairline))
+                    GMenuRow(title(option), checked = option == selection) { open = false; onSelect(option) }
+                }
+            }
+        }
+    }
+}
+
+/** A chip: on the ground with a fine rim; the current one tinted rust. */
+@Composable
+fun GChip(title: String, selected: Boolean, onClick: () -> Unit) {
+    val colors = G.colors
+    val shape = RoundedCornerShape(GRadius.sm)
+    Box(
+        Modifier.heightIn(min = GControlMetrics.compact).clip(shape)
+            .background(if (selected) colors.selectedFill.compositeOverSafe(colors.background) else colors.background, shape)
+            .border(1.dp, if (selected) colors.accent.copy(alpha = 0.7f) else colors.hairline, shape)
+            .semantics { this.selected = selected }
+            .clickable(role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = 12.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(title, style = G.type.callout.copy(fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium),
+            color = if (selected) colors.accentText else colors.textSecondary, maxLines = 1)
+    }
+}
+
+/** Chips side by side (two to four short options). */
+@Composable
+fun <T> GChips(options: List<T>, selection: T, title: (T) -> String, onSelect: (T) -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        options.forEach { option -> GChip(title(option), option == selection) { onSelect(option) } }
+    }
+}
+
+enum class GPickerStyle { Menu, Chips }
+
+/** A titled choice: the title (and its sentence) on the left, the menu or the chips on the right. */
+@Composable
+fun <T> GPicker(title: String, options: List<T>, selection: T, optionTitle: (T) -> String, onSelect: (T) -> Unit,
+                modifier: Modifier = Modifier, style: GPickerStyle = GPickerStyle.Menu, detail: String? = null) {
+    val colors = G.colors
+    Row(modifier.fillMaxWidth().heightIn(min = GControlMetrics.touchTarget), verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        // Said once, by the control.
+        Column(Modifier.weight(1f).clearAndSetSemantics {}, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title, style = G.type.body, color = colors.textPrimary)
+            if (detail != null) Text(detail, style = G.type.caption, color = colors.textDiscret)
+        }
+        when (style) {
+            GPickerStyle.Menu -> GMenuField(options, selection, optionTitle, onSelect, label = title)
+            GPickerStyle.Chips -> GChips(options, selection, optionTitle, onSelect, Modifier.semantics { contentDescription = title })
+        }
+    }
+}
+
+// MARK: Numbers
+
+/**
+ * Gabarit's slider: a thin track, the filled part in rust, a white knob with a rim (rust while dragged). `label`: its
+ * name for screen readers; `format`: how they say its value (a percentage by default).
+ */
+@Composable
+fun GSlider(value: Float, onValueChange: (Float) -> Unit, modifier: Modifier = Modifier, range: ClosedFloatingPointRange<Float> = 0f..1f,
+            step: Float? = null, label: String? = null, format: ((Float) -> String)? = null, enabled: Boolean = true) {
+    val colors = G.colors
+    val span = range.endInclusive - range.start
+    val fraction = if (span > 0) ((value - range.start) / span).coerceIn(0f, 1f) else 0f
+    var dragging by remember { mutableStateOf(false) }
+    fun set(f: Float) {
+        var next = range.start + f.coerceIn(0f, 1f) * span
+        if (step != null && step > 0) next = range.start + ((next - range.start) / step).roundToInt() * step
+        onValueChange(next.coerceIn(range.start, range.endInclusive))
+    }
+    val knob = 24.dp
+    BoxWithConstraints(
+        modifier.fillMaxWidth().widthIn(min = 120.dp).height(GControlMetrics.touchTarget).alpha(if (enabled) 1f else GOpacity.disabled)
+            .semantics {
+                if (label != null) contentDescription = label
+                stateDescription = format?.invoke(value) ?: "${(fraction * 100).roundToInt()} %"
+                progressBarRangeInfo = ProgressBarRangeInfo(value, range, if (step != null && step > 0) (span / step).roundToInt() - 1 else 0)
+                if (enabled) setProgress { target -> onValueChange(target.coerceIn(range.start, range.endInclusive)); true }
+            },
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        val run = maxWidth - knob
+        val width = with(LocalDensity.current) { run.toPx().coerceAtLeast(1f) }
+        val half = with(LocalDensity.current) { (knob / 2).toPx() }
+        Box(Modifier.fillMaxWidth().fillMaxHeight()
+            .then(if (enabled) Modifier.pointerInput(range, step) {
+                detectTapGestures { set((it.x - half) / width) }
+            }.pointerInput(range, step) {
+                detectHorizontalDragGestures(onDragStart = { dragging = true; set((it.x - half) / width) },
+                    onDragEnd = { dragging = false }, onDragCancel = { dragging = false }) { change, _ -> set((change.position.x - half) / width) }
+            } else Modifier),
+            contentAlignment = Alignment.CenterStart) {
+            Box(Modifier.padding(horizontal = knob / 2).fillMaxWidth().height(4.dp).clip(CircleShape).background(colors.track))
+            Box(Modifier.padding(start = knob / 2).width(run * fraction).height(4.dp).clip(CircleShape).background(colors.accent))
+            Box(Modifier.offset(x = run * fraction).size(knob).shadow(1.5.dp, CircleShape)
+                .background(Color.White, CircleShape)
+                .border(1.dp, if (dragging) colors.accent else colors.border.copy(alpha = 0.5f), CircleShape))
+        }
+    }
+}
+
+/** A number to raise or lower: the title, then two buttons on either side of the value, in a field. Said as one value. */
+@Composable
+fun GStepper(title: String, value: Int, onValueChange: (Int) -> Unit, range: IntRange, modifier: Modifier = Modifier,
+             decrease: String = "−", increase: String = "+") {
+    val colors = G.colors
+    val shape = RoundedCornerShape(GRadius.sm)
+    Row(
+        modifier.fillMaxWidth().heightIn(min = GControlMetrics.touchTarget)
+            .semantics(mergeDescendants = true) {
+                contentDescription = title
+                stateDescription = value.toString()
+                progressBarRangeInfo = ProgressBarRangeInfo(value.toFloat(), range.first.toFloat()..range.last.toFloat(), range.last - range.first - 1)
+                setProgress { target -> onValueChange(target.roundToInt().coerceIn(range)); true }
+            },
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(title, style = G.type.body, color = colors.textPrimary, modifier = Modifier.weight(1f))
+        Row(Modifier.height(GControlMetrics.compact).clip(shape).background(colors.background, shape).border(1.dp, colors.hairline, shape),
+            verticalAlignment = Alignment.CenterVertically) {
+            StepperButton("minus", decrease, value > range.first) { onValueChange((value - 1).coerceIn(range)) }
+            Box(Modifier.width(1.dp).fillMaxHeight().background(colors.hairline))
+            Text(value.toString(), style = G.type.body.copy(fontFeatureSettings = "tnum"), color = colors.textPrimary,
+                modifier = Modifier.widthIn(min = 40.dp).padding(horizontal = 6.dp), maxLines = 1,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            Box(Modifier.width(1.dp).fillMaxHeight().background(colors.hairline))
+            StepperButton("plus", increase, value < range.last) { onValueChange((value + 1).coerceIn(range)) }
+        }
+    }
+}
+
+@Composable
+private fun StepperButton(symbol: String, label: String, enabled: Boolean, onClick: () -> Unit) {
+    val colors = G.colors
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    Box(Modifier.width(GControlMetrics.compact + 8.dp).fillMaxHeight().background(if (pressed) colors.track else Color.Transparent)
+        .alpha(if (enabled) 1f else GOpacity.disabled)
+        .clickable(interaction, indication = null, enabled = enabled, role = Role.Button, onClickLabel = label, onClick = onClick),
+        contentAlignment = Alignment.Center) {
+        GIcon(symbol, size = 11f, weight = FontWeight.SemiBold, color = colors.textPrimary)
+    }
+}
+
+/** `this` laid on `under`, as one solid colour (a translucent tint on a ground). */
+internal fun Color.compositeOverSafe(under: Color): Color = if (alpha >= 1f || under.alpha == 0f) this else compositeOver(under)

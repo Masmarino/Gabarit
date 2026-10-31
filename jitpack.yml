@@ -1,0 +1,7 @@
+# JitPack builds Gabarit for Android from a tag: com.github.Masmarino:Gabarit:<tag> (see android/).
+jdk:
+  - openjdk21
+before_install:
+  - yes | sdkmanager --licenses > /dev/null || true
+install:
+  - cd android && ./gradlew :gabarit:publishReleasePublicationToMavenLocal --no-daemon

@@ -511,7 +511,7 @@ generated file is out of date (CI). Never edit a generated file.
 | `swift/GabaritApple/GTokens+SwiftUI.swift`                        | SwiftUI: `GColor`, `GFont`, `GAnimation` |
 | `swift/GabaritGtk/Resources/gabarit-light.css`, `-dark.css`, `gabarit.css` | GTK 4                          |
 | `swift/GabaritWinUI/Resources/Gabarit.xaml`                       | WinUI 3                                 |
-| `android/gabarit/src/main/kotlin/com/masmarino/gabarit/GTokens.kt` | Jetpack Compose                         |
+| `android/gabarit/src/main/kotlin/com/masmarino/gabarit/GTokens.kt`, `GText.kt`, `GSymbols.kt` | Jetpack Compose |
 
 The palette is shared. The colours by role come in two sets: `apps` (SkollN's design, the reference for
 the native apps) and `web` (this package's roles and names, kept as they are). Native names take the
@@ -585,6 +585,22 @@ Windows.
 
 The gallery draws every component, light and dark, to PNG files at twice their size, to compare a pre-release with the
 previous one, and the Mac with Linux: `cd galerie/apple && swift run GabaritGallery <folder>`.
+
+Android (Jetpack Compose) is in `android/`: the `gabarit` library, the iPhone's components at the finger's sizes
+(`GTheme`, `G.colors`, `G.type`; `GButton`, `GCloseButton`, `GToggleRow`, `GTextField`, `GPicker`, `GSlider`,
+`GStepper`; `GBadge`, `GEmptyState`, `GSkeleton`, `GTypingDots`, `GToastHost`, `GErrorAlert`; `GForm`,
+`GFormSection`, `GRow`, `GValueRow`, `GRowButton`, `GSidebarRow`, `GNavTabs`; `GTopBar`, `GTabBar`, `GRail`,
+`GRailItem`, `GPageBand`, `GMenu`, `GSheet`, `GSideDrawer`, `GCommandPalette`). Icons take the Mac's names
+(`GIcon("bell")`), drawn by Phosphor's fonts. An app's colour themes replace the grounds with `GTheme(grounds = …)`.
+JitPack builds it from the tags (`jitpack.yml`):
+
+```kotlin
+// settings.gradle.kts: maven("https://jitpack.io") { content { includeGroup("com.github.Masmarino") } }
+implementation("com.github.Masmarino:Gabarit:3.0.0-beta.21")
+```
+
+Its gallery draws the Mac gallery's sections, light and dark, on the JVM (Robolectric) to `android/gabarit/build/galerie`:
+`cd android && ./gradlew :gabarit:testDebugUnitTest`.
 
 How they answer: every clickable thing has a hovered state (`GHover`), the pointing hand on the Mac (`gPointer`), the
 keyboard's focus (the switch's row is a button, the slider moves with the arrows), one dimming when disabled
