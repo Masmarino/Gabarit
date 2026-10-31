@@ -553,6 +553,11 @@ The quick search (⌘K): `gCommandPalette(isPresented:prompt:groups:)`, `GComman
 line heights. Call `GGtk.install()` once at launch (IBM Plex through fontconfig, Gabarit's icons, light or dark as
 GNOME prefers), then use:
 
+- icons: the apps write the Mac's names (SF Symbols: `gIcon("bell")`, `"lock.fill"`); GTK draws Phosphor's icon
+  (MIT, 2.1.1, regular and filled) that `tokens/symbols.json` gives (generated into `GSymbols`, in `GabaritCommon` for
+  WinUI too). `tools/phosphor.py <@phosphor-icons/core folder>` imports the icons; a new SF name goes into
+  `symbols.json`;
+
 - controls: `gButton` (an optional icon), `gCloseButton`, `gSwitchRow`, `gTextField`, `gPicker` (menu or chips),
   `gSlider`, `gStepper`;
 - forms: `gForm` (a reading width of 680 at most, `gClamp`), `gPageTitle`, `gFormSection`, `gValueRow`, `gRowButton`,

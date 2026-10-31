@@ -31,7 +31,7 @@ public func gButton(_ title: String, icon: String? = nil, variant: GButtonVarian
 /// Gabarit's close button: a cross in a circle with a fine rim (on the dark frame when in a `g-frame`).
 @MainActor
 public func gCloseButton(tooltip: String, action: @escaping () -> Void) -> GWidget {
-    let button = gtk_button_new_from_icon_name("window-close-symbolic")!
+    let button = gtk_button_new_from_icon_name(gIconName("xmark"))!
     gStyle(button, "g-close")
     gPointer(button)
     gtk_widget_set_tooltip_text(button, tooltip)
@@ -138,8 +138,8 @@ public func gStepper(_ title: String, value: Int, in range: ClosedRange<Int>, de
     let number = gLabel("\(value)", classes: ["g-stepper-value"])
     gtk_label_set_xalign(cast(number), 0.5)
     gtk_widget_set_size_request(number, 40, -1)
-    let minus = gtk_button_new_from_icon_name("list-remove-symbolic")!
-    let plus = gtk_button_new_from_icon_name("list-add-symbolic")!
+    let minus = gtk_button_new_from_icon_name(gIconName("minus"))!
+    let plus = gtk_button_new_from_icon_name(gIconName("plus"))!
     for (button, name) in [(minus, decrease), (plus, increase)] {
         gStyle(button, "g-stepper-step")
         gPointer(button)
@@ -255,7 +255,7 @@ public func gMenuItem(_ title: String, icon: String, destructive: Bool = false, 
     gtk_widget_set_hexpand(name, 1)
     var children = [symbol, name]
     if let checked {
-        let tick = gStyle(gIcon("object-select-symbolic", size: 14), "g-menu-tick")
+        let tick = gStyle(gIcon("checkmark", size: 14), "g-menu-tick")
         gtk_widget_set_size_request(tick, 16, -1)
         gtk_widget_set_opacity(tick, checked ? 1 : 0)
         children.append(tick)

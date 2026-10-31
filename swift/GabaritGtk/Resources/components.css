@@ -67,7 +67,7 @@ dropdown.g-menu > button { color: @g_textPrimary; min-height: 26px; padding: 0 8
                            border: 1px solid @g_hairline; box-shadow: none; background-image: none; }
 dropdown.g-menu > button:hover, dropdown.g-menu > button:checked { background-color: @g_hover; border-color: @g_accent;
                                                                    box-shadow: inset 0 0 0 0.5px @g_accent; }
-dropdown.g-menu > button arrow { color: @g_textDiscret; -gtk-icon-source: -gtk-icontheme("gabarit-chevron-up-down-symbolic");
+dropdown.g-menu > button arrow { color: @g_textDiscret; -gtk-icon-source: -gtk-icontheme("gabarit-ph-caret-up-down-symbolic");
                                  -gtk-icon-size: 12px; min-width: 12px; min-height: 12px; margin-left: 8px; }
 dropdown.g-menu popover > contents { color: @g_textPrimary; background-color: @g_surface; border: 1px solid @g_hairline; border-radius: 8px;
                                      padding: 0; min-width: 220px; box-shadow: 0 12px 16px rgba(0, 0, 0, 0.16); }
@@ -76,7 +76,7 @@ dropdown.g-menu popover listview > row { padding: 9px 14px; border-radius: 0; bo
 dropdown.g-menu popover listview > row:last-child { border-bottom: none; }
 dropdown.g-menu popover listview > row:selected { background-color: transparent; color: @g_textPrimary; font-weight: 600; }
 dropdown.g-menu popover listview > row:hover { background-color: @g_hover; }
-dropdown.g-menu popover listview > row image { color: @g_accent; }
+dropdown.g-menu popover listview > row image { color: @g_accent; -gtk-icon-source: -gtk-icontheme("gabarit-ph-check-symbolic"); }
 
 button.g-chip { min-height: 26px; padding: 0 12px; border-radius: 6px; background-color: @g_background; color: @g_textSecondary;
                 border: 1px solid @g_hairline; font-size: 12px; font-weight: 500; box-shadow: none; background-image: none; }
@@ -97,7 +97,7 @@ scale.g-slider > trough > slider { min-width: 14px; min-height: 14px; margin: -6
 .g-stepper { min-height: 26px; border-radius: 6px; background-color: @g_background; border: 1px solid @g_hairline; }
 .g-stepper .g-hairline { min-width: 1px; }
 button.g-stepper-step { min-width: 36px; min-height: 26px; padding: 0; border-radius: 0; border: none; background: transparent;
-                        background-image: none; box-shadow: none; color: @g_textPrimary; -gtk-icon-size: 12px; }
+                        background-image: none; box-shadow: none; color: @g_textPrimary; -gtk-icon-size: 15px; }
 button.g-stepper-step:hover { background-color: @g_hover; }
 button.g-stepper-step:active { background-color: @g_track; }
 button.g-stepper-step:disabled { opacity: 0.45; }
@@ -143,11 +143,11 @@ button.g-stepper-step:disabled { opacity: 0.45; }
 .g-rail-badge { padding: 1px 4px; border-radius: 4px; background-color: @g_graphite700; color: @g_graphite100; font-weight: 600;
                 font-feature-settings: "tnum"; margin-top: -6px; margin-right: -14px; }
 button.g-rail-button { min-height: 32px; padding: 0; border-radius: 6px; border: none; background: transparent; background-image: none;
-                       box-shadow: none; color: @g_graphite400; -gtk-icon-size: 15px; }
+                       box-shadow: none; color: @g_graphite400; -gtk-icon-size: 19px; }
 button.g-rail-button:hover { background-color: alpha(@g_graphite100, 0.05); color: @g_graphite100; }
 button.g-rail-button.g-on { background-color: alpha(@g_graphite100, 0.09); color: @g_accent; }
 button.g-rail-square { min-width: 42px; min-height: 42px; padding: 0; border-radius: 6px; border: 1px solid @g_graphite700;
-                       background: transparent; background-image: none; box-shadow: none; color: @g_graphite300; -gtk-icon-size: 18px; }
+                       background: transparent; background-image: none; box-shadow: none; color: @g_graphite300; -gtk-icon-size: 22px; }
 button.g-rail-square:hover { background-color: alpha(@g_graphite100, 0.05); color: @g_graphite100; }
 button.g-command-k { min-height: 46px; padding: 0; border-radius: 6px; border: 1px solid @g_graphite700; background: transparent;
                      background-image: none; box-shadow: none; color: @g_graphite300; }

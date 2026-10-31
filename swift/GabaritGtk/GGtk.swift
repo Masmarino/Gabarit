@@ -35,7 +35,7 @@ public enum GGtk {
             gSet(object, "gtk-xft-antialias", 1)
             gSet(object, "gtk-xft-rgba", "none")
         }
-        // Gabarit's own icons (the choice's two chevrons), beside the desktop's theme.
+        // Phosphor's icons, beside the desktop's theme: the apps name them as on the Mac.
         if let icons = Bundle.module.path(forResource: "icons", ofType: nil), let display = gdk_display_get_default() {
             gtk_icon_theme_add_search_path(gtk_icon_theme_get_for_display(display), icons)
         }
@@ -222,11 +222,20 @@ public func gLabel(_ text: String, style: String = "body", classes: [String] = [
     return label
 }
 
-/// A symbolic icon of the desktop's theme (`"mail-unread-symbolic"`).
+/// An icon's name for GTK. The apps write the Mac's (an SF Symbol: `"bell"`, `"lock.fill"`), drawn by Phosphor's icon
+/// that `GSymbols` gives; a name ending in "-symbolic" is the desktop theme's; any other, Phosphor's own (`"acorn"`).
+public func gIconName(_ name: String) -> String {
+    if name.hasSuffix("-symbolic") { return name }
+    if let icon = GSymbols.phosphor(for: name) { return "gabarit-ph-\(icon.name)\(icon.filled ? "-fill" : "")-symbolic" }
+    return "gabarit-ph-\(name)-symbolic"
+}
+
+/// An icon, by the Mac's name (`"bell"`, `"gearshape.fill"`), drawn by Phosphor (see `gIconName`). `size`: as an SF
+/// Symbol's font size; Phosphor draws in a wider margin, so its icon is asked a quarter larger to look the same.
 @MainActor
 public func gIcon(_ name: String, size: Int32 = 16) -> GWidget {
-    let image = gtk_image_new_from_icon_name(name)!
-    gtk_image_set_pixel_size(cast(image), size)
+    let image = gtk_image_new_from_icon_name(gIconName(name))!
+    gtk_image_set_pixel_size(cast(image), name.hasSuffix("-symbolic") ? size : (size * 5 + 2) / 4)
     return image
 }
 

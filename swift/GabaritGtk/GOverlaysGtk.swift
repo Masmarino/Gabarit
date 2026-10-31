@@ -31,7 +31,7 @@ public func gSheetTitle(_ title: String, summary: String, closeTooltip: String =
                         back: (() -> Void)? = nil, dismiss: @escaping () -> Void) -> GWidget {
     var children: [GWidget] = []
     if let back {
-        let arrow = gtk_button_new_from_icon_name("go-previous-symbolic")!
+        let arrow = gtk_button_new_from_icon_name(gIconName("chevron.left"))!
         gStyle(arrow, "g-sheet-back")
         gtk_widget_set_valign(arrow, GTK_ALIGN_START)
         gtk_widget_set_tooltip_text(arrow, backTooltip)
@@ -254,7 +254,7 @@ final class GCommandPaletteView {
         gtk_widget_add_controller(entry, keys)
         let escape = gtk_label_new("Esc")!
         gStyle(escape, "g-mono", "g-text-discret")
-        let field = gStyle(gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 10, [gIcon("system-search-symbolic"), entry, escape]), "g-command-top")
+        let field = gStyle(gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 10, [gIcon("magnifyingglass"), entry, escape]), "g-command-top")
         let list = gBox(GTK_ORIENTATION_VERTICAL, spacing: 2, [])
         gStyle(list, "g-command-list")
         let scroll = gtk_scrolled_window_new()!

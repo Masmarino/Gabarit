@@ -98,7 +98,7 @@ public func gRailItem(_ title: String, icon: String, current: Bool, badge: Int =
 /// A small button of the rail (translate, hands-free): an icon, in rust on a slight ground when `isOn`.
 @MainActor
 public func gRailButton(icon: String, tooltip: String, isOn: Bool = false, value: String? = nil, action: @escaping () -> Void) -> GWidget {
-    let button = gtk_button_new_from_icon_name(icon)!
+    let button = gtk_button_new_from_icon_name(gIconName(icon))!
     gStyle(button, "g-rail-button")
     if isOn { gtk_widget_add_css_class(button, "g-on") }
     gtk_widget_set_hexpand(button, 1)
@@ -112,7 +112,7 @@ public func gRailButton(icon: String, tooltip: String, isOn: Bool = false, value
 /// The rail's square button (settings): an icon in a 44 square with a fine rim.
 @MainActor
 public func gRailSquareButton(icon: String, tooltip: String, action: @escaping () -> Void) -> GWidget {
-    let button = gtk_button_new_from_icon_name(icon)!
+    let button = gtk_button_new_from_icon_name(gIconName(icon))!
     gStyle(button, "g-rail-square")
     gtk_widget_set_halign(button, GTK_ALIGN_CENTER)
     gPointer(button)
@@ -128,7 +128,7 @@ public func gCommandKButton(shortcut: String = "Ctrl + K", tooltip: String = "Qu
                             action: @escaping () -> Void) -> GWidget {
     let label = gLabel(shortcut, style: "caption")
     gtk_label_set_xalign(cast(label), 0.5)
-    let content = gBox(GTK_ORIENTATION_VERTICAL, spacing: 3, [gIcon("system-search-symbolic", size: 15), label])
+    let content = gBox(GTK_ORIENTATION_VERTICAL, spacing: 3, [gIcon("magnifyingglass", size: 15), label])
     gtk_widget_set_valign(content, GTK_ALIGN_CENTER)
     let button = gtk_button_new()!
     gtk_button_set_child(cast(button), content)

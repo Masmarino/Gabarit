@@ -56,9 +56,9 @@ let folder = CommandLine.arguments.dropFirst().first ?? "."
         gFormButtons([gButton("Reset") {}, gButton("Save", variant: .primary) {}]),
     ], footer: "Muted conversations never ring.")
     let rows = gBox(GTK_ORIENTATION_VERTICAL, spacing: 2, [
-        gSidebarRow("Profile", icon: "avatar-default-symbolic", selected: true),
-        gSidebarRow("Notifications", icon: "preferences-system-notifications-symbolic", selected: false, detail: "12"),
-        gSidebarRow("Privacy", icon: "system-lock-screen-symbolic", selected: false, warns: true),
+        gSidebarRow("Profile", icon: "person.crop.circle", selected: true),
+        gSidebarRow("Notifications", icon: "bell", selected: false, detail: "12"),
+        gSidebarRow("Privacy", icon: "lock", selected: false, warns: true),
     ])
     gtk_widget_set_size_request(rows, 240, -1)
     let sidebar = start(gStyle(gBox(GTK_ORIENTATION_VERTICAL, [margins(rows, 8)]), "g-sidebar", "g-radius-12"))
@@ -70,24 +70,24 @@ let folder = CommandLine.arguments.dropFirst().first ?? "."
 
 @MainActor func frame() -> GWidget {
     let items = gBox(GTK_ORIENTATION_VERTICAL, spacing: 6, [
-        gRailItem("Today", icon: "weather-clear-symbolic", current: false) {},
-        gRailItem("Messages", icon: "mail-unread-symbolic", current: true, badge: 4) {},
-        gRailItem("Spaces", icon: "view-grid-symbolic", current: false) {},
+        gRailItem("Today", icon: "sun.max", current: false) {},
+        gRailItem("Messages", icon: "bubble.left.and.bubble.right", current: true, badge: 4) {},
+        gRailItem("Spaces", icon: "square.grid.2x2", current: false) {},
     ])
     gtk_widget_set_size_request(items, 84, -1)
     let rail = gStyle(gBox(GTK_ORIENTATION_VERTICAL, [margins(items, 8)]), "g-frame", "g-radius-12")
     gtk_widget_set_valign(rail, GTK_ALIGN_START)
     let menu = rounded(gMenuList([
-        gMenuItem("Mark as read", icon: "mail-read-symbolic") {},
-        gMenuItem("Mute", icon: "notifications-disabled-symbolic", checked: true) {},
-        gMenuItem("Leave", icon: "system-log-out-symbolic", destructive: true) {},
+        gMenuItem("Mark as read", icon: "envelope.open") {},
+        gMenuItem("Mute", icon: "bell.slash", checked: true) {},
+        gMenuItem("Leave", icon: "rectangle.portrait.and.arrow.right", destructive: true) {},
     ]), 8, border: true)
     let right = gBox(GTK_ORIENTATION_VERTICAL, spacing: 18, [gNavTabs(["Overview", "Members", "Roles"], selected: 0) { _ in }, menu])
     gtk_widget_set_hexpand(right, 1)
     let column = gBox(GTK_ORIENTATION_VERTICAL, spacing: 18, [
-        rounded(gPageBand(icon: "preferences-system-notifications-symbolic", title: "Notifications", summary: "What reaches you, and when."), 12),
+        rounded(gPageBand(icon: "bell", title: "Notifications", summary: "What reaches you, and when."), 12),
         gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 18, [rail, right]),
-        rounded(gWindowHeader(title: "Settings", subtitle: "SkollN", icon: "emblem-system-symbolic",
+        rounded(gWindowHeader(title: "Settings", subtitle: "SkollN", icon: "gearshape",
                               trailing: [gCloseButton(tooltip: "Close") {}]), 12),
     ])
     return margins(column, 24)
@@ -97,48 +97,48 @@ let folder = CommandLine.arguments.dropFirst().first ?? "."
     let first = gSkeleton(height: 16), second = gSkeleton(height: 16)
     gtk_widget_set_size_request(first, 260, 16)
     gtk_widget_set_size_request(second, 200, 16)
-    let empty = gEmptyState(icon: "mail-unread-symbolic", title: "No messages yet", message: "Start a conversation with a contact.",
-                            action: ("New conversation", {}), actionIcon: "document-edit-symbolic")
+    let empty = gEmptyState(icon: "tray", title: "No messages yet", message: "Start a conversation with a contact.",
+                            action: ("New conversation", {}), actionIcon: "square.and.pencil")
     let emptyBox = gBox(GTK_ORIENTATION_VERTICAL, [empty])
     gtk_widget_set_size_request(emptyBox, -1, 260)
     gtk_widget_set_vexpand(empty, 1)
     let column = gBox(GTK_ORIENTATION_VERTICAL, spacing: 18, [
         start(gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 8, [
-            gBadge("Article", icon: "x-office-document-symbolic"), gBadge("Synced", tone: .success), gBadge("Offline", tone: .warning),
-            gBadge("Error", tone: .error), gBadge("New", icon: "starred-symbolic", tone: .info),
+            gBadge("Article", icon: "doc.text"), gBadge("Synced", tone: .success), gBadge("Offline", tone: .warning),
+            gBadge("Error", tone: .error), gBadge("New", icon: "sparkles", tone: .info),
         ])),
         gBox(GTK_ORIENTATION_VERTICAL, spacing: 8, [start(first), start(second), gSkeleton(height: 60, cornerRadius: GRadius.md)]),
         gTypingDots(label: "Writing"),
-        start(gToast("Link copied", icon: "insert-link-symbolic")),
+        start(gToast("Link copied", icon: "link")),
         emptyBox,
     ])
     return margins(column, 24)
 }
 
 @MainActor func window() -> GWidget {
-    let logo = gStyle(gIcon("starred-symbolic", size: 30), "g-gallery-logo")
+    let logo = gStyle(gIcon("seal.fill", size: 30), "g-gallery-logo")
     gtk_widget_set_margin_top(logo, 40)
     gtk_widget_set_margin_bottom(logo, 12)
-    let square = gRailSquareButton(icon: "emblem-system-symbolic", tooltip: "Settings") {}
+    let square = gRailSquareButton(icon: "gearshape", tooltip: "Settings") {}
     gtk_widget_set_margin_bottom(square, 12)
     let spacer = gSpacer(GTK_ORIENTATION_VERTICAL)
     gtk_widget_set_size_request(spacer, -1, 8)
     let page = gBox(GTK_ORIENTATION_VERTICAL, [
-        gSidebarRow("Marie", icon: "avatar-default-symbolic", selected: true, detail: "2"),
-        gSidebarRow("Paul", icon: "avatar-default-symbolic", selected: false),
+        gSidebarRow("Marie", icon: "person.circle", selected: true, detail: "2"),
+        gSidebarRow("Paul", icon: "person.circle", selected: false),
     ])
     gtk_widget_set_size_request(page, 260, -1)
     gtk_widget_set_halign(page, GTK_ALIGN_START)
     gtk_widget_set_valign(page, GTK_ALIGN_START)
     let shell = gAppShellContent(band: [gBandTitle("Messages", subtitle: "2 unread")], rail: [
         logo,
-        gRailItem("Today", icon: "weather-clear-symbolic", current: false) {},
-        gRailItem("Messages", icon: "mail-unread-symbolic", current: true, badge: 2) {},
-        gRailItem("Spaces", icon: "view-grid-symbolic", current: false) {},
+        gRailItem("Today", icon: "sun.max", current: false) {},
+        gRailItem("Messages", icon: "bubble.left.and.bubble.right", current: true, badge: 2) {},
+        gRailItem("Spaces", icon: "square.grid.2x2", current: false) {},
         spacer,
         gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 4, [
-            gRailButton(icon: "preferences-desktop-locale-symbolic", tooltip: "Translate") {},
-            gRailButton(icon: "audio-input-microphone-symbolic", tooltip: "Hands-free", isOn: true, value: "on") {},
+            gRailButton(icon: "character.bubble", tooltip: "Translate") {},
+            gRailButton(icon: "ear", tooltip: "Hands-free", isOn: true, value: "on") {},
         ]),
         square,
     ], page: margins(page, 12))
@@ -162,12 +162,12 @@ let folder = CommandLine.arguments.dropFirst().first ?? "."
     gtk_widget_set_size_request(host, 600, 420)
     gCommandPalette(host, groups: [
         GCommandGroup(title: "Pages", items: [
-            GCommandItem(id: "messages", label: "Messages", detail: "2 unread", icon: "mail-unread-symbolic", shortcut: "Ctrl + 1") {},
-            GCommandItem(id: "spaces", label: "Spaces", icon: "view-grid-symbolic", shortcut: "Ctrl + 2") {},
+            GCommandItem(id: "messages", label: "Messages", detail: "2 unread", icon: "bubble.left.and.bubble.right", shortcut: "Ctrl + 1") {},
+            GCommandItem(id: "spaces", label: "Spaces", icon: "square.grid.2x2", shortcut: "Ctrl + 2") {},
         ]),
         GCommandGroup(title: "Actions", items: [
-            GCommandItem(id: "new", label: "New conversation", icon: "document-edit-symbolic", shortcut: "Ctrl + N") {},
-            GCommandItem(id: "settings", label: "Settings", icon: "emblem-system-symbolic", shortcut: "Ctrl + ,") {},
+            GCommandItem(id: "new", label: "New conversation", icon: "square.and.pencil", shortcut: "Ctrl + N") {},
+            GCommandItem(id: "settings", label: "Settings", icon: "gearshape", shortcut: "Ctrl + ,") {},
         ]),
     ])
     return host
@@ -253,12 +253,12 @@ let activate: @convention(c) (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?
                 // an alert.
                 let host = gOverlayHost(gStyle(gBox(GTK_ORIENTATION_VERTICAL, []), "g-page"))
                 let main = gAppShell(application: app, title: "SkollN", band: [gBandTitle("Messages")],
-                                     rail: [gRailItem("Messages", icon: "mail-unread-symbolic", current: true) {}], page: host,
+                                     rail: [gRailItem("Messages", icon: "bubble.left.and.bubble.right", current: true) {}], page: host,
                                      size: (900, 600))
                 gtk_window_present(UnsafeMutableRawPointer(main).assumingMemoryBound(to: GtkWindow.self))
                 gCommandShortcut(window: main, host: host) { [] }
-                gShowToast(host, "Link copied", icon: "insert-link-symbolic")
-                let settings = gWindow(application: app, title: "Settings", subtitle: "SkollN", icon: "emblem-system-symbolic",
+                gShowToast(host, "Link copied", icon: "link")
+                let settings = gWindow(application: app, title: "Settings", subtitle: "SkollN", icon: "gearshape",
                                        size: (600, 500), content: gForm(title: "Settings", summary: "Everything.", sections: []))
                 gtk_window_present(UnsafeMutableRawPointer(settings).assumingMemoryBound(to: GtkWindow.self))
                 gSheet(parent: main, title: "New space", summary: "A place to share.", content: gBox(GTK_ORIENTATION_VERTICAL, []))
