@@ -10,23 +10,23 @@ public extension GTone {
         }
     }
 
-    /// This state's text on the page (a message under a field): a step darker in light, for a 7:1 contrast.
+    /// This state's text on the page (a message under a field): a step darker in light, for a 4.5:1 contrast at least.
     var text: Color {
         switch self {
-        case .success: Color(GColorPair(light: GPaletteValues.patina700, dark: GPaletteValues.patina400))
-        case .warning: Color(GColorPair(light: GPaletteValues.amber700, dark: GPaletteValues.amber400))
-        case .error: Color(GColorPair(light: GPaletteValues.red750, dark: GPaletteValues.red300))
-        case .info: tintText
+        case .success: GColor.successText
+        case .warning: GColor.warningText
+        case .error: GColor.errorText
+        case .info: GColor.infoText
         }
     }
 
     /// A readable text on this state's tint (a badge's label): darker in light, lighter in dark.
     var tintText: Color {
         switch self {
-        case .success: Color(GColorPair(light: GPaletteValues.patina800, dark: GPaletteValues.patina300))
-        case .warning: Color(GColorPair(light: GPaletteValues.amber800, dark: GPaletteValues.amber300))
-        case .error: Color(GColorPair(light: GPaletteValues.red800, dark: GPaletteValues.red200))
-        case .info: Color(GColorPair(light: GPaletteValues.indigo800, dark: GPaletteValues.indigo200))
+        case .success: GColor.successOnTint
+        case .warning: GColor.warningOnTint
+        case .error: GColor.errorOnTint
+        case .info: GColor.infoOnTint
         }
     }
 }

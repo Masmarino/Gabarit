@@ -76,6 +76,14 @@ public enum GColor {
     public static let error = Color(GColorValues.error)
     public static let info = Color(GColorValues.info)
     public static let frame = Color(GColorValues.frame)
+    public static let successOnTint = Color(GColorValues.successOnTint)
+    public static let warningOnTint = Color(GColorValues.warningOnTint)
+    public static let errorOnTint = Color(GColorValues.errorOnTint)
+    public static let infoOnTint = Color(GColorValues.infoOnTint)
+    public static let successText = Color(GColorValues.successText)
+    public static let warningText = Color(GColorValues.warningText)
+    public static let errorText = Color(GColorValues.errorText)
+    public static let infoText = Color(GColorValues.infoText)
 }
 
 /// The grounds as Gabarit draws them, with no theme.

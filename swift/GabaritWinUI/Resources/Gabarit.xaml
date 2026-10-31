@@ -44,6 +44,22 @@
             <SolidColorBrush x:Key="GInfoBrush" Color="#FF2F49C9"/>
             <Color x:Key="GFrameColor">#FF0B0F14</Color>
             <SolidColorBrush x:Key="GFrameBrush" Color="#FF0B0F14"/>
+            <Color x:Key="GSuccessOnTintColor">#FF0C523B</Color>
+            <SolidColorBrush x:Key="GSuccessOnTintBrush" Color="#FF0C523B"/>
+            <Color x:Key="GWarningOnTintColor">#FF6A3E03</Color>
+            <SolidColorBrush x:Key="GWarningOnTintBrush" Color="#FF6A3E03"/>
+            <Color x:Key="GErrorOnTintColor">#FF842822</Color>
+            <SolidColorBrush x:Key="GErrorOnTintBrush" Color="#FF842822"/>
+            <Color x:Key="GInfoOnTintColor">#FF283DA8</Color>
+            <SolidColorBrush x:Key="GInfoOnTintBrush" Color="#FF283DA8"/>
+            <Color x:Key="GSuccessTextColor">#FF0D5D43</Color>
+            <SolidColorBrush x:Key="GSuccessTextBrush" Color="#FF0D5D43"/>
+            <Color x:Key="GWarningTextColor">#FF774603</Color>
+            <SolidColorBrush x:Key="GWarningTextBrush" Color="#FF774603"/>
+            <Color x:Key="GErrorTextColor">#FF942C26</Color>
+            <SolidColorBrush x:Key="GErrorTextBrush" Color="#FF942C26"/>
+            <Color x:Key="GInfoTextColor">#FF283DA8</Color>
+            <SolidColorBrush x:Key="GInfoTextBrush" Color="#FF283DA8"/>
             <!-- WinUI's own controls in Gabarit's colours (lightweight styling): no template redrawn. -->
             <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#FFC2410C"/>
             <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#FFC2410C"/>
@@ -125,6 +141,22 @@
             <SolidColorBrush x:Key="GInfoBrush" Color="#FF8B9BFF"/>
             <Color x:Key="GFrameColor">#FF0B0F14</Color>
             <SolidColorBrush x:Key="GFrameBrush" Color="#FF0B0F14"/>
+            <Color x:Key="GSuccessOnTintColor">#FF7ED4B8</Color>
+            <SolidColorBrush x:Key="GSuccessOnTintBrush" Color="#FF7ED4B8"/>
+            <Color x:Key="GWarningOnTintColor">#FFF6B649</Color>
+            <SolidColorBrush x:Key="GWarningOnTintBrush" Color="#FFF6B649"/>
+            <Color x:Key="GErrorOnTintColor">#FFF7AEAA</Color>
+            <SolidColorBrush x:Key="GErrorOnTintBrush" Color="#FFF7AEAA"/>
+            <Color x:Key="GInfoOnTintColor">#FFB3BEFF</Color>
+            <SolidColorBrush x:Key="GInfoOnTintBrush" Color="#FFB3BEFF"/>
+            <Color x:Key="GSuccessTextColor">#FF3FBF95</Color>
+            <SolidColorBrush x:Key="GSuccessTextBrush" Color="#FF3FBF95"/>
+            <Color x:Key="GWarningTextColor">#FFF5B13D</Color>
+            <SolidColorBrush x:Key="GWarningTextBrush" Color="#FFF5B13D"/>
+            <Color x:Key="GErrorTextColor">#FFF38C85</Color>
+            <SolidColorBrush x:Key="GErrorTextBrush" Color="#FFF38C85"/>
+            <Color x:Key="GInfoTextColor">#FFB3BEFF</Color>
+            <SolidColorBrush x:Key="GInfoTextBrush" Color="#FFB3BEFF"/>
             <!-- WinUI's own controls in Gabarit's colours (lightweight styling): no template redrawn. -->
             <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#FFF0622A"/>
             <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#FFF0622A"/>

@@ -79,6 +79,14 @@ data class GColors(
     val error: Color,
     val info: Color,
     val frame: Color,
+    val successOnTint: Color,
+    val warningOnTint: Color,
+    val errorOnTint: Color,
+    val infoOnTint: Color,
+    val successText: Color,
+    val warningText: Color,
+    val errorText: Color,
+    val infoText: Color,
 )
 
 val GLightColors = GColors(
@@ -102,6 +110,14 @@ val GLightColors = GColors(
     error = GPalette.red600,
     info = GPalette.indigo600,
     frame = GPalette.graphite950,
+    successOnTint = GPalette.patina800,
+    warningOnTint = GPalette.amber800,
+    errorOnTint = GPalette.red800,
+    infoOnTint = GPalette.indigo800,
+    successText = GPalette.patina700,
+    warningText = GPalette.amber700,
+    errorText = GPalette.red750,
+    infoText = GPalette.indigo800,
 )
 
 val GDarkColors = GColors(
@@ -125,6 +141,14 @@ val GDarkColors = GColors(
     error = GPalette.red400,
     info = GPalette.indigo400,
     frame = GPalette.graphite950,
+    successOnTint = GPalette.patina300,
+    warningOnTint = GPalette.amber300,
+    errorOnTint = GPalette.red200,
+    infoOnTint = GPalette.indigo200,
+    successText = GPalette.patina400,
+    warningText = GPalette.amber400,
+    errorText = GPalette.red300,
+    infoText = GPalette.indigo200,
 )
 
 object GRadius {

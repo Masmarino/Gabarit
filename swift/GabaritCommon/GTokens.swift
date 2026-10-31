@@ -15,7 +15,7 @@ public struct GRGBA: Sendable, Hashable {
         GRGBA(red: red, green: green, blue: blue, alpha: alpha)
     }
 
-    init(red: Double, green: Double, blue: Double, alpha: Double) {
+    public init(red: Double, green: Double, blue: Double, alpha: Double) {
         (self.red, self.green, self.blue, self.alpha) = (red, green, blue, alpha)
     }
 }
@@ -104,6 +104,14 @@ public enum GColorValues {
     public static let error = GColorPair(light: GPaletteValues.red600, dark: GPaletteValues.red400)
     public static let info = GColorPair(light: GPaletteValues.indigo600, dark: GPaletteValues.indigo400)
     public static let frame = GColorPair(light: GPaletteValues.graphite950, dark: GPaletteValues.graphite950)
+    public static let successOnTint = GColorPair(light: GPaletteValues.patina800, dark: GPaletteValues.patina300)
+    public static let warningOnTint = GColorPair(light: GPaletteValues.amber800, dark: GPaletteValues.amber300)
+    public static let errorOnTint = GColorPair(light: GPaletteValues.red800, dark: GPaletteValues.red200)
+    public static let infoOnTint = GColorPair(light: GPaletteValues.indigo800, dark: GPaletteValues.indigo200)
+    public static let successText = GColorPair(light: GPaletteValues.patina700, dark: GPaletteValues.patina400)
+    public static let warningText = GColorPair(light: GPaletteValues.amber700, dark: GPaletteValues.amber400)
+    public static let errorText = GColorPair(light: GPaletteValues.red750, dark: GPaletteValues.red300)
+    public static let infoText = GColorPair(light: GPaletteValues.indigo800, dark: GPaletteValues.indigo200)
 }
 
 public enum GRadius {

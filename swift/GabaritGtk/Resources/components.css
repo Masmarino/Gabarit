@@ -123,10 +123,10 @@ button.g-nav-tab:checked { color: @g_textPrimary; font-weight: 600; border-botto
 /* Feedback: badges, passing messages, empty states */
 
 .g-badge { padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; background-color: @g_hover; color: @g_textSecondary; }
-.g-badge.g-success { background-color: alpha(@g_success, 0.14); color: @g_success; }
-.g-badge.g-warning { background-color: alpha(@g_warning, 0.14); color: @g_warning; }
-.g-badge.g-error { background-color: alpha(@g_error, 0.14); color: @g_error; }
-.g-badge.g-info { background-color: alpha(@g_info, 0.14); color: @g_info; }
+.g-badge.g-success { background-color: alpha(@g_success, 0.14); color: @g_successOnTint; }
+.g-badge.g-warning { background-color: alpha(@g_warning, 0.14); color: @g_warningOnTint; }
+.g-badge.g-error { background-color: alpha(@g_error, 0.14); color: @g_errorOnTint; }
+.g-badge.g-info { background-color: alpha(@g_info, 0.14); color: @g_infoOnTint; }
 .g-toast { padding: 12px 20px; border-radius: 8px; background-color: @g_primary; color: @g_onPrimary; font-size: 11px; font-weight: 500;
            box-shadow: 0 12px 16px rgba(0, 0, 0, 0.16); }
 .g-empty-icon { min-width: 80px; min-height: 80px; border-radius: 12px; background-color: @g_surface; border: 1px solid @g_hairline;

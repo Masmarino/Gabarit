@@ -67,3 +67,11 @@
 @define-color g_error #C23A32;
 @define-color g_info #2F49C9;
 @define-color g_frame #0B0F14;
+@define-color g_successOnTint #0C523B;
+@define-color g_warningOnTint #6A3E03;
+@define-color g_errorOnTint #842822;
+@define-color g_infoOnTint #283DA8;
+@define-color g_successText #0D5D43;
+@define-color g_warningText #774603;
+@define-color g_errorText #942C26;
+@define-color g_infoText #283DA8;

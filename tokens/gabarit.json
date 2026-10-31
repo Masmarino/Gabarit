@@ -168,6 +168,38 @@
       "frame": {
         "light": "graphite950",
         "dark": "graphite950"
+      },
+      "successOnTint": {
+        "light": "patina800",
+        "dark": "patina300"
+      },
+      "warningOnTint": {
+        "light": "amber800",
+        "dark": "amber300"
+      },
+      "errorOnTint": {
+        "light": "red800",
+        "dark": "red200"
+      },
+      "infoOnTint": {
+        "light": "indigo800",
+        "dark": "indigo200"
+      },
+      "successText": {
+        "light": "patina700",
+        "dark": "patina400"
+      },
+      "warningText": {
+        "light": "amber700",
+        "dark": "amber400"
+      },
+      "errorText": {
+        "light": "red750",
+        "dark": "red300"
+      },
+      "infoText": {
+        "light": "indigo800",
+        "dark": "indigo200"
       }
     },
     "web": {

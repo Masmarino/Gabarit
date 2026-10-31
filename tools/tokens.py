@@ -124,7 +124,7 @@ def swift_common() -> str:
              "    public func opacity(_ alpha: Double) -> GRGBA {",
              "        GRGBA(red: red, green: green, blue: blue, alpha: alpha)",
              "    }", "",
-             "    init(red: Double, green: Double, blue: Double, alpha: Double) {",
+             "    public init(red: Double, green: Double, blue: Double, alpha: Double) {",
              "        (self.red, self.green, self.blue, self.alpha) = (red, green, blue, alpha)",
              "    }",
              "}", "",
