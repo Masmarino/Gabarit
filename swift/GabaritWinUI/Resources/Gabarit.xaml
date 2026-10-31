@@ -208,7 +208,7 @@
     </ResourceDictionary.ThemeDictionaries>
     <CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>
     <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
-    <FontFamily x:Key="ContentControlThemeFontFamily">/Fonts/IBMPlexSans-Regular.ttf#IBM Plex Sans</FontFamily>
+    <FontFamily x:Key="ContentControlThemeFontFamily">ms-appx:///Gabarit/Fonts/IBMPlexSans-Regular.ttf#IBM Plex Sans</FontFamily>
     <Color x:Key="GPaletteSlate0">#FFFFFFFF</Color>
     <Color x:Key="GPaletteSlate50">#FFEFF2F5</Color>
     <Color x:Key="GPaletteSlate100">#FFE4E8ED</Color>
@@ -284,9 +284,9 @@
     <x:Double x:Key="GSpacingXxxxl">64</x:Double>
     <x:Double x:Key="GSpacingXxxxxl">96</x:Double>
     <x:Double x:Key="GOpacityDisabled">0.45</x:Double>
-    <FontFamily x:Key="GFontText">/Fonts/IBMPlexSans-Regular.ttf#IBM Plex Sans</FontFamily>
-    <FontFamily x:Key="GFontDisplay">/Fonts/IBMPlexSansCondensed-SemiBold.ttf#IBM Plex Sans Condensed</FontFamily>
-    <FontFamily x:Key="GFontMono">/Fonts/IBMPlexMono-Regular.ttf#IBM Plex Mono</FontFamily>
+    <FontFamily x:Key="GFontText">ms-appx:///Gabarit/Fonts/IBMPlexSans-Regular.ttf#IBM Plex Sans</FontFamily>
+    <FontFamily x:Key="GFontDisplay">ms-appx:///Gabarit/Fonts/IBMPlexSansCondensed-SemiBold.ttf#IBM Plex Sans Condensed</FontFamily>
+    <FontFamily x:Key="GFontMono">ms-appx:///Gabarit/Fonts/IBMPlexMono-Regular.ttf#IBM Plex Mono</FontFamily>
     <Style x:Key="GTextLargeTitle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource GFontDisplay}"/>
         <Setter Property="FontSize" Value="26"/>

@@ -555,8 +555,8 @@ GNOME prefers), then use:
 
 - icons: the apps write the Mac's names (SF Symbols: `gIcon("bell")`, `"lock.fill"`); GTK draws Phosphor's icon
   (MIT, 2.1.1, regular and filled) that `tokens/symbols.json` gives (generated into `GSymbols`, in `GabaritCommon` for
-  WinUI too). `tools/phosphor.py <@phosphor-icons/core folder>` imports the icons; a new SF name goes into
-  `symbols.json`;
+  WinUI too). `tools/phosphor.py <@phosphor-icons/core folder> <@phosphor-icons/web folder>` imports the icons (and
+  WinUI's fonts); a new SF name goes into `symbols.json`;
 
 - controls: `gButton` (an optional icon), `gCloseButton`, `gSwitchRow`, `gTextField`, `gPicker` (menu or chips),
   `gSlider`, `gStepper`;
@@ -576,7 +576,9 @@ to compare side by side: `galerie/gtk/capture.sh <folder>` builds it in a Linux 
 
 `GabaritWinUI` (Windows) is a set of XAML resources for WinUI 3 (Swift or C#): `Gabarit.xaml`, generated (the
 colours, light and dark, and WinUI's own controls in Gabarit's colours), and `Controls.xaml` (the buttons, the close
-cross, the windows' dark header, the rail, cards). See `swift/GabaritWinUI/README.md`; not yet tried on Windows.
+cross, the windows' dark header, the rail, cards), with `Icons.xaml`, generated: Phosphor's fonts and each SF name's
+character (`GIcon.bell`; `GSymbols.glyph(for:)` in Swift). See `swift/GabaritWinUI/README.md`; not yet tried on
+Windows.
 
 The gallery draws every component, light and dark, to PNG files at twice their size, to compare a pre-release with the
 previous one, and the Mac with Linux: `cd galerie/apple && swift run GabaritGallery <folder>`.

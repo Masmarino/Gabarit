@@ -57,3 +57,15 @@ struct GCommandSearchTests {
         #expect(GCommandSearch.filter(entries, query: " ", limit: 2).map(\.id) == ["1", "2"])
     }
 }
+
+@Suite struct GSymbolsTests {
+    @Test func everySymbolHasACharacterUnderWinUI() {
+        #expect(GSymbols.phosphor.keys.filter { GSymbols.glyph(for: $0) == nil }.isEmpty)
+    }
+
+    @Test func aFilledSymbolTakesTheFilledFont() {
+        #expect(GSymbols.glyph(for: "bell")?.character == "\u{E0CE}")
+        #expect(GSymbols.glyph(for: "lock.fill")?.font == GSymbols.fillFont)
+        #expect(GSymbols.glyph(for: "lock")?.font == GSymbols.font)
+    }
+}
