@@ -50,6 +50,7 @@ public enum GPalette {
     public static let indigo400 = Color(GPaletteValues.indigo400)
     public static let indigo600 = Color(GPaletteValues.indigo600)
     public static let indigo800 = Color(GPaletteValues.indigo800)
+    public static let cyan400 = Color(GPaletteValues.cyan400)
 }
 
 /// The colours by role, light and dark. The grounds an application may replace (`GTheme`) are read at

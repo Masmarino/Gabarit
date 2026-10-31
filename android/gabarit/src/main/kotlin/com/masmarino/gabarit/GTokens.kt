@@ -53,6 +53,7 @@ object GPalette {
     val indigo400 = Color(0xFF8B9BFF)
     val indigo600 = Color(0xFF2F49C9)
     val indigo800 = Color(0xFF283DA8)
+    val cyan400 = Color(0xFF3BD6FF)
 }
 
 /** The colours by role, for the light or the dark appearance. */

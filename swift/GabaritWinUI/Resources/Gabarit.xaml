@@ -134,6 +134,7 @@
     <Color x:Key="GPaletteIndigo400">#FF8B9BFF</Color>
     <Color x:Key="GPaletteIndigo600">#FF2F49C9</Color>
     <Color x:Key="GPaletteIndigo800">#FF283DA8</Color>
+    <Color x:Key="GPaletteCyan400">#FF3BD6FF</Color>
     <x:Double x:Key="GRadiusXs">4</x:Double>
     <CornerRadius x:Key="GCornerRadiusXs">4</CornerRadius>
     <x:Double x:Key="GRadiusSm">6</x:Double>

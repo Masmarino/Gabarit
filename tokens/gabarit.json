@@ -77,6 +77,12 @@
         "indigo600": "#2F49C9",
         "indigo800": "#283DA8"
       }
+    },
+    {
+      "comment": "A bright accent for illustrations (Alume).",
+      "colors": {
+        "cyan400": "#3BD6FF"
+      }
     }
   ],
   "semantic": {

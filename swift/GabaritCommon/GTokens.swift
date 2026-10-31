@@ -79,6 +79,7 @@ public enum GPaletteValues {
     public static let indigo400 = GRGBA(hex: 0x8B9BFF)
     public static let indigo600 = GRGBA(hex: 0x2F49C9)
     public static let indigo800 = GRGBA(hex: 0x283DA8)
+    public static let cyan400 = GRGBA(hex: 0x3BD6FF)
 }
 
 /// The colours by role (the apps' set: SkollN's design).
