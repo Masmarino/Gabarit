@@ -6,11 +6,20 @@ import Foundation
 // MARK: Controls
 
 /// A Gabarit button: ink (primary), fine frame (secondary), no ground (ghost), red (danger). `regular`: full height
-/// (44), for a sheet's main button. `destructive`: a secondary or ghost button whose text is red.
+/// (44), for a sheet's main button. `destructive`: a secondary or ghost button whose text is red. `icon`: a symbolic
+/// icon before the title.
 @MainActor
-public func gButton(_ title: String, variant: GButtonVariant = .secondary, regular: Bool = false, destructive: Bool = false,
-                    action: @escaping () -> Void) -> GWidget {
-    let button = gtk_button_new_with_label(title)!
+public func gButton(_ title: String, icon: String? = nil, variant: GButtonVariant = .secondary, regular: Bool = false,
+                    destructive: Bool = false, action: @escaping () -> Void) -> GWidget {
+    let button = gtk_button_new()!
+    let label = gtk_label_new(title)!
+    if let icon {
+        let content = gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 6, [gIcon(icon, size: 14), label])
+        gtk_widget_set_halign(content, GTK_ALIGN_CENTER)
+        gtk_button_set_child(cast(button), content)
+    } else {
+        gtk_button_set_child(cast(button), label)
+    }
     gStyle(button, "g-button", "g-\(variant)")
     gPointer(button)
     if regular { gtk_widget_add_css_class(button, "g-regular") }
@@ -58,7 +67,7 @@ public func gTextField(_ title: String, text: String = "", prompt: String? = nil
     gStyle(entry, "g-field")
     gtk_editable_set_text(cast(entry), text)
     if let prompt { gtk_entry_set_placeholder_text(cast(entry), prompt) }
-    return (gBox(GTK_ORIENTATION_VERTICAL, spacing: 6, [gLabel(title, classes: ["g-field-title"]), entry]), entry)
+    return (gBox(GTK_ORIENTATION_VERTICAL, spacing: 6, [gLabel(title, style: "caption", classes: ["g-field-title"]), entry]), entry)
 }
 
 /// A choice in a field, the list in a bubble (GtkDropDown).
@@ -121,12 +130,56 @@ public func gSlider(value: Double, in range: ClosedRange<Double>, step: Double =
     return scale
 }
 
+/// A number to raise or lower: the title on the left, then two buttons on either side of the value, in a field.
+@MainActor
+public func gStepper(_ title: String, value: Int, in range: ClosedRange<Int>, decrease: String = "Decrease",
+                     increase: String = "Increase", onChange: @escaping (Int) -> Void) -> GWidget {
+    let state = GStepperState(value)
+    let number = gLabel("\(value)", classes: ["g-stepper-value"])
+    gtk_label_set_xalign(cast(number), 0.5)
+    gtk_widget_set_size_request(number, 40, -1)
+    let minus = gtk_button_new_from_icon_name("list-remove-symbolic")!
+    let plus = gtk_button_new_from_icon_name("list-add-symbolic")!
+    for (button, name) in [(minus, decrease), (plus, increase)] {
+        gStyle(button, "g-stepper-step")
+        gPointer(button)
+        gAccessibleLabel(button, name)
+    }
+    func update() {
+        gtk_label_set_text(cast(number), "\(state.value)")
+        gtk_widget_set_sensitive(minus, state.value > range.lowerBound ? 1 : 0)
+        gtk_widget_set_sensitive(plus, state.value < range.upperBound ? 1 : 0)
+    }
+    for (button, delta) in [(minus, -1), (plus, 1)] {
+        gConnect(UnsafeMutableRawPointer(button), "clicked") {
+            state.value = min(max(state.value + delta, range.lowerBound), range.upperBound)
+            update()
+            onChange(state.value)
+        }
+    }
+    update()
+    let line = { gStyle(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0)!, "g-hairline") }
+    let field = gStyle(gBox(GTK_ORIENTATION_HORIZONTAL, [minus, line(), number, line(), plus]), "g-stepper")
+    gtk_widget_set_overflow(field, GTK_OVERFLOW_HIDDEN)
+    gtk_widget_set_valign(field, GTK_ALIGN_CENTER)
+    let name = gLabel(title)
+    gtk_widget_set_hexpand(name, 1)
+    return gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 12, [name, field])
+}
+
+final class GStepperState {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+
 // MARK: Feedback
 
 /// A small label: a state's tint, or the hover's veil with no state.
 @MainActor
-public func gBadge(_ text: String, tone: GTone? = nil) -> GWidget {
-    let badge = gLabel(text, style: "caption2", classes: ["g-badge"])
+public func gBadge(_ text: String, icon: String? = nil, tone: GTone? = nil) -> GWidget {
+    let label = gLabel(text, style: "caption2")
+    let badge = icon.map { gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 4, [gIcon($0, size: 10), label]) } ?? label
+    gtk_widget_add_css_class(badge, "g-badge")
     if let tone { gtk_widget_add_css_class(badge, "g-\(tone)") }
     gtk_widget_set_halign(badge, GTK_ALIGN_START)
     return badge
@@ -135,7 +188,7 @@ public func gBadge(_ text: String, tone: GTone? = nil) -> GWidget {
 /// A passing message: the ink of a primary button, a floating shadow.
 @MainActor
 public func gToast(_ text: String, icon: String) -> GWidget {
-    let toast = gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 8, [gIcon(icon), gLabel(text)])
+    let toast = gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 8, [gIcon(icon, size: 13), gLabel(text, style: "subheadline")])
     gStyle(toast, "g-toast")
     gtk_widget_set_halign(toast, GTK_ALIGN_CENTER)
     return toast
@@ -143,7 +196,8 @@ public func gToast(_ text: String, icon: String) -> GWidget {
 
 /// An empty page: an icon in a framed square, a title, a sentence, and what to do (a primary button).
 @MainActor
-public func gEmptyState(icon: String, title: String, message: String, action: (title: String, run: () -> Void)? = nil) -> GWidget {
+public func gEmptyState(icon: String, title: String, message: String, action: (title: String, run: () -> Void)? = nil,
+                        actionIcon: String? = nil) -> GWidget {
     let square = gIcon(icon, size: 32)
     gStyle(square, "g-empty-icon")
     gtk_widget_set_halign(square, GTK_ALIGN_CENTER)
@@ -153,9 +207,11 @@ public func gEmptyState(icon: String, title: String, message: String, action: (t
         gtk_label_set_xalign(cast(label), 0.5)
         gtk_label_set_justify(cast(label), GTK_JUSTIFY_CENTER)
     }
+    // At most 320 wide, as on the Mac.
+    gtk_label_set_max_width_chars(cast(sentence), 52)
     var children = [square, gBox(GTK_ORIENTATION_VERTICAL, spacing: 8, [heading, sentence])]
     if let action {
-        let button = gButton(action.title, variant: .primary, action: action.run)
+        let button = gButton(action.title, icon: actionIcon, variant: .primary, action: action.run)
         gtk_widget_set_halign(button, GTK_ALIGN_CENTER)
         children.append(button)
     }
@@ -165,12 +221,96 @@ public func gEmptyState(icon: String, title: String, message: String, action: (t
     return column
 }
 
+/// A placeholder while content loads: a soft shape with a slow shimmer (still when the desktop turns animations off).
+/// `cornerRadius`: one of Gabarit's radii (4, 6, 8, 12).
+@MainActor
+public func gSkeleton(height: Int32 = 20, cornerRadius: Double = GRadius.sm) -> GWidget {
+    let shape = gStyle(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)!, "g-skeleton", "g-radius-\(Int(cornerRadius))")
+    gtk_widget_set_size_request(shape, -1, height)
+    gAccessibleHidden(shape)
+    return shape
+}
+
+/// Three dots that wave while an answer is being written. `label`: what a screen reader says.
+@MainActor
+public func gTypingDots(label: String) -> GWidget {
+    let dots = (1...3).map { gStyle(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)!, "g-typing-dot", "g-dot-\($0)") }
+    for dot in dots { gtk_widget_set_valign(dot, GTK_ALIGN_CENTER) }
+    let row = gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 4, dots)
+    gtk_widget_set_size_request(row, -1, 12)
+    gtk_widget_set_halign(row, GTK_ALIGN_START)
+    gAccessibleLabel(row, label)
+    return row
+}
+
+// MARK: Menus
+
+/// A menu line: an icon and its name; red if it destroys; `checked`: a rust tick on the right (always room for it).
+@MainActor
+public func gMenuItem(_ title: String, icon: String, destructive: Bool = false, checked: Bool? = nil,
+                      action: @escaping () -> Void) -> GWidget {
+    let symbol = gIcon(icon, size: 14)
+    gtk_widget_set_size_request(symbol, 20, -1)
+    let name = gLabel(title)
+    gtk_widget_set_hexpand(name, 1)
+    var children = [symbol, name]
+    if let checked {
+        let tick = gStyle(gIcon("object-select-symbolic", size: 14), "g-menu-tick")
+        gtk_widget_set_size_request(tick, 16, -1)
+        gtk_widget_set_opacity(tick, checked ? 1 : 0)
+        children.append(tick)
+    }
+    let button = gtk_button_new()!
+    gtk_button_set_child(cast(button), gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 10, children))
+    gtk_button_set_has_frame(cast(button), 0)
+    gStyle(button, "g-menu-item")
+    if destructive { gtk_widget_add_css_class(button, "g-destructive") }
+    gPointer(button)
+    gConnect(UnsafeMutableRawPointer(button), "clicked", action)
+    return button
+}
+
+/// A menu's lines on the surface, split by a fine line.
+@MainActor
+public func gMenuList(_ items: [GWidget]) -> GWidget {
+    var children: [GWidget] = []
+    for (index, item) in items.enumerated() {
+        if index > 0 { children.append(gStyle(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)!, "g-hairline")) }
+        children.append(item)
+    }
+    let list = gStyle(gBox(GTK_ORIENTATION_VERTICAL, children), "g-menu-list")
+    gtk_widget_set_size_request(list, 240, -1)
+    return list
+}
+
+/// A button that opens a menu in a bubble: `face` is what it shows; a line clicked closes the bubble.
+@MainActor
+public func gMenuButton(_ face: GWidget, items: [GWidget], tooltip: String? = nil) -> GWidget {
+    let popover = gtk_popover_new()!
+    gStyle(popover, "g-menu-popover")
+    gtk_popover_set_has_arrow(cast(popover), 0)
+    gtk_popover_set_child(cast(popover), gMenuList(items))
+    for item in items {
+        gConnect(UnsafeMutableRawPointer(item), "clicked") { gtk_popover_popdown(cast(popover)) }
+    }
+    let button = gtk_menu_button_new()!
+    gtk_menu_button_set_child(cast(button), face)
+    gtk_menu_button_set_popover(cast(button), popover)
+    gStyle(button, "g-menu-button")
+    gPointer(button)
+    if let tooltip {
+        gtk_widget_set_tooltip_text(button, tooltip)
+        gAccessibleLabel(button, tooltip)
+    }
+    return button
+}
+
 // MARK: Forms
 
 /// A page's title: large and bold, the sentence that says what it is for more discreet below.
 @MainActor
 public func gPageTitle(_ title: String, summary: String) -> GWidget {
-    gBox(GTK_ORIENTATION_VERTICAL, spacing: 6, [gLabel(title, classes: ["g-page-title"]),
+    gBox(GTK_ORIENTATION_VERTICAL, spacing: 6, [gLabel(title, style: "largeTitle", classes: ["g-page-title"]),
                                                 gLabel(summary, classes: ["g-page-summary"], wraps: true)])
 }
 
@@ -203,26 +343,37 @@ public func gFormSection(_ title: String? = nil, rows: [GWidget], footer: String
     var children: [GWidget] = []
     if let title { children.append(gLabel(title, style: "headline", classes: ["g-section-title"])) }
     children.append(gStyle(gBox(GTK_ORIENTATION_VERTICAL, cardRows), "g-card"))
-    if let footer { children.append(gLabel(footer, classes: ["g-section-footer"], wraps: true)) }
+    if let footer { children.append(gLabel(footer, style: "callout", classes: ["g-section-footer"], wraps: true)) }
     return gBox(GTK_ORIENTATION_VERTICAL, spacing: 8, children)
 }
 
-/// A form page: the title, then its sections, in a reading width, scrolling.
+/// A form's buttons, side by side on the right (`leading`: on the left).
+@MainActor
+public func gFormButtons(_ buttons: [GWidget], leading: Bool = false) -> GWidget {
+    gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 8, leading ? buttons + [gSpacer()] : [gSpacer()] + buttons)
+}
+
+/// A sheet's main button: full width, full height (44), right on the ground.
+@MainActor
+public func gSheetButton(_ title: String, variant: GButtonVariant = .primary, action: @escaping () -> Void) -> GWidget {
+    let button = gButton(title, variant: variant, regular: true, action: action)
+    gtk_widget_set_hexpand(button, 1)
+    return button
+}
+
+/// A form page: the title, then its sections, in a reading width (680 at most, aligned left), scrolling.
 @MainActor
 public func gForm(title: String, summary: String, sections: [GWidget]) -> GWidget {
-    let column = gBox(GTK_ORIENTATION_VERTICAL, spacing: 32, [gPageTitle(title, summary: summary)] + sections)
-    gtk_widget_set_size_request(column, 520, -1)
-    gtk_widget_set_halign(column, GTK_ALIGN_START)
-    for (side, margin) in [(0, 40), (1, 40), (2, 36), (3, 48)] {
-        switch side {
-        case 0: gtk_widget_set_margin_start(column, Int32(margin))
-        case 1: gtk_widget_set_margin_end(column, Int32(margin))
-        case 2: gtk_widget_set_margin_top(column, Int32(margin))
-        default: gtk_widget_set_margin_bottom(column, Int32(margin))
-        }
-    }
+    let heading = gPageTitle(title, summary: summary)
+    gtk_widget_set_margin_bottom(heading, 28)
+    let column = gBox(GTK_ORIENTATION_VERTICAL, [heading, gBox(GTK_ORIENTATION_VERTICAL, spacing: 32, sections)])
+    gtk_widget_set_margin_start(column, 40)
+    gtk_widget_set_margin_end(column, 40)
+    gtk_widget_set_margin_top(column, 36)
+    gtk_widget_set_margin_bottom(column, 48)
     let scroll = gtk_scrolled_window_new()!
-    gtk_scrolled_window_set_child(cast(scroll), column)
+    gtk_scrolled_window_set_policy(cast(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC)
+    gtk_scrolled_window_set_child(cast(scroll), gClamp(column, maximum: 680 + 80))
     gtk_widget_set_vexpand(scroll, 1)
     gtk_widget_set_hexpand(scroll, 1)
     return gStyle(scroll, "g-page")
@@ -230,11 +381,20 @@ public func gForm(title: String, summary: String, sections: [GWidget]) -> GWidge
 
 /// A section in a side column: an icon and its name; the chosen one in rust on a soft ground.
 @MainActor
-public func gSidebarRow(_ title: String, icon: String, selected: Bool, detail: String? = nil) -> GWidget {
+public func gSidebarRow(_ title: String, icon: String, selected: Bool, detail: String? = nil, warns: Bool = false,
+                        warning: String = "Needs attention") -> GWidget {
     let name = gLabel(title)
     gtk_widget_set_hexpand(name, 1)
-    var children = [gIcon(icon), name]
-    if let detail { children.append(gLabel(detail, style: "callout")) }
+    let symbol = gIcon(icon)
+    gtk_widget_set_size_request(symbol, 20, 20)
+    var children = [symbol, name]
+    if let detail { children.append(gLabel(detail, style: "callout", classes: ["g-sidebar-detail"])) }
+    if warns {
+        let dot = gStyle(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)!, "g-warning-dot")
+        gtk_widget_set_valign(dot, GTK_ALIGN_CENTER)
+        gAccessibleLabel(dot, warning)
+        children.append(dot)
+    }
     let row = gStyle(gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 10, children), "g-sidebar-row")
     if selected { gtk_widget_add_css_class(row, "g-selected") }
     return row

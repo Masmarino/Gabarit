@@ -25,6 +25,10 @@ public enum GGtk {
                 _ = FcConfigAppFontAddFile(nil, path)
             }
         }
+        // Gabarit's own icons (the choice's two chevrons), beside the desktop's theme.
+        if let icons = Bundle.module.path(forResource: "icons", ofType: nil), let display = gdk_display_get_default() {
+            gtk_icon_theme_add_search_path(gtk_icon_theme_get_for_display(display), icons)
+        }
         apply(scheme)
         for sheet in ["gabarit", "components"] { load(sheet, priority: UInt32(GTK_STYLE_PROVIDER_PRIORITY_APPLICATION)) }
     }
@@ -130,6 +134,55 @@ public func gAccessibleLabel(_ widget: GWidget, _ label: String) -> GWidget {
     }
     g_value_unset(&value)
     return widget
+}
+
+/// Hidden from screen readers (a drawing that says nothing).
+@MainActor
+@discardableResult
+public func gAccessibleHidden(_ widget: GWidget) -> GWidget {
+    var value = GValue()
+    g_value_init(&value, GType(5 << 2))
+    g_value_set_boolean(&value, 1)
+    var state = GTK_ACCESSIBLE_STATE_HIDDEN
+    withUnsafePointer(to: &value) { values in
+        gtk_accessible_update_state_value(OpaquePointer(widget), 1, &state, values)
+    }
+    g_value_unset(&value)
+    return widget
+}
+
+/// A widget at most `maximum` wide, against the leading edge of the room it is given (a reading width).
+@MainActor
+public func gClamp(_ child: GWidget, maximum: Int32) -> GWidget {
+    let measure: @convention(c) (UnsafeMutablePointer<GtkWidget>?, GtkOrientation, Int32, UnsafeMutablePointer<Int32>?,
+                                 UnsafeMutablePointer<Int32>?, UnsafeMutablePointer<Int32>?, UnsafeMutablePointer<Int32>?) -> Void = {
+        widget, orientation, forSize, minimum, natural, _, _ in
+        guard let child = gtk_widget_get_first_child(widget) else { return }
+        let limit = Int32(Int(bitPattern: g_object_get_data(UnsafeMutableRawPointer(widget)?.assumingMemoryBound(to: GObject.self), "g-clamp")))
+        var low: Int32 = 0, high: Int32 = 0
+        if orientation == GTK_ORIENTATION_HORIZONTAL {
+            gtk_widget_measure(child, orientation, forSize, &low, &high, nil, nil)
+            high = max(low, min(high, limit))
+        } else {
+            let width = forSize < 0 ? forSize : min(forSize, limit)
+            gtk_widget_measure(child, orientation, width, &low, &high, nil, nil)
+        }
+        minimum?.pointee = low
+        natural?.pointee = high
+    }
+    let allocate: @convention(c) (UnsafeMutablePointer<GtkWidget>?, Int32, Int32, Int32) -> Void = { widget, width, height, _ in
+        guard let child = gtk_widget_get_first_child(widget) else { return }
+        let limit = Int32(Int(bitPattern: g_object_get_data(UnsafeMutableRawPointer(widget)?.assumingMemoryBound(to: GObject.self), "g-clamp")))
+        var low: Int32 = 0
+        gtk_widget_measure(child, GTK_ORIENTATION_HORIZONTAL, -1, &low, nil, nil, nil)
+        gtk_widget_allocate(child, max(low, min(width, limit)), height, -1, nil)
+    }
+    let mode: @convention(c) (UnsafeMutablePointer<GtkWidget>?) -> GtkSizeRequestMode = { _ in GTK_SIZE_REQUEST_HEIGHT_FOR_WIDTH }
+    let box = gBox(GTK_ORIENTATION_HORIZONTAL, [child])
+    g_object_set_data(UnsafeMutableRawPointer(box).assumingMemoryBound(to: GObject.self), "g-clamp", UnsafeMutableRawPointer(bitPattern: Int(maximum)))
+    gtk_widget_set_layout_manager(box, gtk_custom_layout_new(mode, measure, allocate))
+    gtk_widget_set_hexpand(box, 1)
+    return box
 }
 
 /// A label in one of Gabarit's text styles (`body`, `headline`, `title2`…), aligned to the leading edge.

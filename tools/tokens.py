@@ -235,12 +235,18 @@ def gtk_colors(key: str) -> str:
 WEIGHTS = {"regular": (400, "Normal"), "medium": (500, "Medium"), "semibold": (600, "SemiBold")}
 
 
+PLEX_LINE = 1.3
+
+
 def gtk_text() -> str:
     lines = [f"/* {HEADER} */", "/* The text styles, at the computer's sizes. */"]
     for name, t in TOKENS["text"].items():
         family = TOKENS["families"][t["family"]]["name"]
+        # The line's height as the font gives it (IBM Plex: ascender 1025, descender 275, per 1000), set in points:
+        # left to Pango, ascent and descent are each rounded up to the pixel, a point or two taller than on the Mac.
+        line = round(t["desktop"] * PLEX_LINE, 2)
         lines.append(f".g-{name} {{ font-family: \"{family}\"; font-size: {t['desktop']}px; "
-                     f"font-weight: {WEIGHTS[t['weight']][0]}; }}")
+                     f"font-weight: {WEIGHTS[t['weight']][0]}; line-height: {line:g}px; }}")
     return "\n".join(lines) + "\n"
 
 

@@ -22,7 +22,7 @@ let package = Package(
         .target(name: "GabaritGtk", dependencies: ["GabaritCommon", .target(name: "CGtk", condition: .when(platforms: [.linux]))],
                 path: "swift/GabaritGtk", resources: [.copy("Resources/fonts"), .copy("Resources/gabarit-light.css"),
                                                       .copy("Resources/gabarit-dark.css"), .copy("Resources/gabarit.css"),
-                                                      .copy("Resources/components.css")]),
+                                                      .copy("Resources/components.css"), .copy("Resources/icons")]),
         .testTarget(name: "GabaritCommonTests", dependencies: ["GabaritCommon"], path: "swift/Tests/GabaritCommonTests"),
     ]
 )
