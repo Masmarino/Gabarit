@@ -139,12 +139,15 @@ public struct GRailButton: View {
 
     public var body: some View {
         Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 15))
-                .foregroundStyle(isOn ? GColor.accent : GPalette.graphite400)
-                .frame(maxWidth: .infinity, minHeight: 32)
-                .background(isOn ? GPalette.graphite100.opacity(0.09) : .clear, in: .rect(cornerRadius: GRadius.sm))
-                .contentShape(Rectangle())
+            GHover { hovering in
+                Image(systemName: symbol)
+                    .font(.system(size: 15))
+                    .foregroundStyle(isOn ? GColor.accent : (hovering ? GPalette.graphite100 : GPalette.graphite400))
+                    .frame(maxWidth: .infinity, minHeight: 32)
+                    .background(isOn ? GPalette.graphite100.opacity(0.09) : (hovering ? GPalette.graphite100.opacity(0.05) : .clear),
+                                in: .rect(cornerRadius: GRadius.sm))
+                    .contentShape(Rectangle())
+            }
         }
         .buttonStyle(.plain)
         .help(value.map { "\(help) : \($0)" } ?? help)
@@ -167,12 +170,15 @@ public struct GRailSquareButton: View {
 
     public var body: some View {
         Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 18))
-                .foregroundStyle(GPalette.graphite300)
-                .frame(width: 44, height: 44)
-                .overlay { RoundedRectangle(cornerRadius: GRadius.sm).strokeBorder(GPalette.graphite700, lineWidth: 1) }
-                .contentShape(Rectangle())
+            GHover { hovering in
+                Image(systemName: symbol)
+                    .font(.system(size: 18))
+                    .foregroundStyle(hovering ? GPalette.graphite100 : GPalette.graphite300)
+                    .frame(width: 44, height: 44)
+                    .background(hovering ? GPalette.graphite100.opacity(0.05) : .clear, in: .rect(cornerRadius: GRadius.sm))
+                    .overlay { RoundedRectangle(cornerRadius: GRadius.sm).strokeBorder(GPalette.graphite700, lineWidth: 1) }
+                    .contentShape(Rectangle())
+            }
         }
         .buttonStyle(.plain)
         .help(help)

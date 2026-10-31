@@ -234,14 +234,17 @@ public struct GCommandKButton: View {
 
     public var body: some View {
         Button { NotificationCenter.default.post(name: .gOpenCommandPalette, object: nil) } label: {
-            VStack(spacing: 3) {
-                Image(systemName: "magnifyingglass").font(.system(size: 15))
-                Text("⌘ + K").font(GFont.caption.weight(.medium)).lineLimit(1).minimumScaleFactor(0.7)
+            GHover { hovering in
+                VStack(spacing: 3) {
+                    Image(systemName: "magnifyingglass").font(.system(size: 15))
+                    Text("⌘ + K").font(GFont.caption.weight(.medium)).lineLimit(1).minimumScaleFactor(0.7)
+                }
+                .foregroundStyle(hovering ? GPalette.graphite100 : GPalette.graphite300)
+                .frame(maxWidth: .infinity, minHeight: 48)
+                .background(hovering ? GPalette.graphite100.opacity(0.05) : .clear, in: .rect(cornerRadius: GRadius.sm))
+                .overlay { RoundedRectangle(cornerRadius: GRadius.sm).strokeBorder(GPalette.graphite700, lineWidth: 1) }
+                .contentShape(Rectangle())
             }
-            .foregroundStyle(GPalette.graphite300)
-            .frame(maxWidth: .infinity, minHeight: 48)
-            .overlay { RoundedRectangle(cornerRadius: GRadius.sm).strokeBorder(GPalette.graphite700, lineWidth: 1) }
-            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .help(gText("Quick search (⌘ + K)"))

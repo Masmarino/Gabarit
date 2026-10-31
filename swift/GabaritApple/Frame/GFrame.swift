@@ -73,34 +73,39 @@ public struct GRailItem: View {
 
     public var body: some View {
         Button(action: action) {
-            VStack(spacing: 3) {
-                icon
-                    .frame(height: 22)
-                    .overlay(alignment: .topTrailing) {
-                        if badge > 0 {
-                            Text(gBadgeText(badge))
-                                .font(GFont.caption2.weight(.semibold).monospacedDigit())
-                                .foregroundStyle(GPalette.graphite100)
-                                .padding(.horizontal, 4).padding(.vertical, 1)
-                                .background(GPalette.graphite700, in: .rect(cornerRadius: GRadius.xs))
-                                .fixedSize()
-                                .offset(x: 14, y: -6)
-                        }
-                    }
-                Text(title).font(GFont.caption2.weight(current ? .semibold : .medium)).lineLimit(1).minimumScaleFactor(0.8)
-            }
-            .foregroundStyle(current ? GColor.accent : GPalette.graphite400)
-            .frame(maxWidth: .infinity, minHeight: 52)
-            .background(current ? GPalette.graphite100.opacity(0.09) : .clear, in: .rect(cornerRadius: GRadius.sm))
-            .overlay(alignment: .leading) {
-                if current { Rectangle().fill(GColor.accent).frame(width: 2).padding(.vertical, 6) }
-            }
-            .contentShape(Rectangle())
+            GHover { hovering in item(hovering: hovering) }
         }
         .buttonStyle(.plain)
         .environment(\.colorScheme, .dark)
         .accessibilityLabel(title)
         .accessibilityAddTraits(current ? .isSelected : [])
+    }
+
+    private func item(hovering: Bool) -> some View {
+        VStack(spacing: 3) {
+            icon
+                .frame(height: 22)
+                .overlay(alignment: .topTrailing) {
+                    if badge > 0 {
+                        Text(gBadgeText(badge))
+                            .font(GFont.caption2.weight(.semibold).monospacedDigit())
+                            .foregroundStyle(GPalette.graphite100)
+                            .padding(.horizontal, 4).padding(.vertical, 1)
+                            .background(GPalette.graphite700, in: .rect(cornerRadius: GRadius.xs))
+                            .fixedSize()
+                            .offset(x: 14, y: -6)
+                    }
+                }
+            Text(title).font(GFont.caption2.weight(current ? .semibold : .medium)).lineLimit(1).minimumScaleFactor(0.8)
+        }
+        .foregroundStyle(current ? GColor.accent : (hovering ? GPalette.graphite100 : GPalette.graphite400))
+        .frame(maxWidth: .infinity, minHeight: 52)
+        .background(current ? GPalette.graphite100.opacity(0.09) : (hovering ? GPalette.graphite100.opacity(0.05) : .clear),
+                    in: .rect(cornerRadius: GRadius.sm))
+        .overlay(alignment: .leading) {
+            if current { Rectangle().fill(GColor.accent).frame(width: 2).padding(.vertical, 6) }
+        }
+        .contentShape(Rectangle())
     }
 
     @ViewBuilder private var icon: some View {

@@ -20,23 +20,27 @@ public struct GMenuItem: View {
 
     public var body: some View {
         Button(role: role, action: action) {
-            HStack(spacing: 10) {
-                Image(systemName: systemImage).font(GFont.subheadline).frame(width: 20)
-                Text(title).font(GFont.body)
-                Spacer(minLength: 12)
-                if let checked {
-                    Image(systemName: checked ? "checkmark" : "")
-                        .font(GFont.subheadline.weight(.semibold))
-                        .foregroundStyle(GColor.accent)
-                        .frame(width: 16)
-                }
-            }
-            .foregroundStyle(role == .destructive ? GTone.error.base : GColor.textPrimary)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .contentShape(Rectangle())
+            GHover { hovering in row.background(hovering ? GColor.hover : Color.clear) }
         }
         .buttonStyle(.plain)
+    }
+
+    private var row: some View {
+        HStack(spacing: 10) {
+            Image(systemName: systemImage).font(GFont.subheadline).frame(width: 20)
+            Text(title).font(GFont.body)
+            Spacer(minLength: 12)
+            if let checked {
+                Image(systemName: checked ? "checkmark" : "")
+                    .font(GFont.subheadline.weight(.semibold))
+                    .foregroundStyle(GColor.accent)
+                    .frame(width: 16)
+            }
+        }
+        .foregroundStyle(role == .destructive ? GTone.error.base : GColor.textPrimary)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .contentShape(Rectangle())
     }
 }
 

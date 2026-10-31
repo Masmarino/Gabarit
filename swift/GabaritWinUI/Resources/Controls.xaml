@@ -67,7 +67,58 @@
         </Setter>
     </Style>
 
-    <Style x:Key="GButtonPrimaryStyle" TargetType="Button" BasedOn="{StaticResource GButtonBaseStyle}">
+    <!-- The filled buttons (primary, danger): hovered a step lighter, pressed a little more, rather than under the veil
+         (which does not show on the ink). -->
+    <Style x:Key="GButtonFilledBaseStyle" TargetType="Button">
+        <Setter Property="MinHeight" Value="30"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="CornerRadius" Value="{StaticResource GCornerRadiusSm}"/>
+        <Setter Property="FontFamily" Value="{StaticResource GFontText}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="UseSystemFocusVisuals" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                          MinHeight="{TemplateBinding MinHeight}">
+                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <ContentPresenter x:Name="Content" Padding="{TemplateBinding Padding}"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.Opacity" Value="0.88"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.Opacity" Value="0.8"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.Opacity" Value="0.45"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="GButtonPrimaryStyle" TargetType="Button" BasedOn="{StaticResource GButtonFilledBaseStyle}">
         <Setter Property="Background" Value="{ThemeResource GPrimaryBrush}"/>
         <Setter Property="Foreground" Value="{ThemeResource GOnPrimaryBrush}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
@@ -85,7 +136,7 @@
         <Setter Property="BorderBrush" Value="Transparent"/>
     </Style>
 
-    <Style x:Key="GButtonDangerStyle" TargetType="Button" BasedOn="{StaticResource GButtonBaseStyle}">
+    <Style x:Key="GButtonDangerStyle" TargetType="Button" BasedOn="{StaticResource GButtonFilledBaseStyle}">
         <Setter Property="Background" Value="{ThemeResource GErrorBrush}"/>
         <Setter Property="Foreground" Value="{ThemeResource GOnPrimaryBrush}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>

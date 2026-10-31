@@ -169,14 +169,16 @@ private struct GChips<Value: Hashable>: View {
                 let current = option.value == selection
                 let shape = RoundedRectangle(cornerRadius: GRadius.sm, style: .continuous)
                 Button { withAnimation(.snappy(duration: 0.15)) { selection = option.value } } label: {
-                    Text(option.title)
-                        .font(GFont.callout.weight(current ? .semibold : .medium))
-                        .foregroundStyle(current ? GColor.accentText : GColor.textSecondary)
-                        .padding(.horizontal, 12)
-                        .frame(minHeight: GControlMetrics.compact)
-                        .background(current ? GColor.accent.opacity(0.12) : GColor.background, in: shape)
-                        .overlay { shape.strokeBorder(current ? GColor.accent.opacity(0.7) : GColor.hairline, lineWidth: 1) }
-                        .contentShape(shape)
+                    GHover { hovering in
+                        Text(option.title)
+                            .font(GFont.callout.weight(current ? .semibold : .medium))
+                            .foregroundStyle(current ? GColor.accentText : (hovering ? GColor.textPrimary : GColor.textSecondary))
+                            .padding(.horizontal, 12)
+                            .frame(minHeight: GControlMetrics.compact)
+                            .background(current ? GColor.accent.opacity(0.12) : (hovering ? GColor.hover : GColor.background), in: shape)
+                            .overlay { shape.strokeBorder(current ? GColor.accent.opacity(0.7) : (hovering ? GColor.border.opacity(0.5) : GColor.hairline), lineWidth: 1) }
+                            .contentShape(shape)
+                    }
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(current ? .isSelected : [])

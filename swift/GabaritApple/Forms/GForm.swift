@@ -175,11 +175,14 @@ public struct GFormLayout<Content: View>: View {
                 if let page {
                     if let back = page.back, let onBack = page.onBack {
                         Button(action: onBack) {
-                            Label(back, systemImage: "chevron.left")
-                                .labelStyle(GCompactLabelStyle())
-                                .font(GFont.callout.weight(.medium))
-                                .foregroundStyle(GColor.accentText)
-                                .contentShape(Rectangle())
+                            GHover { hovering in
+                                Label(back, systemImage: "chevron.left")
+                                    .labelStyle(GCompactLabelStyle())
+                                    .font(GFont.callout.weight(.medium))
+                                    .foregroundStyle(GColor.accentText)
+                                    .underline(hovering)
+                                    .contentShape(Rectangle())
+                            }
                         }
                         .buttonStyle(.plain)
                         .keyboardShortcut("[", modifiers: .command)
@@ -401,10 +404,13 @@ public struct GSheetTitle: View {
         HStack(alignment: .top, spacing: 16) {
             if let back {
                 Button(action: back) {
-                    Image(systemName: "chevron.left").font(.system(size: 14, weight: .semibold)).foregroundStyle(GColor.textSecondary)
-                        .frame(width: 30, height: 30)
-                        .background(GColor.track, in: Circle())
-                        .contentShape(Circle())
+                    GHover { hovering in
+                        Image(systemName: "chevron.left").font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(hovering ? GColor.textPrimary : GColor.textSecondary)
+                            .frame(width: 30, height: 30)
+                            .background(hovering ? GColor.border.opacity(0.3) : GColor.track, in: Circle())
+                            .contentShape(Circle())
+                    }
                 }
                 .buttonStyle(.plain)
                 .keyboardShortcut(.leftArrow, modifiers: .command)

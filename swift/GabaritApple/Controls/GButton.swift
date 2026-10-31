@@ -36,15 +36,17 @@ public struct GButtonStyle: ButtonStyle {
 
     public func makeBody(configuration: Configuration) -> some View {
         let shape = RoundedRectangle(cornerRadius: GRadius.sm, style: .continuous)
-        configuration.label
-            .font(GFont.body.weight(.semibold))
-            .foregroundStyle(foreground(configuration.role))
-            .padding(.horizontal, compact ? 12 : 16)
-            .frame(minHeight: compact ? GControlMetrics.button : 44)
-            .background(background(pressed: configuration.isPressed), in: shape)
-            .overlay { if variant == .secondary { shape.strokeBorder(GColor.border.opacity(0.6), lineWidth: 1) } }
-            .opacity(isEnabled ? 1 : 0.45)
-            .contentShape(shape)
+        GHover { hovering in
+            configuration.label
+                .font(GFont.body.weight(.semibold))
+                .foregroundStyle(foreground(configuration.role))
+                .padding(.horizontal, compact ? 12 : 16)
+                .frame(minHeight: compact ? GControlMetrics.button : 44)
+                .background(background(pressed: configuration.isPressed, hovering: hovering), in: shape)
+                .overlay { if variant == .secondary { shape.strokeBorder(GColor.border.opacity(hovering ? 0.8 : 0.6), lineWidth: 1) } }
+                .opacity(isEnabled ? 1 : 0.45)
+                .contentShape(shape)
+        }
     }
 
     /// A destructive button ("Delete", "Leave") with no solid ground: its text in red.
@@ -57,12 +59,13 @@ public struct GButtonStyle: ButtonStyle {
         }
     }
 
-    private func background(pressed: Bool) -> Color {
+    /// Hovered, a step lighter (the ink) or under the veil (the surfaces); pressed, a little more.
+    private func background(pressed: Bool, hovering: Bool) -> Color {
         switch variant {
-        case .primary: pressed ? GColor.primaryHover : GColor.primary
-        case .secondary: pressed ? GColor.hover : GColor.surface
-        case .ghost: pressed ? GColor.hover : .clear
-        case .danger: GTone.error.base.opacity(pressed ? 0.85 : 1)
+        case .primary: pressed || hovering ? GColor.primaryHover : GColor.primary
+        case .secondary: pressed ? GColor.track : (hovering ? GColor.hover : GColor.surface)
+        case .ghost: pressed ? GColor.track : (hovering ? GColor.hover : .clear)
+        case .danger: GTone.error.base.opacity(pressed ? 0.8 : (hovering ? 0.9 : 1))
         }
     }
 }
@@ -74,9 +77,11 @@ public struct GPressStyle: ButtonStyle {
     public init() {}
 
     public func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .background(configuration.isPressed ? GColor.hover : Color.clear)
-            .opacity(isEnabled ? 1 : 0.35)
+        GHover { hovering in
+            configuration.label
+                .background(configuration.isPressed ? GColor.track : (hovering ? GColor.hover : Color.clear))
+                .opacity(isEnabled ? 1 : 0.35)
+        }
     }
 }
 

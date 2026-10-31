@@ -16,11 +16,15 @@ button.g-button { min-height: 30px; padding: 0 12px; border-radius: 6px; font-we
                   background-image: none; transition: background-color 120ms ease-out; }
 button.g-button.g-regular { min-height: 44px; padding: 0 16px; }
 button.g-primary { background-color: @g_primary; color: @g_onPrimary; border: none; }
-button.g-primary:hover { background-color: @g_primaryHover; }
+button.g-primary:hover, button.g-primary:active { background-color: @g_primaryHover; }
 button.g-secondary { background-color: @g_surface; color: @g_textPrimary; border: 1px solid alpha(@g_border, 0.6); }
 button.g-secondary:hover, button.g-ghost:hover { background-color: @g_hover; }
+button.g-secondary:hover { border-color: alpha(@g_border, 0.8); }
+button.g-secondary:active, button.g-ghost:active { background-color: @g_track; }
 button.g-ghost { background-color: transparent; color: @g_textSecondary; border: none; }
 button.g-danger { background-color: @g_error; color: @g_onPrimary; border: none; }
+button.g-danger:hover { background-color: alpha(@g_error, 0.9); }
+button.g-danger:active { background-color: alpha(@g_error, 0.8); }
 button.g-secondary.g-destructive, button.g-ghost.g-destructive { color: @g_error; }
 button.g-button:disabled { opacity: 0.45; }
 
@@ -36,6 +40,7 @@ button.g-close:hover { background-color: @g_hover; }
 
 switch.g-switch { min-width: 36px; min-height: 20px; padding: 0; border-radius: 999px; background-color: @g_track;
                   border: 1px solid alpha(@g_border, 0.35); box-shadow: none; }
+switch.g-switch:hover { border-color: alpha(@g_border, 0.6); }
 switch.g-switch:checked { background-color: @g_accent; border-color: transparent; }
 switch.g-switch > slider { min-width: 16px; min-height: 16px; margin: 1px; border-radius: 999px; background-color: #FFFFFF;
                            border: none; box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.18); }
@@ -44,6 +49,7 @@ switch.g-switch > slider { min-width: 16px; min-height: 16px; margin: 1px; borde
 
 entry.g-field, textview.g-field { min-height: 30px; padding: 0 10px; border-radius: 6px; background-color: @g_background;
                                   color: @g_textPrimary; border: 1px solid @g_hairline; box-shadow: none; outline: none; }
+entry.g-field:hover { border-color: alpha(@g_border, 0.5); }
 entry.g-field:focus-within { border: 1.5px solid @g_accent; }
 entry.g-field > text > placeholder { color: @g_textDiscret; }
 .g-field-title { font-size: 10px; font-weight: 600; color: @g_textSecondary; }
@@ -59,6 +65,7 @@ dropdown.g-menu popover listview > row:hover { background-color: @g_hover; }
 
 button.g-chip { min-height: 28px; padding: 0 12px; border-radius: 6px; background-color: @g_background; color: @g_textSecondary;
                 border: 1px solid @g_hairline; font-size: 12px; font-weight: 500; box-shadow: none; background-image: none; }
+button.g-chip:hover { background-color: @g_hover; color: @g_textPrimary; border-color: alpha(@g_border, 0.5); }
 button.g-chip:checked { background-color: alpha(@g_accent, 0.12); color: @g_accentText; border-color: alpha(@g_accent, 0.7); font-weight: 600; }
 
 /* The slider: a thin track, the filled part in rust, a white knob with a rim */
@@ -92,7 +99,7 @@ scale.g-slider > trough > slider { min-width: 16px; min-height: 16px; margin: -6
 .g-frame { background-color: @g_graphite950; color: @g_graphite100; }
 .g-rail { min-width: 92px; padding: 0 6px; }
 .g-rail-item { min-height: 52px; border-radius: 6px; color: @g_graphite400; font-size: 10px; font-weight: 500; }
-.g-rail-item:hover { background-color: alpha(@g_graphite100, 0.05); }
+.g-rail-item:hover { background-color: alpha(@g_graphite100, 0.05); color: @g_graphite100; }
 .g-rail-item.g-current { color: @g_accent; background-color: alpha(@g_graphite100, 0.09); font-weight: 600;
                          box-shadow: inset 2px 0 0 @g_accent; }
 .g-band { min-height: 52px; padding: 0 16px; }
@@ -107,6 +114,7 @@ scale.g-slider > trough > slider { min-width: 16px; min-height: 16px; margin: -6
 button.g-nav-tab { padding: 8px 0; margin-right: 20px; border-radius: 0; background: transparent; background-image: none;
                    box-shadow: none; outline: none; border: none; border-bottom: 2px solid transparent; color: @g_textSecondary;
                    font-weight: 500; }
+button.g-nav-tab:hover { color: @g_textPrimary; border-bottom-color: alpha(@g_border, 0.5); }
 button.g-nav-tab:checked { color: @g_textPrimary; font-weight: 600; border-bottom-color: @g_accent; }
 
 /* Feedback: badges, passing messages, empty states */

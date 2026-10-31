@@ -105,14 +105,20 @@ public struct GNavTabs<Tab: Hashable>: View {
             ForEach(tabs, id: \.self) { tab in
                 let current = tab == selection
                 Button { withAnimation(.snappy(duration: 0.2)) { selection = tab } } label: {
-                    Text(title(tab))
-                        .font(GFont.body.weight(current ? .semibold : .medium))
-                        .foregroundStyle(current ? GColor.textPrimary : GColor.textSecondary)
-                        .padding(.vertical, 8)
-                        .overlay(alignment: .bottom) {
-                            if current { Rectangle().fill(GColor.accent).frame(height: 2) }
-                        }
-                        .contentShape(Rectangle())
+                    GHover { hovering in
+                        Text(title(tab))
+                            .font(GFont.body.weight(current ? .semibold : .medium))
+                            .foregroundStyle(current || hovering ? GColor.textPrimary : GColor.textSecondary)
+                            .padding(.vertical, 8)
+                            .overlay(alignment: .bottom) {
+                                if current {
+                                    Rectangle().fill(GColor.accent).frame(height: 2)
+                                } else if hovering {
+                                    Rectangle().fill(GColor.border.opacity(0.5)).frame(height: 2)
+                                }
+                            }
+                            .contentShape(Rectangle())
+                    }
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(current ? .isSelected : [])
