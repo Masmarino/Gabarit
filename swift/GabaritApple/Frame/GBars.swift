@@ -10,12 +10,12 @@ public extension View {
     /// itself (rail and top band): nothing to do here.
     @ViewBuilder func gFrameToolbar() -> some View {
         #if os(iOS)
-        toolbarBackground(GPalette.graphite950, for: .navigationBar)
+        toolbarBackground(GFrameColor.ground, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             // The sheet's ground, dark like the frame: otherwise the system's light glass shows as a white thread along
             // the rounded top corners (the content paints its own ground over it).
-            .presentationBackground(GPalette.graphite950)
+            .presentationBackground(GFrameColor.ground)
         #else
         self
         #endif
@@ -129,6 +129,8 @@ public struct GNavTabs<Tab: Hashable>: View {
         }
         .overlay(alignment: .bottom) { Rectangle().fill(GColor.hairline).frame(height: 1) }
         .gDimmedWhenDisabled()
+        .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(.isTabBar)
     }
 }
 
@@ -158,6 +160,8 @@ public struct GTab: Identifiable {
 public struct GTabBar: View {
     let tabs: [GTab]
     @Binding var selection: String
+    /// The icons grow with the text size (Dynamic Type), from 20 points.
+    @ScaledMetric(relativeTo: .caption2) private var iconSize: CGFloat = 20
 
     public init(tabs: [GTab], selection: Binding<String>) {
         self.tabs = tabs
@@ -196,9 +200,17 @@ public struct GTabBar: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(tab.title)
+                .accessibilityValue(tab.badge > 0 ? gBadgeText(tab.badge) : "")
                 .accessibilityAddTraits(current ? .isSelected : [])
+                // A long press shows the tab large when the text is very large (the bar does not grow).
+                .accessibilityShowsLargeContentViewer {
+                    icon(tab, current: current)
+                    Text(tab.title)
+                }
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(.isTabBar)
         .background(GColor.surface.ignoresSafeArea(edges: .bottom))
         .overlay(alignment: .top) { Rectangle().fill(GColor.hairline).frame(height: 1) }
     }
@@ -207,7 +219,7 @@ public struct GTabBar: View {
         if let name = tab.image {
             Image(name).renderingMode(.template).resizable().scaledToFit().frame(width: 24, height: 24)
         } else if let symbol = tab.systemImage {
-            Image(systemName: symbol).font(.system(size: 20, weight: current ? .semibold : .regular))
+            Image(systemName: symbol).font(.system(size: min(iconSize, 28), weight: current ? .semibold : .regular))
         }
     }
 }

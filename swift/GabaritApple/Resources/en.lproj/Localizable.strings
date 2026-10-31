@@ -20,3 +20,4 @@
 "Shortcut: Command K" = "Shortcut: Command K";
 "Esc" = "Esc";
 "Nothing matches." = "Nothing matches.";
+"%@: %@" = "%1$@: %2$@";

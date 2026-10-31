@@ -36,8 +36,21 @@ public struct GCommandGroup: Identifiable {
 }
 
 public extension Notification.Name {
-    /// Opens the quick search (the rail's "⌘ + K" button).
+    /// Opens the quick search of every window (an app's own command); the rail's "⌘ + K" button opens only its own
+    /// window's, through `gToggleCommandPalette`.
     static let gOpenCommandPalette = Notification.Name("gabarit.open-command-palette")
+}
+
+/// Opens or closes the quick search of this window (set by `gCommandPalette`). Always equal: the views that read it
+/// do not redraw each time the window does.
+public struct GCommandPaletteToggle: Equatable {
+    let toggle: () -> Void
+    public func callAsFunction() { toggle() }
+    public static func == (_: Self, _: Self) -> Bool { true }
+}
+
+public extension EnvironmentValues {
+    @Entry var gToggleCommandPalette: GCommandPaletteToggle?
 }
 
 /// The quick search: a field, then the entries that match, by group; arrows to choose, Return to open, Escape to close.
@@ -47,6 +60,10 @@ public struct GCommandPalette: View {
     let groups: [GCommandGroup]
     @State private var query = ""
     @State private var activeID: String?
+    /// The groups that match, filtered once per query (not on every hover).
+    @State private var shown: [GCommandGroup] = []
+    /// Where the pointer last was: the list scrolling under a still pointer does not change the choice.
+    @State private var pointer: CGPoint?
     @FocusState private var fieldFocused: Bool
 
     public init(isPresented: Binding<Bool>, prompt: String? = nil, groups: [GCommandGroup]) {
@@ -55,11 +72,12 @@ public struct GCommandPalette: View {
         self.groups = groups
     }
 
-    private var shown: [GCommandGroup] {
+    private func filtered() -> [GCommandGroup] {
         groups.compactMap { group in
             let entries = group.items.map { GCommandSearch.Entry(id: $0.id, label: $0.label, detail: $0.detail, keywords: $0.keywords) }
             let kept = GCommandSearch.filter(entries, query: query, limit: query.isEmpty ? 6 : 8).map(\.id)
-            let items = kept.compactMap { id in group.items.first { $0.id == id } }
+            let byID = Dictionary(group.items.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            let items = kept.compactMap { byID[$0] }
             return items.isEmpty ? nil : GCommandGroup(title: group.title, items: items)
         }
     }
@@ -76,11 +94,11 @@ public struct GCommandPalette: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 72)
         }
-        .onAppear {
-            fieldFocused = true
+        .onChange(of: query, initial: true) {
+            shown = filtered()
             activeID = ordered.first?.id
         }
-        .onChange(of: query) { activeID = ordered.first?.id }
+        .onAppear { fieldFocused = true }
     }
 
     private var palette: some View {
@@ -97,6 +115,8 @@ public struct GCommandPalette: View {
         .shadow(color: .black.opacity(0.25), radius: 24, y: 10)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(gText("Quick search"))
+        .accessibilityAddTraits(.isModal)
+        .accessibilityAction(.escape, close)
     }
 
     private var field: some View {
@@ -136,7 +156,7 @@ public struct GCommandPalette: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 2) {
                         ForEach(shown) { group in
-                            Text(group.title.uppercased())
+                            Text(group.title).textCase(.uppercase)
                                 .font(GFont.caption2.weight(.semibold)).tracking(0.8)
                                 .foregroundStyle(GColor.textSecondary)
                                 .padding(.horizontal, 10).padding(.top, 10).padding(.bottom, 2)
@@ -179,7 +199,11 @@ public struct GCommandPalette: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .onHover { if $0 { activeID = item.id } }
+        .onContinuousHover { phase in
+            guard case .active(let location) = phase, location != pointer else { return }
+            pointer = location
+            activeID = item.id
+        }
         .gPointer()
         .accessibilityAddTraits(active ? .isSelected : [])
     }
@@ -210,7 +234,11 @@ public extension View {
     /// The quick search over this view: ⌘K (or the "⌘ + K" button, `gOpenCommandPalette`) opens it. `prompt`: what the
     /// field invites to search.
     func gCommandPalette(isPresented: Binding<Bool>, prompt: String? = nil, groups: @escaping () -> [GCommandGroup]) -> some View {
-        overlay {
+        // The page behind is out of reach while it is open (Tab, VoiceOver): the palette is modal.
+        ZStack {
+            disabled(isPresented.wrappedValue)
+                .accessibilityHidden(isPresented.wrappedValue)
+                .environment(\.gToggleCommandPalette, GCommandPaletteToggle { isPresented.wrappedValue.toggle() })
             if isPresented.wrappedValue {
                 GCommandPalette(isPresented: isPresented, prompt: prompt, groups: groups())
                     .transition(.opacity)
@@ -221,7 +249,8 @@ public extension View {
         .animation(.easeOut(duration: 0.15), value: isPresented.wrappedValue)
         .background {
             // The keyboard shortcut, even with no visible button (an iPad with a keyboard).
-            Button(gText("Quick search")) { isPresented.wrappedValue = true }
+            // ⌘K again closes it.
+            Button(gText("Quick search")) { isPresented.wrappedValue.toggle() }
                 .keyboardShortcut("k", modifiers: .command)
                 .opacity(0)
                 .accessibilityHidden(true)
@@ -233,19 +262,21 @@ public extension View {
 /// The rail's "⌘ + K" button (Mac, iPad): a magnifier and the whole shortcut, the key and the letter (the ⌘ symbol
 /// alone is not understood).
 public struct GCommandKButton: View {
+    @Environment(\.gToggleCommandPalette) private var toggle
+
     public init() {}
 
     public var body: some View {
-        Button { NotificationCenter.default.post(name: .gOpenCommandPalette, object: nil) } label: {
+        Button { toggle?() ?? NotificationCenter.default.post(name: .gOpenCommandPalette, object: nil) } label: {
             GHover { hovering in
                 VStack(spacing: 3) {
                     Image(systemName: "magnifyingglass").font(.system(size: 15))
                     Text("⌘ + K").font(GFont.caption.weight(.medium)).lineLimit(1).minimumScaleFactor(0.7)
                 }
-                .foregroundStyle(hovering ? GPalette.graphite100 : GPalette.graphite300)
+                .foregroundStyle(hovering ? GFrameColor.text : GFrameColor.textSecondary)
                 .frame(maxWidth: .infinity, minHeight: 48)
-                .background(hovering ? GPalette.graphite100.opacity(0.05) : .clear, in: .rect(cornerRadius: GRadius.sm))
-                .overlay { RoundedRectangle(cornerRadius: GRadius.sm).strokeBorder(GPalette.graphite700, lineWidth: 1) }
+                .background(hovering ? GFrameColor.hover : .clear, in: .rect(cornerRadius: GRadius.sm))
+                .overlay { RoundedRectangle(cornerRadius: GRadius.sm).strokeBorder(GFrameColor.rim, lineWidth: 1) }
                 .contentShape(Rectangle())
             }
         }

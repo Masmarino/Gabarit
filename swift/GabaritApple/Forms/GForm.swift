@@ -280,12 +280,21 @@ public struct GFormRowButtonStyle: ButtonStyle {
     public init() {}
 
     public func makeBody(configuration: Configuration) -> some View {
+        GFormRowButton(configuration: configuration)
+    }
+}
+
+private struct GFormRowButton: View {
+    let configuration: ButtonStyleConfiguration
+    @Environment(\.isEnabled) private var isEnabled
+
+    var body: some View {
         configuration.label
             .font(GFont.body)
-            .foregroundStyle(configuration.role == .destructive ? GColor.error : GColor.accentText)
+            .foregroundStyle(configuration.role == .destructive ? GTone.error.text : GColor.accentText)
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
-            .opacity(configuration.isPressed ? 0.6 : 1)
+            .opacity(isEnabled ? (configuration.isPressed ? 0.6 : 1) : GOpacity.disabled)
             .modifier(GRowHover())
     }
 }
@@ -357,6 +366,7 @@ public struct GFormButtons<Content: View>: View {
 }
 
 /// A sheet's main button, full width (Gabarit's ink), laid right on the ground.
+/// The primary one is the sheet's default: Return triggers it.
 public struct GSheetButton: View {
     let title: String
     var variant: GButtonVariant
@@ -371,6 +381,7 @@ public struct GSheetButton: View {
     public var body: some View {
         Button(action: action) { Text(title).frame(maxWidth: .infinity) }
             .buttonStyle(GButtonStyle(variant: variant, compact: false))
+            .keyboardShortcut(variant == .primary ? .defaultAction : nil)
             // Right on the ground, out of its section's card.
             .gFormBare()
     }
@@ -413,7 +424,8 @@ public struct GSheetTitle: View {
                     }
                 }
                 .buttonStyle(.plain)
-                .keyboardShortcut(.leftArrow, modifiers: .command)
+                // ⌘[ as the page's back link: ⌘← stays the text fields' (the start of the line).
+                .keyboardShortcut("[", modifiers: .command)
                 .help(gText("Back"))
                 .accessibilityLabel(gText("Back"))
                 .padding(.top, 4)

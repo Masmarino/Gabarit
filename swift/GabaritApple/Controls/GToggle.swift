@@ -14,13 +14,12 @@ public struct GToggleStyle: ToggleStyle {
 private struct GToggleRow: View {
     let configuration: ToggleStyleConfiguration
     @Environment(\.isEnabled) private var isEnabled
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        // A button: reached by the keyboard (Tab, then Space), not only by a click or a tap.
-        Button { gWithAnimation(.snappy(duration: 0.18), reduceMotion: reduceMotion) { configuration.isOn.toggle() } } label: { row }
+        // A button: reached by the keyboard (Tab, then Space), not only by a click or a tap. The switch animates itself:
+        // the change is not wrapped in an animation, which would animate everything that depends on the setting.
+        Button { configuration.isOn.toggle() } label: { row }
             .buttonStyle(.plain)
-            .disabled(!isEnabled)
             .gPointer()
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isToggle)
@@ -52,6 +51,7 @@ private struct GToggleRow: View {
 public struct GSwitch: View {
     let isOn: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorSchemeContrast) private var contrast
     #if os(macOS)
     private let size = CGSize(width: 36, height: 20)
     #else
@@ -66,7 +66,7 @@ public struct GSwitch: View {
         Capsule()
             .fill(isOn ? GColor.accent : GColor.track)
             // Off, a rim stronger than the fine line: the track shows on a white card too.
-            .overlay { Capsule().strokeBorder(isOn ? Color.clear : GColor.border.opacity(0.35), lineWidth: 1) }
+            .overlay { Capsule().strokeBorder(isOn ? Color.clear : contrast == .increased ? GColor.border : GColor.border.opacity(0.35), lineWidth: 1) }
             .frame(width: size.width, height: size.height)
             .overlay(alignment: isOn ? .trailing : .leading) {
                 Circle().fill(.white)

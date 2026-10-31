@@ -20,3 +20,4 @@
 "Shortcut: Command K" = "Raccourci : Commande K";
 "Esc" = "Échap";
 "Nothing matches." = "Rien ne correspond.";
+"%@: %@" = "%1$@ : %2$@";

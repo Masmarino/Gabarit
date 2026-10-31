@@ -2,28 +2,37 @@
 import SwiftUI
 
 /// Gabarit's slider: a thin track, the filled part in rust, a white knob with a rim.
+/// `label`: what a screen reader calls it (the row's title); `format`: how it says the value (a percentage by default).
 public struct GSlider: View {
     @Binding var value: Double
     let range: ClosedRange<Double>
     var step: Double?
+    var label: String?
+    var format: ((Double) -> String)?
 
-    public init(value: Binding<Double>, in range: ClosedRange<Double>, step: Double? = nil) {
+    public init(value: Binding<Double>, in range: ClosedRange<Double>, step: Double? = nil, label: String? = nil,
+                format: ((Double) -> String)? = nil) {
         _value = value
         self.range = range
         self.step = step
+        self.label = label
+        self.format = format
     }
 
     @Environment(\.gSystemControls) private var system
 
     public var body: some View {
         if system {
-            if let step {
-                Slider(value: $value, in: range, step: step).tint(GColor.accent)
-            } else {
-                Slider(value: $value, in: range).tint(GColor.accent)
+            Group {
+                if let step {
+                    Slider(value: $value, in: range, step: step).tint(GColor.accent)
+                } else {
+                    Slider(value: $value, in: range).tint(GColor.accent)
+                }
             }
+            .accessibilityLabel(label ?? "")
         } else {
-            GSliderTrack(value: $value, range: range, step: step)
+            GSliderTrack(value: $value, range: range, step: step, label: label, format: format)
         }
     }
 }
@@ -32,6 +41,8 @@ private struct GSliderTrack: View {
     @Binding var value: Double
     let range: ClosedRange<Double>
     let step: Double?
+    let label: String?
+    let format: ((Double) -> String)?
     @Environment(\.isEnabled) private var isEnabled
     @State private var dragging = false
 
@@ -59,7 +70,8 @@ private struct GSliderTrack: View {
             }
             .frame(maxHeight: .infinity)
             .contentShape(Rectangle())
-            .gesture(DragGesture(minimumDistance: 0)
+            // On a touch screen, a short distance first: a vertical scroll that starts on it stays a scroll.
+            .gesture(DragGesture(minimumDistance: GSliderTrack.dragStart)
                 .onChanged { drag in
                     dragging = true
                     set(Double((drag.location.x - knob / 2) / width))
@@ -77,9 +89,16 @@ private struct GSliderTrack: View {
         .onKeyPress(.downArrow) { nudge(-1); return .handled }
         .onKeyPress(.upArrow) { nudge(1); return .handled }
         .accessibilityElement()
-        .accessibilityValue("\(Int((fraction * 100).rounded())) %")
+        .accessibilityLabel(label ?? "")
+        .accessibilityValue(format?(value) ?? fraction.formatted(.percent.precision(.fractionLength(0))))
         .accessibilityAdjustableAction { direction in nudge(direction == .increment ? 1 : -1) }
     }
+
+    #if os(macOS)
+    private static let dragStart: CGFloat = 0
+    #else
+    private static let dragStart: CGFloat = 2
+    #endif
 
     private func nudge(_ steps: Double) {
         let unit = step ?? (range.upperBound - range.lowerBound) / 20
@@ -109,7 +128,7 @@ public struct GStepper: View {
 
     public var body: some View {
         if system {
-            Stepper("\(title) : \(value)", value: $value, in: range)
+            Stepper(value: $value, in: range) { LabeledContent(title, value: value, format: .number) }
         } else {
             gabarit
         }
@@ -123,12 +142,12 @@ public struct GStepper: View {
             HStack(spacing: 0) {
                 step("minus", by: -1).disabled(value <= range.lowerBound)
                 Rectangle().fill(GColor.hairline).frame(width: 1)
-                Text("\(value)").font(GFont.body.monospacedDigit()).foregroundStyle(GColor.textPrimary)
+                Text(value, format: .number).font(GFont.body.monospacedDigit()).foregroundStyle(GColor.textPrimary)
                     .frame(minWidth: 40)
                 Rectangle().fill(GColor.hairline).frame(width: 1)
                 step("plus", by: 1).disabled(value >= range.upperBound)
             }
-            .frame(height: GControlMetrics.compact)
+            .frame(minHeight: GControlMetrics.compact)
             .background(GColor.background, in: shape)
             .overlay { shape.strokeBorder(GColor.hairline, lineWidth: 1) }
             .clipShape(shape)
@@ -136,7 +155,7 @@ public struct GStepper: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
-        .accessibilityValue("\(value)")
+        .accessibilityValue(value.formatted())
         .accessibilityAdjustableAction { direction in
             value = min(max(value + (direction == .increment ? 1 : -1), range.lowerBound), range.upperBound)
         }

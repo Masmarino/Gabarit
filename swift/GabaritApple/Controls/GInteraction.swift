@@ -4,6 +4,19 @@ import SwiftUI
 // How Gabarit's clickable things answer the pointer: a hover state (Mac, iPad with a trackpad), read by `GHover`, and
 // the pointing hand over them on the Mac (`gPointer`).
 
+public extension GAnimation {
+    /// A hover, a focus that comes and goes: the same short fade everywhere.
+    static let hover = Animation.easeOut(duration: 0.12)
+}
+
+public extension GColor {
+    /// A control's rim (a field, a picker, a stepper): the fine line, the stronger border when the system asks for
+    /// more contrast (a 3:1 rim).
+    static func controlRim(_ contrast: ColorSchemeContrast) -> Color {
+        contrast == .increased ? border : hairline
+    }
+}
+
 /// Runs `change` animated, or at once when the system asks for reduced motion.
 @MainActor
 public func gWithAnimation(_ animation: Animation, reduceMotion: Bool, _ change: () -> Void) {
@@ -25,14 +38,8 @@ public extension View {
     /// Dimmed when disabled (`GOpacity.disabled`), the same for every control.
     func gDimmedWhenDisabled() -> some View { modifier(GDimmed()) }
 
-    /// The pointing hand over this view on the Mac: it can be clicked.
-    @ViewBuilder func gPointer() -> some View {
-        #if os(macOS)
-        pointerStyle(.link)
-        #else
-        self
-        #endif
-    }
+    /// The pointing hand over this view on the Mac: it can be clicked (not when it is disabled).
+    func gPointer() -> some View { modifier(GPointer()) }
 }
 
 /// Reads whether the pointer is over its content, and redraws it so: `GHover { hovering in … }`.
@@ -49,7 +56,19 @@ public struct GHover<Content: View>: View {
         content(hovering && isEnabled)
             .onHover { hovering = $0 }
             .gPointer()
-            .animation(.easeOut(duration: 0.12), value: hovering)
+            .animation(GAnimation.hover, value: hovering)
+    }
+}
+
+private struct GPointer: ViewModifier {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func body(content: Content) -> some View {
+        #if os(macOS)
+        content.pointerStyle(isEnabled ? .link : nil)
+        #else
+        content
+        #endif
     }
 }
 

@@ -42,7 +42,7 @@ public struct GMenuItem: View {
                     .accessibilityHidden(true)
             }
         }
-        .foregroundStyle(role == .destructive ? GTone.error.base : GColor.textPrimary)
+        .foregroundStyle(role == .destructive ? GTone.error.text : GColor.textPrimary)
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .contentShape(Rectangle())
@@ -62,8 +62,9 @@ public struct GMenu<Content: View>: View {
     public var body: some View {
         VStack(spacing: 0) {
             Group(subviews: content) { rows in
-                ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
-                    if index > 0 { Rectangle().fill(GColor.hairline).frame(height: 1) }
+                // By each line's own identity: a hover stays on its line when lines come and go.
+                ForEach(rows) { row in
+                    if row.id != rows.first?.id { Rectangle().fill(GColor.hairline).frame(height: 1) }
                     row
                 }
             }

@@ -5,10 +5,12 @@ public extension GTone {
     /// A solid ground in this state (a filled button, a dot): a step darker for errors in light, so white text reads.
     var fill: Color {
         switch self {
-        case .error: Color(GColorPair(light: GPaletteValues.red700, dark: GPaletteValues.red400))
+        case .error: GTone.errorFill
         default: base
         }
     }
+
+    private static let errorFill = Color(GColorPair(light: GPaletteValues.red700, dark: GPaletteValues.red400))
 
     /// This state's text on the page (a message under a field): a step darker in light, for a 4.5:1 contrast at least.
     var text: Color {
@@ -118,7 +120,8 @@ public struct GSkeleton: View {
             .fill(GColor.track)
             .overlay {
                 if !reduceMotion {
-                    TimelineView(.animation) { timeline in
+                    // 30 frames a second are enough for a slow shimmer (not the screen's 120).
+                    TimelineView(.animation(minimumInterval: 1 / 30)) { timeline in
                         GeometryReader { geometry in
                             LinearGradient(colors: [.clear, GColor.surface.opacity(0.6), .clear], startPoint: .leading, endPoint: .trailing)
                                 .frame(width: geometry.size.width * 0.6)
@@ -162,6 +165,7 @@ public struct GTypingDots: View {
             }
         }
         .frame(height: 12)
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(label)
     }
 }
@@ -230,7 +234,6 @@ private struct GToastOverlay: ViewModifier {
                         .gShadow(GShadowValues.floating)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                         .padding(.bottom, GSpacing.xxl)
-                        .accessibilityAddTraits(.updatesFrequently)
                 }
             }
             .animation(reduceMotion ? nil : GAnimation.bouncy, value: center.current)
@@ -278,30 +281,41 @@ private struct GSideDrawer<Drawer: View>: ViewModifier {
                         .allowsHitTesting(isPresented)
                         .accessibilityAddTraits(.isButton)
                         .accessibilityLabel(gText("Close"))
+                        .accessibilityHidden(!isPresented)
                     drawer
                         .frame(width: width)
                         .frame(maxHeight: .infinity)
                         .background(GColor.surface)
                         .overlay(alignment: .trailing) { Rectangle().fill(GColor.hairline).frame(width: 1) }
                         .offset(x: offset)
-                        .gesture(DragGesture()
-                            .onChanged { dragged = min(0, max(-width, $0.translation.width)) }
+                        // Horizontal drags only: a list in the drawer keeps its vertical scroll.
+                        .simultaneousGesture(DragGesture(minimumDistance: 10)
+                            .onChanged { drag in
+                                guard dragged != nil || abs(drag.translation.width) > abs(drag.translation.height) else { return }
+                                dragged = min(0, max(-width, drag.translation.width))
+                            }
                             .onEnded { end in
+                                guard dragged != nil else { return }
                                 let closes = end.translation.width < -width * 0.3 || end.predictedEndTranslation.width < -width * 0.5
                                 closes ? set(false) : cancel()
                             })
                         .allowsHitTesting(isPresented)
+                        .accessibilityHidden(!isPresented)
+                        .accessibilityAddTraits(isPresented ? .isModal : [])
+                        .accessibilityAction(.escape) { set(false) }
                     if !isPresented {
                         Color.clear
                             .frame(width: edge)
                             .frame(maxHeight: .infinity)
                             .contentShape(Rectangle())
-                            .gesture(DragGesture(minimumDistance: 0)
+                            // A horizontal swipe from the edge, not a vertical scroll that starts there.
+                            .gesture(DragGesture(minimumDistance: 10)
                                 .onChanged { drag in
-                                    guard drag.translation.width > 0 else { return }
+                                    guard drag.translation.width > abs(drag.translation.height) else { return }
                                     dragged = -width + min(width, drag.translation.width)
                                 }
                                 .onEnded { end in
+                                    guard dragged != nil else { return }
                                     let opens = end.translation.width > width * 0.3 || end.predictedEndTranslation.width > width * 0.5
                                     opens ? set(true) : cancel()
                                 })

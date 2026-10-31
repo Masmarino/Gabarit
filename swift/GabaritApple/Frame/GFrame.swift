@@ -23,14 +23,14 @@ public struct GPageBand<Accessory: View>: View {
         HStack(spacing: 14) {
             Image(systemName: symbol)
                 .font(.system(size: 22))
-                .foregroundStyle(GPalette.graphite100)
+                .foregroundStyle(GFrameColor.text)
                 .frame(width: 48, height: 48)
-                .overlay { RoundedRectangle(cornerRadius: GRadius.md).strokeBorder(GPalette.graphite700, lineWidth: 1) }
+                .overlay { RoundedRectangle(cornerRadius: GRadius.md).strokeBorder(GFrameColor.rim, lineWidth: 1) }
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
-                Text(title).font(GFont.title2).foregroundStyle(GPalette.graphite100)
+                Text(title).font(GFont.title2).foregroundStyle(GFrameColor.text)
                     .accessibilityAddTraits(.isHeader)
-                Text(summary).font(GFont.subheadline).foregroundStyle(GPalette.graphite300)
+                Text(summary).font(GFont.subheadline).foregroundStyle(GFrameColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)
@@ -40,7 +40,7 @@ public struct GPageBand<Accessory: View>: View {
         .padding(.top, top)
         .padding(.bottom, 18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(GPalette.graphite950)
+        .background(GFrameColor.ground)
     }
 }
 
@@ -91,18 +91,18 @@ public struct GRailItem: View {
                     if badge > 0 {
                         Text(gBadgeText(badge))
                             .font(GFont.caption2.weight(.semibold).monospacedDigit())
-                            .foregroundStyle(GPalette.graphite100)
+                            .foregroundStyle(GFrameColor.text)
                             .padding(.horizontal, 4).padding(.vertical, 1)
-                            .background(GPalette.graphite700, in: .rect(cornerRadius: GRadius.xs))
+                            .background(GFrameColor.rim, in: .rect(cornerRadius: GRadius.xs))
                             .fixedSize()
                             .offset(x: 14, y: -6)
                     }
                 }
             Text(title).font(GFont.caption2.weight(current ? .semibold : .medium)).lineLimit(1).minimumScaleFactor(0.8)
         }
-        .foregroundStyle(current ? GColor.accent : (hovering ? GPalette.graphite100 : GPalette.graphite400))
+        .foregroundStyle(current ? GColor.accent : (hovering ? GFrameColor.text : GFrameColor.textDiscret))
         .frame(maxWidth: .infinity, minHeight: 52)
-        .background(current ? GPalette.graphite100.opacity(0.09) : (hovering ? GPalette.graphite100.opacity(0.05) : .clear),
+        .background(current ? GFrameColor.selected : (hovering ? GFrameColor.hover : .clear),
                     in: .rect(cornerRadius: GRadius.sm))
         .overlay(alignment: .leading) {
             if current { Rectangle().fill(GColor.accent).frame(width: 2).padding(.vertical, 6) }
@@ -143,9 +143,9 @@ public struct GWindowHeader<Icon: View, Trailing: View>: View {
         HStack(spacing: 10) {
             icon
             VStack(alignment: .leading, spacing: 0) {
-                Text(title).font(GFont.headline).foregroundStyle(GPalette.graphite100).lineLimit(1)
+                Text(title).font(GFont.headline).foregroundStyle(GFrameColor.text).lineLimit(1)
                 if let subtitle {
-                    Text(subtitle).font(GFont.caption).foregroundStyle(GPalette.graphite400).lineLimit(1)
+                    Text(subtitle).font(GFont.caption).foregroundStyle(GFrameColor.textDiscret).lineLimit(1)
                 }
             }
             .accessibilityElement(children: .combine)
@@ -156,8 +156,8 @@ public struct GWindowHeader<Icon: View, Trailing: View>: View {
         .padding(.leading, leading).padding(.trailing, 14)
         .frame(height: 52)
         .frame(maxWidth: .infinity)
-        .background(GPalette.graphite950)
-        .overlay(alignment: .bottom) { Rectangle().fill(GPalette.graphite700.opacity(0.7)).frame(height: 1) }
+        .background(GFrameColor.ground)
+        .overlay(alignment: .bottom) { Rectangle().fill(GFrameColor.line).frame(height: 1) }
         .environment(\.colorScheme, .dark)
     }
 }
@@ -176,6 +176,7 @@ private struct GWindowChrome: NSViewRepresentable {
     private final class WindowWatcher: NSView {
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
+            titlebar = nil
             strip()
             for delay in [0.1, 0.5, 1.5] { DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in self?.strip() } }
         }
@@ -186,18 +187,24 @@ private struct GWindowChrome: NSViewRepresentable {
             strip()
         }
 
+        /// The title bar's container, found once per window (not searched again at every layout).
+        private weak var titlebar: NSView?
+
+        // Each property is set only when it differs: setting it again would lay the title bar out again.
         private func strip() {
             guard let window else { return }
             if !window.styleMask.contains(.fullSizeContentView) { window.styleMask.insert(.fullSizeContentView) }
-            window.titlebarAppearsTransparent = true
-            window.titleVisibility = .hidden
-            window.isMovableByWindowBackground = true
-            window.titlebarSeparatorStyle = .none
+            if !window.titlebarAppearsTransparent { window.titlebarAppearsTransparent = true }
+            if window.titleVisibility != .hidden { window.titleVisibility = .hidden }
+            if !window.isMovableByWindowBackground { window.isMovableByWindowBackground = true }
+            if window.titlebarSeparatorStyle != .none { window.titlebarSeparatorStyle = .none }
             // No system toolbar (SwiftUI puts an empty one in a Settings window), no red, yellow and green buttons, nor
             // the title bar's glass, which stayed painted over the header.
             if window.toolbar != nil { window.toolbar = nil }
-            let container = window.contentView?.superview?.subviews.first { String(describing: type(of: $0)) == "NSTitlebarContainerView" }
-            if container?.isHidden == false { container?.isHidden = true }
+            if titlebar == nil {
+                titlebar = window.contentView?.superview?.subviews.first { String(describing: type(of: $0)) == "NSTitlebarContainerView" }
+            }
+            if titlebar?.isHidden == false { titlebar?.isHidden = true }
         }
     }
 }

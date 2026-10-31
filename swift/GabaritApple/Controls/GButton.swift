@@ -52,7 +52,8 @@ public struct GButtonStyle: ButtonStyle {
 
     /// A destructive button ("Delete", "Leave") with no solid ground: its text in red.
     private func foreground(_ role: ButtonRole?) -> Color {
-        if role == .destructive, variant == .secondary || variant == .ghost { return GTone.error.base }
+        // The text's red: 4.5:1 on the hover's and the press's grounds too.
+        if role == .destructive, variant == .secondary || variant == .ghost { return GTone.error.text }
         return switch variant {
         case .primary, .danger: GColor.onPrimary
         case .secondary: GColor.textPrimary
@@ -63,7 +64,7 @@ public struct GButtonStyle: ButtonStyle {
     /// Hovered, a step lighter (the ink) or under the veil (the surfaces); pressed, a little more.
     private func background(pressed: Bool, hovering: Bool) -> Color {
         switch variant {
-        case .primary: pressed || hovering ? GColor.primaryHover : GColor.primary
+        case .primary: pressed ? GColor.primaryHover.opacity(0.85) : (hovering ? GColor.primaryHover : GColor.primary)
         case .secondary: pressed ? GColor.track : (hovering ? GColor.hover : GColor.surface)
         case .ghost: pressed ? GColor.track : (hovering ? GColor.hover : .clear)
         case .danger: GTone.error.base.opacity(pressed ? 0.8 : (hovering ? 0.9 : 1))
@@ -92,7 +93,6 @@ public struct GCloseButton: View {
     /// On the dark frame (a window's header); otherwise on the page's ground, in the appearance's colours.
     var onFrame: Bool
     let action: () -> Void
-    @State private var hovering = false
 
     public init(title: String? = nil, onFrame: Bool = true, action: @escaping () -> Void) {
         self.title = title ?? gText("Close")
@@ -102,30 +102,32 @@ public struct GCloseButton: View {
 
     public var body: some View {
         Button(action: action) {
-            Image(systemName: "xmark")
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(onFrame ? GPalette.graphite100 : GColor.textSecondary)
-                .frame(width: 28, height: 28)
-                .background(hovering ? (onFrame ? GPalette.graphite100.opacity(0.12) : GColor.hover) : Color.clear, in: Circle())
-                .overlay { Circle().strokeBorder(onFrame ? GPalette.graphite700 : GColor.hairline, lineWidth: 1) }
-                #if os(iOS)
-                // Under the finger: a 44-point target around the circle.
-                .padding(8)
-                .contentShape(Rectangle())
-                .padding(-8)
-                #else
-                .contentShape(Circle())
-                #endif
+            GHover { hovering in cross(hovering) }
         }
         .buttonStyle(.plain)
         .gDimmedWhenDisabled()
         .keyboardShortcut(.cancelAction)
-        .gPointer()
         #if os(macOS)
-        .onHover { hovering = $0 }
         .help(gText("\(title) (Esc)"))
         #endif
         .accessibilityLabel(title)
+    }
+
+    private func cross(_ hovering: Bool) -> some View {
+        Image(systemName: "xmark")
+            .font(.system(size: 11, weight: .bold))
+            .foregroundStyle(onFrame ? GFrameColor.text : GColor.textSecondary)
+            .frame(width: 28, height: 28)
+            .background(hovering ? (onFrame ? GFrameColor.closeHover : GColor.hover) : Color.clear, in: Circle())
+            .overlay { Circle().strokeBorder(onFrame ? GFrameColor.rim : GColor.hairline, lineWidth: 1) }
+            #if os(iOS)
+            // Under the finger: a 44-point target around the circle.
+            .padding(8)
+            .contentShape(Rectangle())
+            .padding(-8)
+            #else
+            .contentShape(Circle())
+            #endif
     }
 }
 #endif

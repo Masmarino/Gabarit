@@ -50,7 +50,8 @@ public struct GSidebarRow: View {
             if warns { Circle().fill(GColor.warning).frame(width: 6, height: 6).accessibilityLabel(gText("Needs attention")) }
         }
         .padding(.horizontal, 10)
-        .frame(height: GSidebarRow.height)
+        // At least its height: a large text size (iPhone) makes it taller rather than cutting the name.
+        .frame(minHeight: GSidebarRow.height)
         .contentShape(Rectangle())
         .gTouchTarget(height: GSidebarRow.height)
         .background {
@@ -59,7 +60,7 @@ public struct GSidebarRow: View {
         }
         .onHover { hovering = $0 }
         .gPointer()
-        .animation(.easeOut(duration: 0.12), value: hovering)
+        .animation(GAnimation.hover, value: hovering)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
@@ -105,7 +106,7 @@ public struct GSidebarLabelStyle: LabelStyle {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 10)
-        .frame(height: GSidebarRow.height)
+        .frame(minHeight: GSidebarRow.height)
         .contentShape(Rectangle())
     }
 }
@@ -145,7 +146,7 @@ public struct GRowHover: ViewModifier {
             .preference(key: GRowLitKey.self, value: lit)
             .onHover { hovering = $0 }
             .gPointer()
-            .animation(.easeOut(duration: 0.12), value: hovering)
+            .animation(GAnimation.hover, value: hovering)
             #endif
     }
 }
@@ -176,7 +177,7 @@ public struct GFormCardRow<Row: View>: View {
                     .padding(.horizontal, 8).padding(.vertical, 5)
                     .opacity(lit ? 1 : 0)
             }
-            .animation(.easeOut(duration: 0.12), value: lit)
+            .animation(GAnimation.hover, value: lit)
     }
 }
 #endif

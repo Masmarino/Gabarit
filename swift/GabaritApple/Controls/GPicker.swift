@@ -35,7 +35,8 @@ public struct GPicker<Value: Hashable>: View {
         HStack(alignment: .center, spacing: 12) {
             if !title.isEmpty {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(GFont.body).foregroundStyle(GColor.textPrimary)
+                    // Said by the menu or the chips' group, not twice.
+                    Text(title).font(GFont.body).foregroundStyle(GColor.textPrimary).accessibilityHidden(true)
                     if let detail {
                         Text(detail).font(GFont.caption).foregroundStyle(GColor.textDiscret).fixedSize(horizontal: false, vertical: true)
                     }
@@ -43,7 +44,7 @@ public struct GPicker<Value: Hashable>: View {
                 Spacer(minLength: 12)
             }
             switch style {
-            case .menu: GMenuField(selection: $selection, options: options)
+            case .menu: GMenuField(title: title, selection: $selection, options: options)
             case .chips: GChips(selection: $selection, options: options)
             }
         }
@@ -57,6 +58,7 @@ private struct GMenuFace: View {
     let title: String
     var active = false
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.colorSchemeContrast) private var contrast
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: GRadius.sm, style: .continuous)
@@ -70,7 +72,7 @@ private struct GMenuFace: View {
         .frame(minHeight: GControlMetrics.compact)
         .background(active ? GColor.hover : Color.clear, in: shape)
         .background(GColor.background, in: shape)
-        .overlay { shape.strokeBorder(active ? GColor.accent : GColor.hairline, lineWidth: active ? 1.5 : 1) }
+        .overlay { shape.strokeBorder(active ? GColor.accent : GColor.controlRim(contrast), lineWidth: active ? 1.5 : 1) }
         .contentShape(shape)
         .opacity(isEnabled ? 1 : GOpacity.disabled)
     }
@@ -79,25 +81,28 @@ private struct GMenuFace: View {
 #if os(iOS)
 /// On iPhone and iPad: Gabarit's face, and the list in the system's menu (under the finger, where it belongs).
 private struct GMenuField<Value: Hashable>: View {
+    let title: String
     @Binding var selection: Value
     let options: [(value: Value, title: String)]
 
     var body: some View {
         Menu {
             Picker("", selection: $selection) {
-                ForEach(Array(options.enumerated()), id: \.offset) { _, option in Text(option.title).tag(option.value) }
+                ForEach(options, id: \.value) { option in Text(option.title).tag(option.value) }
             }
         } label: {
             GMenuFace(title: options.first { $0.value == selection }?.title ?? "—")
                 .gTouchTarget(height: GControlMetrics.compact)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(title)
         .accessibilityValue(options.first { $0.value == selection }?.title ?? "")
     }
 }
 #else
 /// The current choice in a Gabarit field; the list opens in a bubble, the current choice ticked in rust.
 private struct GMenuField<Value: Hashable>: View {
+    let title: String
     @Binding var selection: Value
     let options: [(value: Value, title: String)]
     @State private var open = false
@@ -111,11 +116,15 @@ private struct GMenuField<Value: Hashable>: View {
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
         .gPointer()
+        // As the Mac's pop-up button: the arrows change the choice with the menu closed.
+        .onKeyPress(.upArrow) { move(-1); return .handled }
+        .onKeyPress(.downArrow) { move(1); return .handled }
+        .accessibilityLabel(title)
         .accessibilityValue(options.first { $0.value == selection }?.title ?? "")
         .popover(isPresented: $open, arrowEdge: .bottom) {
             ScrollView {
                 VStack(spacing: 0) {
-                    ForEach(Array(options.enumerated()), id: \.offset) { index, option in
+                    ForEach(Array(options.enumerated()), id: \.element.value) { index, option in
                         if index > 0 { Rectangle().fill(GColor.hairline).frame(height: 1) }
                         GMenuRow(title: option.title, checked: option.value == selection) {
                             selection = option.value
@@ -132,6 +141,11 @@ private struct GMenuField<Value: Hashable>: View {
             .preferredColorScheme(colorScheme)
         }
     }
+
+    private func move(_ offset: Int) {
+        guard let index = options.firstIndex(where: { $0.value == selection }) else { return }
+        selection = options[min(max(index + offset, 0), options.count - 1)].value
+    }
 }
 
 /// A line of a choice's list: its name, a rust tick if it is the current choice, the veil on hover.
@@ -139,24 +153,25 @@ private struct GMenuRow: View {
     let title: String
     let checked: Bool
     let action: () -> Void
-    @State private var hovering = false
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 10) {
-                Text(title).font(GFont.body.weight(checked ? .semibold : .regular)).foregroundStyle(GColor.textPrimary)
-                Spacer(minLength: 16)
-                Image(systemName: "checkmark").font(GFont.subheadline.weight(.semibold)).foregroundStyle(GColor.accent)
-                    .opacity(checked ? 1 : 0)
-            }
-            .padding(.horizontal, 14).padding(.vertical, 9)
-            .background(hovering ? GColor.hover : Color.clear)
-            .contentShape(Rectangle())
+            GHover { hovering in row(hovering) }
         }
         .buttonStyle(.plain)
-        .onHover { hovering = $0 }
-        .gPointer()
         .accessibilityAddTraits(checked ? .isSelected : [])
+    }
+
+    private func row(_ hovering: Bool) -> some View {
+        HStack(spacing: 10) {
+            Text(title).font(GFont.body.weight(checked ? .semibold : .regular)).foregroundStyle(GColor.textPrimary)
+            Spacer(minLength: 16)
+            Image(systemName: "checkmark").font(GFont.subheadline.weight(.semibold)).foregroundStyle(GColor.accent)
+                .opacity(checked ? 1 : 0)
+        }
+        .padding(.horizontal, 14).padding(.vertical, 9)
+        .background(hovering ? GColor.hover : Color.clear)
+        .contentShape(Rectangle())
     }
 }
 #endif
@@ -179,7 +194,7 @@ private struct GChips<Value: Hashable>: View {
                             .foregroundStyle(current ? GColor.accentText : (hovering ? GColor.textPrimary : GColor.textSecondary))
                             .padding(.horizontal, 12)
                             .frame(minHeight: GControlMetrics.compact)
-                            .background(current ? GColor.accent.opacity(0.12) : (hovering ? GColor.hover : GColor.background), in: shape)
+                            .background(current ? GColor.selectedFill : (hovering ? GColor.hover : GColor.background), in: shape)
                             .overlay { shape.strokeBorder(current ? GColor.accent.opacity(0.7) : (hovering ? GColor.border.opacity(0.5) : GColor.hairline), lineWidth: 1) }
                             .contentShape(shape)
                             .gTouchTarget(height: GControlMetrics.compact)

@@ -15,6 +15,7 @@ public struct GTextFieldStyle: TextFieldStyle {
 public struct GFieldFrame: ViewModifier {
     @FocusState private var focused: Bool
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.colorSchemeContrast) private var contrast
 
     public nonisolated init() {}
 
@@ -27,9 +28,12 @@ public struct GFieldFrame: ViewModifier {
             .padding(.vertical, 6)
             .frame(minHeight: GControlMetrics.height)
             .background(GColor.background, in: shape)
-            .overlay { shape.strokeBorder(focused ? GColor.accent : GColor.hairline, lineWidth: focused ? 1.5 : 1) }
+            .overlay { shape.strokeBorder(focused ? GColor.accent : GColor.controlRim(contrast), lineWidth: focused ? 1.5 : 1) }
+            // A click on the padding too puts the cursor in the field.
+            .contentShape(shape)
+            .onTapGesture { focused = true }
             .opacity(isEnabled ? 1 : GOpacity.disabled)
-            .animation(.easeOut(duration: 0.12), value: focused)
+            .animation(GAnimation.hover, value: focused)
     }
 }
 
@@ -60,7 +64,9 @@ public struct GTextField: View {
 
     private var framed: some View {
         VStack(alignment: .leading, spacing: 6) {
+            // Said once, by the field below.
             Text(title).font(GFont.caption.weight(.semibold)).foregroundStyle(GColor.textSecondary)
+                .accessibilityHidden(true)
             // No placeholder by default: the title is already above the field.
             TextField(title, text: $text, prompt: Text(prompt ?? "").foregroundStyle(GColor.textDiscret), axis: axis)
                 .labelsHidden()

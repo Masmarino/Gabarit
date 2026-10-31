@@ -109,7 +109,7 @@ public struct GAppShell<Rail: View, Bar: View, Page: View, Over: View>: View {
         }
         // Up to the top of the window: the page's title beside the window's buttons.
         .ignoresSafeArea(.container, edges: .top)
-        .background(GPalette.graphite950.ignoresSafeArea())
+        .background(GFrameColor.ground.ignoresSafeArea())
     }
 }
 
@@ -142,9 +142,9 @@ public struct GRailButton: View {
             GHover { hovering in
                 Image(systemName: symbol)
                     .font(.system(size: 15))
-                    .foregroundStyle(isOn ? GColor.accent : (hovering ? GPalette.graphite100 : GPalette.graphite400))
+                    .foregroundStyle(isOn ? GColor.accent : (hovering ? GFrameColor.text : GFrameColor.textDiscret))
                     .frame(maxWidth: .infinity, minHeight: 32)
-                    .background(isOn ? GPalette.graphite100.opacity(0.09) : (hovering ? GPalette.graphite100.opacity(0.05) : .clear),
+                    .background(isOn ? GFrameColor.selected : (hovering ? GFrameColor.hover : .clear),
                                 in: .rect(cornerRadius: GRadius.sm))
                     .contentShape(Rectangle())
                     .gTouchTarget(height: 32)
@@ -152,7 +152,7 @@ public struct GRailButton: View {
         }
         .buttonStyle(.plain)
         .gDimmedWhenDisabled()
-        .help(value.map { "\(help) : \($0)" } ?? help)
+        .help(value.map { gText("\(help): \($0)") } ?? help)
         .accessibilityLabel(help)
         .accessibilityValue(value ?? "")
     }
@@ -175,10 +175,10 @@ public struct GRailSquareButton: View {
             GHover { hovering in
                 Image(systemName: symbol)
                     .font(.system(size: 18))
-                    .foregroundStyle(hovering ? GPalette.graphite100 : GPalette.graphite300)
+                    .foregroundStyle(hovering ? GFrameColor.text : GFrameColor.textSecondary)
                     .frame(width: 44, height: 44)
-                    .background(hovering ? GPalette.graphite100.opacity(0.05) : .clear, in: .rect(cornerRadius: GRadius.sm))
-                    .overlay { RoundedRectangle(cornerRadius: GRadius.sm).strokeBorder(GPalette.graphite700, lineWidth: 1) }
+                    .background(hovering ? GFrameColor.hover : .clear, in: .rect(cornerRadius: GRadius.sm))
+                    .overlay { RoundedRectangle(cornerRadius: GRadius.sm).strokeBorder(GFrameColor.rim, lineWidth: 1) }
                     .contentShape(Rectangle())
             }
         }
