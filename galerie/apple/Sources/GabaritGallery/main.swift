@@ -1,0 +1,33 @@
+import AppKit
+import GabaritApple
+import SwiftUI
+
+// Draws each section of the gallery, light and dark, to <folder>/<section>-<appearance>.png.
+
+let folder = URL(fileURLWithPath: CommandLine.arguments.dropFirst().first ?? ".")
+try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+
+@MainActor func draw<V: View>(_ name: String, _ view: V) {
+    for (appearance, scheme) in [("light", ColorScheme.light), ("dark", .dark)] {
+        let page = view.frame(width: 600).padding(20).background(GColor.background).environment(\.colorScheme, scheme)
+        var png: Data?
+        // Gabarit's colours resolve against the drawing appearance, as in an app's window.
+        NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)!.performAsCurrentDrawingAppearance {
+            let renderer = ImageRenderer(content: page)
+            renderer.scale = 2
+            if let tiff = renderer.nsImage?.tiffRepresentation, let bitmap = NSBitmapImageRep(data: tiff) {
+                png = bitmap.representation(using: .png, properties: [:])
+            }
+        }
+        guard let png else { continue }
+        let file = folder.appendingPathComponent("\(name)-\(appearance).png")
+        try? png.write(to: file)
+        print(file.path)
+    }
+}
+
+MainActor.assumeIsolated {
+    GFonts.register()
+    draw("controls", ControlsSection())
+    draw("forms", FormsSection())
+}

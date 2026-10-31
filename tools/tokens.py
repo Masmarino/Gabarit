@@ -131,7 +131,11 @@ def swift_common() -> str:
              "/// A colour for the light and the dark appearance.",
              "public struct GColorPair: Sendable, Hashable {",
              "    public let light: GRGBA",
-             "    public let dark: GRGBA",
+             "    public let dark: GRGBA", "",
+             "    public init(light: GRGBA, dark: GRGBA) {",
+             "        self.light = light",
+             "        self.dark = dark",
+             "    }",
              "}", "",
              "/// The raw palette. Views read the colours by role (`GColorValues`), not these.",
              "public enum GPaletteValues {"]

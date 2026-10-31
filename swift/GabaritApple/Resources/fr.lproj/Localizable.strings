@@ -4,3 +4,8 @@
 /* GCloseButton's default title, and its tooltip. */
 "Close" = "Fermer";
 "%@ (Esc)" = "%@ (Échap)";
+/* The link back to the previous page, above a form's title, and its tooltip. */
+"Back to %@ (⌘[)" = "Revenir à %@ (⌘[)";
+"Back" = "Retour";
+/* A warning dot on a sidebar row. */
+"Needs attention" = "À vérifier";

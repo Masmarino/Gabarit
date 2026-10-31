@@ -524,6 +524,13 @@ Xcode or SwiftPM and use `GabaritApple` (call `GFonts.register()` once at launch
 controls: `GButtonStyle` (`GButtonVariant`), `GPressStyle`, `GCloseButton`, `GToggleStyle` and `GSwitch`,
 `GTextFieldStyle`, `GFieldFrame` and `GTextField` (`gEditorFrame()`, `gFieldBox()`), `GPicker` (menu or
 chips), `GSlider`, `GStepper`, `GTone`, `gSurface(_:tint:)`, and `gControls()` to put them on a whole form.
+The forms: `GForm` and `GFormLayout` (the page's title from `gFormTitle`, sections as cards, `gFormBare()`
+for a row out of its card), `GPageTitle`, `GPageContainer`, `GFormButtons`, `GSheetButton`, `GSheetTitle`,
+`GLabeledContentStyle`, `GSidebarRow`, `GSidebarIcon`, `GSidebarLabelStyle`, `GRowHover` and `GFormMetrics`.
+
+The gallery draws every component, light and dark, to PNG files, to compare a pre-release with the previous
+one: `cd galerie/apple && swift run GabaritGallery <folder>`.
+
 An application's colour themes replace the grounds through `GTheme.current` (`background`, `surface`,
 `sidebar`, `track`, `hairline`). Their own strings are in English and French.
 
