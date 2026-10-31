@@ -1,0 +1,6 @@
+/* A switch's accessibility value. */
+"on" = "on";
+"off" = "off";
+/* GCloseButton's default title, and its tooltip. */
+"Close" = "Close";
+"%@ (Esc)" = "%@ (Esc)";

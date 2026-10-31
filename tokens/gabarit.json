@@ -80,7 +80,14 @@
     }
   ],
   "semantic": {
-    "_": "Two sets of colours by role, on the one palette: \"apps\" (SkollN's: Apple, WinUI, GTK, Compose) and \"web\" (the Angular package, its roles and names kept as they are). A value is a palette name, \"name/opacity\", or a CSS colour.",
+    "_": "Two sets of colours by role, on the one palette: \"apps\" (SkollN's: Apple, WinUI, GTK, Compose) and \"web\" (the Angular package, its roles and names kept as they are). A value is a palette name, \"name/opacity\", or a CSS colour. \"themable\": the apps' grounds an application may replace at run time (GTheme), for its colour themes.",
+    "themable": [
+      "background",
+      "surface",
+      "sidebar",
+      "track",
+      "hairline"
+    ],
     "apps": {
       "background": {
         "light": "slate50",

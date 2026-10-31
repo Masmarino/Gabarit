@@ -188,9 +188,21 @@ def swift_apple() -> str:
     lines = [f"// {HEADER}", "#if canImport(SwiftUI)", "import SwiftUI", "",
              "/// The raw palette, as SwiftUI colours.", "public enum GPalette {"]
     lines += [f"    public static let {name} = Color(GPaletteValues.{name})" for name in PALETTE]
-    lines += ["}", "", "/// The colours by role, light and dark.", "public enum GColor {"]
-    lines += [f"    public static let {name} = Color(GColorValues.{name})" for name in APPS]
-    lines += ["}", "", "/// The text styles: the computer's sizes on a Mac, the phone's elsewhere; they follow Dynamic Type.",
+    themable = TOKENS["semantic"]["themable"]
+    lines += ["}", "", "/// The colours by role, light and dark. The grounds an application may replace (`GTheme`) are read at",
+              "/// each use: a view redraws when they change.", "public enum GColor {"]
+    for name in APPS:
+        if name in themable:
+            lines.append(f"    public static var {name}: Color {{ GTheme.current.{name} ?? GColorDefault.{name} }}")
+        else:
+            lines.append(f"    public static let {name} = Color(GColorValues.{name})")
+    lines += ["}", "", "/// The grounds as Gabarit draws them, with no theme.", "public enum GColorDefault {"]
+    lines += [f"    public static let {name} = Color(GColorValues.{name})" for name in themable]
+    lines += ["}", "", "/// The grounds an application replaces for its colour themes (nil: Gabarit's own). Observed.",
+              "@Observable", "public final class GTheme: @unchecked Sendable {",
+              "    public static let current = GTheme()", ""]
+    lines += [f"    public var {name}: Color?" for name in themable]
+    lines += ["", "    public init() {}", "}", "", "/// The text styles: the computer's sizes on a Mac, the phone's elsewhere; they follow Dynamic Type.",
               "public enum GFont {"]
     for platform, key in (("#if os(macOS)", "desktop"), ("#else", "phone")):
         lines.append(f"    {platform}")

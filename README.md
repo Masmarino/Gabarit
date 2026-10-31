@@ -520,6 +520,13 @@ the native apps) and `web` (this package's roles and names, kept as they are). N
 The Swift packages are at the root (`Package.swift`): add `https://github.com/Masmarino/Gabarit` in
 Xcode or SwiftPM and use `GabaritApple` (call `GFonts.register()` once at launch) or `GabaritCommon`.
 
+`GabaritApple` also holds the native components, SkollN's design being the reference. So far, the
+controls: `GButtonStyle` (`GButtonVariant`), `GPressStyle`, `GCloseButton`, `GToggleStyle` and `GSwitch`,
+`GTextFieldStyle`, `GFieldFrame` and `GTextField` (`gEditorFrame()`, `gFieldBox()`), `GPicker` (menu or
+chips), `GSlider`, `GStepper`, `GTone`, `gSurface(_:tint:)`, and `gControls()` to put them on a whole form.
+An application's colour themes replace the grounds through `GTheme.current` (`background`, `surface`,
+`sidebar`, `track`, `hairline`). Their own strings are in English and French.
+
 ## Release
 
 The version lives in **five files**, bumped together in one commit:

@@ -52,15 +52,16 @@ public enum GPalette {
     public static let indigo800 = Color(GPaletteValues.indigo800)
 }
 
-/// The colours by role, light and dark.
+/// The colours by role, light and dark. The grounds an application may replace (`GTheme`) are read at
+/// each use: a view redraws when they change.
 public enum GColor {
-    public static let background = Color(GColorValues.background)
-    public static let surface = Color(GColorValues.surface)
-    public static let sidebar = Color(GColorValues.sidebar)
+    public static var background: Color { GTheme.current.background ?? GColorDefault.background }
+    public static var surface: Color { GTheme.current.surface ?? GColorDefault.surface }
+    public static var sidebar: Color { GTheme.current.sidebar ?? GColorDefault.sidebar }
     public static let hover = Color(GColorValues.hover)
-    public static let track = Color(GColorValues.track)
+    public static var track: Color { GTheme.current.track ?? GColorDefault.track }
     public static let border = Color(GColorValues.border)
-    public static let hairline = Color(GColorValues.hairline)
+    public static var hairline: Color { GTheme.current.hairline ?? GColorDefault.hairline }
     public static let textPrimary = Color(GColorValues.textPrimary)
     public static let textSecondary = Color(GColorValues.textSecondary)
     public static let textDiscret = Color(GColorValues.textDiscret)
@@ -74,6 +75,29 @@ public enum GColor {
     public static let error = Color(GColorValues.error)
     public static let info = Color(GColorValues.info)
     public static let frame = Color(GColorValues.frame)
+}
+
+/// The grounds as Gabarit draws them, with no theme.
+public enum GColorDefault {
+    public static let background = Color(GColorValues.background)
+    public static let surface = Color(GColorValues.surface)
+    public static let sidebar = Color(GColorValues.sidebar)
+    public static let track = Color(GColorValues.track)
+    public static let hairline = Color(GColorValues.hairline)
+}
+
+/// The grounds an application replaces for its colour themes (nil: Gabarit's own). Observed.
+@Observable
+public final class GTheme: @unchecked Sendable {
+    public static let current = GTheme()
+
+    public var background: Color?
+    public var surface: Color?
+    public var sidebar: Color?
+    public var track: Color?
+    public var hairline: Color?
+
+    public init() {}
 }
 
 /// The text styles: the computer's sizes on a Mac, the phone's elsewhere; they follow Dynamic Type.

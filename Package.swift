@@ -6,6 +6,7 @@ import PackageDescription
 // resources are already in swift/. The tokens come from tokens/gabarit.json, through tools/tokens.py.
 let package = Package(
     name: "Gabarit",
+    defaultLocalization: "en",
     platforms: [.macOS(.v26), .iOS(.v26)],
     products: [
         .library(name: "GabaritCommon", targets: ["GabaritCommon"]),
@@ -14,7 +15,7 @@ let package = Package(
     targets: [
         .target(name: "GabaritCommon", path: "swift/GabaritCommon"),
         .target(name: "GabaritApple", dependencies: ["GabaritCommon"], path: "swift/GabaritApple",
-                resources: [.copy("Resources/Fonts")]),
+                resources: [.copy("Resources/Fonts"), .process("Resources/en.lproj"), .process("Resources/fr.lproj")]),
         .testTarget(name: "GabaritCommonTests", dependencies: ["GabaritCommon"], path: "swift/Tests/GabaritCommonTests"),
     ]
 )
