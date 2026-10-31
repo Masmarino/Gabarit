@@ -118,6 +118,7 @@ public struct GCloseButton: View {
         }
         .buttonStyle(.plain)
         .keyboardShortcut(.cancelAction)
+        .gPointer()
         #if os(macOS)
         .onHover { hovering = $0 }
         .help(gText("\(title) (Esc)"))

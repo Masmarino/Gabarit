@@ -58,6 +58,7 @@ public struct GSidebarRow: View {
                 .fill(selected ? Self.selectedFill : (hovering ? Self.hoverFill : Color.clear))
         }
         .onHover { hovering = $0 }
+        .gPointer()
         .animation(.easeOut(duration: 0.12), value: hovering)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(selected ? .isSelected : [])
@@ -144,6 +145,7 @@ public struct GRowHover: ViewModifier {
             }
             .preference(key: GRowLitKey.self, value: lit)
             .onHover { hovering = $0 }
+            .gPointer()
             .animation(.easeOut(duration: 0.12), value: hovering)
             #endif
     }

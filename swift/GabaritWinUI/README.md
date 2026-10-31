@@ -25,5 +25,8 @@ main window: that header as its top band, a `StackPanel` with `GRailStyle` on th
 `GShellPageStyle` (its rounded top-left corner). Mica or Acrylic can show behind the frame; Gabarit stays flat
 everywhere else.
 
+The pointer: Windows keeps the arrow over buttons (its own convention); an app that wants the pointing hand sets
+`ProtectedCursor` in code, XAML cannot.
+
 Not yet checked on Windows: these resources are well-formed and every reference resolves (CI), but they still have to
 be tried in a WinUI 3 app on the Windows PC.

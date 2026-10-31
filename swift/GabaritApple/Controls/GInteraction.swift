@@ -1,7 +1,19 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
-// How Gabarit's clickable things answer the pointer: a hover state (Mac, iPad with a trackpad), read by `GHover`.
+// How Gabarit's clickable things answer the pointer: a hover state (Mac, iPad with a trackpad), read by `GHover`, and
+// the pointing hand over them on the Mac (`gPointer`).
+
+public extension View {
+    /// The pointing hand over this view on the Mac: it can be clicked.
+    @ViewBuilder func gPointer() -> some View {
+        #if os(macOS)
+        pointerStyle(.link)
+        #else
+        self
+        #endif
+    }
+}
 
 /// Reads whether the pointer is over its content, and redraws it so: `GHover { hovering in … }`.
 public struct GHover<Content: View>: View {
@@ -16,6 +28,7 @@ public struct GHover<Content: View>: View {
     public var body: some View {
         content(hovering && isEnabled)
             .onHover { hovering = $0 }
+            .gPointer()
             .animation(.easeOut(duration: 0.12), value: hovering)
     }
 }

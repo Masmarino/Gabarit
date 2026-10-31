@@ -12,6 +12,7 @@ public func gButton(_ title: String, variant: GButtonVariant = .secondary, regul
                     action: @escaping () -> Void) -> GWidget {
     let button = gtk_button_new_with_label(title)!
     gStyle(button, "g-button", "g-\(variant)")
+    gPointer(button)
     if regular { gtk_widget_add_css_class(button, "g-regular") }
     if destructive { gtk_widget_add_css_class(button, "g-destructive") }
     gConnect(UnsafeMutableRawPointer(button), "clicked", action)
@@ -23,6 +24,7 @@ public func gButton(_ title: String, variant: GButtonVariant = .secondary, regul
 public func gCloseButton(tooltip: String, action: @escaping () -> Void) -> GWidget {
     let button = gtk_button_new_from_icon_name("window-close-symbolic")!
     gStyle(button, "g-close")
+    gPointer(button)
     gtk_widget_set_tooltip_text(button, tooltip)
     gtk_widget_set_valign(button, GTK_ALIGN_CENTER)
     gConnect(UnsafeMutableRawPointer(button), "clicked", action)
@@ -34,6 +36,7 @@ public func gCloseButton(tooltip: String, action: @escaping () -> Void) -> GWidg
 public func gSwitchRow(_ title: String, detail: String? = nil, isOn: Bool, onChange: @escaping (Bool) -> Void) -> GWidget {
     let toggle = gtk_switch_new()!
     gStyle(toggle, "g-switch")
+    gPointer(toggle)
     gtk_switch_set_active(cast(toggle), isOn ? 1 : 0)
     gtk_widget_set_valign(toggle, GTK_ALIGN_CENTER)
     gConnect(UnsafeMutableRawPointer(toggle), "notify::active") { onChange(gtk_switch_get_active(cast(toggle)) != 0) }
@@ -64,6 +67,7 @@ public func gMenu(_ options: [String], selected: Int, onChange: @escaping (Int) 
     let dropdown = gtk_drop_down_new(list, nil)!
     let menu = OpaquePointer(dropdown)
     gStyle(dropdown, "g-menu")
+    gPointer(dropdown)
     gtk_drop_down_set_selected(menu, guint(selected))
     gtk_widget_set_valign(dropdown, GTK_ALIGN_CENTER)
     gConnect(UnsafeMutableRawPointer(dropdown), "notify::selected") { onChange(Int(gtk_drop_down_get_selected(menu))) }
@@ -77,6 +81,7 @@ public func gChips(_ options: [String], selected: Int, onChange: @escaping (Int)
     for (index, option) in options.enumerated() {
         let chip = gtk_toggle_button_new_with_label(option)!
         gStyle(chip, "g-chip")
+        gPointer(chip)
         if let first = buttons.first { gtk_toggle_button_set_group(cast(chip), cast(first)) }
         gtk_toggle_button_set_active(cast(chip), index == selected ? 1 : 0)
         gConnect(UnsafeMutableRawPointer(chip), "toggled") { if gtk_toggle_button_get_active(cast(chip)) != 0 { onChange(index) } }
@@ -105,6 +110,7 @@ public func gPicker(_ title: String, detail: String? = nil, options: [String], s
 public func gSlider(value: Double, in range: ClosedRange<Double>, step: Double = 0.01, onChange: @escaping (Double) -> Void) -> GWidget {
     let scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, range.lowerBound, range.upperBound, step)!
     gStyle(scale, "g-slider")
+    gPointer(scale)
     gtk_scale_set_draw_value(cast(scale), 0)
     gtk_range_set_value(cast(scale), value)
     gtk_widget_set_hexpand(scale, 1)
@@ -239,6 +245,7 @@ public func gNavTabs(_ titles: [String], selected: Int, onChange: @escaping (Int
         let tab = gtk_toggle_button_new_with_label(title)!
         gtk_button_set_has_frame(cast(tab), 0)
         gStyle(tab, "g-nav-tab")
+        gPointer(tab)
         if let first = buttons.first { gtk_toggle_button_set_group(cast(tab), cast(first)) }
         gtk_toggle_button_set_active(cast(tab), index == selected ? 1 : 0)
         gConnect(UnsafeMutableRawPointer(tab), "toggled") { if gtk_toggle_button_get_active(cast(tab)) != 0 { onChange(index) } }

@@ -109,6 +109,7 @@ private struct GMenuField<Value: Hashable>: View {
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
+        .gPointer()
         .accessibilityValue(options.first { $0.value == selection }?.title ?? "")
         .popover(isPresented: $open, arrowEdge: .bottom) {
             ScrollView {
@@ -153,6 +154,7 @@ private struct GMenuRow: View {
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
+        .gPointer()
         .accessibilityAddTraits(checked ? .isSelected : [])
     }
 }

@@ -109,6 +109,14 @@ public func gBox(_ orientation: GtkOrientation, spacing: Int32 = 0, _ children: 
     return box
 }
 
+/// The pointing hand over a widget: it can be clicked.
+@MainActor
+@discardableResult
+public func gPointer(_ widget: GWidget) -> GWidget {
+    gtk_widget_set_cursor_from_name(widget, "pointer")
+    return widget
+}
+
 /// A label in one of Gabarit's text styles (`body`, `headline`, `title2`…), aligned to the leading edge.
 @MainActor
 public func gLabel(_ text: String, style: String = "body", classes: [String] = [], wraps: Bool = false) -> GWidget {

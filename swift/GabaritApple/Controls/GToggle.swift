@@ -33,6 +33,7 @@ private struct GToggleRow: View {
         }
         .opacity(isEnabled ? 1 : 0.5)
         .contentShape(Rectangle())
+        .gPointer()
         .onTapGesture { if isEnabled { withAnimation(.snappy(duration: 0.18)) { configuration.isOn.toggle() } } }
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isToggle)

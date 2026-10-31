@@ -54,6 +54,7 @@ public func gRailItem(_ title: String, icon: String, current: Bool, action: @esc
     gtk_button_set_child(cast(button), content)
     gtk_button_set_has_frame(cast(button), 0)
     gStyle(button, "g-rail-item")
+    gPointer(button)
     if current { gtk_widget_add_css_class(button, "g-current") }
     gConnect(UnsafeMutableRawPointer(button), "clicked", action)
     return button

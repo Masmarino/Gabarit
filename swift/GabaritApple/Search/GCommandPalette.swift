@@ -179,6 +179,7 @@ public struct GCommandPalette: View {
         }
         .buttonStyle(.plain)
         .onHover { if $0 { activeID = item.id } }
+        .gPointer()
         .accessibilityAddTraits(active ? .isSelected : [])
     }
 
