@@ -2,6 +2,24 @@
 import SwiftUI
 
 public extension GTone {
+    /// A solid ground in this state (a filled button, a dot): a step darker for errors in light, so white text reads.
+    var fill: Color {
+        switch self {
+        case .error: Color(GColorPair(light: GPaletteValues.red700, dark: GPaletteValues.red400))
+        default: base
+        }
+    }
+
+    /// This state's text on the page (a message under a field): a step darker in light, for a 7:1 contrast.
+    var text: Color {
+        switch self {
+        case .success: Color(GColorPair(light: GPaletteValues.patina700, dark: GPaletteValues.patina400))
+        case .warning: Color(GColorPair(light: GPaletteValues.amber700, dark: GPaletteValues.amber400))
+        case .error: Color(GColorPair(light: GPaletteValues.red750, dark: GPaletteValues.red300))
+        case .info: tintText
+        }
+    }
+
     /// A readable text on this state's tint (a badge's label): darker in light, lighter in dark.
     var tintText: Color {
         switch self {

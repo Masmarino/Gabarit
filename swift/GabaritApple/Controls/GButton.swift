@@ -2,7 +2,7 @@
 import SwiftUI
 
 /// The states (success, warning, error, information), rather than the system's colours.
-public enum GTone: Sendable {
+public enum GTone: Sendable, CaseIterable {
     case success, warning, error, info
 
     public var base: Color {
