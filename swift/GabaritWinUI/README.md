@@ -35,14 +35,18 @@ everywhere else.
   would draw a false bold from the regular file.
 - The close cross takes `<KeyboardAccelerator Key="Escape"/>`; an app not in English sets its
   `AutomationProperties.Name` and `ToolTipService.ToolTip`.
-- High contrast: every Gabarit colour has a `HighContrast` value from the system's colours, so the pages follow
-  Windows' contrast themes; WinUI's own controls keep their own contrast look.
+- Controls beyond WinUI's own: chips and underlined tabs are `RadioButton`s with `GChipStyle` and `GNavTabStyle`; a
+  switch row is a `ToggleSwitch` with `GSwitchStyle` beside its title and `GSwitchDetailStyle`; badges take
+  `GBadgeStyle` or a state's (`GBadgeSuccessStyle`…, with their text styles); a field's title `GFieldTitleStyle`, a
+  section's `GSectionTitleStyle`, a page's sentence `GPageSummaryStyle`, a passing message's text `GToastTextStyle`.
+  WinUI's own fields, menus and switches take body text (13) and fields are 30 high, as on the Mac.
+- High contrast: every Gabarit colour, the frame's too, has a `HighContrast` value from the system's colours, so the
+  pages follow Windows' contrast themes; WinUI's own controls keep their own contrast look.
 
 The icons: the apps write the Mac's names (SF Symbols), as everywhere; WinUI draws Phosphor's icon, the one GTK draws.
 In XAML, `<FontIcon Style="{StaticResource GIconStyle}" Glyph="{StaticResource GIcon_bell}"/>` (the dots become
 `_`: `GIcon_arrow_triangle_2_circlepath`), and for a filled one (`lock.fill`) `GIconFillStyle` with the name without
-`.fill`. In Swift, `GSymbols.glyph(for: "lock.fill")` gives the
-character and the font. A `FontSize` of the Mac's size × 1.25: Phosphor leaves more room around its drawings.
+`.fill`. In Swift, `GSymbols.glyph(for: "lock.fill")` gives the character and the font. A `FontSize` of the Mac's size × 1.25: Phosphor leaves more room around its drawings.
 
 The pointer: Windows keeps the arrow over buttons (its own convention); an app that wants the pointing hand sets
 `ProtectedCursor` in code, XAML cannot.

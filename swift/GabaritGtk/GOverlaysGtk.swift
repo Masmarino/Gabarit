@@ -39,6 +39,13 @@ public func gSheetTitle(_ title: String, summary: String, closeTooltip: String =
         gAccessibleLabel(arrow, backTooltip)
         gPointer(arrow)
         gConnect(UnsafeMutableRawPointer(arrow), "clicked", back)
+        // Alt + Left, the desktop's "back" (the Mac's ⌘[), from anywhere in the sheet.
+        let keys = gtk_shortcut_controller_new()!
+        gtk_shortcut_controller_set_scope(keys, GTK_SHORTCUT_SCOPE_MANAGED)
+        gtk_shortcut_controller_add_shortcut(keys, gtk_shortcut_new(gtk_shortcut_trigger_parse_string("<Alt>Left"),
+                                                                    gtk_activate_action_get()))
+        gtk_widget_add_controller(arrow, keys)
+        gAccessibleText(arrow, GTK_ACCESSIBLE_PROPERTY_KEY_SHORTCUTS, "Alt+Left")
         children.append(arrow)
     }
     let texts = gBox(GTK_ORIENTATION_VERTICAL, spacing: 4, [gLabel(title, style: "title", classes: ["g-sheet-title"], heading: 1),
@@ -134,8 +141,15 @@ public func gOverlayHost(_ content: GWidget) -> GWidget {
 
 /// A passing message at the bottom of the host, gone after `seconds`; screen readers say it as it shows.
 @MainActor
+/// One at a time, as on the Mac: a new one replaces the one showing.
 public func gShowToast(_ host: GWidget, _ text: String, icon: String, seconds: Double = 2.5) {
+    let hostObject = UnsafeMutableRawPointer(host).assumingMemoryBound(to: GObject.self)
+    if let showing = g_object_get_data(hostObject, "g-toast")?.assumingMemoryBound(to: GtkWidget.self),
+       gtk_widget_get_parent(showing) == host {
+        gtk_overlay_remove_overlay(cast(host), showing)
+    }
     let toast = gToast(text, icon: icon)
+    g_object_set_data(hostObject, "g-toast", UnsafeMutableRawPointer(toast))
     gtk_widget_set_valign(toast, GTK_ALIGN_END)
     gtk_widget_set_margin_bottom(toast, 32)
     gtk_widget_set_can_target(toast, 0)
@@ -145,6 +159,7 @@ public func gShowToast(_ host: GWidget, _ text: String, icon: String, seconds: D
     g_object_ref(UnsafeMutableRawPointer(toast))
     gAfter(UInt32(seconds * 1000)) {
         if gtk_widget_get_parent(toast) == host { gtk_overlay_remove_overlay(cast(host), toast) }
+        if g_object_get_data(hostObject, "g-toast") == UnsafeMutableRawPointer(toast) { g_object_set_data(hostObject, "g-toast", nil) }
         g_object_unref(UnsafeMutableRawPointer(toast))
     }
 }
@@ -213,7 +228,8 @@ public func gCommandShortcut(window: GWidget, host: GWidget, groups: @escaping (
     let controller = gtk_shortcut_controller_new()!
     gtk_shortcut_controller_set_scope(controller, GTK_SHORTCUT_SCOPE_GLOBAL)
     let box = Unmanaged.passRetained(GClosureBox {
-        if let open = GCommandPaletteView.current { open.close() } else { gCommandPalette(host, groups: groups()) }
+        // Closes this window's; another window's open one gives way to this one's.
+        if let open = GCommandPaletteView.current, open.host == host { open.close() } else { gCommandPalette(host, groups: groups()) }
     }).toOpaque()
     let run: @convention(c) (UnsafeMutablePointer<GtkWidget>?, OpaquePointer?, gpointer?) -> gboolean = { _, _, data in
         let closure = Unmanaged<GClosureBox>.fromOpaque(data!).takeUnretainedValue()
@@ -280,7 +296,7 @@ final class GCommandPaletteView {
         gConnect(UnsafeMutableRawPointer(escapeClick), "released") { [weak self] in self?.close() }
         gtk_widget_add_controller(escape, escapeClick)
         gPointer(escape)
-        let field = gStyle(gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 10, [gIcon("magnifyingglass"), entry, escape]), "g-command-top")
+        let field = gStyle(gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 10, [gIcon("magnifyingglass", size: 13), entry, escape]), "g-command-top")
         let list = gBox(GTK_ORIENTATION_VERTICAL, spacing: 2, [])
         gStyle(list, "g-command-list")
         let scroll = gtk_scrolled_window_new()!
@@ -320,6 +336,8 @@ final class GCommandPaletteView {
         gConnect(UnsafeMutableRawPointer(layer), "destroy") { [weak self] in
             guard let self else { return }
             self.layer = nil
+            if let previousFocus = self.previousFocus { g_object_unref(UnsafeMutableRawPointer(previousFocus)) }
+            self.previousFocus = nil
             if Self.current === self { Self.current = nil }
         }
         self.layer = layer
@@ -360,7 +378,7 @@ final class GCommandPaletteView {
 
     private func row(_ item: GCommandItem, run: @escaping () -> Void) -> GWidget {
         let name = gLabel(item.label, style: "subheadline", classes: ["g-command-label"])
-        var children = [gIcon(item.icon, size: 14), name]
+        var children = [gIcon(item.icon, size: 11), name]
         let spoken = [item.label, item.detail].compactMap { $0 }.joined(separator: ", ")
         if let detail = item.detail { children.append(gLabel(detail, style: "footnote", classes: ["g-text-secondary"])) }
         children.append(gSpacer())
@@ -374,6 +392,13 @@ final class GCommandPaletteView {
         gAccessibleLabel(button, spoken)
         gPointer(button)
         gConnect(UnsafeMutableRawPointer(button), "clicked", run)
+        // The pointer makes a row the chosen one: one highlighted row, as on the Mac.
+        let motion = gtk_event_controller_motion_new()!
+        gConnect(UnsafeMutableRawPointer(motion), "enter") { [weak self] in
+            guard let self, let index = self.shown.firstIndex(where: { $0.row == button }) else { return }
+            self.select(index, announce: false)
+        }
+        gtk_widget_add_controller(button, motion)
         return button
     }
 

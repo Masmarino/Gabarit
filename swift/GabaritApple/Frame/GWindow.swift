@@ -15,8 +15,9 @@ public struct GWindow<Icon: View, Content: View>: View {
     var close: (() -> Void)?
     @ViewBuilder var icon: Icon
     @ViewBuilder var content: Content
-    /// The window that holds it: the cross closes this one, not whichever has the keyboard.
-    @State private var window: NSWindow?
+    /// The window that holds it: the cross closes this one, not whichever has the keyboard. Held weakly (the window
+    /// holds this view).
+    @State private var holder = GWindowHolder()
 
     /// `close`: what the cross does; by default, it closes the window.
     public init(title: String, subtitle: String? = nil, close: (() -> Void)? = nil, @ViewBuilder icon: () -> Icon,
@@ -33,14 +34,14 @@ public struct GWindow<Icon: View, Content: View>: View {
             GWindowHeader(title: title, subtitle: subtitle) {
                 icon
             } trailing: {
-                GCloseButton { (close ?? { window?.performClose(nil) })() }
+                GCloseButton { (close ?? { holder.window?.performClose(nil) })() }
             }
             VStack(spacing: 0) { content }.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         // Up to the top of the window: the title bar, transparent and empty, keeps no room.
         .ignoresSafeArea(.container, edges: .top)
         .gWindowChrome()
-        .background(GWindowReader { window = $0 })
+        .background(GWindowReader { holder.window = $0 })
     }
 }
 
@@ -223,6 +224,11 @@ public enum GWindows {
         return window
     }
 }
+/// A window, held weakly.
+final class GWindowHolder {
+    weak var window: NSWindow?
+}
+
 /// Gives the window that holds it, once it is in one.
 struct GWindowReader: NSViewRepresentable {
     let found: (NSWindow) -> Void

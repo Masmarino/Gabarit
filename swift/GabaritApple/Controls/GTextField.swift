@@ -29,9 +29,8 @@ public struct GFieldFrame: ViewModifier {
             .frame(minHeight: GControlMetrics.height)
             .background(GColor.background, in: shape)
             .overlay { shape.strokeBorder(focused ? GColor.accent : GColor.controlRim(contrast), lineWidth: focused ? 1.5 : 1) }
-            // A click on the padding too puts the cursor in the field.
-            .contentShape(shape)
-            .onTapGesture { focused = true }
+            // A click on the padding too puts the cursor in the field (behind it: the field keeps its own clicks).
+            .background { shape.fill(.clear).contentShape(shape).onTapGesture { focused = true } }
             .opacity(isEnabled ? 1 : GOpacity.disabled)
             .animation(GAnimation.hover, value: focused)
     }

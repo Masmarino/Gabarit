@@ -266,6 +266,8 @@ private struct GSideDrawer<Drawer: View>: ViewModifier {
     let drawer: Drawer
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var dragged: CGFloat?
+    /// A drag's direction, decided once at its start: a vertical scroll never turns into moving the drawer.
+    @State private var horizontal: Bool?
     private let widthFraction: CGFloat = 0.85
     private let maxWidth: CGFloat = 340
     private let edge: CGFloat = 18
@@ -293,10 +295,12 @@ private struct GSideDrawer<Drawer: View>: ViewModifier {
                         // Horizontal drags only: a list in the drawer keeps its vertical scroll.
                         .simultaneousGesture(DragGesture(minimumDistance: 10)
                             .onChanged { drag in
-                                guard dragged != nil || abs(drag.translation.width) > abs(drag.translation.height) else { return }
+                                if horizontal == nil { horizontal = abs(drag.translation.width) > abs(drag.translation.height) }
+                                guard horizontal == true else { return }
                                 dragged = min(0, max(-width, drag.translation.width))
                             }
                             .onEnded { end in
+                                defer { horizontal = nil }
                                 guard dragged != nil else { return }
                                 let closes = end.translation.width < -width * 0.3 || end.predictedEndTranslation.width < -width * 0.5
                                 closes ? set(false) : cancel()
@@ -310,13 +314,15 @@ private struct GSideDrawer<Drawer: View>: ViewModifier {
                             .frame(width: edge)
                             .frame(maxHeight: .infinity)
                             .contentShape(Rectangle())
-                            // A horizontal swipe from the edge, not a vertical scroll that starts there.
+                            // A horizontal swipe from the edge (the strip takes the touches that start in it).
                             .gesture(DragGesture(minimumDistance: 10)
                                 .onChanged { drag in
-                                    guard drag.translation.width > abs(drag.translation.height) else { return }
+                                    if horizontal == nil { horizontal = drag.translation.width > abs(drag.translation.height) }
+                                    guard horizontal == true else { return }
                                     dragged = -width + min(width, drag.translation.width)
                                 }
                                 .onEnded { end in
+                                    defer { horizontal = nil }
                                     guard dragged != nil else { return }
                                     let opens = end.translation.width > width * 0.3 || end.predictedEndTranslation.width > width * 0.5
                                     opens ? set(true) : cancel()

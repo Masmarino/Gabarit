@@ -273,19 +273,20 @@ def xaml_color(value: str) -> str:
 WINUI_CONTROLS = {
     "ToggleSwitchFillOn": "accent", "ToggleSwitchFillOnPointerOver": "accent", "ToggleSwitchFillOnPressed": "accent",
     "ToggleSwitchFillOff": "track", "ToggleSwitchFillOffPointerOver": "track", "ToggleSwitchFillOffPressed": "track",
-    "ToggleSwitchStrokeOff": "border", "ToggleSwitchStrokeOffPointerOver": "border", "ToggleSwitchStrokeOffPressed": "border",
+    "ToggleSwitchStrokeOff": "border/0.35", "ToggleSwitchStrokeOffPointerOver": "border/0.35",
+    "ToggleSwitchStrokeOffPressed": "border/0.35",
     "ToggleSwitchStrokeOn": "accent", "ToggleSwitchStrokeOnPointerOver": "accent", "ToggleSwitchStrokeOnPressed": "accent",
     "ToggleSwitchKnobFillOn": "#FFFFFF", "ToggleSwitchKnobFillOff": "#FFFFFF", "ToggleSwitchKnobFillOnPointerOver": "#FFFFFF",
     "ToggleSwitchKnobFillOffPointerOver": "#FFFFFF", "ToggleSwitchKnobFillOnPressed": "#FFFFFF",
     "ToggleSwitchKnobFillOffPressed": "#FFFFFF",
     "TextControlBackground": "background", "TextControlBackgroundPointerOver": "background",
-    "TextControlBackgroundFocused": "background", "TextControlBorderBrush": "border",
-    "TextControlBorderBrushPointerOver": "border", "TextControlBorderBrushFocused": "accent",
+    "TextControlBackgroundFocused": "background", "TextControlBorderBrush": "hairline",
+    "TextControlBorderBrushPointerOver": "hairline", "TextControlBorderBrushFocused": "accent",
     "TextControlBorderBrushDisabled": "hairline",
     "TextControlForeground": "textPrimary", "TextControlForegroundFocused": "textPrimary",
     "TextControlPlaceholderForeground": "textDiscret", "TextControlPlaceholderForegroundFocused": "textDiscret",
     "ComboBoxBackground": "background", "ComboBoxBackgroundPointerOver": "hover", "ComboBoxBackgroundPressed": "track",
-    "ComboBoxBorderBrush": "border", "ComboBoxBorderBrushPointerOver": "accent", "ComboBoxBorderBrushPressed": "accent",
+    "ComboBoxBorderBrush": "hairline", "ComboBoxBorderBrushPointerOver": "accent", "ComboBoxBorderBrushPressed": "accent",
     "ComboBoxForeground": "textPrimary", "ComboBoxDropDownBackground": "surface", "ComboBoxDropDownBorderBrush": "hairline",
     "SliderTrackFill": "track", "SliderTrackFillPointerOver": "track", "SliderTrackFillPressed": "track",
     "SliderTrackValueFill": "accent", "SliderTrackValueFillPointerOver": "accent", "SliderTrackValueFillPressed": "accent",
@@ -299,16 +300,20 @@ WINUI_CONTROLS = {
 # Gabarit's own brushes beyond the roles, per theme: a role at an opacity, or a role laid on another (solid, so the
 # page never shows through a button).
 WINUI_BRUSHES = {
-    "GBorderSoft": "border/0.6", "GBorderStrong": "border/0.8",
+    "GBorderSoft": "border/0.6", "GBorderStrong": "border/0.8", "GBorderHover": "border/0.5", "GAccentRim": "accent/0.7",
+    "GSuccessTint": "success/0.14", "GWarningTint": "warning/0.14", "GErrorTint": "error/0.14", "GInfoTint": "info/0.14",
     "GPrimaryPressed": ("primaryHover", "background", 0.85), "GErrorHover": ("error", "background", 0.9),
     "GErrorPressed": ("error", "background", 0.8),
 }
 
-# The frame (rail, band, window header) is dark in both themes: its brushes are the same everywhere.
+# The frame (rail, band, window header) is dark in both themes: its brushes are the same in Light and Dark, and take
+# the system's colours in a contrast theme (the second value). Its accent is the dark appearance's.
 WINUI_FRAME = {
-    "GFrame": "graphite950", "GOnFrame": "graphite100", "GOnFrameSecondary": "graphite300", "GOnFrameDiscret": "graphite400",
-    "GFrameLine": "graphite700/0.7", "GFrameRim": "graphite700", "GFrameHover": "graphite100/0.05",
-    "GFrameSelected": "graphite100/0.09", "GFrameCloseHover": "graphite100/0.12",
+    "GFrame": ("graphite950", "Window"), "GOnFrame": ("graphite100", "WindowText"),
+    "GOnFrameSecondary": ("graphite300", "WindowText"), "GOnFrameDiscret": ("graphite400", "WindowText"),
+    "GOnFrameAccent": ("rust400", "Highlight"), "GFrameLine": ("graphite700/0.7", "WindowText"),
+    "GFrameRim": ("graphite700", "WindowText"), "GFrameHover": ("graphite100/0.05", "Window"),
+    "GFrameSelected": ("graphite100/0.09", "Window"), "GFrameCloseHover": ("graphite100/0.12", "Window"),
 }
 
 # A contrast theme (Windows' high contrast): every role becomes one of the system's colours.
@@ -370,6 +375,9 @@ def winui() -> str:
             lines.append(f'            <SolidColorBrush x:Key="G{camel(name)}Brush" Color="{xaml_color(v[key])}"/>')
         lines += [f'            <SolidColorBrush x:Key="{name}Brush" Color="{winui_brush(value, key)}"/>'
                   for name, value in WINUI_BRUSHES.items()]
+        lines.append("            <!-- The frame: dark in both appearances. -->")
+        lines += [f'            <SolidColorBrush x:Key="{name}Brush" Color="{xaml_color(value)}"/>'
+                  for name, (value, _) in WINUI_FRAME.items()]
         lines.append("            <!-- WinUI's own controls in Gabarit's colours (lightweight styling): no template redrawn. -->")
         for control_key, value in WINUI_CONTROLS.items():
             lines.append(f'            <SolidColorBrush x:Key="{control_key}" Color="{winui_brush(value, key)}"/>')
@@ -385,17 +393,23 @@ def winui() -> str:
         lines.append(f'            <SolidColorBrush x:Key="G{camel(name)}Brush" Color="{{ThemeResource {system}}}"/>')
     for name, value in WINUI_BRUSHES.items():
         role = (value[0] if isinstance(value, tuple) else value).partition("/")[0]
-        system = f"SystemColor{WINUI_HIGH_CONTRAST.get(role, 'WindowText')}Color"
+        # A tint is a ground under text: the window's colour.
+        system = f"SystemColor{'Window' if name.endswith('Tint') else WINUI_HIGH_CONTRAST.get(role, 'WindowText')}Color"
         lines.append(f'            <SolidColorBrush x:Key="{name}Brush" Color="{{ThemeResource {system}}}"/>')
+    lines += [f'            <SolidColorBrush x:Key="{name}Brush" Color="{{ThemeResource SystemColor{system}Color}}"/>'
+              for name, (_, system) in WINUI_FRAME.items()]
     lines += ["        </ResourceDictionary>", "    </ResourceDictionary.ThemeDictionaries>"]
     text = TOKENS["families"]["text"]
+    body = TOKENS["text"]["body"]["desktop"]
     lines += [f'    <CornerRadius x:Key="ControlCornerRadius">{TOKENS["radius"]["sm"]}</CornerRadius>',
+              "    <!-- WinUI's own controls at the Mac's sizes: body text, fields 30 high. -->",
+              f'    <x:Double x:Key="ControlContentThemeFontSize">{body}</x:Double>',
+              '    <x:Double x:Key="TextControlThemeMinHeight">30</x:Double>',
+              '    <Thickness x:Key="TextControlThemePadding">10,6,10,6</Thickness>',
               f'    <CornerRadius x:Key="OverlayCornerRadius">{TOKENS["radius"]["md"]}</CornerRadius>',
               f'    <FontFamily x:Key="ContentControlThemeFontFamily">{WINUI_FONTS}/{text["files"]["regular"]}#{text["name"]}</FontFamily>']
     lines += [f'    <Color x:Key="GPalette{camel(name)}">{xaml_color(name)}</Color>' for name in PALETTE]
     lines += [f'    <SolidColorBrush x:Key="GPalette{camel(name)}Brush" Color="{xaml_color(name)}"/>' for name in PALETTE]
-    lines.append("    <!-- The frame: dark in both themes. -->")
-    lines += [f'    <SolidColorBrush x:Key="{name}Brush" Color="{xaml_color(value)}"/>' for name, value in WINUI_FRAME.items()]
     for name, value in TOKENS["radius"].items():
         lines.append(f'    <x:Double x:Key="GRadius{camel(name)}">{value}</x:Double>')
         lines.append(f'    <CornerRadius x:Key="GCornerRadius{camel(name)}">{value}</CornerRadius>')

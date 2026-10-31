@@ -77,6 +77,8 @@ public enum GGtk {
         gConnect(UnsafeMutableRawPointer(settings), "changed::color-scheme") {
             if GGtk.scheme == .system { GGtk.apply(.system) }
         }
+        // GSettings tells a change only of a key this object has read.
+        if let value = g_settings_get_string(settings, "color-scheme") { g_free(value) }
     }
 
     /// The desktop's choice (GNOME's `color-scheme`, `prefer-dark`), when its settings are there.

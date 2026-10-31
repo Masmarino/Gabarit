@@ -5,12 +5,10 @@ import Foundation
 public enum GStrings {
     /// French when the system's first language is, English otherwise.
     public static let french: Bool = {
-        let language = ProcessInfo.processInfo.environment["LANGUAGE"]?.split(separator: ":").first.map(String.init)
-            ?? ProcessInfo.processInfo.environment["LC_ALL"]
-            ?? ProcessInfo.processInfo.environment["LC_MESSAGES"]
-            ?? ProcessInfo.processInfo.environment["LANG"]
-            ?? Locale.preferredLanguages.first
-            ?? "en"
+        // As glibc reads them: the first one set and not empty.
+        let environment = ProcessInfo.processInfo.environment
+        let set = ["LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"].lazy.compactMap { environment[$0] }.first { !$0.isEmpty }
+        let language = set?.split(separator: ":").first.map(String.init) ?? Locale.preferredLanguages.first ?? "en"
         return language.lowercased().hasPrefix("fr")
     }()
 

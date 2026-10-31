@@ -128,6 +128,46 @@
         <Setter Property="Foreground" Value="{ThemeResource GTextPrimaryBrush}"/>
         <!-- The border at 60 %, as on the Mac and in GTK. -->
         <Setter Property="BorderBrush" Value="{ThemeResource GBorderSoftBrush}"/>
+        <!-- Hovered, its border a little stronger (80 %), as on the Mac. -->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                          MinHeight="{TemplateBinding MinHeight}">
+                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <ContentPresenter x:Name="Content" Padding="{TemplateBinding Padding}"
+                                          Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}"
+                                          FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          AutomationProperties.AccessibilityView="Raw"/>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="Veil.Background" Value="{ThemeResource GHoverBrush}"/>
+                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource GBorderStrongBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="Veil.Background" Value="{ThemeResource GTrackBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.Opacity" Value="{StaticResource GOpacityDisabled}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="GButtonGhostStyle" TargetType="Button" BasedOn="{StaticResource GButtonBaseStyle}">
@@ -182,7 +222,8 @@
 
     <!-- A destructive secondary button ("Delete", "Leave"): no solid ground, its text in red. -->
     <Style x:Key="GButtonDestructiveStyle" TargetType="Button" BasedOn="{StaticResource GButtonSecondaryStyle}">
-        <Setter Property="Foreground" Value="{ThemeResource GErrorBrush}"/>
+        <!-- The text's red: 4.5:1 on the hover's and the press's grounds too. -->
+        <Setter Property="Foreground" Value="{ThemeResource GErrorTextBrush}"/>
     </Style>
 
     <!-- A sheet's main button: full height (44), primary. Another variant at that height: its style with MinHeight 44. -->
@@ -215,8 +256,47 @@
 
     <!-- The same cross on the dark frame (a window's header). -->
     <Style x:Key="GCloseButtonOnFrameStyle" TargetType="Button" BasedOn="{StaticResource GCloseButtonStyle}">
-        <Setter Property="BorderBrush" Value="{StaticResource GFrameRimBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource GOnFrameBrush}"/>
+        <Setter Property="BorderBrush" Value="{ThemeResource GFrameRimBrush}"/>
+        <Setter Property="Foreground" Value="{ThemeResource GOnFrameBrush}"/>
+        <!-- The frame's veils, whatever the page's appearance. -->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                          MinHeight="{TemplateBinding MinHeight}">
+                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <ContentPresenter x:Name="Content" Padding="{TemplateBinding Padding}"
+                                          Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}"
+                                          FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          AutomationProperties.AccessibilityView="Raw"/>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="Veil.Background" Value="{ThemeResource GFrameCloseHoverBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="Veil.Background" Value="{ThemeResource GFrameSelectedBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.Opacity" Value="{StaticResource GOpacityDisabled}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- A window's header, extended into the title bar (AppWindow.TitleBar.ExtendsContentIntoTitleBar): 52 high, dark,
@@ -227,17 +307,17 @@
     <Style x:Key="GWindowHeaderStyle" TargetType="Grid">
         <Setter Property="Height" Value="52"/>
         <Setter Property="Padding" Value="16,0,140,0"/>
-        <Setter Property="Background" Value="{StaticResource GFrameBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource GFrameLineBrush}"/>
+        <Setter Property="Background" Value="{ThemeResource GFrameBrush}"/>
+        <Setter Property="BorderBrush" Value="{ThemeResource GFrameLineBrush}"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
     </Style>
 
     <Style x:Key="GWindowTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource GTextHeadline}">
-        <Setter Property="Foreground" Value="{StaticResource GOnFrameBrush}"/>
+        <Setter Property="Foreground" Value="{ThemeResource GOnFrameBrush}"/>
     </Style>
 
     <Style x:Key="GWindowSubtitleStyle" TargetType="TextBlock" BasedOn="{StaticResource GTextCaption}">
-        <Setter Property="Foreground" Value="{StaticResource GOnFrameDiscretBrush}"/>
+        <Setter Property="Foreground" Value="{ThemeResource GOnFrameDiscretBrush}"/>
     </Style>
 
     <!-- The main window's rail: 92 wide, dark (RequestedTheme="Dark" on the element); the page beside it in a sheet
@@ -246,7 +326,7 @@
         <Setter Property="Width" Value="92"/>
         <Setter Property="Padding" Value="6,0"/>
         <Setter Property="Spacing" Value="4"/>
-        <Setter Property="Background" Value="{StaticResource GFrameBrush}"/>
+        <Setter Property="Background" Value="{ThemeResource GFrameBrush}"/>
     </Style>
 
     <Style x:Key="GShellPageStyle" TargetType="Border">
@@ -264,13 +344,13 @@
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource GOnFrameDiscretBrush}"/>
+        <Setter Property="Foreground" Value="{ThemeResource GOnFrameDiscretBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource GFontTextMedium}"/>
         <Setter Property="FontSize" Value="10"/>
         <Setter Property="FontWeight" Value="Medium"/>
         <Setter Property="CornerRadius" Value="{StaticResource GCornerRadiusSm}"/>
         <Setter Property="UseSystemFocusVisuals" Value="True"/>
-        <Setter Property="FocusVisualPrimaryBrush" Value="{StaticResource GPaletteRust400Brush}"/>
+        <Setter Property="FocusVisualPrimaryBrush" Value="{ThemeResource GOnFrameAccentBrush}"/>
         <Setter Property="FocusVisualPrimaryThickness" Value="2"/>
         <Setter Property="FocusVisualSecondaryThickness" Value="0"/>
         <Setter Property="Template">
@@ -278,8 +358,12 @@
                 <ControlTemplate TargetType="RadioButton">
                     <Grid x:Name="Root" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"
                           MinHeight="{TemplateBinding MinHeight}">
+                        <!-- The current page's ground and the hover's veil on their own layers: the two states never write the
+                             same property. -->
+                        <Grid x:Name="Selection" Background="{ThemeResource GFrameSelectedBrush}" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0"/>
+                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
                         <Rectangle x:Name="Bar" Width="2" Margin="0,6" HorizontalAlignment="Left"
-                                   Fill="{StaticResource GPaletteRust400Brush}" Visibility="Collapsed"/>
+                                   Fill="{ThemeResource GOnFrameAccentBrush}" Visibility="Collapsed"/>
                         <ContentPresenter x:Name="Content" Padding="{TemplateBinding Padding}"
                                           Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}"
                                           FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
@@ -292,12 +376,12 @@
                                 <VisualState x:Name="Normal"/>
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{StaticResource GFrameHoverBrush}"/>
+                                        <Setter Target="Veil.Background" Value="{ThemeResource GFrameHoverBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{StaticResource GFrameSelectedBrush}"/>
+                                        <Setter Target="Veil.Background" Value="{ThemeResource GFrameHoverBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
@@ -310,8 +394,8 @@
                                 <VisualState x:Name="Checked">
                                     <VisualState.Setters>
                                         <Setter Target="Bar.Visibility" Value="Visible"/>
-                                        <Setter Target="Root.Background" Value="{StaticResource GFrameSelectedBrush}"/>
-                                        <Setter Target="Content.Foreground" Value="{StaticResource GPaletteRust400Brush}"/>
+                                        <Setter Target="Selection.Opacity" Value="1"/>
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource GOnFrameAccentBrush}"/>
                                         <Setter Target="Content.FontFamily" Value="{StaticResource GFontTextSemibold}"/>
                                         <Setter Target="Content.FontWeight" Value="SemiBold"/>
                                     </VisualState.Setters>
@@ -349,18 +433,239 @@
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 
-    <!-- Badges: the hover's veil with no state; the states through their brushes (GSuccessBrush…) at 14 %. -->
+    <!-- Badges: the hover's veil with no state; a state's tint with GBadgeSuccessStyle… (and its text style). -->
     <Style x:Key="GBadgeStyle" TargetType="Border">
         <Setter Property="Padding" Value="8,2"/>
         <Setter Property="CornerRadius" Value="{StaticResource GCornerRadiusSm}"/>
         <Setter Property="Background" Value="{ThemeResource GHoverBrush}"/>
     </Style>
 
-    <!-- A passing message: the ink of a primary button. -->
+    <!-- A badge's text, and the states' tints (a tone at 14 %, its readable text on it). -->
+    <Style x:Key="GBadgeTextStyle" TargetType="TextBlock" BasedOn="{StaticResource GTextCaption2}">
+        <Setter Property="FontFamily" Value="{StaticResource GFontTextSemibold}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{ThemeResource GTextSecondaryBrush}"/>
+    </Style>
+
+    <Style x:Key="GBadgeSuccessStyle" TargetType="Border" BasedOn="{StaticResource GBadgeStyle}">
+        <Setter Property="Background" Value="{ThemeResource GSuccessTintBrush}"/>
+    </Style>
+    <Style x:Key="GBadgeSuccessTextStyle" TargetType="TextBlock" BasedOn="{StaticResource GBadgeTextStyle}">
+        <Setter Property="Foreground" Value="{ThemeResource GSuccessOnTintBrush}"/>
+    </Style>
+
+    <Style x:Key="GBadgeWarningStyle" TargetType="Border" BasedOn="{StaticResource GBadgeStyle}">
+        <Setter Property="Background" Value="{ThemeResource GWarningTintBrush}"/>
+    </Style>
+    <Style x:Key="GBadgeWarningTextStyle" TargetType="TextBlock" BasedOn="{StaticResource GBadgeTextStyle}">
+        <Setter Property="Foreground" Value="{ThemeResource GWarningOnTintBrush}"/>
+    </Style>
+
+    <Style x:Key="GBadgeErrorStyle" TargetType="Border" BasedOn="{StaticResource GBadgeStyle}">
+        <Setter Property="Background" Value="{ThemeResource GErrorTintBrush}"/>
+    </Style>
+    <Style x:Key="GBadgeErrorTextStyle" TargetType="TextBlock" BasedOn="{StaticResource GBadgeTextStyle}">
+        <Setter Property="Foreground" Value="{ThemeResource GErrorOnTintBrush}"/>
+    </Style>
+
+    <Style x:Key="GBadgeInfoStyle" TargetType="Border" BasedOn="{StaticResource GBadgeStyle}">
+        <Setter Property="Background" Value="{ThemeResource GInfoTintBrush}"/>
+    </Style>
+    <Style x:Key="GBadgeInfoTextStyle" TargetType="TextBlock" BasedOn="{StaticResource GBadgeTextStyle}">
+        <Setter Property="Foreground" Value="{ThemeResource GInfoOnTintBrush}"/>
+    </Style>
+
+    <!-- A passing message: the ink of a primary button, its text in GToastTextStyle, 32 above the bottom. To float, the
+         Border itself takes Translation="0,0,16" and a ThemeShadow as its Shadow (a style cannot set them: they are not
+         dependency properties). One at a time. -->
     <Style x:Key="GToastStyle" TargetType="Border">
         <Setter Property="Padding" Value="20,12"/>
         <Setter Property="CornerRadius" Value="{StaticResource GCornerRadiusMd}"/>
         <Setter Property="Background" Value="{ThemeResource GPrimaryBrush}"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <Setter Property="Margin" Value="0,0,0,32"/>
+    </Style>
+
+    <Style x:Key="GToastTextStyle" TargetType="TextBlock" BasedOn="{StaticResource GTextSubheadline}">
+        <Setter Property="FontFamily" Value="{StaticResource GFontTextMedium}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Foreground" Value="{ThemeResource GOnPrimaryBrush}"/>
+    </Style>
+
+    <!-- Chips side by side (two to four short options): RadioButtons with the same GroupName, the current one tinted
+         rust. A selection on its own layer, the hover's veil on another. -->
+    <Style x:Key="GChipStyle" TargetType="RadioButton">
+        <Setter Property="MinHeight" Value="28"/>
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="CornerRadius" Value="{StaticResource GCornerRadiusSm}"/>
+        <Setter Property="Background" Value="{ThemeResource GBackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{ThemeResource GTextSecondaryBrush}"/>
+        <Setter Property="FontFamily" Value="{StaticResource GFontTextMedium}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="UseSystemFocusVisuals" Value="True"/>
+        <Setter Property="FocusVisualPrimaryBrush" Value="{ThemeResource GAccentBrush}"/>
+        <Setter Property="FocusVisualPrimaryThickness" Value="2"/>
+        <Setter Property="FocusVisualSecondaryThickness" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Grid x:Name="Root" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"
+                          MinHeight="{TemplateBinding MinHeight}">
+                        <Border x:Name="Rim" BorderBrush="{ThemeResource GHairlineBrush}" BorderThickness="1" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <Border x:Name="Selection" Background="{ThemeResource GSelectedFillBrush}" BorderBrush="{ThemeResource GAccentRimBrush}"
+                                BorderThickness="1" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0"/>
+                        <ContentPresenter x:Name="Content" Padding="{TemplateBinding Padding}"
+                                          Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}"
+                                          FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          AutomationProperties.AccessibilityView="Raw"/>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="Veil.Background" Value="{ThemeResource GHoverBrush}"/>
+                                        <Setter Target="Rim.BorderBrush" Value="{ThemeResource GBorderHoverBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="Veil.Background" Value="{ThemeResource GTrackBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.Opacity" Value="{StaticResource GOpacityDisabled}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="CheckStates">
+                                <VisualState x:Name="Checked">
+                                    <VisualState.Setters>
+                                        <Setter Target="Selection.Opacity" Value="1"/>
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource GAccentTextBrush}"/>
+                                        <Setter Target="Content.FontFamily" Value="{StaticResource GFontTextSemibold}"/>
+                                        <Setter Target="Content.FontWeight" Value="SemiBold"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Unchecked"/>
+                                <VisualState x:Name="Indeterminate"/>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Underlined tabs: RadioButtons with the same GroupName in a StackPanel (Spacing 20) over a fine line; the current
+         one in the text's colour, semibold, a rust line under it; a softer line under the hovered one. -->
+    <Style x:Key="GNavTabStyle" TargetType="RadioButton">
+        <Setter Property="MinHeight" Value="0"/>
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="Padding" Value="0,8"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{ThemeResource GTextSecondaryBrush}"/>
+        <Setter Property="FontFamily" Value="{StaticResource GFontTextMedium}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="CornerRadius" Value="0"/>
+        <Setter Property="UseSystemFocusVisuals" Value="True"/>
+        <Setter Property="FocusVisualPrimaryBrush" Value="{ThemeResource GAccentBrush}"/>
+        <Setter Property="FocusVisualPrimaryThickness" Value="2"/>
+        <Setter Property="FocusVisualSecondaryThickness" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Grid x:Name="Root" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"
+                          MinHeight="{TemplateBinding MinHeight}">
+                        <Rectangle x:Name="HoverLine" Height="2" VerticalAlignment="Bottom" Fill="{ThemeResource GBorderHoverBrush}" Opacity="0"/>
+                        <Rectangle x:Name="Line" Height="2" VerticalAlignment="Bottom" Fill="{ThemeResource GAccentBrush}" Opacity="0"/>
+                        <ContentPresenter x:Name="Content" Padding="{TemplateBinding Padding}"
+                                          Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}"
+                                          FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          AutomationProperties.AccessibilityView="Raw"/>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="HoverLine.Opacity" Value="1"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="HoverLine.Opacity" Value="1"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="Root.Opacity" Value="{StaticResource GOpacityDisabled}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="CheckStates">
+                                <VisualState x:Name="Checked">
+                                    <VisualState.Setters>
+                                        <Setter Target="Line.Opacity" Value="1"/>
+                                        <Setter Target="Content.Foreground" Value="{ThemeResource GTextPrimaryBrush}"/>
+                                        <Setter Target="Content.FontFamily" Value="{StaticResource GFontTextSemibold}"/>
+                                        <Setter Target="Content.FontWeight" Value="SemiBold"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Unchecked"/>
+                                <VisualState x:Name="Indeterminate"/>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- A switch row: a Grid, the title (GTextBody) and its sentence (GSwitchDetailStyle) on the left, a ToggleSwitch
+         with this style on the right (no header, no "On"/"Off"); its AutomationProperties.Name is the title. -->
+    <Style x:Key="GSwitchStyle" TargetType="ToggleSwitch">
+        <Setter Property="OnContent" Value=""/>
+        <Setter Property="OffContent" Value=""/>
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="GSwitchDetailStyle" TargetType="TextBlock" BasedOn="{StaticResource GTextCaption}">
+        <Setter Property="Foreground" Value="{ThemeResource GTextDiscretBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <!-- Titles and texts of forms. -->
+
+    <Style x:Key="GFieldTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource GTextCaption}">
+        <Setter Property="FontFamily" Value="{StaticResource GFontTextSemibold}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{ThemeResource GTextSecondaryBrush}"/>
+        <Setter Property="Margin" Value="0,0,0,6"/>
+    </Style>
+
+    <Style x:Key="GSectionTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource GTextHeadline}">
+        <Setter Property="Foreground" Value="{ThemeResource GTextPrimaryBrush}"/>
+        <Setter Property="Margin" Value="0,0,0,4"/>
+        <Setter Property="AutomationProperties.HeadingLevel" Value="Level2"/>
+    </Style>
+
+    <Style x:Key="GPageSummaryStyle" TargetType="TextBlock" BasedOn="{StaticResource GTextBody}">
+        <Setter Property="Foreground" Value="{ThemeResource GTextDiscretBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 </ResourceDictionary>

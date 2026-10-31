@@ -28,13 +28,13 @@ button.g-ghost { background-color: transparent; color: @g_textSecondary; border-
 button.g-danger { background-color: @g_error; color: @g_onPrimary; border-color: transparent; }
 button.g-danger:hover { background-color: alpha(@g_error, 0.9); }
 button.g-danger:active { background-color: alpha(@g_error, 0.8); }
-button.g-secondary.g-destructive, button.g-ghost.g-destructive { color: @g_error; }
+button.g-secondary.g-destructive, button.g-ghost.g-destructive { color: @g_errorText; }
 /* Disabled: dimmed, the same for every control (GOpacity.disabled) */
 button.g-button:disabled, button.g-close:disabled, button.g-chip:disabled, button.g-nav-tab:disabled,
 button.g-rail-item:disabled, button.g-rail-button:disabled, button.g-rail-square:disabled, button.g-command-k:disabled,
 button.g-menu-item:disabled, switch.g-switch:disabled, entry.g-field:disabled, dropdown.g-menu:disabled,
 scale.g-slider:disabled, button.g-row-button:disabled, button.g-sheet-back:disabled, button.g-command-row:disabled,
-menubutton.g-menu-button:disabled, button.g-sidebar-row:disabled { opacity: 0.45; }
+menubutton.g-menu-button:disabled, button.g-sidebar-row:disabled, textview.g-field:disabled { opacity: 0.45; }
 
 /* The close button: a cross in a circle with a fine rim (on the dark frame, or on the page) */
 
@@ -56,7 +56,10 @@ switch.g-switch > slider { min-width: 16px; min-height: 16px; margin: 1px; borde
 
 /* Text fields: the ground, a fine rim, rust when it has the focus */
 
-entry.g-field, textview.g-field { min-height: 28px; padding: 0 10px; border-radius: 6px; background-color: @g_background;
+entry.g-field { min-height: 28px; padding: 0 10px; }
+/* A long text: the same frame, its lines 6 from the rim, as on the Mac. */
+textview.g-field { padding: 6px 10px; }
+entry.g-field, textview.g-field { border-radius: 6px; background-color: @g_background;
                                   color: @g_textPrimary; border: 1px solid @g_hairline; box-shadow: none; outline: none; }
 entry.g-field:hover { border-color: alpha(@g_border, 0.5); }
 entry.g-field:focus-within { border-color: @g_accent; box-shadow: inset 0 0 0 0.5px @g_accent; }
@@ -81,9 +84,12 @@ dropdown.g-menu popover listview > row:hover { background-color: @g_hover; }
 dropdown.g-menu popover listview > row image { color: @g_accent; -gtk-icon-source: -gtk-icontheme("gabarit-ph-check-symbolic"); }
 
 button.g-chip { min-height: 26px; padding: 0 12px; border-radius: 6px; background-color: @g_background; color: @g_textSecondary;
-                border: 1px solid @g_hairline; font-size: 12px; font-weight: 500; box-shadow: none; background-image: none; }
+                border: 1px solid @g_hairline; font-weight: 500; box-shadow: none; background-image: none; }
 button.g-chip:hover { background-color: @g_hover; color: @g_textPrimary; border-color: alpha(@g_border, 0.5); }
-button.g-chip:checked { background-color: alpha(@g_accent, 0.12); color: @g_accentText; border-color: alpha(@g_accent, 0.7); font-weight: 600; }
+button.g-chip:checked { background-color: @g_selectedFill; color: @g_accentText; border-color: alpha(@g_accent, 0.7); font-weight: 600; }
+/* The chip's text in the callout style (GComponents gives its label the class), medium, semibold when current. */
+button.g-chip > label { font-weight: 500; }
+button.g-chip:checked > label { font-weight: 600; }
 
 /* The slider: a thin track, the filled part in rust, a white knob with a rim */
 
@@ -93,6 +99,8 @@ scale.g-slider > trough > highlight { min-height: 4px; margin: 0; padding: 0; ba
 /* The knob, 16 in all with its rim; its negative margin keeps the trough at 4 (GTK makes the trough as tall as the knob) */
 scale.g-slider > trough > slider { min-width: 14px; min-height: 14px; margin: -6px; border-radius: 999px; background-color: #FFFFFF; background-image: none;
                                    border: 1px solid alpha(@g_border, 0.5); box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.15); }
+/* Dragged: the rim in the accent, as on the Mac. */
+scale.g-slider > trough > slider:active { border-color: @g_accent; }
 
 /* The stepper: two buttons on either side of the value, in a field */
 
@@ -131,22 +139,23 @@ button.g-stepper-step:disabled { opacity: 0.45; }
 /* The frame: always dark (the rail, the top band, a window's header); the page in a sheet with a rounded corner */
 
 .g-frame { background-color: @g_frame; color: @g_graphite100; }
-.g-rail { min-width: 92px; padding: 0 6px; }
+/* 92 in all: GTK's min-width leaves the padding out. */
+.g-rail { min-width: 80px; padding: 0 6px; }
 .g-rail-item { min-height: 52px; padding: 0; border-radius: 6px; color: @g_graphite400; background: transparent; background-image: none;
                 box-shadow: none; border: none; }
 .g-rail-item label { font-weight: 500; }
 .g-rail-item.g-current label { font-weight: 600; }
 .g-rail-item:hover { background-color: alpha(@g_graphite100, 0.05); color: @g_graphite100; }
-.g-rail-item.g-current { color: @g_accent; background-color: alpha(@g_graphite100, 0.09); }
+.g-rail-item.g-current { color: @g_rust400; background-color: alpha(@g_graphite100, 0.09); }
 /* The current page's line on the left, 6 from the top and the bottom, as on the Mac */
-.g-rail-item.g-current { background-image: linear-gradient(@g_accent, @g_accent); background-size: 2px 40px;
+.g-rail-item.g-current { background-image: linear-gradient(@g_rust400, @g_rust400); background-size: 2px 40px;
                          background-position: left center; background-repeat: no-repeat; }
 .g-rail-badge { padding: 1px 4px; border-radius: 4px; background-color: @g_graphite700; color: @g_graphite100; font-weight: 600;
                 font-feature-settings: "tnum"; margin-top: -6px; margin-right: -14px; }
 button.g-rail-button { min-height: 32px; padding: 0; border-radius: 6px; border: none; background: transparent; background-image: none;
                        box-shadow: none; color: @g_graphite400; -gtk-icon-size: 19px; }
 button.g-rail-button:hover { background-color: alpha(@g_graphite100, 0.05); color: @g_graphite100; }
-button.g-rail-button.g-on { background-color: alpha(@g_graphite100, 0.09); color: @g_accent; }
+button.g-rail-button.g-on { background-color: alpha(@g_graphite100, 0.09); color: @g_rust400; }
 button.g-rail-square { min-width: 42px; min-height: 42px; padding: 0; border-radius: 6px; border: 1px solid @g_graphite700;
                        background: transparent; background-image: none; box-shadow: none; color: @g_graphite300; -gtk-icon-size: 22px; }
 button.g-rail-square:hover { background-color: alpha(@g_graphite100, 0.05); color: @g_graphite100; }
@@ -164,7 +173,7 @@ headerbar.g-band { min-height: 52px; padding: 0 16px; border-bottom: none; }
 .g-page-band-title { color: @g_graphite100; }
 .g-page-band-summary { color: @g_graphite300; }
 .g-shell-page { background-color: @g_background; border-top-left-radius: 12px; }
-.g-window-header { min-height: 52px; padding: 0 14px 0 16px; border-bottom: 1px solid alpha(@g_graphite700, 0.7); }
+.g-window-header { min-height: 51px; padding: 0 14px 0 16px; border-bottom: 1px solid alpha(@g_graphite700, 0.7); }
 
 /* Underlined tabs: the text, a rust line under the current tab */
 
@@ -213,7 +222,7 @@ button.g-nav-tab:checked { color: @g_textPrimary; font-weight: 600; border-botto
 button.g-menu-item { min-height: 0; padding: 12px 14px; border-radius: 0; border: none; background: transparent; background-image: none; box-shadow: none;
                      color: @g_textPrimary; }
 button.g-menu-item:hover { background-color: @g_hover; }
-button.g-menu-item.g-destructive { color: @g_error; }
+button.g-menu-item.g-destructive { color: @g_errorText; }
 button.g-menu-item image { -gtk-icon-size: 14px; }
 .g-menu-tick { color: @g_accent; }
 popover.g-menu-popover > contents { padding: 0; background-color: @g_surface; border: 1px solid @g_hairline; border-radius: 8px;
@@ -235,7 +244,7 @@ dropdown.g-menu > button:focus-visible, button.g-row-button:focus-visible, butto
 button.g-sidebar-row:focus-visible,
 scale.g-slider:focus-visible > trough > slider { outline: 2px solid alpha(@g_accent, 0.7); outline-offset: 2px; }
 /* Inside what clips (the stepper's field, a menu's bubble, a list): the ring drawn inward, so it shows. */
-button.g-stepper-step:focus-visible, button.g-menu-item:focus-visible, button.g-command-row:focus-visible,
+button.g-stepper-step:focus-visible, button.g-menu-item:focus-visible,
 dropdown.g-menu popover listview > row:focus-visible { outline: 2px solid alpha(@g_accent, 0.7); outline-offset: -2px; }
 
 /* Pressed: the track's grey on the page, a stronger veil on the dark frame (as the buttons) */
@@ -248,7 +257,7 @@ button.g-command-k:active { background-color: alpha(@g_graphite100, 0.12); }
 
 /* A menu button: the ghost button's look */
 
-menubutton.g-menu-button > button { min-height: 28px; padding: 0 8px; border-radius: 6px; border: none; background: transparent;
+menubutton.g-menu-button > button { min-height: 30px; padding: 0 8px; border-radius: 6px; border: none; background: transparent;
                                     background-image: none; box-shadow: none; color: @g_textSecondary; }
 menubutton.g-menu-button > button:hover { background-color: @g_hover; }
 menubutton.g-menu-button > button:checked, menubutton.g-menu-button > button:active { background-color: @g_track; }
@@ -266,7 +275,7 @@ entry.g-field selection, entry.g-command-field selection, label selection { back
 
 button.g-row-button { min-height: 0; padding: 4px 8px; margin: -4px -8px; border-radius: 8px; border: none; background: transparent;
                       background-image: none; box-shadow: none; color: @g_accentText; }
-button.g-row-button.g-destructive { color: @g_error; }
+button.g-row-button.g-destructive { color: @g_errorText; }
 button.g-row-button:hover { background-color: @g_rowHover; }
 button.g-row-button:active { opacity: 0.6; }
 
@@ -294,7 +303,8 @@ button.g-command-row { min-height: 40px; padding: 0 10px; border-radius: 6px; bo
                        background-image: none; box-shadow: none; color: @g_textPrimary; }
 button.g-command-row image { color: @g_textSecondary; }
 button.g-command-row .g-command-label { font-weight: 500; }
-button.g-command-row:hover, button.g-command-row.g-active { background-color: @g_hover; }
+/* One highlighted row: the pointer makes a row the chosen one (GOverlaysGtk), as on the Mac. */
+button.g-command-row.g-active { background-color: @g_hover; }
 button.g-command-row.g-active { background-image: linear-gradient(@g_accent, @g_accent); background-size: 2px 24px;
                                 background-position: left center; background-repeat: no-repeat; }
 button.g-command-row.g-active image { color: @g_accent; }

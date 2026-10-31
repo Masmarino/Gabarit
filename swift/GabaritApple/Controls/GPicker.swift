@@ -133,6 +133,8 @@ private struct GMenuField<Value: Hashable>: View {
                         GMenuRow(title: option.title, checked: option.value == selection, highlighted: highlighted == index) {
                             choose(option.value)
                         }
+                        // The pointer moves the keyboard's line too: one lit line.
+                        .onHover { if $0 { highlighted = index } }
                     }
                 }
             }
@@ -143,12 +145,14 @@ private struct GMenuField<Value: Hashable>: View {
             .focused($listFocused)
             .onAppear {
                 highlighted = options.firstIndex { $0.value == selection }
-                listFocused = true
+                // Once the bubble's window has the keyboard.
+                Task { @MainActor in listFocused = true }
             }
             .onKeyPress(.downArrow) { highlight(1); return .handled }
             .onKeyPress(.upArrow) { highlight(-1); return .handled }
             .onKeyPress(.return) {
-                if let highlighted { choose(options[highlighted].value) }
+                guard let highlighted else { return .ignored }
+                choose(options[highlighted].value)
                 return .handled
             }
             .frame(minWidth: 220, maxHeight: 340)
@@ -184,8 +188,9 @@ private struct GMenuRow: View {
 
     var body: some View {
         Button(action: action) {
-            GHover { hovering in row(hovering || highlighted) }
+            row(highlighted)
         }
+        .gPointer()
         .buttonStyle(.plain)
         .accessibilityAddTraits(checked ? .isSelected : [])
     }

@@ -14,7 +14,7 @@ public func gButton(_ title: String, icon: String? = nil, variant: GButtonVarian
     let button = gtk_button_new()!
     let label = gtk_label_new(title)!
     if let icon {
-        let content = gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 6, [gIcon(icon, size: 14), label])
+        let content = gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 6, [gIcon(icon, size: 13), label])
         gtk_widget_set_halign(content, GTK_ALIGN_CENTER)
         gtk_button_set_child(cast(button), content)
     } else {
@@ -58,6 +58,14 @@ public func gSwitchRow(_ title: String, detail: String? = nil, isOn: Bool, onCha
     let column = gBox(GTK_ORIENTATION_VERTICAL, spacing: 2, texts)
     gtk_widget_set_hexpand(column, 1)
     gtk_widget_set_valign(column, GTK_ALIGN_CENTER)
+    // A click on the title switches it too: the whole row is the switch, as on the Mac.
+    let click = gtk_gesture_click_new()!
+    gConnect(UnsafeMutableRawPointer(click), "released") {
+        guard gtk_widget_is_sensitive(toggle) != 0 else { return }
+        gtk_switch_set_active(cast(toggle), gtk_switch_get_active(cast(toggle)) == 0 ? 1 : 0)
+    }
+    gtk_widget_add_controller(column, click)
+    gPointer(column)
     return gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 12, [column, toggle])
 }
 
@@ -100,6 +108,7 @@ public func gChips(_ options: [String], selected: Int, onChange: @escaping (Int)
     for (index, option) in options.enumerated() {
         let chip = gtk_toggle_button_new_with_label(option)!
         gStyle(chip, "g-chip")
+        if let label = gtk_button_get_child(cast(chip)) { gtk_widget_add_css_class(label, "g-callout") }
         gPointer(chip)
         if let first = buttons.first { gtk_toggle_button_set_group(cast(chip), cast(first)) }
         gtk_toggle_button_set_active(cast(chip), index == selected ? 1 : 0)
@@ -220,7 +229,7 @@ public func gBadge(_ text: String, icon: String? = nil, tone: GTone? = nil) -> G
 /// A passing message: the ink of a primary button, a floating shadow.
 @MainActor
 public func gToast(_ text: String, icon: String) -> GWidget {
-    let toast = gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 8, [gIcon(icon, size: 13), gLabel(text, style: "subheadline")])
+    let toast = gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 8, [gIcon(icon, size: 11), gLabel(text, style: "subheadline")])
     gStyle(toast, "g-toast")
     gtk_widget_set_halign(toast, GTK_ALIGN_CENTER)
     return toast
@@ -284,13 +293,13 @@ public func gTypingDots(label: String) -> GWidget {
 @MainActor
 public func gMenuItem(_ title: String, icon: String, destructive: Bool = false, checked: Bool? = nil,
                       action: @escaping () -> Void) -> GWidget {
-    let symbol = gIcon(icon, size: 14)
+    let symbol = gIcon(icon, size: 11)
     gtk_widget_set_size_request(symbol, 20, -1)
     let name = gLabel(title)
     gtk_widget_set_hexpand(name, 1)
     var children = [symbol, name]
     if let checked {
-        let tick = gStyle(gIcon("checkmark", size: 14), "g-menu-tick")
+        let tick = gStyle(gIcon("checkmark", size: 11), "g-menu-tick")
         gtk_widget_set_size_request(tick, 16, -1)
         gtk_widget_set_opacity(tick, checked ? 1 : 0)
         children.append(tick)

@@ -98,6 +98,11 @@ public struct GCommandPalette: View {
             shown = filtered()
             activeID = ordered.first?.id
         }
+        // The entries changed while it is open (a page loaded): the list follows, the choice stays if it still can.
+        .onChange(of: groups.map { $0.items.map(\.id) }) {
+            shown = filtered()
+            if !ordered.contains(where: { $0.id == activeID }) { activeID = ordered.first?.id }
+        }
         .onAppear { fieldFocused = true }
     }
 
@@ -199,7 +204,8 @@ public struct GCommandPalette: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .onContinuousHover { phase in
+        // In the window's coordinates: a still pointer gives the same point whichever row slides under it.
+        .onContinuousHover(coordinateSpace: .global) { phase in
             guard case .active(let location) = phase, location != pointer else { return }
             pointer = location
             activeID = item.id
@@ -234,10 +240,10 @@ public extension View {
     /// The quick search over this view: ⌘K (or the "⌘ + K" button, `gOpenCommandPalette`) opens it. `prompt`: what the
     /// field invites to search.
     func gCommandPalette(isPresented: Binding<Bool>, prompt: String? = nil, groups: @escaping () -> [GCommandGroup]) -> some View {
-        // The page behind is out of reach while it is open (Tab, VoiceOver): the palette is modal.
+        // The page behind is out of VoiceOver's reach while it is open (the palette is modal); it is not disabled, which
+        // would dim its controls behind the scrim and take the keyboard from its field.
         ZStack {
-            disabled(isPresented.wrappedValue)
-                .accessibilityHidden(isPresented.wrappedValue)
+            accessibilityHidden(isPresented.wrappedValue)
                 .environment(\.gToggleCommandPalette, GCommandPaletteToggle { isPresented.wrappedValue.toggle() })
             if isPresented.wrappedValue {
                 GCommandPalette(isPresented: isPresented, prompt: prompt, groups: groups())

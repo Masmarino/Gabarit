@@ -69,7 +69,7 @@ public func gWindow(application: OpaquePointer?, title: String, subtitle: String
 public func gRailItem(_ title: String, icon: String, current: Bool, badge: Int = 0, action: @escaping () -> Void) -> GWidget {
     let label = gLabel(title, style: "caption2")
     gtk_label_set_xalign(cast(label), 0.5)
-    let symbol = gIcon(icon, size: 18)
+    let symbol = gIcon(icon, size: 17)
     gtk_widget_set_size_request(symbol, 22, 22)
     var top = symbol
     if badge > 0 {
