@@ -79,6 +79,7 @@ public struct GRailItem: View {
         .gDimmedWhenDisabled()
         .environment(\.colorScheme, .dark)
         .accessibilityLabel(title)
+        .accessibilityValue(badge > 0 ? gBadgeText(badge) : "")
         .accessibilityAddTraits(current ? .isSelected : [])
     }
 

@@ -26,6 +26,7 @@ public func gCloseButton(tooltip: String, action: @escaping () -> Void) -> GWidg
     gStyle(button, "g-close")
     gPointer(button)
     gtk_widget_set_tooltip_text(button, tooltip)
+    gAccessibleLabel(button, tooltip)
     gtk_widget_set_valign(button, GTK_ALIGN_CENTER)
     gConnect(UnsafeMutableRawPointer(button), "clicked", action)
     return button
@@ -39,6 +40,7 @@ public func gSwitchRow(_ title: String, detail: String? = nil, isOn: Bool, onCha
     gPointer(toggle)
     gtk_switch_set_active(cast(toggle), isOn ? 1 : 0)
     gtk_widget_set_valign(toggle, GTK_ALIGN_CENTER)
+    gAccessibleLabel(toggle, title)
     gConnect(UnsafeMutableRawPointer(toggle), "notify::active") { onChange(gtk_switch_get_active(cast(toggle)) != 0) }
     var texts = [gLabel(title)]
     if let detail { texts.append(gLabel(detail, style: "caption", classes: ["g-text-discret"], wraps: true)) }
@@ -102,6 +104,7 @@ public func gPicker(_ title: String, detail: String? = nil, options: [String], s
     gtk_widget_set_hexpand(column, 1)
     gtk_widget_set_valign(column, GTK_ALIGN_CENTER)
     let control = style == .menu ? gMenu(options, selected: selected, onChange: onChange) : gChips(options, selected: selected, onChange: onChange)
+    gAccessibleLabel(control, title)
     return gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 12, [column, control])
 }
 

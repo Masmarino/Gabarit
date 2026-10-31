@@ -117,6 +117,21 @@ public func gPointer(_ widget: GWidget) -> GWidget {
     return widget
 }
 
+/// The name screen readers say for a widget with no text of its own (an icon, a switch beside its title).
+@MainActor
+@discardableResult
+public func gAccessibleLabel(_ widget: GWidget, _ label: String) -> GWidget {
+    var value = GValue()
+    g_value_init(&value, GType(16 << 2))
+    g_value_set_string(&value, label)
+    var property = GTK_ACCESSIBLE_PROPERTY_LABEL
+    withUnsafePointer(to: &value) { values in
+        gtk_accessible_update_property_value(OpaquePointer(widget), 1, &property, values)
+    }
+    g_value_unset(&value)
+    return widget
+}
+
 /// A label in one of Gabarit's text styles (`body`, `headline`, `title2`…), aligned to the leading edge.
 @MainActor
 public func gLabel(_ text: String, style: String = "body", classes: [String] = [], wraps: Bool = false) -> GWidget {

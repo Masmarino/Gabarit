@@ -114,6 +114,7 @@ public struct GCommandPalette: View {
                 .submitLabel(.go)
                 #endif
                 .onSubmit(runActive)
+                .accessibilityLabel(gText("Quick search"))
             Text(gText("Esc")).font(GFont.mono).foregroundStyle(GColor.textDiscret)
                 .onTapGesture(perform: close)
                 .accessibilityHidden(true)

@@ -172,6 +172,8 @@
         <Setter Property="FontSize" Value="10"/>
         <Setter Property="Content" Value="&#xE8BB;"/>
         <Setter Property="FontFamily" Value="Segoe Fluent Icons"/>
+        <!-- The cross is a glyph: its name for screen readers (an app in French sets "Fermer" on its button). -->
+        <Setter Property="AutomationProperties.Name" Value="Close"/>
     </Style>
 
     <!-- The same cross on the dark frame (a window's header). -->

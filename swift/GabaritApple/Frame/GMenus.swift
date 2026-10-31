@@ -24,18 +24,22 @@ public struct GMenuItem: View {
         }
         .buttonStyle(.plain)
         .gDimmedWhenDisabled()
+        .accessibilityAddTraits(checked == true ? .isSelected : [])
     }
 
     private var row: some View {
         HStack(spacing: 10) {
-            Image(systemName: systemImage).font(GFont.subheadline).frame(width: 20)
+            Image(systemName: systemImage).font(GFont.subheadline).frame(width: 20).accessibilityHidden(true)
             Text(title).font(GFont.body)
             Spacer(minLength: 12)
             if let checked {
-                Image(systemName: checked ? "checkmark" : "")
+                // Always drawn, hidden when unticked: the lines keep the same width (and no empty symbol is asked for).
+                Image(systemName: "checkmark")
                     .font(GFont.subheadline.weight(.semibold))
                     .foregroundStyle(GColor.accent)
                     .frame(width: 16)
+                    .opacity(checked ? 1 : 0)
+                    .accessibilityHidden(true)
             }
         }
         .foregroundStyle(role == .destructive ? GTone.error.base : GColor.textPrimary)

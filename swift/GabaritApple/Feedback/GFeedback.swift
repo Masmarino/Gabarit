@@ -189,6 +189,8 @@ public final class GToastCenter {
     public func show(_ text: String, systemImage: String, for duration: Duration = .seconds(2.5)) {
         dismissal?.cancel()
         current = GToast(text, systemImage: systemImage)
+        // Said by screen readers too, as soon as it shows.
+        AccessibilityNotification.Announcement(text).post()
         dismissal = Task { [weak self] in
             try? await Task.sleep(for: duration)
             guard !Task.isCancelled else { return }
