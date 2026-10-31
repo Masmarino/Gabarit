@@ -251,6 +251,38 @@ def xaml_color(value: str) -> str:
     return f"#{round(opacity * 255):02X}{hexa}"
 
 
+# WinUI's control resources and the role (or "role/opacity", or a CSS colour) each one takes.
+WINUI_CONTROLS = {
+    "ToggleSwitchFillOn": "accent", "ToggleSwitchFillOnPointerOver": "accent", "ToggleSwitchFillOnPressed": "accent",
+    "ToggleSwitchFillOff": "track", "ToggleSwitchFillOffPointerOver": "track", "ToggleSwitchStrokeOff": "border/0.35",
+    "ToggleSwitchStrokeOffPointerOver": "border/0.35", "ToggleSwitchKnobFillOn": "#FFFFFF", "ToggleSwitchKnobFillOff": "#FFFFFF",
+    "ToggleSwitchKnobFillOnPointerOver": "#FFFFFF", "ToggleSwitchKnobFillOffPointerOver": "#FFFFFF",
+    "TextControlBackground": "background", "TextControlBackgroundPointerOver": "background",
+    "TextControlBackgroundFocused": "background", "TextControlBorderBrush": "hairline",
+    "TextControlBorderBrushPointerOver": "hairline", "TextControlBorderBrushFocused": "accent",
+    "TextControlForeground": "textPrimary", "TextControlForegroundFocused": "textPrimary",
+    "TextControlPlaceholderForeground": "textDiscret", "TextControlPlaceholderForegroundFocused": "textDiscret",
+    "ComboBoxBackground": "background", "ComboBoxBackgroundPointerOver": "hover", "ComboBoxBorderBrush": "hairline",
+    "ComboBoxBorderBrushPointerOver": "accent", "ComboBoxForeground": "textPrimary", "ComboBoxDropDownBackground": "surface",
+    "ComboBoxDropDownBorderBrush": "hairline", "SliderTrackFill": "track", "SliderTrackValueFill": "accent",
+    "SliderTrackValueFillPointerOver": "accent", "SliderThumbBackground": "#FFFFFF", "SliderThumbBackgroundPointerOver": "#FFFFFF",
+    "ListViewItemBackgroundPointerOver": "hover", "ListViewItemBackgroundSelected": "accent/0.12",
+    "ListViewItemBackgroundSelectedPointerOver": "accent/0.16", "ListViewItemForegroundSelected": "accentText",
+}
+
+
+def winui_value(value: str, theme: str) -> str:
+    """A role of the apps' set (light or dark), with an opacity, or a colour as it is."""
+    if value.startswith("#"):
+        return value
+    role, _, alpha = value.partition("/")
+    base = APPS[role][theme]
+    if not alpha:
+        return base
+    hexa, opacity, name = resolve(base)
+    return f"{name or '#' + hexa}/{float(alpha) * opacity}"
+
+
 def winui() -> str:
     lines = ['<?xml version="1.0" encoding="utf-8"?>', f"<!-- {HEADER} -->",
              '<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"',
@@ -261,8 +293,16 @@ def winui() -> str:
         for name, v in APPS.items():
             lines.append(f'            <Color x:Key="G{camel(name)}Color">{xaml_color(v[key])}</Color>')
             lines.append(f'            <SolidColorBrush x:Key="G{camel(name)}Brush" Color="{xaml_color(v[key])}"/>')
+        lines.append("            <!-- WinUI's own controls in Gabarit's colours (lightweight styling): no template redrawn. -->")
+        for control_key, value in WINUI_CONTROLS.items():
+            colour = xaml_color(winui_value(value, key))
+            lines.append(f'            <SolidColorBrush x:Key="{control_key}" Color="{colour}"/>')
+        lines.append(f'            <Color x:Key="SystemAccentColor">{xaml_color(APPS["accent"][key])}</Color>')
         lines.append("        </ResourceDictionary>")
     lines.append("    </ResourceDictionary.ThemeDictionaries>")
+    lines += ['    <CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>',
+              '    <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>',
+              f'    <FontFamily x:Key="ContentControlThemeFontFamily">/Fonts/{TOKENS["families"]["text"]["files"]["regular"]}#{TOKENS["families"]["text"]["name"]}</FontFamily>']
     lines += [f'    <Color x:Key="GPalette{camel(name)}">{xaml_color(name)}</Color>' for name in PALETTE]
     for name, value in TOKENS["radius"].items():
         lines.append(f'    <x:Double x:Key="GRadius{camel(name)}">{value}</x:Double>')

@@ -35,10 +35,11 @@ jobs:
     container: swift:6.4.1-noble
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - run: apt-get update && apt-get install -y --no-install-recommends python3 libgtk-4-dev
+      - run: apt-get update && apt-get install -y --no-install-recommends python3 libgtk-4-dev libxml2-utils
       - run: python3 tools/tokens.py --check
       - run: swift test
       - run: swift build --product GabaritGtk
+      - run: xmllint --noout swift/GabaritWinUI/Resources/*.xaml
 
   audit:
     name: npm audit

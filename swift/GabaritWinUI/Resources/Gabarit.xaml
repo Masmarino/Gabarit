@@ -44,6 +44,45 @@
             <SolidColorBrush x:Key="GInfoBrush" Color="#FF2F49C9"/>
             <Color x:Key="GFrameColor">#FF0B0F14</Color>
             <SolidColorBrush x:Key="GFrameBrush" Color="#FF0B0F14"/>
+            <!-- WinUI's own controls in Gabarit's colours (lightweight styling): no template redrawn. -->
+            <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#FFC2410C"/>
+            <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#FFC2410C"/>
+            <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="#FFC2410C"/>
+            <SolidColorBrush x:Key="ToggleSwitchFillOff" Color="#FFDCE2E9"/>
+            <SolidColorBrush x:Key="ToggleSwitchFillOffPointerOver" Color="#FFDCE2E9"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#597D8794"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#597D8794"/>
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOn" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOff" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPointerOver" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPointerOver" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="TextControlBackground" Color="#FFEFF2F5"/>
+            <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#FFEFF2F5"/>
+            <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#FFEFF2F5"/>
+            <SolidColorBrush x:Key="TextControlBorderBrush" Color="#FFCFD5DC"/>
+            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#FFCFD5DC"/>
+            <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#FFC2410C"/>
+            <SolidColorBrush x:Key="TextControlForeground" Color="#FF10151C"/>
+            <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FF10151C"/>
+            <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF4A525F"/>
+            <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#FF4A525F"/>
+            <SolidColorBrush x:Key="ComboBoxBackground" Color="#FFEFF2F5"/>
+            <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#1210151C"/>
+            <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#FFCFD5DC"/>
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#FFC2410C"/>
+            <SolidColorBrush x:Key="ComboBoxForeground" Color="#FF10151C"/>
+            <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#FFCFD5DC"/>
+            <SolidColorBrush x:Key="SliderTrackFill" Color="#FFDCE2E9"/>
+            <SolidColorBrush x:Key="SliderTrackValueFill" Color="#FFC2410C"/>
+            <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="#FFC2410C"/>
+            <SolidColorBrush x:Key="SliderThumbBackground" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#1210151C"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#1FC2410C"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#29C2410C"/>
+            <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="#FFA8360A"/>
+            <Color x:Key="SystemAccentColor">#FFC2410C</Color>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
             <Color x:Key="GBackgroundColor">#FF11161C</Color>
@@ -86,8 +125,50 @@
             <SolidColorBrush x:Key="GInfoBrush" Color="#FF8B9BFF"/>
             <Color x:Key="GFrameColor">#FF0B0F14</Color>
             <SolidColorBrush x:Key="GFrameBrush" Color="#FF0B0F14"/>
+            <!-- WinUI's own controls in Gabarit's colours (lightweight styling): no template redrawn. -->
+            <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#FFF0622A"/>
+            <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#FFF0622A"/>
+            <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="#FFF0622A"/>
+            <SolidColorBrush x:Key="ToggleSwitchFillOff" Color="#FF28323D"/>
+            <SolidColorBrush x:Key="ToggleSwitchFillOffPointerOver" Color="#FF28323D"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#59646C77"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#59646C77"/>
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOn" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOff" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPointerOver" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPointerOver" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="TextControlBackground" Color="#FF11161C"/>
+            <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#FF11161C"/>
+            <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#FF11161C"/>
+            <SolidColorBrush x:Key="TextControlBorderBrush" Color="#1FCDD7E6"/>
+            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#1FCDD7E6"/>
+            <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#FFF0622A"/>
+            <SolidColorBrush x:Key="TextControlForeground" Color="#FFE7EBF1"/>
+            <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FFE7EBF1"/>
+            <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FFA1A9B5"/>
+            <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#FFA1A9B5"/>
+            <SolidColorBrush x:Key="ComboBoxBackground" Color="#FF11161C"/>
+            <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#12E7EBF1"/>
+            <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#1FCDD7E6"/>
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#FFF0622A"/>
+            <SolidColorBrush x:Key="ComboBoxForeground" Color="#FFE7EBF1"/>
+            <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#FF181F27"/>
+            <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#1FCDD7E6"/>
+            <SolidColorBrush x:Key="SliderTrackFill" Color="#FF28323D"/>
+            <SolidColorBrush x:Key="SliderTrackValueFill" Color="#FFF0622A"/>
+            <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="#FFF0622A"/>
+            <SolidColorBrush x:Key="SliderThumbBackground" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#12E7EBF1"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#1FF0622A"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#29F0622A"/>
+            <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="#FFFF9469"/>
+            <Color x:Key="SystemAccentColor">#FFF0622A</Color>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
+    <CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>
+    <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
+    <FontFamily x:Key="ContentControlThemeFontFamily">/Fonts/IBMPlexSans-Regular.ttf#IBM Plex Sans</FontFamily>
     <Color x:Key="GPaletteSlate0">#FFFFFFFF</Color>
     <Color x:Key="GPaletteSlate50">#FFEFF2F5</Color>
     <Color x:Key="GPaletteSlate100">#FFE4E8ED</Color>

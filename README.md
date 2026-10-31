@@ -556,6 +556,10 @@ The quick search (⌘K): `gCommandPalette(isPresented:prompt:groups:)`, `GComman
 buttons) and `gAppShell` (the main window: the band, the rail, the page under a rounded corner). Its gallery:
 `galerie/gtk/capture.sh <folder>` builds and captures it in the SkollN Linux workshop (Podman).
 
+`GabaritWinUI` (Windows) is a set of XAML resources for WinUI 3 (Swift or C#): `Gabarit.xaml`, generated (the
+colours, light and dark, and WinUI's own controls in Gabarit's colours), and `Controls.xaml` (the buttons, the close
+cross, the windows' dark header, the rail, cards). See `swift/GabaritWinUI/README.md`; not yet tried on Windows.
+
 The gallery draws every component, light and dark, to PNG files, to compare a pre-release with the previous
 one: `cd galerie/apple && swift run GabaritGallery <folder>`.
 
