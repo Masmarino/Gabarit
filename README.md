@@ -577,7 +577,7 @@ to compare side by side: `galerie/gtk/capture.sh <folder>` builds it in a Linux 
 `GabaritWinUI` (Windows) is a set of XAML resources for WinUI 3 (Swift or C#): `Gabarit.xaml`, generated (the
 colours, light and dark, and WinUI's own controls in Gabarit's colours), and `Controls.xaml` (the buttons, the close
 cross, the windows' dark header, the rail, cards), with `Icons.xaml`, generated: Phosphor's fonts and each SF name's
-character (`GIcon.bell`; `GSymbols.glyph(for:)` in Swift). See `swift/GabaritWinUI/README.md`; not yet tried on
+character (`GIcon_bell`; `GSymbols.glyph(for:)` in Swift). See `swift/GabaritWinUI/README.md`; not yet tried on
 Windows.
 
 The gallery draws every component, light and dark, to PNG files at twice their size, to compare a pre-release with the

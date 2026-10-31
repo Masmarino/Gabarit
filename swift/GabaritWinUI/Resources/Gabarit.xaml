@@ -64,45 +64,73 @@
             <SolidColorBrush x:Key="GSelectedFillBrush" Color="#1AC2410C"/>
             <Color x:Key="GRowHoverColor">#0910151C</Color>
             <SolidColorBrush x:Key="GRowHoverBrush" Color="#0910151C"/>
+            <SolidColorBrush x:Key="GBorderSoftBrush" Color="#997D8794"/>
+            <SolidColorBrush x:Key="GBorderStrongBrush" Color="#CC7D8794"/>
+            <SolidColorBrush x:Key="GPrimaryPressedBrush" Color="#FF53585E"/>
+            <SolidColorBrush x:Key="GErrorHoverBrush" Color="#FFC64C46"/>
+            <SolidColorBrush x:Key="GErrorPressedBrush" Color="#FFCB5F59"/>
             <!-- WinUI's own controls in Gabarit's colours (lightweight styling): no template redrawn. -->
             <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#FFC2410C"/>
             <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#FFC2410C"/>
             <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="#FFC2410C"/>
             <SolidColorBrush x:Key="ToggleSwitchFillOff" Color="#FFDCE2E9"/>
             <SolidColorBrush x:Key="ToggleSwitchFillOffPointerOver" Color="#FFDCE2E9"/>
-            <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#597D8794"/>
-            <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#597D8794"/>
+            <SolidColorBrush x:Key="ToggleSwitchFillOffPressed" Color="#FFDCE2E9"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#FF7D8794"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#FF7D8794"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOffPressed" Color="#FF7D8794"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOn" Color="#FFC2410C"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOnPointerOver" Color="#FFC2410C"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOnPressed" Color="#FFC2410C"/>
             <SolidColorBrush x:Key="ToggleSwitchKnobFillOn" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="ToggleSwitchKnobFillOff" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPointerOver" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPointerOver" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPressed" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPressed" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="TextControlBackground" Color="#FFEFF2F5"/>
             <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#FFEFF2F5"/>
             <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#FFEFF2F5"/>
-            <SolidColorBrush x:Key="TextControlBorderBrush" Color="#FFCFD5DC"/>
-            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#FFCFD5DC"/>
+            <SolidColorBrush x:Key="TextControlBorderBrush" Color="#FF7D8794"/>
+            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#FF7D8794"/>
             <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#FFC2410C"/>
+            <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="#FFCFD5DC"/>
             <SolidColorBrush x:Key="TextControlForeground" Color="#FF10151C"/>
             <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FF10151C"/>
             <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FF4A525F"/>
             <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#FF4A525F"/>
             <SolidColorBrush x:Key="ComboBoxBackground" Color="#FFEFF2F5"/>
             <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#1210151C"/>
-            <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#FFCFD5DC"/>
+            <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#FFDCE2E9"/>
+            <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#FF7D8794"/>
             <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#FFC2410C"/>
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#FFC2410C"/>
             <SolidColorBrush x:Key="ComboBoxForeground" Color="#FF10151C"/>
             <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#FFCFD5DC"/>
             <SolidColorBrush x:Key="SliderTrackFill" Color="#FFDCE2E9"/>
+            <SolidColorBrush x:Key="SliderTrackFillPointerOver" Color="#FFDCE2E9"/>
+            <SolidColorBrush x:Key="SliderTrackFillPressed" Color="#FFDCE2E9"/>
             <SolidColorBrush x:Key="SliderTrackValueFill" Color="#FFC2410C"/>
             <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="#FFC2410C"/>
+            <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="#FFC2410C"/>
+            <SolidColorBrush x:Key="SliderOuterThumbBackground" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="SliderThumbBackground" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="SliderThumbBackgroundPressed" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#0910151C"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundPressed" Color="#1210151C"/>
             <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#1AC2410C"/>
             <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#1AC2410C"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed" Color="#1AC2410C"/>
             <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="#FFA8360A"/>
             <Color x:Key="SystemAccentColor">#FFC2410C</Color>
+            <Color x:Key="SystemAccentColorLight1">#FFF0622A</Color>
+            <Color x:Key="SystemAccentColorLight2">#FFFF9469</Color>
+            <Color x:Key="SystemAccentColorLight3">#FFFF9469</Color>
+            <Color x:Key="SystemAccentColorDark1">#FFC2410C</Color>
+            <Color x:Key="SystemAccentColorDark2">#FFA8360A</Color>
+            <Color x:Key="SystemAccentColorDark3">#FFA8360A</Color>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
             <Color x:Key="GBackgroundColor">#FF11161C</Color>
@@ -165,45 +193,140 @@
             <SolidColorBrush x:Key="GSelectedFillBrush" Color="#29F0622A"/>
             <Color x:Key="GRowHoverColor">#0BE7EBF1</Color>
             <SolidColorBrush x:Key="GRowHoverBrush" Color="#0BE7EBF1"/>
+            <SolidColorBrush x:Key="GBorderSoftBrush" Color="#99646C77"/>
+            <SolidColorBrush x:Key="GBorderStrongBrush" Color="#CC646C77"/>
+            <SolidColorBrush x:Key="GPrimaryPressedBrush" Color="#FFA6ABB1"/>
+            <SolidColorBrush x:Key="GErrorHoverBrush" Color="#FFDC7A73"/>
+            <SolidColorBrush x:Key="GErrorPressedBrush" Color="#FFC56F6A"/>
             <!-- WinUI's own controls in Gabarit's colours (lightweight styling): no template redrawn. -->
             <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#FFF0622A"/>
             <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#FFF0622A"/>
             <SolidColorBrush x:Key="ToggleSwitchFillOnPressed" Color="#FFF0622A"/>
             <SolidColorBrush x:Key="ToggleSwitchFillOff" Color="#FF28323D"/>
             <SolidColorBrush x:Key="ToggleSwitchFillOffPointerOver" Color="#FF28323D"/>
-            <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#59646C77"/>
-            <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#59646C77"/>
+            <SolidColorBrush x:Key="ToggleSwitchFillOffPressed" Color="#FF28323D"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#FF646C77"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#FF646C77"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOffPressed" Color="#FF646C77"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOn" Color="#FFF0622A"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOnPointerOver" Color="#FFF0622A"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOnPressed" Color="#FFF0622A"/>
             <SolidColorBrush x:Key="ToggleSwitchKnobFillOn" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="ToggleSwitchKnobFillOff" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPointerOver" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPointerOver" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPressed" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPressed" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="TextControlBackground" Color="#FF11161C"/>
             <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#FF11161C"/>
             <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#FF11161C"/>
-            <SolidColorBrush x:Key="TextControlBorderBrush" Color="#1FCDD7E6"/>
-            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#1FCDD7E6"/>
+            <SolidColorBrush x:Key="TextControlBorderBrush" Color="#FF646C77"/>
+            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#FF646C77"/>
             <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#FFF0622A"/>
+            <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="#1FCDD7E6"/>
             <SolidColorBrush x:Key="TextControlForeground" Color="#FFE7EBF1"/>
             <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#FFE7EBF1"/>
             <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#FFA1A9B5"/>
             <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#FFA1A9B5"/>
             <SolidColorBrush x:Key="ComboBoxBackground" Color="#FF11161C"/>
             <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#12E7EBF1"/>
-            <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#1FCDD7E6"/>
+            <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#FF28323D"/>
+            <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#FF646C77"/>
             <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#FFF0622A"/>
+            <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#FFF0622A"/>
             <SolidColorBrush x:Key="ComboBoxForeground" Color="#FFE7EBF1"/>
             <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#FF181F27"/>
             <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#1FCDD7E6"/>
             <SolidColorBrush x:Key="SliderTrackFill" Color="#FF28323D"/>
+            <SolidColorBrush x:Key="SliderTrackFillPointerOver" Color="#FF28323D"/>
+            <SolidColorBrush x:Key="SliderTrackFillPressed" Color="#FF28323D"/>
             <SolidColorBrush x:Key="SliderTrackValueFill" Color="#FFF0622A"/>
             <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="#FFF0622A"/>
+            <SolidColorBrush x:Key="SliderTrackValueFillPressed" Color="#FFF0622A"/>
+            <SolidColorBrush x:Key="SliderOuterThumbBackground" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="SliderThumbBackground" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="SliderThumbBackgroundPressed" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#0BE7EBF1"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundPressed" Color="#12E7EBF1"/>
             <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#29F0622A"/>
             <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#29F0622A"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed" Color="#29F0622A"/>
             <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="#FFFF9469"/>
             <Color x:Key="SystemAccentColor">#FFF0622A</Color>
+            <Color x:Key="SystemAccentColorLight1">#FFF0622A</Color>
+            <Color x:Key="SystemAccentColorLight2">#FFFF9469</Color>
+            <Color x:Key="SystemAccentColorLight3">#FFFF9469</Color>
+            <Color x:Key="SystemAccentColorDark1">#FFC2410C</Color>
+            <Color x:Key="SystemAccentColorDark2">#FFA8360A</Color>
+            <Color x:Key="SystemAccentColorDark3">#FFA8360A</Color>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <StaticResource x:Key="GBackgroundColor" ResourceKey="SystemColorWindowColor"/>
+            <SolidColorBrush x:Key="GBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <StaticResource x:Key="GSurfaceColor" ResourceKey="SystemColorWindowColor"/>
+            <SolidColorBrush x:Key="GSurfaceBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <StaticResource x:Key="GSidebarColor" ResourceKey="SystemColorWindowColor"/>
+            <SolidColorBrush x:Key="GSidebarBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <StaticResource x:Key="GHoverColor" ResourceKey="SystemColorWindowColor"/>
+            <SolidColorBrush x:Key="GHoverBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <StaticResource x:Key="GTrackColor" ResourceKey="SystemColorGrayTextColor"/>
+            <SolidColorBrush x:Key="GTrackBrush" Color="{ThemeResource SystemColorGrayTextColor}"/>
+            <StaticResource x:Key="GBorderColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GHairlineColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GHairlineBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GTextPrimaryColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GTextPrimaryBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GTextSecondaryColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GTextSecondaryBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GTextDiscretColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GTextDiscretBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GPrimaryColor" ResourceKey="SystemColorButtonTextColor"/>
+            <SolidColorBrush x:Key="GPrimaryBrush" Color="{ThemeResource SystemColorButtonTextColor}"/>
+            <StaticResource x:Key="GPrimaryHoverColor" ResourceKey="SystemColorHighlightColor"/>
+            <SolidColorBrush x:Key="GPrimaryHoverBrush" Color="{ThemeResource SystemColorHighlightColor}"/>
+            <StaticResource x:Key="GOnPrimaryColor" ResourceKey="SystemColorButtonFaceColor"/>
+            <SolidColorBrush x:Key="GOnPrimaryBrush" Color="{ThemeResource SystemColorButtonFaceColor}"/>
+            <StaticResource x:Key="GAccentColor" ResourceKey="SystemColorHighlightColor"/>
+            <SolidColorBrush x:Key="GAccentBrush" Color="{ThemeResource SystemColorHighlightColor}"/>
+            <StaticResource x:Key="GAccentTextColor" ResourceKey="SystemColorHotlightColor"/>
+            <SolidColorBrush x:Key="GAccentTextBrush" Color="{ThemeResource SystemColorHotlightColor}"/>
+            <StaticResource x:Key="GSuccessColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GSuccessBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GWarningColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GWarningBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GErrorColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GErrorBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GInfoColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GInfoBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GFrameColor" ResourceKey="SystemColorWindowColor"/>
+            <SolidColorBrush x:Key="GFrameBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <StaticResource x:Key="GSuccessOnTintColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GSuccessOnTintBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GWarningOnTintColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GWarningOnTintBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GErrorOnTintColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GErrorOnTintBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GInfoOnTintColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GInfoOnTintBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GSuccessTextColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GSuccessTextBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GWarningTextColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GWarningTextBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GErrorTextColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GErrorTextBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GInfoTextColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GInfoTextBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GSelectedFillColor" ResourceKey="SystemColorHighlightColor"/>
+            <SolidColorBrush x:Key="GSelectedFillBrush" Color="{ThemeResource SystemColorHighlightColor}"/>
+            <StaticResource x:Key="GRowHoverColor" ResourceKey="SystemColorWindowColor"/>
+            <SolidColorBrush x:Key="GRowHoverBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="GBorderSoftBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <SolidColorBrush x:Key="GBorderStrongBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <SolidColorBrush x:Key="GPrimaryPressedBrush" Color="{ThemeResource SystemColorHighlightColor}"/>
+            <SolidColorBrush x:Key="GErrorHoverBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <SolidColorBrush x:Key="GErrorPressedBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     <CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>
@@ -256,6 +379,63 @@
     <Color x:Key="GPaletteIndigo600">#FF2F49C9</Color>
     <Color x:Key="GPaletteIndigo800">#FF283DA8</Color>
     <Color x:Key="GPaletteCyan400">#FF3BD6FF</Color>
+    <SolidColorBrush x:Key="GPaletteSlate0Brush" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="GPaletteSlate50Brush" Color="#FFEFF2F5"/>
+    <SolidColorBrush x:Key="GPaletteSlate100Brush" Color="#FFE4E8ED"/>
+    <SolidColorBrush x:Key="GPaletteSlate200Brush" Color="#FFDCE2E9"/>
+    <SolidColorBrush x:Key="GPaletteSlate300Brush" Color="#FFCFD5DC"/>
+    <SolidColorBrush x:Key="GPaletteSlate400Brush" Color="#FFA9B3C0"/>
+    <SolidColorBrush x:Key="GPaletteSlate500Brush" Color="#FF7D8794"/>
+    <SolidColorBrush x:Key="GPaletteSlate600Brush" Color="#FF4A525F"/>
+    <SolidColorBrush x:Key="GPaletteSlate700Brush" Color="#FF404954"/>
+    <SolidColorBrush x:Key="GPaletteSlate900Brush" Color="#FF10151C"/>
+    <SolidColorBrush x:Key="GPaletteGraphite1000Brush" Color="#FF0C1015"/>
+    <SolidColorBrush x:Key="GPaletteGraphite950Brush" Color="#FF0B0F14"/>
+    <SolidColorBrush x:Key="GPaletteGraphite900Brush" Color="#FF11161C"/>
+    <SolidColorBrush x:Key="GPaletteGraphite850Brush" Color="#FF181F27"/>
+    <SolidColorBrush x:Key="GPaletteGraphite800Brush" Color="#FF1F2730"/>
+    <SolidColorBrush x:Key="GPaletteGraphite700Brush" Color="#FF28323D"/>
+    <SolidColorBrush x:Key="GPaletteGraphite500Brush" Color="#FF646C77"/>
+    <SolidColorBrush x:Key="GPaletteGraphite400Brush" Color="#FFA1A9B5"/>
+    <SolidColorBrush x:Key="GPaletteGraphite300Brush" Color="#FFB8BFCA"/>
+    <SolidColorBrush x:Key="GPaletteGraphite200Brush" Color="#FFCDD3DB"/>
+    <SolidColorBrush x:Key="GPaletteGraphite100Brush" Color="#FFE7EBF1"/>
+    <SolidColorBrush x:Key="GPaletteRust300Brush" Color="#FFFF9469"/>
+    <SolidColorBrush x:Key="GPaletteRust400Brush" Color="#FFF0622A"/>
+    <SolidColorBrush x:Key="GPaletteRust500Brush" Color="#FFC2410C"/>
+    <SolidColorBrush x:Key="GPaletteRust600Brush" Color="#FFA8360A"/>
+    <SolidColorBrush x:Key="GPalettePatina300Brush" Color="#FF7ED4B8"/>
+    <SolidColorBrush x:Key="GPalettePatina400Brush" Color="#FF3FBF95"/>
+    <SolidColorBrush x:Key="GPalettePatina600Brush" Color="#FF15805D"/>
+    <SolidColorBrush x:Key="GPalettePatina700Brush" Color="#FF0D5D43"/>
+    <SolidColorBrush x:Key="GPalettePatina800Brush" Color="#FF0C523B"/>
+    <SolidColorBrush x:Key="GPaletteAmber300Brush" Color="#FFF6B649"/>
+    <SolidColorBrush x:Key="GPaletteAmber400Brush" Color="#FFF5B13D"/>
+    <SolidColorBrush x:Key="GPaletteAmber600Brush" Color="#FF9A5B04"/>
+    <SolidColorBrush x:Key="GPaletteAmber700Brush" Color="#FF774603"/>
+    <SolidColorBrush x:Key="GPaletteAmber800Brush" Color="#FF6A3E03"/>
+    <SolidColorBrush x:Key="GPaletteRed200Brush" Color="#FFF7AEAA"/>
+    <SolidColorBrush x:Key="GPaletteRed300Brush" Color="#FFF38C85"/>
+    <SolidColorBrush x:Key="GPaletteRed400Brush" Color="#FFF2857D"/>
+    <SolidColorBrush x:Key="GPaletteRed600Brush" Color="#FFC23A32"/>
+    <SolidColorBrush x:Key="GPaletteRed700Brush" Color="#FFA1302A"/>
+    <SolidColorBrush x:Key="GPaletteRed750Brush" Color="#FF942C26"/>
+    <SolidColorBrush x:Key="GPaletteRed800Brush" Color="#FF842822"/>
+    <SolidColorBrush x:Key="GPaletteIndigo200Brush" Color="#FFB3BEFF"/>
+    <SolidColorBrush x:Key="GPaletteIndigo400Brush" Color="#FF8B9BFF"/>
+    <SolidColorBrush x:Key="GPaletteIndigo600Brush" Color="#FF2F49C9"/>
+    <SolidColorBrush x:Key="GPaletteIndigo800Brush" Color="#FF283DA8"/>
+    <SolidColorBrush x:Key="GPaletteCyan400Brush" Color="#FF3BD6FF"/>
+    <!-- The frame: dark in both themes. -->
+    <SolidColorBrush x:Key="GFrameBrush" Color="#FF0B0F14"/>
+    <SolidColorBrush x:Key="GOnFrameBrush" Color="#FFE7EBF1"/>
+    <SolidColorBrush x:Key="GOnFrameSecondaryBrush" Color="#FFB8BFCA"/>
+    <SolidColorBrush x:Key="GOnFrameDiscretBrush" Color="#FFA1A9B5"/>
+    <SolidColorBrush x:Key="GFrameLineBrush" Color="#B228323D"/>
+    <SolidColorBrush x:Key="GFrameRimBrush" Color="#FF28323D"/>
+    <SolidColorBrush x:Key="GFrameHoverBrush" Color="#0DE7EBF1"/>
+    <SolidColorBrush x:Key="GFrameSelectedBrush" Color="#17E7EBF1"/>
+    <SolidColorBrush x:Key="GFrameCloseHoverBrush" Color="#1FE7EBF1"/>
     <x:Double x:Key="GRadiusXs">4</x:Double>
     <CornerRadius x:Key="GCornerRadiusXs">4</CornerRadius>
     <x:Double x:Key="GRadiusSm">6</x:Double>
@@ -285,8 +465,12 @@
     <x:Double x:Key="GSpacingXxxxxl">96</x:Double>
     <x:Double x:Key="GOpacityDisabled">0.45</x:Double>
     <FontFamily x:Key="GFontText">ms-appx:///Gabarit/Fonts/IBMPlexSans-Regular.ttf#IBM Plex Sans</FontFamily>
+    <FontFamily x:Key="GFontTextMedium">ms-appx:///Gabarit/Fonts/IBMPlexSans-Medium.ttf#IBM Plex Sans</FontFamily>
+    <FontFamily x:Key="GFontTextSemibold">ms-appx:///Gabarit/Fonts/IBMPlexSans-SemiBold.ttf#IBM Plex Sans</FontFamily>
+    <FontFamily x:Key="GFontTextItalic">ms-appx:///Gabarit/Fonts/IBMPlexSans-Italic.ttf#IBM Plex Sans</FontFamily>
     <FontFamily x:Key="GFontDisplay">ms-appx:///Gabarit/Fonts/IBMPlexSansCondensed-SemiBold.ttf#IBM Plex Sans Condensed</FontFamily>
     <FontFamily x:Key="GFontMono">ms-appx:///Gabarit/Fonts/IBMPlexMono-Regular.ttf#IBM Plex Mono</FontFamily>
+    <FontFamily x:Key="GFontMonoMedium">ms-appx:///Gabarit/Fonts/IBMPlexMono-Medium.ttf#IBM Plex Mono</FontFamily>
     <Style x:Key="GTextLargeTitle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource GFontDisplay}"/>
         <Setter Property="FontSize" Value="26"/>
@@ -308,7 +492,7 @@
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
     <Style x:Key="GTextHeadline" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{StaticResource GFontText}"/>
+        <Setter Property="FontFamily" Value="{StaticResource GFontTextSemibold}"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>

@@ -36,7 +36,9 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - run: apt-get update && apt-get install -y --no-install-recommends python3 libgtk-4-dev libxml2-utils
+      - run: python3 -m py_compile tools/*.py
       - run: python3 tools/tokens.py --check
+      - run: python3 tools/xaml_check.py
       - run: swift test
       - run: swift build --product GabaritGtk
       - run: swift build
