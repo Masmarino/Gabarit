@@ -40,3 +40,20 @@ struct GTokensTests {
         return (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
     }
 }
+
+struct GCommandSearchTests {
+    private let entries = [GCommandSearch.Entry(id: "1", label: "Réglages"), GCommandSearch.Entry(id: "2", label: "Messages", keywords: ["conversations"]),
+                           GCommandSearch.Entry(id: "3", label: "Nouvelle conversation")]
+
+    @Test func ignoresCaseAndAccents() {
+        #expect(GCommandSearch.filter(entries, query: "reglages").map(\.id) == ["1"])
+    }
+
+    @Test func labelsStartingWithTheQueryComeFirst() {
+        #expect(GCommandSearch.filter(entries, query: "conv").map(\.id) == ["3", "2"])
+    }
+
+    @Test func anEmptyQueryKeepsTheOrder() {
+        #expect(GCommandSearch.filter(entries, query: " ", limit: 2).map(\.id) == ["1", "2"])
+    }
+}

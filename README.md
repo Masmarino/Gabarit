@@ -541,6 +541,13 @@ The sheets: `gSheet(symbol:title:summary:…)` (the title large in the sheet, Ga
 an application's own (a colour theme's gradient) set once per window in `gGround`; `gGroundPainted` tells
 that a ground is already painted above.
 
+The windows (Mac): `GWindow` (a secondary window without macOS's decoration, Gabarit's dark header and its cross),
+`GAppShell` (the main window's layout: the dark rail, the top band, the page under a rounded corner), `GRailButton`,
+`GRailSquareButton`, and `GWindows.main(…)`, which makes the main window with AppKit.
+
+The quick search (⌘K): `gCommandPalette(isPresented:prompt:groups:)`, `GCommandPalette`, `GCommandItem`,
+`GCommandGroup`, `GCommandKButton`; its matching, `GCommandSearch`, is in `GabaritCommon` for every platform.
+
 The gallery draws every component, light and dark, to PNG files, to compare a pre-release with the previous
 one: `cd galerie/apple && swift run GabaritGallery <folder>`.
 

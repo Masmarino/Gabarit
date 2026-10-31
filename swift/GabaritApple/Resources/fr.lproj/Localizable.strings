@@ -13,3 +13,10 @@
 "OK" = "OK";
 /* A sheet's default closing button. */
 "Cancel" = "Annuler";
+/* The quick search (⌘K). */
+"Search" = "Rechercher";
+"Quick search" = "Recherche rapide";
+"Quick search (⌘ + K)" = "Recherche rapide (⌘ + K)";
+"Shortcut: Command K" = "Raccourci : Commande K";
+"Esc" = "Échap";
+"Nothing matches." = "Rien ne correspond.";

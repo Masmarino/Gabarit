@@ -163,3 +163,34 @@ struct FeedbackSection: View {
         .background(GColor.background)
     }
 }
+
+struct WindowSection: View {
+    @State private var page = "messages"
+
+    var body: some View {
+        GAppShell {
+            Image(systemName: "seal.fill").font(.system(size: 30)).foregroundStyle(GColor.accent).padding(.top, 40).padding(.bottom, 12)
+            GRailItem(title: "Today", systemImage: "sun.max", current: page == "today") { page = "today" }
+            GRailItem(title: "Messages", systemImage: "bubble.left.and.bubble.right", current: page == "messages", badge: 2) {}
+            GRailItem(title: "Spaces", systemImage: "square.grid.2x2", current: false) {}
+            Spacer(minLength: 8)
+            HStack(spacing: 4) {
+                GRailButton(symbol: "character.bubble", help: "Translate") {}
+                GRailButton(symbol: "ear", help: "Hands-free", isOn: true, value: "on") {}
+            }
+            GRailSquareButton(symbol: "gearshape", help: "Settings") {}.padding(.bottom, 12)
+        } bar: {
+            GBarTitle(title: "Messages", subtitle: "2 unread")
+            Spacer()
+        } page: {
+            VStack(alignment: .leading, spacing: 0) {
+                GSidebarRow(title: "Marie", symbol: "person.circle", selected: true, detail: "2")
+                GSidebarRow(title: "Paul", symbol: "person.circle", selected: false)
+            }
+            .frame(width: 260)
+            .padding(12)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .frame(width: 600, height: 380)
+    }
+}
