@@ -49,7 +49,7 @@ struct FormsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: GFormMetrics.sectionSpacing) {
             GPageTitle(title: "Notifications", summary: "What reaches you, and when.")
-            card(header: "Messages", footer: "Muted conversations never ring.") {
+            Self.card(header: "Messages", footer: "Muted conversations never ring.") {
                 Toggle(isOn: $on) { Text("Show previews"); Text("The first words of a message.") }.toggleStyle(GToggleStyle())
                 LabeledContent("Devices", value: "3").labeledContentStyle(GLabeledContentStyle())
                 GFormButtons {
@@ -72,7 +72,7 @@ struct FormsSection: View {
     }
 
     /// A section as GFormLayout draws it (the renderer cannot draw the layout's scroll view).
-    private func card<Rows: View>(header: String, footer: String, @ViewBuilder rows: () -> Rows) -> some View {
+    static func card<Rows: View>(header: String, footer: String, @ViewBuilder rows: () -> Rows) -> some View {
         let shape = RoundedRectangle(cornerRadius: GRadius.lg, style: .continuous)
         return VStack(alignment: .leading, spacing: 8) {
             Text(header).font(GFont.headline).foregroundStyle(GColor.textPrimary).padding(.bottom, 4)
@@ -158,6 +158,21 @@ struct FeedbackSection: View {
             GEmptyState(systemImage: "tray", title: "No messages yet", message: "Start a conversation with a contact.",
                         actionTitle: "New conversation", actionSystemImage: "square.and.pencil") {}
                 .frame(height: 260)
+        }
+        .padding(24)
+        .background(GColor.background)
+    }
+}
+
+struct OverlaysSection: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            GSheetTitle(title: "New space", summary: "A place to share with a few people.", back: {}) {}
+                .padding(.horizontal, -GFormMetrics.sheetMargin)
+            FormsSection.card(header: "Members", footer: "They can leave at any time.") {
+                Button("Invite people") {}.buttonStyle(GFormRowButtonStyle())
+                Button("Leave the space", role: .destructive) {}.buttonStyle(GFormRowButtonStyle())
+            }
         }
         .padding(24)
         .background(GColor.background)

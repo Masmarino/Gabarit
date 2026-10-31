@@ -549,19 +549,32 @@ The quick search (⌘K): `gCommandPalette(isPresented:prompt:groups:)`, `GComman
 `GCommandGroup`, `GCommandKButton`; its matching, `GCommandSearch`, is in `GabaritCommon` for every platform.
 
 `GabaritGtk` (Linux) builds the same components with GTK 4's widgets, dressed by Gabarit's style sheets
-(`swift/GabaritGtk/Resources`: the generated colours and text styles, and `components.css`). Call
-`GGtk.install()` once at launch (IBM Plex through fontconfig, light or dark as GNOME prefers), then use `gButton`,
-`gSwitchRow`, `gTextField`, `gPicker`, `gSlider`, `gFormSection`, `gForm`, `gSidebarRow`, `gNavTabs`, `gBadge`,
-`gToast`, `gEmptyState`, and the windows: `gWindow` (a secondary window, its dark header with the desktop's
-buttons) and `gAppShell` (the main window: the band, the rail, the page under a rounded corner). Its gallery:
-`galerie/gtk/capture.sh <folder>` builds and captures it in the SkollN Linux workshop (Podman).
+(`swift/GabaritGtk/Resources`: the generated colours and text styles, and `components.css`), at the Mac's sizes and
+line heights. Call `GGtk.install()` once at launch (IBM Plex through fontconfig, Gabarit's icons, light or dark as
+GNOME prefers), then use:
+
+- controls: `gButton` (an optional icon), `gCloseButton`, `gSwitchRow`, `gTextField`, `gPicker` (menu or chips),
+  `gSlider`, `gStepper`;
+- forms: `gForm` (a reading width of 680 at most, `gClamp`), `gPageTitle`, `gFormSection`, `gValueRow`, `gRowButton`,
+  `gFormButtons`, `gSheetButton`, `gSidebarRow`, `gNavTabs`;
+- feedback: `gBadge`, `gToast`, `gEmptyState`, `gSkeleton`, `gTypingDots`;
+- menus: `gMenuItem`, `gMenuList`, `gMenuButton`;
+- windows, as on the Mac: `gAppShell` (the rail from top to bottom, the band over the page with the desktop's window
+  buttons, the page under a rounded corner; `gAppShellContent` alone), `gRailItem`, `gRailButton`,
+  `gRailSquareButton`, `gCommandKButton`, `gBandTitle`, `gPageBand`; `gWindow` (a secondary window: `gWindowHeader`,
+  its cross, Escape closes it);
+- over a page: `gSheet` and `gSheetTitle` (a modal window), `gErrorAlert`, and, in a `gOverlayHost`, `gShowToast` and
+  the quick search, `gCommandPalette` (Ctrl + K with `gCommandShortcut`).
+
+Its gallery draws the Mac gallery's sections, plus the quick search, to PNG files at twice their size, light and dark,
+to compare side by side: `galerie/gtk/capture.sh <folder>` builds it in a Linux image with GTK 4 (Podman).
 
 `GabaritWinUI` (Windows) is a set of XAML resources for WinUI 3 (Swift or C#): `Gabarit.xaml`, generated (the
 colours, light and dark, and WinUI's own controls in Gabarit's colours), and `Controls.xaml` (the buttons, the close
 cross, the windows' dark header, the rail, cards). See `swift/GabaritWinUI/README.md`; not yet tried on Windows.
 
-The gallery draws every component, light and dark, to PNG files, to compare a pre-release with the previous
-one: `cd galerie/apple && swift run GabaritGallery <folder>`.
+The gallery draws every component, light and dark, to PNG files at twice their size, to compare a pre-release with the
+previous one, and the Mac with Linux: `cd galerie/apple && swift run GabaritGallery <folder>`.
 
 How they answer: every clickable thing has a hovered state (`GHover`), the pointing hand on the Mac (`gPointer`), the
 keyboard's focus (the switch's row is a button, the slider moves with the arrows), one dimming when disabled

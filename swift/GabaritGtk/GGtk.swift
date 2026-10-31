@@ -161,8 +161,9 @@ public func gClamp(_ child: GWidget, maximum: Int32) -> GWidget {
         let limit = Int32(Int(bitPattern: g_object_get_data(UnsafeMutableRawPointer(widget)?.assumingMemoryBound(to: GObject.self), "g-clamp")))
         var low: Int32 = 0, high: Int32 = 0
         if orientation == GTK_ORIENTATION_HORIZONTAL {
+            // As wide as it may be: the room given, up to the limit.
             gtk_widget_measure(child, orientation, forSize, &low, &high, nil, nil)
-            high = max(low, min(high, limit))
+            high = max(low, limit)
         } else {
             let width = forSize < 0 ? forSize : min(forSize, limit)
             gtk_widget_measure(child, orientation, width, &low, &high, nil, nil)

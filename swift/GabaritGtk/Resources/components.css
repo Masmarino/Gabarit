@@ -231,3 +231,41 @@ button.g-button:focus-visible, button.g-close:focus-visible, button.g-chip:focus
 button.g-rail-item:focus-visible, button.g-rail-button:focus-visible, button.g-rail-square:focus-visible,
 button.g-command-k:focus-visible, button.g-menu-item:focus-visible, button.g-stepper-step:focus-visible, button.g-menu-button > button:focus-visible, switch.g-switch:focus-visible, dropdown.g-menu > button:focus-visible,
 scale.g-slider:focus-visible > trough > slider { outline: 2px solid alpha(@g_accent, 0.7); outline-offset: 2px; }
+
+/* A card's clickable row: its text in rust (red if it destroys), the veil on hover */
+
+button.g-row-button { min-height: 0; padding: 4px 8px; margin: -4px -8px; border-radius: 8px; border: none; background: transparent;
+                      background-image: none; box-shadow: none; color: @g_accentText; }
+button.g-row-button.g-destructive { color: @g_error; }
+button.g-row-button:hover { background-color: @g_rowHover; }
+button.g-row-button:active { opacity: 0.6; }
+
+/* Sheets: the title large in the sheet, the cross on the right */
+
+.g-sheet-header { padding: 22px 24px 8px 24px; }
+.g-sheet-title { color: @g_textPrimary; }
+button.g-sheet-back { min-width: 30px; min-height: 30px; padding: 0; margin-top: 4px; border-radius: 999px; border: none;
+                      background-color: @g_track; background-image: none; box-shadow: none; color: @g_textSecondary; }
+button.g-sheet-back:hover { background-color: alpha(@g_border, 0.3); color: @g_textPrimary; }
+
+/* The quick search: a dimmed page, the panel on the surface, the chosen entry under the veil with a rust line */
+
+.g-scrim { background-color: rgba(0, 0, 0, 0.35); }
+.g-command-palette { background-color: @g_surface; border: 1px solid alpha(@g_border, 0.6); border-radius: 12px;
+                     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25); color: @g_textPrimary; }
+.g-command-top { min-height: 52px; padding: 0 16px; }
+.g-command-top > image { color: @g_textSecondary; }
+entry.g-command-field { min-height: 0; padding: 0; border: none; background: transparent; box-shadow: none; outline: none;
+                        color: @g_textPrimary; caret-color: @g_accent; }
+entry.g-command-field > text > placeholder { color: @g_textDiscret; }
+.g-command-list { padding: 6px; }
+.g-command-group { padding: 10px 10px 2px 10px; color: @g_textSecondary; font-weight: 600; letter-spacing: 0.8px; }
+button.g-command-row { min-height: 40px; padding: 0 10px; border-radius: 6px; border: none; background: transparent;
+                       background-image: none; box-shadow: none; color: @g_textPrimary; }
+button.g-command-row image { color: @g_textSecondary; }
+button.g-command-row .g-command-label { font-weight: 500; }
+button.g-command-row:hover, button.g-command-row.g-active { background-color: @g_hover; }
+button.g-command-row.g-active { background-image: linear-gradient(@g_accent, @g_accent); background-size: 2px 24px;
+                                background-position: left center; background-repeat: no-repeat; }
+button.g-command-row.g-active image { color: @g_accent; }
+.g-command-empty { padding: 24px; }

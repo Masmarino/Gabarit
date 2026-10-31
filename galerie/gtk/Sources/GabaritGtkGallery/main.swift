@@ -146,6 +146,33 @@ let folder = CommandLine.arguments.dropFirst().first ?? "."
     return shell
 }
 
+@MainActor func overlays() -> GWidget {
+    // The sheet's title keeps its own margins (24 on each side), like the Mac's laid at -24 in the section.
+    let header = gSheetTitle("New space", summary: "A place to share with a few people.", back: {}) {}
+    gtk_widget_set_margin_top(header, 24)
+    let members = margins(gFormSection("Members", rows: [gRowButton("Invite people") {}, gRowButton("Leave the space", destructive: true) {}],
+                                       footer: "They can leave at any time."), 24)
+    gtk_widget_set_margin_top(members, 0)
+    return gBox(GTK_ORIENTATION_VERTICAL, spacing: 18, [header, members])
+}
+
+/// The quick search, open over a page (Linux only: the Mac's renderer cannot draw its field).
+@MainActor func search() -> GWidget {
+    let host = gOverlayHost(gStyle(gBox(GTK_ORIENTATION_VERTICAL, []), "g-page"))
+    gtk_widget_set_size_request(host, 600, 420)
+    gCommandPalette(host, groups: [
+        GCommandGroup(title: "Pages", items: [
+            GCommandItem(id: "messages", label: "Messages", detail: "2 unread", icon: "mail-unread-symbolic", shortcut: "Ctrl + 1") {},
+            GCommandItem(id: "spaces", label: "Spaces", icon: "view-grid-symbolic", shortcut: "Ctrl + 2") {},
+        ]),
+        GCommandGroup(title: "Actions", items: [
+            GCommandItem(id: "new", label: "New conversation", icon: "document-edit-symbolic", shortcut: "Ctrl + N") {},
+            GCommandItem(id: "settings", label: "Settings", icon: "emblem-system-symbolic", shortcut: "Ctrl + ,") {},
+        ]),
+    ])
+    return host
+}
+
 // MARK: Drawing
 
 /// What only the gallery draws: the states' samples, a menu's rim, the logo.
@@ -214,7 +241,8 @@ let activate: @convention(c) (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?
         }
         let app = OpaquePointer(application)
         let sections: [(String, GWidget)] = [("controls", controls()), ("forms", forms()), ("frame", frame()),
-                                             ("feedback", feedback()), ("window", window())]
+                                             ("feedback", feedback()), ("window", window()), ("overlays", overlays()),
+                                             ("search", search())]
         let windows = sections.map { (name: $0.0, window: open(app, $0.1)) }
         later(1500) {
             for item in windows { save(item.window, "\(folder)/\(item.name)-light.png") }

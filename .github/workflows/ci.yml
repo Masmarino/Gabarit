@@ -39,6 +39,8 @@ jobs:
       - run: python3 tools/tokens.py --check
       - run: swift test
       - run: swift build --product GabaritGtk
+      - run: swift build
+        working-directory: galerie/gtk
       - run: xmllint --noout swift/GabaritWinUI/Resources/*.xaml
 
   audit:

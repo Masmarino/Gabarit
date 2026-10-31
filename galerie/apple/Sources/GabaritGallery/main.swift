@@ -33,4 +33,5 @@ MainActor.assumeIsolated {
     draw("frame", FrameSection())
     draw("feedback", FeedbackSection())
     draw("window", WindowSection())
+    draw("overlays", OverlaysSection())
 }
