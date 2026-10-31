@@ -200,6 +200,14 @@
       "infoText": {
         "light": "indigo800",
         "dark": "indigo200"
+      },
+      "selectedFill": {
+        "light": "rust500/0.10",
+        "dark": "rust400/0.16"
+      },
+      "rowHover": {
+        "light": "slate900/0.035",
+        "dark": "graphite100/0.045"
       }
     },
     "web": {

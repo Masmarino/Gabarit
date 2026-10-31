@@ -60,6 +60,10 @@
             <SolidColorBrush x:Key="GErrorTextBrush" Color="#FF942C26"/>
             <Color x:Key="GInfoTextColor">#FF283DA8</Color>
             <SolidColorBrush x:Key="GInfoTextBrush" Color="#FF283DA8"/>
+            <Color x:Key="GSelectedFillColor">#1AC2410C</Color>
+            <SolidColorBrush x:Key="GSelectedFillBrush" Color="#1AC2410C"/>
+            <Color x:Key="GRowHoverColor">#0910151C</Color>
+            <SolidColorBrush x:Key="GRowHoverBrush" Color="#0910151C"/>
             <!-- WinUI's own controls in Gabarit's colours (lightweight styling): no template redrawn. -->
             <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#FFC2410C"/>
             <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#FFC2410C"/>
@@ -94,9 +98,9 @@
             <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="#FFC2410C"/>
             <SolidColorBrush x:Key="SliderThumbBackground" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver" Color="#FFFFFFFF"/>
-            <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#1210151C"/>
-            <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#1FC2410C"/>
-            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#29C2410C"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#0910151C"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#1AC2410C"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#1AC2410C"/>
             <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="#FFA8360A"/>
             <Color x:Key="SystemAccentColor">#FFC2410C</Color>
         </ResourceDictionary>
@@ -157,6 +161,10 @@
             <SolidColorBrush x:Key="GErrorTextBrush" Color="#FFF38C85"/>
             <Color x:Key="GInfoTextColor">#FFB3BEFF</Color>
             <SolidColorBrush x:Key="GInfoTextBrush" Color="#FFB3BEFF"/>
+            <Color x:Key="GSelectedFillColor">#29F0622A</Color>
+            <SolidColorBrush x:Key="GSelectedFillBrush" Color="#29F0622A"/>
+            <Color x:Key="GRowHoverColor">#0BE7EBF1</Color>
+            <SolidColorBrush x:Key="GRowHoverBrush" Color="#0BE7EBF1"/>
             <!-- WinUI's own controls in Gabarit's colours (lightweight styling): no template redrawn. -->
             <SolidColorBrush x:Key="ToggleSwitchFillOn" Color="#FFF0622A"/>
             <SolidColorBrush x:Key="ToggleSwitchFillOnPointerOver" Color="#FFF0622A"/>
@@ -191,8 +199,8 @@
             <SolidColorBrush x:Key="SliderTrackValueFillPointerOver" Color="#FFF0622A"/>
             <SolidColorBrush x:Key="SliderThumbBackground" Color="#FFFFFFFF"/>
             <SolidColorBrush x:Key="SliderThumbBackgroundPointerOver" Color="#FFFFFFFF"/>
-            <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#12E7EBF1"/>
-            <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#1FF0622A"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundPointerOver" Color="#0BE7EBF1"/>
+            <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#29F0622A"/>
             <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#29F0622A"/>
             <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="#FFFF9469"/>
             <Color x:Key="SystemAccentColor">#FFF0622A</Color>

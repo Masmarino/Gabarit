@@ -84,6 +84,8 @@ public enum GColor {
     public static let warningText = Color(GColorValues.warningText)
     public static let errorText = Color(GColorValues.errorText)
     public static let infoText = Color(GColorValues.infoText)
+    public static let selectedFill = Color(GColorValues.selectedFill)
+    public static let rowHover = Color(GColorValues.rowHover)
 }
 
 /// The grounds as Gabarit draws them, with no theme.

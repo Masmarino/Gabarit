@@ -132,7 +132,12 @@
     <Style x:Key="GButtonSecondaryStyle" TargetType="Button" BasedOn="{StaticResource GButtonBaseStyle}">
         <Setter Property="Background" Value="{ThemeResource GSurfaceBrush}"/>
         <Setter Property="Foreground" Value="{ThemeResource GTextPrimaryBrush}"/>
-        <Setter Property="BorderBrush" Value="{ThemeResource GBorderBrush}"/>
+        <!-- The border at 60 %, as on the Mac and in GTK. -->
+        <Setter Property="BorderBrush">
+            <Setter.Value>
+                <SolidColorBrush Color="{ThemeResource GBorderColor}" Opacity="0.6"/>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="GButtonGhostStyle" TargetType="Button" BasedOn="{StaticResource GButtonBaseStyle}">

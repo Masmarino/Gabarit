@@ -266,8 +266,8 @@ WINUI_CONTROLS = {
     "ComboBoxBorderBrushPointerOver": "accent", "ComboBoxForeground": "textPrimary", "ComboBoxDropDownBackground": "surface",
     "ComboBoxDropDownBorderBrush": "hairline", "SliderTrackFill": "track", "SliderTrackValueFill": "accent",
     "SliderTrackValueFillPointerOver": "accent", "SliderThumbBackground": "#FFFFFF", "SliderThumbBackgroundPointerOver": "#FFFFFF",
-    "ListViewItemBackgroundPointerOver": "hover", "ListViewItemBackgroundSelected": "accent/0.12",
-    "ListViewItemBackgroundSelectedPointerOver": "accent/0.16", "ListViewItemForegroundSelected": "accentText",
+    "ListViewItemBackgroundPointerOver": "rowHover", "ListViewItemBackgroundSelected": "selectedFill",
+    "ListViewItemBackgroundSelectedPointerOver": "selectedFill", "ListViewItemForegroundSelected": "accentText",
 }
 
 

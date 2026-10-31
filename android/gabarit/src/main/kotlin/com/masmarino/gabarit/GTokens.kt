@@ -87,6 +87,8 @@ data class GColors(
     val warningText: Color,
     val errorText: Color,
     val infoText: Color,
+    val selectedFill: Color,
+    val rowHover: Color,
 )
 
 val GLightColors = GColors(
@@ -118,6 +120,8 @@ val GLightColors = GColors(
     warningText = GPalette.amber700,
     errorText = GPalette.red750,
     infoText = GPalette.indigo800,
+    selectedFill = GPalette.rust500.copy(alpha = 0.1f),
+    rowHover = GPalette.slate900.copy(alpha = 0.035f),
 )
 
 val GDarkColors = GColors(
@@ -149,6 +153,8 @@ val GDarkColors = GColors(
     warningText = GPalette.amber400,
     errorText = GPalette.red300,
     infoText = GPalette.indigo200,
+    selectedFill = GPalette.rust400.copy(alpha = 0.16f),
+    rowHover = GPalette.graphite100.copy(alpha = 0.045f),
 )
 
 object GRadius {

@@ -17,7 +17,7 @@ public struct GSidebarRow: View {
     #else
     public static let height: CGFloat = 40
     #endif
-    public static let selectedFill = GSidebarRowFill.selected
+    public static var selectedFill: Color { GSidebarRowFill.selected }
     /// A section's name: discreet in the Mac's column, plain in an iPhone list.
     #if os(macOS)
     public static var text: Color { GColor.textSecondary }
@@ -25,8 +25,7 @@ public struct GSidebarRow: View {
     public static var text: Color { GColor.textPrimary }
     #endif
     /// The hover: far more discreet than the selection (half Gabarit's veil), so they are never mistaken.
-    public static let hoverFill = Color(GColorPair(light: GPaletteValues.slate900.opacity(0.035),
-                                                   dark: GPaletteValues.graphite100.opacity(0.045)))
+    public static var hoverFill: Color { GColor.rowHover }
 
     public init(title: String, symbol: String, selected: Bool, warns: Bool = false, detail: String? = nil) {
         self.title = title
@@ -113,8 +112,7 @@ public struct GSidebarLabelStyle: LabelStyle {
 
 /// The side columns' selection, on iPhone and iPad too.
 public enum GSidebarRowFill {
-    public static let selected = Color(GColorPair(light: GPaletteValues.rust500.opacity(0.10),
-                                                  dark: GPaletteValues.rust400.opacity(0.16)))
+    public static var selected: Color { GColor.selectedFill }
 }
 
 /// A clickable row's hover (Mac): a soft veil with rounded corners. In a form's card, the card draws it centred in the

@@ -112,6 +112,8 @@ public enum GColorValues {
     public static let warningText = GColorPair(light: GPaletteValues.amber700, dark: GPaletteValues.amber400)
     public static let errorText = GColorPair(light: GPaletteValues.red750, dark: GPaletteValues.red300)
     public static let infoText = GColorPair(light: GPaletteValues.indigo800, dark: GPaletteValues.indigo200)
+    public static let selectedFill = GColorPair(light: GPaletteValues.rust500.opacity(0.1), dark: GPaletteValues.rust400.opacity(0.16))
+    public static let rowHover = GColorPair(light: GPaletteValues.slate900.opacity(0.035), dark: GPaletteValues.graphite100.opacity(0.045))
 }
 
 public enum GRadius {

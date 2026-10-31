@@ -75,3 +75,5 @@
 @define-color g_warningText #F5B13D;
 @define-color g_errorText #F38C85;
 @define-color g_infoText #B3BEFF;
+@define-color g_selectedFill alpha(#F0622A, 0.16);
+@define-color g_rowHover alpha(#E7EBF1, 0.045);

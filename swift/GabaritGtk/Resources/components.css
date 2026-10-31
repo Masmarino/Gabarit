@@ -93,8 +93,8 @@ scale.g-slider > trough > slider { min-width: 16px; min-height: 16px; margin: -6
 
 .g-sidebar { background-color: @g_sidebar; }
 .g-sidebar-row { min-height: 28px; padding: 0 10px; border-radius: 8px; color: @g_textSecondary; }
-.g-sidebar-row:hover { background-color: alpha(@g_textPrimary, 0.04); }
-.g-sidebar-row.g-selected { background-color: alpha(@g_accent, 0.12); color: @g_accentText; font-weight: 600; }
+.g-sidebar-row:hover { background-color: @g_rowHover; }
+.g-sidebar-row.g-selected { background-color: @g_selectedFill; color: @g_accentText; font-weight: 600; }
 .g-sidebar-row.g-selected image { color: @g_accent; }
 
 /* The frame: always dark (the rail, the top band, a window's header); the page in a sheet with a rounded corner */
