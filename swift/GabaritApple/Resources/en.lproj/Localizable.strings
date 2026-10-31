@@ -11,3 +11,5 @@
 "Needs attention" = "Needs attention";
 /* An error alert's button. */
 "OK" = "OK";
+/* A sheet's default closing button. */
+"Cancel" = "Cancel";

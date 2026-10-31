@@ -106,7 +106,7 @@ public struct GForm<Content: View>: View {
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
         .gControls()
-        .background { GColor.background.ignoresSafeArea() }
+        .gPageGround()
     }
 }
 
@@ -204,7 +204,7 @@ public struct GFormLayout<Content: View>: View {
         .scrollBounceBehavior(.basedOnSize)
         .labeledContentStyle(GLabeledContentStyle())
         .gControls()
-        .background { GColor.background.ignoresSafeArea() }
+        .gPageGround()
     }
 }
 

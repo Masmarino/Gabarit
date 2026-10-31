@@ -535,6 +535,11 @@ and on the Mac `GWindowHeader` and `gWindowChrome()`.
 The feedback: `GBadge` (with `GTone.tintText`), `GEmptyState`, `GSkeleton`, `GTypingDots`, passing messages
 (`GToastCenter`, `gToastOverlay(_:)`), `gErrorAlert(_:message:)` and `gSideDrawer(isPresented:drawer:)`.
 
+The sheets: `gSheet(symbol:title:summary:…)` (the title large in the sheet, Gabarit's cross), `gSheetPage`,
+`GSheetStack`. Pages, forms and sheets paint their ground through `gPageGround()`: Gabarit's background, or
+an application's own (a colour theme's gradient) set once per window in `gGround`; `gGroundPainted` tells
+that a ground is already painted above.
+
 The gallery draws every component, light and dark, to PNG files, to compare a pre-release with the previous
 one: `cd galerie/apple && swift run GabaritGallery <folder>`.
 
