@@ -26,7 +26,29 @@ private struct GControlsModifier: ViewModifier {
     private func styled(_ content: Content) -> some View {
         content.toggleStyle(GToggleStyle())
             .textFieldStyle(GTextFieldStyle())
-            .buttonStyle(GButtonStyle(variant: .secondary))
+            .buttonStyle(GFormButtonStyle())
+    }
+}
+
+/// A form's buttons: in a card's row, a row (`GFormRowButtonStyle`), not a framed button in the frame; elsewhere,
+/// Gabarit's secondary button. Decided where the button is drawn: a style set around a card does not reach the rows
+/// a form takes apart, the one set around the whole form does.
+struct GFormButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        GFormButton(configuration: configuration)
+    }
+}
+
+private struct GFormButton: View {
+    let configuration: ButtonStyleConfiguration
+    @Environment(\.gFormCardRow) private var inCard
+
+    var body: some View {
+        if inCard {
+            GFormRowButtonStyle().makeBody(configuration: configuration)
+        } else {
+            GButtonStyle(variant: .secondary).makeBody(configuration: configuration)
+        }
     }
 }
 

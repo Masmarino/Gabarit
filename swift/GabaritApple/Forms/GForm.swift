@@ -255,6 +255,7 @@ private struct GFormSection: View {
                     row.frame(maxWidth: .infinity, alignment: .leading).padding(12)
                 } else {
                     GFormCardRow {
+                        // A button laid as it is here is a row (GFormButtonStyle, from the form's controls).
                         row
                             .frame(maxWidth: .infinity, minHeight: GFormMetrics.rowHeight - 16, alignment: .leading)
                             .contentShape(Rectangle())
@@ -266,9 +267,6 @@ private struct GFormSection: View {
         }
         .background(GColor.surface, in: shape)
         .overlay { shape.strokeBorder(GColor.hairline, lineWidth: 1) }
-        // A button laid as it is in a card is a row, not a framed button (a frame in the frame), on the Mac as on the
-        // iPhone; those with a style of their own keep it.
-        .buttonStyle(GFormRowButtonStyle())
     }
 }
 
