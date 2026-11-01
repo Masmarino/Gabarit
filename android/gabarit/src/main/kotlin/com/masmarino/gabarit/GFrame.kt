@@ -185,8 +185,7 @@ fun GTopBar(
     val bar = @Composable {
         val text = if (inSheet) G.colors.textPrimary else GFrameColor.text
         CompositionLocalProvider(LocalContentColor provides text) {
-            Box(modifier.fillMaxWidth().then(if (inSheet) Modifier else Modifier.zIndex(1f).shadow(6.dp))
-                .then(if (inSheet) Modifier.background(G.colors.background) else Modifier.background(gFrameSheen))
+            Box(modifier.fillMaxWidth().then(if (inSheet) Modifier else Modifier.zIndex(1f).shadow(6.dp).background(gFrameSheen))
                 .then(if (statusBar) Modifier.windowInsetsPadding(WindowInsets.statusBars) else Modifier)
                 .heightIn(min = 56.dp).padding(horizontal = 4.dp), contentAlignment = Alignment.CenterStart) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -273,8 +272,7 @@ fun GRail(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> 
 fun GPageBand(icon: String, title: String, summary: String, accessory: @Composable () -> Unit = {}) {
     val inSheet = LocalGInSheet.current
     val text = if (inSheet) G.colors.textPrimary else GFrameColor.text
-    Row(Modifier.fillMaxWidth().then(if (inSheet) Modifier else Modifier.zIndex(1f).shadow(6.dp))
-        .then(if (inSheet) Modifier.background(G.colors.background) else Modifier.background(gFrameSheen))
+    Row(Modifier.fillMaxWidth().then(if (inSheet) Modifier else Modifier.zIndex(1f).shadow(6.dp).background(gFrameSheen))
         .padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 18.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
         Box(Modifier.size(48.dp).border(1.dp, if (inSheet) G.colors.hairline else GFrameColor.rim, RoundedCornerShape(GRadius.md)),

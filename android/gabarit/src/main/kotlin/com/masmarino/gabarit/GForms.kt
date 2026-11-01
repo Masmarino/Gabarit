@@ -12,11 +12,16 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -76,20 +81,34 @@ object GFormMetrics {
 /** Inside a form's card: its fields lose their rim at rest (the card is their frame). Set by the cards of Gabarit's forms. */
 val LocalGFormCard = compositionLocalOf { false }
 
+/**
+ * Rests on the page, like a card: a soft shadow, the light on the top edge, shade on the bottom one. Before the ground it
+ * rests with (`Modifier.gCardDepth(shape).gSurface(...)`); the light and the shade are drawn over what it holds.
+ */
+@Composable
+fun Modifier.gCardDepth(shape: Shape): Modifier {
+    val light = G.colors.reliefHighlight
+    val shade = G.colors.reliefShade
+    return this.shadow(2.dp, shape, clip = false).drawWithCache {
+        val outline = Path().apply { addOutline(shape.createOutline(size, layoutDirection, this@drawWithCache)) }
+        val edge = 1.5.dp.toPx()
+        val top = Brush.verticalGradient(listOf(light, light.copy(alpha = 0f)), endY = edge)
+        val bottom = Brush.verticalGradient(listOf(shade.copy(alpha = 0f), shade), startY = size.height - edge, endY = size.height)
+        onDrawWithContent {
+            drawContent()
+            clipPath(outline) {
+                drawRect(top, size = Size(size.width, edge))
+                drawRect(bottom, Offset(0f, size.height - edge), Size(size.width, edge))
+            }
+        }
+    }
+}
+
 /** A form's card: the surface, a fine rim, the large radius; what it holds is cut to its corners. */
 @Composable
 fun Modifier.gCard(): Modifier {
     val shape = RoundedCornerShape(GRadius.lg)
-    val light = G.colors.reliefHighlight
-    val shade = G.colors.reliefShade
-    // It rests on the page, the light on its top edge, shade on its bottom one.
-    return this.shadow(2.dp, shape, clip = false).gSurface(shape, G.colors.surface, G.colors.hairline).clip(shape).drawWithContent {
-        drawContent()
-        val edge = 1.5.dp.toPx()
-        drawRect(Brush.verticalGradient(listOf(light, light.copy(alpha = 0f)), endY = edge), size = Size(size.width, edge))
-        drawRect(Brush.verticalGradient(listOf(shade.copy(alpha = 0f), shade), startY = size.height - edge, endY = size.height),
-            Offset(0f, size.height - edge), Size(size.width, edge))
-    }
+    return this.gCardDepth(shape).gSurface(shape, G.colors.surface, G.colors.hairline).clip(shape)
 }
 
 /** The fine line under a card's row, inset 16 from the leading edge (`show` false: nothing). */

@@ -53,7 +53,14 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.compositeOver
@@ -192,6 +199,29 @@ fun Modifier.gRaised(shape: Shape, pressed: Boolean = false, onInk: Boolean = fa
 fun Modifier.gGlow(color: Color, shape: Shape, radius: Dp = 5.dp): Modifier =
     this.shadow(radius, shape, clip = false, ambientColor = color, spotColor = color)
 
+/**
+ * A slight hollow, for what holds a value (a field, a switch's track, a slider's): `fill` in `shape`, behind the view,
+ * with the shade falling inside from its top edge.
+ */
+fun Modifier.gHollow(fill: Color, shape: Shape, strength: Float = 0.12f): Modifier = drawWithCache {
+    val edge = Path().apply { addOutline(shape.createOutline(size, layoutDirection, this@drawWithCache)) }
+    // All but the shape, a hair lower: blurred and cut to the shape, only its shade on the inside remains.
+    val outside = android.graphics.Path().apply {
+        fillType = android.graphics.Path.FillType.EVEN_ODD
+        val margin = 8.dp.toPx()
+        addRect(-margin, -margin, size.width + margin, size.height + margin, android.graphics.Path.Direction.CW)
+        addPath(edge.asAndroidPath(), 0f, 1.dp.toPx())
+    }
+    val shade = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.Black.copy(alpha = strength).toArgb()
+        maskFilter = android.graphics.BlurMaskFilter(1.5.dp.toPx(), android.graphics.BlurMaskFilter.Blur.NORMAL)
+    }
+    onDrawBehind {
+        drawPath(edge, fill)
+        clipPath(edge) { drawIntoCanvas { it.nativeCanvas.drawPath(outside, shade) } }
+    }
+}
+
 // MARK: Buttons
 
 /** Gabarit's buttons: ink (primary), fine frame (secondary), no ground (ghost), red (danger). */
@@ -327,7 +357,7 @@ fun GSwitch(isOn: Boolean, modifier: Modifier = Modifier, pressed: Boolean = fal
     Box(
         modifier.size(width = 46.dp, height = 28.dp)
             .then(if (isOn) Modifier.gGlow(colors.accent, shape) else Modifier)
-            .clip(shape).background(track)
+            .clip(shape).gHollow(track, shape)
             .then(if (isOn) Modifier else Modifier.border(1.dp, colors.border.copy(alpha = 0.35f), shape))
             .clearAndSetSemantics {},
     ) {
@@ -410,7 +440,7 @@ fun GFieldFrame(
                 inCard -> Color.Transparent
                 else -> colors.hairline
             }
-            Row(Modifier.fillMaxWidth().heightIn(min = GControlMetrics.height).background(colors.background, shape)
+            Row(Modifier.fillMaxWidth().heightIn(min = GControlMetrics.height).gHollow(colors.background, shape, 0.06f)
                 .border(if (focused || isError) 1.5.dp else 1.dp, rim, shape)
                 .padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -672,7 +702,7 @@ fun GSlider(value: Float, onValueChange: (Float) -> Unit, modifier: Modifier = M
                 }
             } else Modifier),
             contentAlignment = Alignment.CenterStart) {
-            Box(Modifier.padding(horizontal = knob / 2).fillMaxWidth().height(4.dp).clip(CircleShape).background(colors.track))
+            Box(Modifier.padding(horizontal = knob / 2).fillMaxWidth().height(4.dp).gHollow(colors.track, CircleShape, 0.1f))
             Box(Modifier.padding(start = knob / 2).width(run * fraction).height(4.dp).clip(CircleShape).background(colors.accent))
             Box(Modifier.offset(x = run * fraction).size(knob)
                 .graphicsLayer { if (dragging && !still) { scaleX = 1.1f; scaleY = 1.1f } }
