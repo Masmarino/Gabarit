@@ -17,6 +17,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.zIndex
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
@@ -117,7 +118,8 @@ data class GTab(val id: String, val title: String, val icon: String = "", val ba
 @Composable
 fun GTabBar(tabs: List<GTab>, selection: String, onSelect: (String) -> Unit, modifier: Modifier = Modifier) {
     val colors = G.colors
-    Row(modifier.fillMaxWidth().background(colors.surface).drawBehind {
+    // It casts a shadow on the page above it.
+    Row(modifier.fillMaxWidth().zIndex(1f).shadow(6.dp).background(colors.surface).drawBehind {
         drawLine(colors.hairline, Offset(0f, 0.5f), Offset(size.width, 0.5f), 1.dp.toPx())
     }.windowInsetsPadding(WindowInsets.navigationBars)) {
         tabs.forEach { tab ->
@@ -176,7 +178,8 @@ fun GTopBar(
     val bar = @Composable {
         val text = if (inSheet) G.colors.textPrimary else GFrameColor.text
         CompositionLocalProvider(LocalContentColor provides text) {
-            Box(modifier.fillMaxWidth().background(if (inSheet) G.colors.background else GFrameColor.ground)
+            Box(modifier.fillMaxWidth().then(if (inSheet) Modifier else Modifier.zIndex(1f).shadow(6.dp))
+                .background(if (inSheet) G.colors.background else GFrameColor.ground)
                 .then(if (statusBar) Modifier.windowInsetsPadding(WindowInsets.statusBars) else Modifier)
                 .heightIn(min = 56.dp).padding(horizontal = 4.dp), contentAlignment = Alignment.CenterStart) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -250,7 +253,7 @@ fun GRailItem(title: String, icon: String, current: Boolean, onClick: () -> Unit
 @Composable
 fun GRail(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     GScheme(dark = true) {
-        Column(modifier.width(92.dp).fillMaxHeight().background(GFrameColor.ground).padding(horizontal = 6.dp, vertical = 8.dp),
+        Column(modifier.width(92.dp).fillMaxHeight().zIndex(1f).shadow(6.dp).background(GFrameColor.ground).padding(horizontal = 6.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp), content = content)
     }
 }
@@ -263,7 +266,8 @@ fun GRail(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> 
 fun GPageBand(icon: String, title: String, summary: String, accessory: @Composable () -> Unit = {}) {
     val inSheet = LocalGInSheet.current
     val text = if (inSheet) G.colors.textPrimary else GFrameColor.text
-    Row(Modifier.fillMaxWidth().background(if (inSheet) G.colors.background else GFrameColor.ground)
+    Row(Modifier.fillMaxWidth().then(if (inSheet) Modifier else Modifier.zIndex(1f).shadow(6.dp))
+        .background(if (inSheet) G.colors.background else GFrameColor.ground)
         .padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 18.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
         Box(Modifier.size(48.dp).border(1.dp, if (inSheet) G.colors.hairline else GFrameColor.rim, RoundedCornerShape(GRadius.md)),

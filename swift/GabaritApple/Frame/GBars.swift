@@ -242,8 +242,9 @@ public struct GTabBar: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isTabBar)
-        .background(GColor.surface.ignoresSafeArea(edges: .bottom))
+        .background(GColor.surface.gBarShadow(up: true).ignoresSafeArea(edges: .bottom))
         .overlay(alignment: .top) { Rectangle().fill(GColor.hairline).frame(height: 1) }
+        .zIndex(1)
     }
 
     @ViewBuilder private func icon(_ tab: GTab, current: Bool) -> some View {

@@ -69,7 +69,7 @@ public struct GSwitch: View {
             .overlay { Capsule().strokeBorder(isOn ? Color.clear : contrast == .increased ? GColor.border : GColor.border.opacity(0.35), lineWidth: 1) }
             .frame(width: size.width, height: size.height)
             .overlay(alignment: isOn ? .trailing : .leading) {
-                Circle().fill(.white)
+                GKnob()
                     .frame(width: size.height - 4, height: size.height - 4)
                     .shadow(color: .black.opacity(0.18), radius: 1.5, y: 1)
                     .padding(2)

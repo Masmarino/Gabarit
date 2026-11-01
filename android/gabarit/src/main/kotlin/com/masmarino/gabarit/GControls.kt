@@ -151,7 +151,7 @@ fun GIcon(name: String, contentDescription: String?, modifier: Modifier = Modifi
 // MARK: Relief
 
 /**
- * Raised, discreetly: a soft shadow and the light on the top edge; `pressed`: sunk, neither. `onInk`: on a dark ground (a
+ * Raised, a little: a soft shadow, some volume and the light on the top edge; `pressed`: sunk, none of it. `onInk`: on a dark ground (a
  * primary button), the light is the same in both appearances. A hairline stays the edge of things: this only adds to it.
  */
 @Composable
@@ -161,9 +161,12 @@ fun Modifier.gRaised(shape: Shape, pressed: Boolean = false, onInk: Boolean = fa
     return this.shadow(1.dp, shape, clip = false).drawWithCache {
         val outline = shape.createOutline(size, layoutDirection, this)
         val brush = Brush.verticalGradient(listOf(light, Color.Transparent), endY = size.height / 2)
+        // A little volume: lighter at the top, a touch darker at the bottom.
+        val volume = Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.07f), Color.Transparent, Color.Black.copy(alpha = 0.04f)))
         val line = Stroke(1.dp.toPx())
         onDrawWithContent {
             drawContent()
+            drawOutline(outline, volume)
             drawOutline(outline, brush, style = line)
         }
     }
@@ -282,7 +285,7 @@ fun GCloseButton(title: String, onFrame: Boolean = false, onClick: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         Box(
-            Modifier.size(28.dp).clip(CircleShape)
+            Modifier.size(28.dp).then(if (onFrame) Modifier else Modifier.gRaised(CircleShape, pressed)).clip(CircleShape)
                 .background(if (pressed) (if (onFrame) GFrameColor.closeHover else colors.hover) else Color.Transparent)
                 .border(1.dp, if (onFrame) GFrameColor.rim else colors.hairline, CircleShape),
             contentAlignment = Alignment.Center,
@@ -305,7 +308,8 @@ fun GSwitch(isOn: Boolean, modifier: Modifier = Modifier) {
             .then(if (isOn) Modifier else Modifier.border(1.dp, colors.border.copy(alpha = 0.35f), shape))
             .clearAndSetSemantics {},
     ) {
-        Box(Modifier.offset(x = knob, y = 2.dp).size(24.dp).shadow(1.5.dp, CircleShape).background(Color.White, CircleShape))
+        Box(Modifier.offset(x = knob, y = 2.dp).size(24.dp).shadow(1.5.dp, CircleShape)
+            .background(Brush.verticalGradient(listOf(Color.White, Color(0xFFEDEDED))), CircleShape))
     }
 }
 
@@ -660,7 +664,7 @@ fun GStepper(title: String, value: Int, onValueChange: (Int) -> Unit, range: Int
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(title, style = G.type.body, color = colors.textPrimary, modifier = Modifier.weight(1f))
-        Row(Modifier.height(GControlMetrics.compact).clip(shape).background(colors.background, shape).border(1.dp, colors.hairline, shape),
+        Row(Modifier.height(GControlMetrics.compact).gRaised(shape).clip(shape).background(colors.background, shape).border(1.dp, colors.hairline, shape),
             verticalAlignment = Alignment.CenterVertically) {
             StepperButton("minus", decrease, value > range.first) { onValueChange((value - 1).coerceIn(range)) }
             Box(Modifier.width(1.dp).fillMaxHeight().background(colors.hairline))

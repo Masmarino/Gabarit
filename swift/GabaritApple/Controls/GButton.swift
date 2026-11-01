@@ -124,6 +124,7 @@ public struct GCloseButton: View {
             .frame(width: circle, height: circle)
             .background(hovering ? (onFrame ? GFrameColor.closeHover : GColor.hover) : Color.clear, in: Circle())
             .overlay { Circle().strokeBorder(onFrame ? GFrameColor.rim : GColor.hairline, lineWidth: 1) }
+            .gRaised(Circle(), active: !onFrame)
             #if os(iOS)
             // Under the finger: a 44-point target around the circle.
             .padding(8)

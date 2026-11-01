@@ -606,6 +606,13 @@ implementation("com.github.Masmarino:Gabarit:3.0.0-beta.22")
 Its gallery draws the Mac gallery's sections, light and dark, on the JVM (Robolectric) to `android/gabarit/build/galerie`:
 `cd android && ./gradlew :gabarit:testDebugUnitTest`.
 
+Depth, a little of it, on every platform: the page; what rests on it (a form's card: a soft shadow, the light on its top
+edge); what can be pressed (buttons, chips, menu faces: some volume, a tighter shadow, and they sink when pressed); what
+holds a value is slightly hollow (switch and slider tracks, fields); the frame's bars cast a shadow on the page. A sheet's
+header is on the page's grey, the dark frame is for pages. Apple: `gRaised`, `gCardDepth`, `gHollow`, `gBarShadow`,
+`GKnob`; Android: `gRaised`, `gCard`; tokens: `reliefHighlight`, `reliefShadow`, `cardShadow`, the `card`, `raised` and
+`bar` shadows.
+
 How they answer: every clickable thing has a hovered state (`GHover`), the pointing hand on the Mac (`gPointer`), the
 keyboard's focus (the switch's row is a button, the slider moves with the arrows), one dimming when disabled
 (`gDimmedWhenDisabled`, `GOpacity.disabled`), 44-point touch targets on iPhone and iPad (`gTouchTarget`), and no

@@ -62,7 +62,7 @@ private struct GSliderTrack: View {
             ZStack(alignment: .leading) {
                 Capsule().fill(GColor.track.gHollow(0.1)).frame(height: 4).padding(.horizontal, knob / 2)
                 Capsule().fill(GColor.accent).frame(width: knob / 2 + width * fraction, height: 4).padding(.leading, knob / 2)
-                Circle().fill(.white)
+                GKnob()
                     .overlay { Circle().strokeBorder(dragging ? GColor.accent : GColor.border.opacity(0.5), lineWidth: 1) }
                     .shadow(color: .black.opacity(0.15), radius: 1.5, y: 1)
                     .frame(width: knob, height: knob)
@@ -151,6 +151,7 @@ public struct GStepper: View {
             .frame(minHeight: GControlMetrics.compact)
             .background(GColor.background, in: shape)
             .overlay { shape.strokeBorder(GColor.hairline, lineWidth: 1) }
+            .gRaised(shape)
             .clipShape(shape)
             .fixedSize()
         }

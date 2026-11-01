@@ -80,8 +80,12 @@ val LocalGFormCard = compositionLocalOf { false }
 @Composable
 fun Modifier.gCard(): Modifier {
     val shape = RoundedCornerShape(GRadius.lg)
-    // It rests on the page.
-    return this.shadow(1.dp, shape, clip = false).gSurface(shape, G.colors.surface, G.colors.hairline).clip(shape)
+    val light = G.colors.reliefHighlight
+    // It rests on the page, the light on its top edge.
+    return this.shadow(2.dp, shape, clip = false).gSurface(shape, G.colors.surface, G.colors.hairline).clip(shape).drawWithContent {
+        drawContent()
+        drawRect(Brush.verticalGradient(listOf(light, Color.Transparent), endY = 1.5.dp.toPx()), size = Size(size.width, 1.5.dp.toPx()))
+    }
 }
 
 /** The fine line under a card's row, inset 16 from the leading edge (`show` false: nothing). */
@@ -336,7 +340,7 @@ fun GSidebarRow(title: String, icon: String, selected: Boolean, onClick: () -> U
     val shape = RoundedCornerShape(GRadius.md)
     val spoken = listOfNotNull(title, detail, if (warns) warning else null).joinToString(", ")
     Row(
-        Modifier.fillMaxWidth().heightIn(min = 40.dp).clip(shape).background(if (selected) colors.selectedFill else Color.Transparent, shape)
+        Modifier.fillMaxWidth().heightIn(min = 40.dp).then(if (selected) Modifier.shadow(1.dp, shape, clip = false) else Modifier).clip(shape).background(if (selected) colors.selectedFill else Color.Transparent, shape)
             .clickable(role = Role.Tab, onClick = onClick).padding(horizontal = 10.dp)
             .clearAndSetSemantics { contentDescription = spoken; this.selected = selected },
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),

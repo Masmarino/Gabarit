@@ -41,7 +41,8 @@ public struct GPageBand<Accessory: View>: View {
         .padding(.top, top)
         .padding(.bottom, 18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(inSheet ? Color.clear : GFrameColor.ground)
+        .background { if !inSheet { GFrameColor.ground.gBarShadow() } }
+        .zIndex(1)
     }
 }
 
@@ -157,7 +158,8 @@ public struct GWindowHeader<Icon: View, Trailing: View>: View {
         .padding(.leading, leading).padding(.trailing, 14)
         .frame(height: 52)
         .frame(maxWidth: .infinity)
-        .background(GFrameColor.ground)
+        .background(GFrameColor.ground.gBarShadow())
+        .zIndex(1)
         .overlay(alignment: .bottom) { Rectangle().fill(GFrameColor.line).frame(height: 1) }
         .environment(\.colorScheme, .dark)
     }

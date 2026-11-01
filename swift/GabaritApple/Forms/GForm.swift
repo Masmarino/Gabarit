@@ -269,8 +269,8 @@ private struct GFormSection: View {
                 }
             }
         }
-        // The card rests on the page: its shadow is the ground's, not its rows'.
-        .background { shape.fill(GColor.surface).gShadow(GShadowValues.card) }
+        // The card rests on the page.
+        .gCardDepth(shape)
         .overlay { shape.strokeBorder(GColor.hairline, lineWidth: 1) }
     }
 }

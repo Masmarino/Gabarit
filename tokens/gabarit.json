@@ -122,8 +122,12 @@
         "dark": "#FFFFFF/0.08"
       },
       "reliefShadow": {
-        "light": "#000000/0.12",
-        "dark": "#000000/0.45"
+        "light": "#000000/0.14",
+        "dark": "#000000/0.5"
+      },
+      "cardShadow": {
+        "light": "#000000/0.09",
+        "dark": "#000000/0.35"
       },
       "textPrimary": {
         "light": "slate900",
@@ -718,10 +722,16 @@
   },
   "shadows": {
     "card": {
-      "color": "#000000/0.06",
-      "radius": 3,
+      "color": "#000000/0.09",
+      "radius": 6,
       "x": 0,
-      "y": 1
+      "y": 2
+    },
+    "bar": {
+      "color": "#000000/0.22",
+      "radius": 5,
+      "x": 0,
+      "y": 2
     },
     "raised": {
       "color": "#000000/0.12",
