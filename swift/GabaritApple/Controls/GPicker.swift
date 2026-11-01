@@ -33,20 +33,31 @@ public struct GPicker<Value: Hashable>: View {
     }
 
     private var gabarit: some View {
-        // The control beside the title while both hold on one line; below it otherwise (a phone), rather than a title
-        // crushed onto four lines or a choice cut short.
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .center, spacing: 12) {
-                label
-                control
-            }
-            VStack(alignment: .leading, spacing: 10) {
-                label
-                control
+        Group {
+            if style == .chips {
+                // Chips always below their title: the rows of a card line up, whatever their width.
+                below
+            } else {
+                // A menu beside the title while both hold on one line; below it otherwise (a phone), rather than a title
+                // crushed onto four lines or a choice cut short.
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .center, spacing: 12) {
+                        label
+                        control
+                    }
+                    below
+                }
             }
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(title)
+    }
+
+    private var below: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            label
+            control
+        }
     }
 
     @ViewBuilder private var control: some View {

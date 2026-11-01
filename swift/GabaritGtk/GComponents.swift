@@ -123,7 +123,8 @@ public func gChips(_ options: [String], selected: Int, onChange: @escaping (Int)
     return row
 }
 
-/// A titled choice: the title (and its sentence) on the left, the menu or chips on the right.
+/// A titled choice: the title (and its sentence) on the left and the menu on the right; chips below the title, so the
+/// rows of a card line up.
 @MainActor
 public func gPicker(_ title: String, detail: String? = nil, options: [String], selected: Int, style: GPickerStyle = .menu,
                     onChange: @escaping (Int) -> Void) -> GWidget {
@@ -135,6 +136,10 @@ public func gPicker(_ title: String, detail: String? = nil, options: [String], s
     gtk_widget_set_valign(column, GTK_ALIGN_CENTER)
     let control = style == .menu ? gMenu(options, selected: selected, onChange: onChange) : gChips(options, selected: selected, onChange: onChange)
     gAccessibleLabel(control, title)
+    if style == .chips {
+        gtk_widget_set_halign(control, GTK_ALIGN_START)
+        return gBox(GTK_ORIENTATION_VERTICAL, spacing: 10, [column, control])
+    }
     return gBox(GTK_ORIENTATION_HORIZONTAL, spacing: 12, [column, control])
 }
 
