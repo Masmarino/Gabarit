@@ -13,6 +13,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpOffset
@@ -104,6 +105,9 @@ import kotlin.math.roundToInt
 /** A count on an icon (a tab, a rail item): "99+" beyond 99. */
 fun gBadgeText(count: Int): String = if (count > 99) "99+" else count.toString()
 
+/** In a sheet: its header is on the page's grey, not on the dark frame (what tells a sheet from a page). Set by `GBottomSheet`. */
+val LocalGInSheet = compositionLocalOf { false }
+
 // MARK: Bars
 
 /** A tab of the bottom bar: its title, its icon (the Mac's name) or the app's own image (`image`, drawn in the tab's colour), a count. */
@@ -152,7 +156,7 @@ fun GTabBar(tabs: List<GTab>, selection: String, onSelect: (String) -> Unit, mod
 }
 
 /**
- * The dark band on top of a screen (the frame), under the status bar (`statusBar` false: the room is someone else's):
+ * The dark band on top of a screen (the frame; on the page's grey in a sheet, `LocalGInSheet`), under the status bar (`statusBar` false: the room is someone else's):
  * the back arrow if `back`, `leading` (a logo, a conversation's face), the title (`subtitle` discreet below) or
  * `center` in the middle, then `trailing`; the same in both appearances.
  */
@@ -168,9 +172,11 @@ fun GTopBar(
     center: (@Composable () -> Unit)? = null,
     trailing: @Composable RowScope.() -> Unit = {},
 ) {
-    GScheme(dark = true) {
-        CompositionLocalProvider(LocalContentColor provides GFrameColor.text) {
-            Box(modifier.fillMaxWidth().background(GFrameColor.ground)
+    val inSheet = LocalGInSheet.current
+    val bar = @Composable {
+        val text = if (inSheet) G.colors.textPrimary else GFrameColor.text
+        CompositionLocalProvider(LocalContentColor provides text) {
+            Box(modifier.fillMaxWidth().background(if (inSheet) G.colors.background else GFrameColor.ground)
                 .then(if (statusBar) Modifier.windowInsetsPadding(WindowInsets.statusBars) else Modifier)
                 .heightIn(min = 56.dp).padding(horizontal = 4.dp), contentAlignment = Alignment.CenterStart) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -178,8 +184,10 @@ fun GTopBar(
                     leading()
                     if (title != null && center == null) {
                         Column(Modifier.weight(1f).padding(horizontal = 8.dp).semantics(mergeDescendants = true) { heading() }) {
-                            Text(title, style = G.type.headline, color = GFrameColor.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            if (!subtitle.isNullOrEmpty()) Text(subtitle, style = G.type.caption, color = GFrameColor.textDiscret, maxLines = 1)
+                            Text(title, style = G.type.headline, color = text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            if (!subtitle.isNullOrEmpty()) {
+                                Text(subtitle, style = G.type.caption, color = if (inSheet) G.colors.textDiscret else GFrameColor.textDiscret, maxLines = 1)
+                            }
                         }
                     } else Spacer(Modifier.weight(1f))
                     trailing()
@@ -188,14 +196,22 @@ fun GTopBar(
             }
         }
     }
+    if (inSheet) bar() else GScheme(dark = true) { bar() }
 }
 
-/** A round icon button on the dark frame (a band's action): `title` is what screen readers say. */
+/** A round icon button on the dark frame (a band's action; on the page's grey in a sheet): `title` is what screen readers say. */
 @Composable
 fun GFrameButton(icon: String, title: String, isOn: Boolean = false, onClick: () -> Unit) {
-    Box(Modifier.size(GControlMetrics.touchTarget).clip(CircleShape).background(if (isOn) GFrameColor.selected else Color.Transparent)
+    val inSheet = LocalGInSheet.current
+    val selected = if (inSheet) G.colors.selectedFill else GFrameColor.selected
+    val tint = when {
+        isOn -> if (inSheet) G.colors.accentText else GFrameColor.accent
+        inSheet -> G.colors.textSecondary
+        else -> GFrameColor.textSecondary
+    }
+    Box(Modifier.size(GControlMetrics.touchTarget).clip(CircleShape).background(if (isOn) selected else Color.Transparent)
         .clickable(role = Role.Button, onClick = onClick).semantics { contentDescription = title }, contentAlignment = Alignment.Center) {
-        GIcon(icon, size = 17f, color = if (isOn) GFrameColor.accent else GFrameColor.textSecondary)
+        GIcon(icon, size = 17f, color = tint)
     }
 }
 
@@ -240,19 +256,23 @@ fun GRail(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> 
 }
 
 /**
- * The dark band under a settings page's bar: the icon ringed by a fine line, the title and the sentence that says what
+ * The dark band under a settings page's bar (on the page's grey in a sheet): the icon ringed by a fine line, the title and the sentence that says what
  * the page is for. `accessory`: on the right.
  */
 @Composable
 fun GPageBand(icon: String, title: String, summary: String, accessory: @Composable () -> Unit = {}) {
-    Row(Modifier.fillMaxWidth().background(GFrameColor.ground).padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 18.dp),
+    val inSheet = LocalGInSheet.current
+    val text = if (inSheet) G.colors.textPrimary else GFrameColor.text
+    Row(Modifier.fillMaxWidth().background(if (inSheet) G.colors.background else GFrameColor.ground)
+        .padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 18.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-        Box(Modifier.size(48.dp).border(1.dp, GFrameColor.rim, RoundedCornerShape(GRadius.md)), contentAlignment = Alignment.Center) {
-            GIcon(icon, size = 22f, color = GFrameColor.text)
+        Box(Modifier.size(48.dp).border(1.dp, if (inSheet) G.colors.hairline else GFrameColor.rim, RoundedCornerShape(GRadius.md)),
+            contentAlignment = Alignment.Center) {
+            GIcon(icon, size = 22f, color = text)
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            Text(title, style = G.type.title2, color = GFrameColor.text, modifier = Modifier.semantics { heading() })
-            Text(summary, style = G.type.subheadline, color = GFrameColor.textSecondary)
+            Text(title, style = G.type.title2, color = text, modifier = Modifier.semantics { heading() })
+            Text(summary, style = G.type.subheadline, color = if (inSheet) G.colors.textDiscret else GFrameColor.textSecondary)
         }
         accessory()
     }
@@ -345,7 +365,7 @@ fun GBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier, ground: C
         contentWindowInsets = contentWindowInsets, sheetGesturesEnabled = dismissible,
         dragHandle = if (!handle) null else ({
             Box(Modifier.padding(top = 10.dp, bottom = 6.dp).size(width = 36.dp, height = 5.dp).background(rim, RoundedCornerShape(3.dp)))
-        }), content = content)
+        })) { CompositionLocalProvider(LocalGInSheet provides true) { content() } }
 }
 
 /**

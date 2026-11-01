@@ -44,8 +44,8 @@ private struct GPageGround: ViewModifier {
 
 // MARK: Sheets
 
-/// A Gabarit sheet's stack: on iPhone and iPad, a navigation stack (its dark bar, its buttons); on the Mac, nothing:
-/// the sheet draws its header itself (`gSheet`), without the system's bar or buttons.
+/// A Gabarit sheet's stack: on iPhone and iPad, a navigation stack (its bar on the page's grey, its buttons); on the Mac,
+/// nothing: the sheet draws its header itself (`gSheet`), without the system's bar or buttons.
 public struct GSheetStack<Content: View>: View {
     @ViewBuilder let content: Content
 
@@ -58,8 +58,9 @@ public struct GSheetStack<Content: View>: View {
         NavigationStack { content }
             // A sheet is another window: its ground is not the page's that opens it.
             .environment(\.gGroundPainted, false)
+            .environment(\.gInSheet, true)
         #else
-        content.environment(\.gGroundPainted, false)
+        content.environment(\.gGroundPainted, false).environment(\.gInSheet, true)
         #endif
     }
 }
@@ -75,8 +76,8 @@ public extension View {
                               confirm: confirm, onClose: onClose, back: back))
     }
 
-    /// A sheet page like settings pages: on iPhone and iPad, the dark top bar and its title; a form (`GForm`) carries
-    /// the title large in the page, and the sentence that says what it is for. Bar buttons go through `GToolbarItem`.
+    /// A sheet page: on iPhone and iPad, a top bar on the page's grey; a form (`GForm`) carries the title large in the
+    /// page, and the sentence that says what it is for. Bar buttons go through `GToolbarItem`.
     func gSheetPage(symbol: String, title: String, summary: String) -> some View {
         #if os(iOS)
         modifier(GSheetPageChrome(symbol: symbol, title: title, summary: summary))
@@ -96,8 +97,8 @@ private struct GSheetAppearance: ViewModifier {
 }
 
 #if os(iOS)
-/// A sheet's page on iPhone and iPad: the dark bar; the title large in a Gabarit form, or, under a system `Form`, the
-/// header band.
+/// A sheet's page on iPhone and iPad: the bar on the page's grey; the title large in a Gabarit form, or, under a system
+/// `Form`, the header band.
 private struct GSheetPageChrome: ViewModifier {
     let symbol: String
     let title: String
@@ -115,6 +116,7 @@ private struct GSheetPageChrome: ViewModifier {
                 if !gabarit { GPageBand(symbol: symbol, title: title, summary: summary) }
             }
             .modifier(GSheetAppearance())
+            .environment(\.gInSheet, true)
     }
 }
 #endif
@@ -128,7 +130,6 @@ private struct GSheetChrome: ViewModifier {
     var onClose: (() -> Void)?
     var back: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.gFormLayout) private var gabarit
 
     private func finish() {
         onClose?()
@@ -141,42 +142,20 @@ private struct GSheetChrome: ViewModifier {
             .environment(\.gGroundPainted, false)
     }
 
-    @ViewBuilder private func chrome(_ content: Content) -> some View {
-        if gabarit {
-            // Editors: the title large in the sheet, the cross on the right; no band.
-            VStack(spacing: 0) {
-                GSheetTitle(title: title, summary: summary, close: close, back: back) { finish() }
-                content.environment(\.gFormTitle, nil).frame(maxHeight: .infinity)
-            }
-            .gPageGround()
-            #if os(iOS)
-            // The title and the cross are in the sheet: no system bar above (pages pushed in the stack have theirs).
-            .toolbar(.hidden, for: .navigationBar)
-            #endif
-            .modifier(GSheetAppearance())
-        } else {
-            #if os(iOS)
-            // Under a system `Form`: the dark bar, its button, the band.
-            content
-                .gSheetPage(symbol: symbol, title: title, summary: summary)
-                .toolbar {
-                    if confirm {
-                        GToolbarItem(placement: .confirmationAction) { Button(close) { finish() } }
-                    } else {
-                        GToolbarItem(placement: .cancellationAction) { Button(close) { finish() } }
-                    }
-                }
-            #else
-            VStack(spacing: 0) {
-                GPageBand(symbol: symbol, title: title, summary: summary, top: 18) {
-                    GCloseButton(title: close) { finish() }
-                }
-                content.frame(maxHeight: .infinity)
-            }
-            .gPageGround()
-            .modifier(GSheetAppearance())
-            #endif
+    private func chrome(_ content: Content) -> some View {
+        // Always the title large in the sheet and the cross on the right, on the page's grey: what tells a sheet from a
+        // page (the dark frame).
+        VStack(spacing: 0) {
+            GSheetTitle(title: title, summary: summary, close: close, back: back) { finish() }
+            content.environment(\.gFormTitle, nil).frame(maxHeight: .infinity)
         }
+        .gPageGround()
+        #if os(iOS)
+        // The title and the cross are in the sheet: no system bar above (pages pushed in the stack have theirs).
+        .toolbar(.hidden, for: .navigationBar)
+        #endif
+        .modifier(GSheetAppearance())
+        .environment(\.gInSheet, true)
     }
 }
 #endif

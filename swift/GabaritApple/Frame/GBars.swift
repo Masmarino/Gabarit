@@ -5,24 +5,43 @@ import SwiftUI
 // the appearance; the content follows light or dark. Bar buttons are flat (no glass pill), the title in IBM Plex, the
 // selection underlined in rust.
 
+public extension EnvironmentValues {
+    /// In a sheet: its header is on the page's grey, not on the dark frame (what tells a sheet from a page). Set by
+    /// `GSheetStack` and `gSheetPage`, and by hand on a sheet's own navigation stack.
+    @Entry var gInSheet = false
+}
+
 public extension View {
-    /// Gabarit's dark top bar (graphite ground, light titles and buttons). On the Mac, the frame is drawn by the window
-    /// itself (rail and top band): nothing to do here.
-    @ViewBuilder func gFrameToolbar() -> some View {
+    /// Gabarit's top bar: dark on a page (graphite ground, light titles and buttons), on the page's grey in a sheet
+    /// (`gInSheet`). On the Mac, the frame is drawn by the window itself (rail and top band): nothing to do here.
+    func gFrameToolbar() -> some View { modifier(GFrameToolbar()) }
+}
+
+private struct GFrameToolbar: ViewModifier {
+    @Environment(\.gInSheet) private var inSheet
+
+    func body(content: Content) -> some View {
         #if os(iOS)
-        toolbarBackground(GFrameColor.ground, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            // The sheet's ground, dark like the frame: otherwise the system's light glass shows as a white thread along
-            // the rounded top corners (the content paints its own ground over it).
-            .presentationBackground(GFrameColor.ground)
+        if inSheet {
+            content
+                .toolbarBackground(GColor.background, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
+        } else {
+            content
+                .toolbarBackground(GFrameColor.ground, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
+                .toolbarColorScheme(.dark, for: .navigationBar)
+                // The sheet's ground, dark like the frame: otherwise the system's light glass shows as a white thread
+                // along the rounded top corners (the content paints its own ground over it).
+                .presentationBackground(GFrameColor.ground)
+        }
         #else
-        self
+        content
         #endif
     }
 }
 
-/// A flat bar button: without the system's glass pill, light on the dark frame.
+/// A flat bar button: without the system's glass pill, light on the dark frame, dark on a sheet's grey.
 public struct GToolbarItem<Content: View>: ToolbarContent {
     let placement: ToolbarItemPlacement
     @ViewBuilder let content: () -> Content
@@ -54,20 +73,32 @@ public struct GToolbarItemGroup<Content: View>: ToolbarContent {
 }
 
 extension View {
-    /// Light on the dark frame (iPhone); on the Mac, the window's bar follows the appearance.
-    @ViewBuilder fileprivate func gFlatBarItem() -> some View {
+    fileprivate func gFlatBarItem() -> some View { modifier(GFlatBarItem()) }
+}
+
+/// Light on the dark frame (iPhone), dark on a sheet's grey; on the Mac, the window's bar follows the appearance.
+private struct GFlatBarItem: ViewModifier {
+    @Environment(\.gInSheet) private var inSheet
+
+    func body(content: Content) -> some View {
         #if os(iOS)
-        foregroundStyle(GColor.textPrimary).environment(\.colorScheme, .dark)
+        if inSheet {
+            content.foregroundStyle(GColor.textPrimary)
+        } else {
+            content.foregroundStyle(GColor.textPrimary).environment(\.colorScheme, .dark)
+        }
         #else
-        self
+        content
         #endif
     }
 }
 
-/// A bar's title: IBM Plex, light on the frame.
+/// A bar's title: IBM Plex, light on the frame, dark on a sheet's grey.
 public struct GBarTitle: View {
     let title: String
     var subtitle: String?
+    @Environment(\.gInSheet) private var inSheet
+    @Environment(\.colorScheme) private var scheme
 
     public init(title: String, subtitle: String? = nil) {
         self.title = title
@@ -82,7 +113,7 @@ public struct GBarTitle: View {
             }
         }
         .fixedSize()
-        .environment(\.colorScheme, .dark)
+        .environment(\.colorScheme, inSheet ? scheme : .dark)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
     }

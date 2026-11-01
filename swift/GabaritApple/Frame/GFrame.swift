@@ -10,6 +10,7 @@ public struct GPageBand<Accessory: View>: View {
     let summary: String
     var top: CGFloat
     @ViewBuilder var accessory: Accessory
+    @Environment(\.gInSheet) private var inSheet
 
     public init(symbol: String, title: String, summary: String, top: CGFloat = 6, @ViewBuilder accessory: () -> Accessory) {
         self.symbol = symbol
@@ -23,14 +24,14 @@ public struct GPageBand<Accessory: View>: View {
         HStack(spacing: 14) {
             Image(systemName: symbol)
                 .font(.system(size: 22))
-                .foregroundStyle(GFrameColor.text)
+                .foregroundStyle(inSheet ? GColor.textPrimary : GFrameColor.text)
                 .frame(width: 48, height: 48)
-                .overlay { RoundedRectangle(cornerRadius: GRadius.md).strokeBorder(GFrameColor.rim, lineWidth: 1) }
+                .overlay { RoundedRectangle(cornerRadius: GRadius.md).strokeBorder(inSheet ? GColor.hairline : GFrameColor.rim, lineWidth: 1) }
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
-                Text(title).font(GFont.title2).foregroundStyle(GFrameColor.text)
+                Text(title).font(GFont.title2).foregroundStyle(inSheet ? GColor.textPrimary : GFrameColor.text)
                     .accessibilityAddTraits(.isHeader)
-                Text(summary).font(GFont.subheadline).foregroundStyle(GFrameColor.textSecondary)
+                Text(summary).font(GFont.subheadline).foregroundStyle(inSheet ? GColor.textDiscret : GFrameColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)
@@ -40,7 +41,7 @@ public struct GPageBand<Accessory: View>: View {
         .padding(.top, top)
         .padding(.bottom, 18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(GFrameColor.ground)
+        .background(inSheet ? Color.clear : GFrameColor.ground)
     }
 }
 
