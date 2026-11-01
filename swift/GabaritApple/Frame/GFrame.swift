@@ -75,9 +75,9 @@ public struct GRailItem: View {
 
     public var body: some View {
         Button(action: action) {
-            GHover { hovering in item(hovering: hovering) }
+            GLive { hovering, pressed in item(hovering: hovering, pressed: pressed) }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(GLiveStyle())
         .gDimmedWhenDisabled()
         .environment(\.colorScheme, .dark)
         .accessibilityLabel(title)
@@ -85,7 +85,7 @@ public struct GRailItem: View {
         .accessibilityAddTraits(current ? .isSelected : [])
     }
 
-    private func item(hovering: Bool) -> some View {
+    private func item(hovering: Bool, pressed: Bool) -> some View {
         VStack(spacing: 3) {
             icon
                 .frame(height: 22)
@@ -104,8 +104,9 @@ public struct GRailItem: View {
         }
         .foregroundStyle(current ? GColor.accent : (hovering ? GFrameColor.text : GFrameColor.textDiscret))
         .frame(maxWidth: .infinity, minHeight: 52)
-        .background(current ? GFrameColor.selected : (hovering ? GFrameColor.hover : .clear),
+        .background(pressed || current ? GFrameColor.selected : (hovering ? GFrameColor.hover : .clear),
                     in: .rect(cornerRadius: GRadius.sm))
+        .scaleEffect(pressed ? 0.97 : 1)
         .overlay(alignment: .leading) {
             if current { Rectangle().fill(GColor.accent).frame(width: 2).padding(.vertical, 6).gGlow(radius: 5) }
         }

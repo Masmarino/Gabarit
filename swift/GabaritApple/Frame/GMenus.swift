@@ -20,9 +20,9 @@ public struct GMenuItem: View {
 
     public var body: some View {
         Button(role: role, action: action) {
-            GHover { hovering in row.background(hovering ? GColor.hover : Color.clear) }
+            GLive { hovering, pressed in row.background(pressed ? GColor.press : hovering ? GColor.hover : Color.clear) }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(GLiveStyle())
         .gDimmedWhenDisabled()
         .accessibilityAddTraits(checked == true ? .isSelected : [])
     }

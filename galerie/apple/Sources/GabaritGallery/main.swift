@@ -4,8 +4,10 @@ import SwiftUI
 
 // Draws each section of the gallery, light and dark, to <folder>/<section>-<appearance>.png.
 
+// `--live`: a window to try the controls with the real pointer.
+let live = CommandLine.arguments.contains("--live")
 let folder = URL(fileURLWithPath: CommandLine.arguments.dropFirst().first ?? ".")
-try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+if !live { try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true) }
 
 @MainActor func draw<V: View>(_ name: String, _ view: V) {
     for (appearance, scheme) in [("light", ColorScheme.light), ("dark", .dark)] {
@@ -28,6 +30,16 @@ try FileManager.default.createDirectory(at: folder, withIntermediateDirectories:
 
 MainActor.assumeIsolated {
     GFonts.register()
+    if live {
+        let application = NSApplication.shared
+        application.setActivationPolicy(.regular)
+        let window = NSWindow(contentViewController: NSHostingController(rootView: LiveSection()))
+        window.title = "Gabarit"
+        window.makeKeyAndOrderFront(nil)
+        application.activate()
+        application.run()
+    }
+    draw("states", StatesSection())
     draw("controls", ControlsSection())
     draw("forms", FormsSection())
     draw("frame", FrameSection())

@@ -60,6 +60,7 @@ public enum GColor {
     public static var surface: Color { GTheme.current.surface ?? GColorDefault.surface }
     public static var sidebar: Color { GTheme.current.sidebar ?? GColorDefault.sidebar }
     public static let hover = Color(GColorValues.hover)
+    public static let press = Color(GColorValues.press)
     public static var track: Color { GTheme.current.track ?? GColorDefault.track }
     public static let border = Color(GColorValues.border)
     public static var hairline: Color { GTheme.current.hairline ?? GColorDefault.hairline }

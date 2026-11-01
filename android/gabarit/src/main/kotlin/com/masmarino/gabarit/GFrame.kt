@@ -141,7 +141,7 @@ fun GTabBar(tabs: List<GTab>, selection: String, onSelect: (String) -> Unit, mod
                         if (current) {
                             val inset = 18.dp.toPx()
                             // Its light falls on the tab, from the line above.
-                            drawRect(Brush.verticalGradient(listOf(colors.accent.copy(alpha = 0.16f), Color.Transparent), endY = 20.dp.toPx()),
+                            drawRect(Brush.verticalGradient(listOf(colors.accent.copy(alpha = 0.16f), colors.accent.copy(alpha = 0f)), endY = 20.dp.toPx()),
                                 Offset(inset, 0f), Size(size.width - 2 * inset, 20.dp.toPx()))
                             drawRect(colors.accent, Offset(inset, 0f), Size(size.width - 2 * inset, 2.dp.toPx()))
                         }

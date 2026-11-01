@@ -42,10 +42,34 @@ public extension View {
     func gPointer() -> some View { modifier(GPointer()) }
 }
 
+public extension GAnimation {
+    /// A press: quicker than a hover, it answers the finger.
+    static let press = Animation.easeOut(duration: 0.07)
+}
+
+/// How a control is drawn under the pointer, to force it in a gallery (`gPointerPreview`).
+public enum GPointerPreview: Sendable {
+    case hover, pressed
+}
+
+public extension EnvironmentValues {
+    /// A gallery draws what is below as hovered or pressed, without a pointer.
+    @Entry var gPointerPreview: GPointerPreview?
+    /// The button around this is held down (`GLiveStyle`).
+    @Entry var gButtonPressed = false
+}
+
+/// A button's style that draws nothing itself and tells its label it is held down: `GLive` reads it.
+public struct GLiveStyle: ButtonStyle {
+    public init() {}
+
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label.environment(\.gButtonPressed, configuration.isPressed)
+    }
+}
+
 /// Reads whether the pointer is over its content, and redraws it so: `GHover { hovering in … }`.
 public struct GHover<Content: View>: View {
-    @State private var hovering = false
-    @Environment(\.isEnabled) private var isEnabled
     let content: (Bool) -> Content
 
     public init(@ViewBuilder content: @escaping (_ hovering: Bool) -> Content) {
@@ -53,10 +77,30 @@ public struct GHover<Content: View>: View {
     }
 
     public var body: some View {
-        content(hovering && isEnabled)
+        GLive { hovering, _ in content(hovering) }
+    }
+}
+
+/// Reads whether the pointer is over its content, and whether it is held down (the button's style is `GLiveStyle`):
+/// `GLive { hovering, pressed in … }`.
+public struct GLive<Content: View>: View {
+    @State private var hovering = false
+    @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.gButtonPressed) private var buttonPressed
+    @Environment(\.gPointerPreview) private var preview
+    let content: (Bool, Bool) -> Content
+
+    public init(@ViewBuilder content: @escaping (_ hovering: Bool, _ pressed: Bool) -> Content) {
+        self.content = content
+    }
+
+    public var body: some View {
+        let pressed = isEnabled && (buttonPressed || preview == .pressed)
+        content(isEnabled && (hovering || preview != nil), pressed)
             .onHover { hovering = $0 }
             .gPointer()
             .animation(GAnimation.hover, value: hovering)
+            .animation(GAnimation.press, value: pressed)
     }
 }
 

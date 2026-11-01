@@ -88,6 +88,7 @@ public enum GColorValues {
     public static let surface = GColorPair(light: GPaletteValues.slate0, dark: GPaletteValues.graphite850)
     public static let sidebar = GColorPair(light: GPaletteValues.slate100, dark: GPaletteValues.graphite850)
     public static let hover = GColorPair(light: GPaletteValues.slate900.opacity(0.07), dark: GPaletteValues.graphite100.opacity(0.07))
+    public static let press = GColorPair(light: GPaletteValues.slate900.opacity(0.14), dark: GPaletteValues.graphite100.opacity(0.14))
     public static let track = GColorPair(light: GPaletteValues.slate200, dark: GPaletteValues.graphite700)
     public static let border = GColorPair(light: GPaletteValues.slate500, dark: GPaletteValues.graphite500)
     public static let hairline = GColorPair(light: GPaletteValues.slate300, dark: GRGBA(hex: 0xCDD7E6, alpha: 0.12))

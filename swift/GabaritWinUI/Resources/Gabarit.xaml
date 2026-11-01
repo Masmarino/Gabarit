@@ -12,6 +12,8 @@
             <SolidColorBrush x:Key="GSidebarBrush" Color="#FFE4E8ED"/>
             <Color x:Key="GHoverColor">#1210151C</Color>
             <SolidColorBrush x:Key="GHoverBrush" Color="#1210151C"/>
+            <Color x:Key="GPressColor">#2410151C</Color>
+            <SolidColorBrush x:Key="GPressBrush" Color="#2410151C"/>
             <Color x:Key="GTrackColor">#FFDCE2E9</Color>
             <SolidColorBrush x:Key="GTrackBrush" Color="#FFDCE2E9"/>
             <Color x:Key="GBorderColor">#FF7D8794</Color>
@@ -104,7 +106,7 @@
             <SolidColorBrush x:Key="ToggleSwitchFillOffPointerOver" Color="#FFDCE2E9"/>
             <SolidColorBrush x:Key="ToggleSwitchFillOffPressed" Color="#FFDCE2E9"/>
             <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#597D8794"/>
-            <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#597D8794"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#B27D8794"/>
             <SolidColorBrush x:Key="ToggleSwitchStrokeOffPressed" Color="#597D8794"/>
             <SolidColorBrush x:Key="ToggleSwitchStrokeOn" Color="#FFC2410C"/>
             <SolidColorBrush x:Key="ToggleSwitchStrokeOnPointerOver" Color="#FFC2410C"/>
@@ -119,7 +121,7 @@
             <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#FFEFF2F5"/>
             <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#FFEFF2F5"/>
             <SolidColorBrush x:Key="TextControlBorderBrush" Color="#FFCFD5DC"/>
-            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#FFCFD5DC"/>
+            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#B27D8794"/>
             <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#FFC2410C"/>
             <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="#FFCFD5DC"/>
             <SolidColorBrush x:Key="TextControlForeground" Color="#FF10151C"/>
@@ -168,6 +170,8 @@
             <SolidColorBrush x:Key="GSidebarBrush" Color="#FF181F27"/>
             <Color x:Key="GHoverColor">#12E7EBF1</Color>
             <SolidColorBrush x:Key="GHoverBrush" Color="#12E7EBF1"/>
+            <Color x:Key="GPressColor">#24E7EBF1</Color>
+            <SolidColorBrush x:Key="GPressBrush" Color="#24E7EBF1"/>
             <Color x:Key="GTrackColor">#FF28323D</Color>
             <SolidColorBrush x:Key="GTrackBrush" Color="#FF28323D"/>
             <Color x:Key="GBorderColor">#FF646C77</Color>
@@ -260,7 +264,7 @@
             <SolidColorBrush x:Key="ToggleSwitchFillOffPointerOver" Color="#FF28323D"/>
             <SolidColorBrush x:Key="ToggleSwitchFillOffPressed" Color="#FF28323D"/>
             <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#59646C77"/>
-            <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#59646C77"/>
+            <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#B2646C77"/>
             <SolidColorBrush x:Key="ToggleSwitchStrokeOffPressed" Color="#59646C77"/>
             <SolidColorBrush x:Key="ToggleSwitchStrokeOn" Color="#FFF0622A"/>
             <SolidColorBrush x:Key="ToggleSwitchStrokeOnPointerOver" Color="#FFF0622A"/>
@@ -275,7 +279,7 @@
             <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#FF11161C"/>
             <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#FF11161C"/>
             <SolidColorBrush x:Key="TextControlBorderBrush" Color="#1FCDD7E6"/>
-            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#1FCDD7E6"/>
+            <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#B2646C77"/>
             <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#FFF0622A"/>
             <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="#1FCDD7E6"/>
             <SolidColorBrush x:Key="TextControlForeground" Color="#FFE7EBF1"/>
@@ -324,6 +328,8 @@
             <SolidColorBrush x:Key="GSidebarBrush" Color="{ThemeResource SystemColorWindowColor}"/>
             <StaticResource x:Key="GHoverColor" ResourceKey="SystemColorWindowColor"/>
             <SolidColorBrush x:Key="GHoverBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <StaticResource x:Key="GPressColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GPressBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
             <StaticResource x:Key="GTrackColor" ResourceKey="SystemColorGrayTextColor"/>
             <SolidColorBrush x:Key="GTrackBrush" Color="{ThemeResource SystemColorGrayTextColor}"/>
             <StaticResource x:Key="GBorderColor" ResourceKey="SystemColorWindowTextColor"/>

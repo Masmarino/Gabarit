@@ -45,6 +45,12 @@ private struct GSliderTrack: View {
     let format: ((Double) -> String)?
     @Environment(\.isEnabled) private var isEnabled
     @State private var dragging = false
+    @State private var hovering = false
+    @Environment(\.gPointerPreview) private var preview
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var lit: Bool { isEnabled && (hovering || preview != nil) }
+    private var held: Bool { isEnabled && (dragging || preview == .pressed) }
 
     private var fraction: Double {
         guard range.upperBound > range.lowerBound else { return 0 }
@@ -63,9 +69,10 @@ private struct GSliderTrack: View {
                 Capsule().fill(GColor.track.gHollow(0.1)).frame(height: 4).padding(.horizontal, knob / 2)
                 Capsule().fill(GColor.accent).frame(width: knob / 2 + width * fraction, height: 4).padding(.leading, knob / 2).gGlow(radius: 3)
                 GKnob()
-                    .overlay { Circle().strokeBorder(dragging ? GColor.accent : GColor.border.opacity(0.5), lineWidth: 1) }
-                    .shadow(color: .black.opacity(0.15), radius: 1.5, y: 1)
+                    .overlay { Circle().strokeBorder(held ? GColor.accent : lit ? GColor.border : GColor.border.opacity(0.5), lineWidth: 1) }
+                    .shadow(color: held ? GColor.accent.opacity(0.4) : .black.opacity(lit ? 0.22 : 0.15), radius: held ? 4 : lit ? 2.5 : 1.5, y: held ? 0 : 1)
                     .frame(width: knob, height: knob)
+                    .scaleEffect(reduceMotion ? 1 : held ? 1.1 : lit ? 1.06 : 1)
                     .offset(x: width * fraction)
             }
             .frame(maxHeight: .infinity)
@@ -78,6 +85,9 @@ private struct GSliderTrack: View {
                 }
                 .onEnded { _ in dragging = false })
         }
+        .onHover { hovering = $0 }
+        .animation(GAnimation.hover, value: lit)
+        .animation(GAnimation.press, value: held)
         .frame(height: GControlMetrics.compact - 8)
         .gTouchTarget(height: GControlMetrics.compact - 8)
         .frame(minWidth: 120)

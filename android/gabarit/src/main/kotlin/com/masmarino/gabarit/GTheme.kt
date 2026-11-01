@@ -75,7 +75,8 @@ fun Modifier.gPageGround(): Modifier = composed {
     val grounds = LocalGrounds.current
     val gradient = grounds?.gradient
     // One light, from above: the page is lit at its top, whatever its ground.
-    val light = Brush.verticalGradient(0f to G.colors.pageLight, 0.4f to Color.Transparent)
+    val pageLight = G.colors.pageLight
+    val light = Brush.verticalGradient(0f to pageLight, 0.4f to pageLight.copy(alpha = 0f))
     if (gradient == null) background(G.colors.background).background(light)
     else {
         val brush = Brush.linearGradient(if (gradient.size == 1) gradient + gradient else gradient)

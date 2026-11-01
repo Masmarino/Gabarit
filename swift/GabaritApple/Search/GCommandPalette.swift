@@ -274,19 +274,19 @@ public struct GCommandKButton: View {
 
     public var body: some View {
         Button { toggle?() ?? NotificationCenter.default.post(name: .gOpenCommandPalette, object: nil) } label: {
-            GHover { hovering in
+            GLive { hovering, pressed in
                 VStack(spacing: 3) {
                     Image(systemName: "magnifyingglass").font(.system(size: 15))
                     Text("⌘ + K").font(GFont.caption.weight(.medium)).lineLimit(1).minimumScaleFactor(0.7)
                 }
                 .foregroundStyle(hovering ? GFrameColor.text : GFrameColor.textSecondary)
                 .frame(maxWidth: .infinity, minHeight: 48)
-                .background(hovering ? GFrameColor.hover : .clear, in: .rect(cornerRadius: GRadius.sm))
+                .background(pressed ? GFrameColor.selected : hovering ? GFrameColor.hover : .clear, in: .rect(cornerRadius: GRadius.sm))
                 .overlay { RoundedRectangle(cornerRadius: GRadius.sm).strokeBorder(GFrameColor.rim, lineWidth: 1) }
                 .contentShape(Rectangle())
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(GLiveStyle())
         .help(gText("Quick search (⌘ + K)"))
         .accessibilityLabel(gText("Quick search"))
         .accessibilityHint(gText("Shortcut: Command K"))

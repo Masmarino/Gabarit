@@ -323,10 +323,10 @@ window.g-window.solid-csd { border-color: @g_graphite700; box-shadow: inset 0 0 
    a value is slightly hollow, the frame casts a shadow on the page. */
 .g-surface { box-shadow: 0 2px 6px @g_cardShadow, inset 0 1px @g_reliefHighlight, inset 0 -1px @g_reliefShade; }
 button.g-secondary, dropdown.g-menu > button, button.g-chip:not(:checked), button.g-close {
-  background-image: linear-gradient(alpha(white, 0.07), transparent 50%, alpha(black, 0.04));
+  background-image: linear-gradient(alpha(white, 0.07), alpha(white, 0) 50%, alpha(black, 0.04));
   box-shadow: 0 1px 2px @g_reliefShadow, inset 0 1px @g_reliefHighlight, inset 0 -1px @g_reliefShade; }
 button.g-primary, button.g-danger {
-  background-image: linear-gradient(alpha(white, 0.07), transparent 50%, alpha(black, 0.04));
+  background-image: linear-gradient(alpha(white, 0.07), alpha(white, 0) 50%, alpha(black, 0.04));
   box-shadow: 0 1px 2px @g_reliefShadow, inset 0 1px alpha(white, 0.2), inset 0 -1px @g_reliefShade; }
 button.g-secondary:active, button.g-primary:active, button.g-danger:active, button.g-chip:active, button.g-close:active,
 dropdown.g-menu > button:active { background-image: none; box-shadow: none; }
@@ -336,9 +336,45 @@ entry.g-field, textview.g-field, switch.g-switch, scale.g-slider > trough { box-
 dropdown.g-menu popover > contents { box-shadow: 0 8px 18px alpha(black, 0.18); }
 
 /* One light, from above: the page is lit at its top, the frame has a sheen, what is on glows a little. */
-.g-page { background-image: linear-gradient(to bottom, @g_pageLight, transparent 40%); }
+.g-page { background-image: linear-gradient(to bottom, @g_pageLight, alpha(@g_pageLight, 0) 40%); }
 .g-frame { background-image: linear-gradient(to bottom, @g_graphite900, @g_frame); }
 switch.g-switch:checked { box-shadow: 0 0 6px alpha(@g_accent, 0.45); }
 button.g-chip:checked { box-shadow: 0 0 4px alpha(@g_accent, 0.4); }
 .g-rail-item.g-current { box-shadow: 0 0 8px alpha(@g_rust400, 0.18); }
 scale.g-slider > trough > highlight { box-shadow: 0 0 4px alpha(@g_accent, 0.4); }
+
+/* Under the pointer and held down, as on the Mac: it rises towards the pointer (a wider shadow, more light), it sinks when
+   held (its own shade from the top edge, a pixel lower). Quick fades; none when the system asks for less motion (GTK's own
+   gtk-enable-animations setting turns CSS transitions off). */
+button.g-button, button.g-chip, button.g-close, button.g-stepper-step, button.g-sidebar-row, button.g-menu-item, button.g-row-button,
+button.g-nav-tab, button.g-rail-item, button.g-rail-button, button.g-rail-square, button.g-sheet-back, button.g-command-row,
+dropdown.g-menu > button, menubutton.g-menu-button > button, entry.g-field, textview.g-field, switch.g-switch,
+switch.g-switch > slider, scale.g-slider > trough > slider { transition: 120ms ease-out; }
+button.g-button:active, button.g-chip:active, button.g-close:active, dropdown.g-menu > button:active { transition-duration: 70ms; }
+
+button.g-secondary:hover, button.g-chip:not(:checked):hover, dropdown.g-menu > button:hover, button.g-close:hover {
+  box-shadow: 0 2px 4px @g_reliefShadow, inset 0 1px @g_reliefHighlight, inset 0 -1px @g_reliefShade; }
+button.g-primary:hover, button.g-danger:hover { box-shadow: 0 2px 4px @g_reliefShadow, inset 0 1px alpha(white, 0.32), inset 0 -1px @g_reliefShade; }
+button.g-secondary:hover { background-color: @g_surface; background-image: linear-gradient(@g_hover, @g_hover); border-color: alpha(@g_border, 0.8); }
+button.g-primary:active { background-color: @g_primaryHover; }
+button.g-danger:hover { background-color: mix(@g_error, white, 0.1); }
+button.g-danger:active { background-color: mix(@g_error, black, 0.18); }
+button.g-primary:active, button.g-danger:active { background-image: linear-gradient(alpha(black, 0.28), alpha(black, 0) 45%); box-shadow: none; }
+button.g-secondary:active { background-color: @g_surface; background-image: linear-gradient(alpha(black, 0.13), alpha(black, 0) 45%), linear-gradient(@g_press, @g_press); box-shadow: none; }
+button.g-ghost:active, button.g-chip:active, button.g-close:active, button.g-stepper-step:active, button.g-menu-item:active,
+button.g-sheet-back:active, button.g-sidebar-row:active, button.g-command-row:active, dropdown.g-menu > button:active,
+menubutton.g-menu-button > button:active { background-color: @g_press; box-shadow: none; }
+button.g-chip:active, button.g-close:active, dropdown.g-menu > button:active, button.g-stepper-step:active {
+  background-image: linear-gradient(alpha(black, 0.13), alpha(black, 0) 45%); }
+button.g-chip:checked:hover { box-shadow: 0 0 7px alpha(@g_accent, 0.5); }
+button.g-nav-tab:active { color: @g_textDiscret; }
+button.g-rail-item:active, button.g-rail-button:active, button.g-rail-square:active { background-color: alpha(@g_graphite100, 0.13); }
+menubutton.g-menu-button > button:hover { background-color: @g_hover; }
+entry.g-field:hover, textview.g-field:hover { border-color: alpha(@g_border, 0.7); }
+switch.g-switch:checked:hover { box-shadow: 0 0 9px alpha(@g_accent, 0.55); }
+switch.g-switch:active > slider { min-width: 19px; }
+scale.g-slider > trough > slider:hover { border-color: @g_border; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22); }
+scale.g-slider > trough > slider:active { border-color: @g_accent; box-shadow: 0 0 5px alpha(@g_accent, 0.5); }
+/* The menu's rim: rust only while it is open, as on the Mac. */
+dropdown.g-menu > button:hover { border-color: alpha(@g_border, 0.7); }
+dropdown.g-menu > button:checked, dropdown.g-menu > button:hover:checked { border-color: @g_accent; }

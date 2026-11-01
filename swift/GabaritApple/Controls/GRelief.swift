@@ -8,10 +8,12 @@ import SwiftUI
 // switch, the current tab, a selection) glows a little. A hairline stays the edge of things: all this only adds to it.
 
 public extension View {
-    /// Raised: a soft shadow and the light on the top edge. `pressed`: sunk, neither. `onInk`: on a dark ground (a
-    /// primary button), the light is the same in both appearances. `active` false: nothing (a ghost button).
-    func gRaised<S: InsettableShape>(_ shape: S, pressed: Bool = false, onInk: Bool = false, active: Bool = true) -> some View {
-        modifier(GRaised(shape: shape, lit: active && !pressed, onInk: onInk))
+    /// Raised: a soft shadow and the light on the top edge. `hovering`: it rises towards the pointer (a wider shadow,
+    /// more light). `pressed`: sunk, in its own shade. `onInk`: on a dark ground (a primary button), the light is the same
+    /// in both appearances. `active` false: nothing (a ghost button).
+    func gRaised<S: InsettableShape>(_ shape: S, hovering: Bool = false, pressed: Bool = false, onInk: Bool = false,
+                                     active: Bool = true) -> some View {
+        modifier(GRaised(shape: shape, active: active, hovering: hovering, pressed: pressed, onInk: onInk))
     }
 }
 
@@ -68,30 +70,42 @@ public struct GKnob: View {
 
 private struct GRaised<S: InsettableShape>: ViewModifier {
     let shape: S
-    let lit: Bool
+    let active: Bool
+    let hovering: Bool
+    let pressed: Bool
     let onInk: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func body(content: Content) -> some View {
+        let lit = active && !pressed
+        let raised = GShadowValues.raised
         content
             .overlay {
-                // A little volume: lighter at the top, a touch darker at the bottom.
                 if lit {
-                    shape.fill(LinearGradient(colors: [.white.opacity(0.07), .clear, .black.opacity(0.04)], startPoint: .top, endPoint: .bottom))
+                    // A little volume: lighter at the top, a touch darker at the bottom; more of it under the pointer.
+                    shape.fill(LinearGradient(colors: [.white.opacity(hovering ? 0.12 : 0.07), .clear, .black.opacity(0.04)], startPoint: .top, endPoint: .bottom))
                         .allowsHitTesting(false)
                         .accessibilityHidden(true)
                     // Light on the top edge, shade on the bottom one.
-                    shape.strokeBorder(LinearGradient(stops: [.init(color: onInk ? Color.white.opacity(0.2) : GColor.reliefHighlight, location: 0),
+                    shape.strokeBorder(LinearGradient(stops: [.init(color: onInk ? Color.white.opacity(hovering ? 0.32 : 0.2) : GColor.reliefHighlight, location: 0),
                                                               .init(color: .clear, location: 0.5),
                                                               .init(color: GColor.reliefShade, location: 1)],
                                                       startPoint: .top, endPoint: .bottom), lineWidth: 1)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                } else if active {
+                    // Sunk: the shade falls from its top edge.
+                    shape.fill(LinearGradient(stops: [.init(color: .black.opacity(onInk ? 0.28 : 0.13), location: 0), .init(color: .clear, location: 0.45)],
+                                              startPoint: .top, endPoint: .bottom))
                         .allowsHitTesting(false)
                         .accessibilityHidden(true)
                 }
             }
             // One shadow for the whole, not one per element (the text's would blur it).
             .compositingGroup()
-            .shadow(color: lit ? GColor.reliefShadow : .clear, radius: GShadowValues.raised.radius,
-                    x: GShadowValues.raised.x, y: GShadowValues.raised.y)
+            .shadow(color: lit ? GColor.reliefShadow : .clear, radius: hovering ? raised.radius + 2 : raised.radius,
+                    x: raised.x, y: hovering ? raised.y + 1 : raised.y)
+            .offset(y: active && pressed && !reduceMotion ? 0.5 : 0)
     }
 }
 #endif

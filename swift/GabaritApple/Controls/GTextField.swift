@@ -20,8 +20,10 @@ public struct GTextFieldStyle: TextFieldStyle {
 public struct GFieldFrame: ViewModifier {
     var isBare: Bool
     @FocusState private var focused: Bool
+    @State private var hovering = false
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.colorSchemeContrast) private var contrast
+    @Environment(\.gPointerPreview) private var preview
 
     public nonisolated init(bare: Bool = false) { isBare = bare }
 
@@ -47,7 +49,8 @@ public struct GFieldFrame: ViewModifier {
             // A click on the padding too puts the cursor in the field (on the ground behind it: the field keeps its own
             // clicks).
             .background { shape.fill(GColor.background.gHollow(0.06)).onTapGesture { focused = true } }
-            .overlay { shape.strokeBorder(focused ? GColor.accent : GColor.controlRim(contrast), lineWidth: focused ? 1.5 : 1) }
+            .overlay { shape.strokeBorder(focused ? GColor.accent : hovering || preview != nil ? GColor.border.opacity(0.7) : GColor.controlRim(contrast), lineWidth: focused ? 1.5 : 1) }
+            .onHover { hovering = $0 }
             .opacity(isEnabled ? 1 : GOpacity.disabled)
             .animation(GAnimation.hover, value: focused)
     }

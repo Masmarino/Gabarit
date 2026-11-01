@@ -75,7 +75,9 @@ public struct GPicker<Value: Hashable>: View {
 /// A choice's face: the current choice in a field, the two arrows on the right.
 private struct GMenuFace: View {
     let title: String
-    var active = false
+    var hovering = false
+    var pressed = false
+    var open = false
     @ScaledMetric(relativeTo: .body) private var chevron: CGFloat = 10
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.colorSchemeContrast) private var contrast
@@ -90,10 +92,10 @@ private struct GMenuFace: View {
         }
         .padding(.leading, 10).padding(.trailing, 8)
         .frame(minHeight: GControlMetrics.compact)
-        .background(active ? GColor.hover : Color.clear, in: shape)
+        .background(pressed ? GColor.press : hovering ? GColor.hover : Color.clear, in: shape)
         .background(GColor.background, in: shape)
-        .overlay { shape.strokeBorder(active ? GColor.accent : GColor.controlRim(contrast), lineWidth: active ? 1.5 : 1) }
-        .gRaised(shape, active: !active)
+        .overlay { shape.strokeBorder(open ? GColor.accent : hovering ? GColor.border.opacity(0.7) : GColor.controlRim(contrast), lineWidth: open ? 1.5 : 1) }
+        .gRaised(shape, hovering: hovering, pressed: pressed, active: !open)
         .contentShape(shape)
         .opacity(isEnabled ? 1 : GOpacity.disabled)
     }
@@ -127,7 +129,6 @@ private struct GMenuField<Value: Hashable>: View {
     @Binding var selection: Value
     let options: [(value: Value, title: String)]
     @State private var open = false
-    @State private var hovering = false
     /// The line the arrows point at in the open list (Return chooses it).
     @State private var highlighted: Int?
     @FocusState private var listFocused: Bool
@@ -135,11 +136,11 @@ private struct GMenuField<Value: Hashable>: View {
 
     var body: some View {
         Button { open.toggle() } label: {
-            GMenuFace(title: options.first { $0.value == selection }?.title ?? "—", active: hovering || open)
+            GLive { hovering, pressed in
+                GMenuFace(title: options.first { $0.value == selection }?.title ?? "—", hovering: hovering, pressed: pressed, open: open)
+            }
         }
-        .buttonStyle(.plain)
-        .onHover { hovering = $0 }
-        .gPointer()
+        .buttonStyle(GLiveStyle())
         // As the Mac's pop-up button: the arrows change the choice with the menu closed.
         .onKeyPress(.upArrow) { move(-1); return .handled }
         .onKeyPress(.downArrow) { move(1); return .handled }
@@ -241,21 +242,22 @@ private struct GChips<Value: Hashable>: View {
                 let current = option.value == selection
                 let shape = RoundedRectangle(cornerRadius: GRadius.sm, style: .continuous)
                 Button { gWithAnimation(.snappy(duration: 0.15), reduceMotion: reduceMotion) { selection = option.value } } label: {
-                    GHover { hovering in
+                    GLive { hovering, pressed in
                         Text(option.title)
                             .font(GFont.callout.weight(current ? .semibold : .medium))
                             .foregroundStyle(current ? GColor.accentText : (hovering ? GColor.textPrimary : GColor.textSecondary))
                             .padding(.horizontal, 12)
                             .frame(minHeight: GControlMetrics.compact)
-                            .background(current ? GColor.selectedFill : (hovering ? GColor.hover : GColor.background), in: shape)
+                            .background(pressed ? GColor.press : current ? GColor.selectedFill : (hovering ? GColor.hover : .clear), in: shape)
+                            .background(current ? .clear : GColor.background, in: shape)
                             .overlay { shape.strokeBorder(current ? GColor.accent.opacity(0.7) : (hovering ? GColor.border.opacity(0.5) : GColor.hairline), lineWidth: 1) }
-                            .gRaised(shape, active: !current)
-                            .gGlow(radius: 3, active: current)
+                            .gRaised(shape, hovering: hovering, pressed: pressed, active: !current || pressed)
+                            .gGlow(radius: hovering ? 5 : 3, active: current && !pressed)
                             .contentShape(shape)
                             .gTouchTarget(height: GControlMetrics.compact)
                     }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(GLiveStyle())
                 .accessibilityAddTraits(current ? .isSelected : [])
             }
         }

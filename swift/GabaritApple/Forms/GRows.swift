@@ -35,6 +35,13 @@ public struct GSidebarRow: View {
         self.detail = detail
     }
 
+    @Environment(\.gPointerPreview) private var preview
+    @Environment(\.gButtonPressed) private var buttonPressed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var lit: Bool { hovering || preview != nil }
+    private var pressed: Bool { buttonPressed || preview == .pressed }
+
     public var body: some View {
         HStack(spacing: 10) {
             GSidebarIcon(symbol: symbol, selected: selected)
@@ -56,12 +63,14 @@ public struct GSidebarRow: View {
         .gTouchTarget(height: GSidebarRow.height)
         .background {
             RoundedRectangle(cornerRadius: GRadius.md, style: .continuous)
-                .fill(selected ? Self.selectedFill : (hovering ? Self.hoverFill : Color.clear))
-                .gGlow(radius: 4, active: selected)
+                .fill(pressed ? (selected ? Self.selectedFill : GColor.press) : selected ? Self.selectedFill : (lit ? Self.hoverFill : Color.clear))
+                .gGlow(radius: lit ? 6 : 4, active: selected && !pressed)
         }
+        .scaleEffect(pressed && !reduceMotion ? 0.99 : 1)
         .onHover { hovering = $0 }
         .gPointer()
         .animation(GAnimation.hover, value: hovering)
+        .animation(GAnimation.press, value: pressed)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
@@ -126,6 +135,8 @@ public struct GRowHover: ViewModifier {
     @State private var hovering = false
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.gFormCardRow) private var inCard
+    @Environment(\.gButtonPressed) private var buttonPressed
+    @Environment(\.gPointerPreview) private var preview
 
     public init(enabled: Bool = true, outset: CGFloat = 8) {
         self.enabled = enabled
@@ -133,8 +144,11 @@ public struct GRowHover: ViewModifier {
     }
 
     public func body(content: Content) -> some View {
-        let lit = hovering && enabled && isEnabled
+        let lit = (hovering || preview != nil) && enabled && isEnabled
+        let held = enabled && isEnabled && (buttonPressed || preview == .pressed)
         content
+            .opacity(held ? 0.6 : 1)
+            .animation(GAnimation.press, value: held)
             #if os(macOS)
             .background {
                 if !inCard {

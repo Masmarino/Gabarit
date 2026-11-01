@@ -26,6 +26,7 @@ public extension View {
 /// Gabarit's buttons: ink (primary), fine frame (secondary), no ground (ghost), red (danger).
 public struct GButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.gPointerPreview) private var preview
     public var variant: GButtonVariant
     public var compact: Bool
 
@@ -36,18 +37,21 @@ public struct GButtonStyle: ButtonStyle {
 
     public func makeBody(configuration: Configuration) -> some View {
         let shape = RoundedRectangle(cornerRadius: GRadius.sm, style: .continuous)
+        let pressed = configuration.isPressed || (preview == .pressed && isEnabled)
         GHover { hovering in
             configuration.label
                 .font(GFont.body.weight(.semibold))
                 .foregroundStyle(foreground(configuration.role))
                 .padding(.horizontal, compact ? 12 : 16)
                 .frame(minHeight: compact ? GControlMetrics.button : 44)
-                .background(background(pressed: configuration.isPressed, hovering: hovering), in: shape)
+                .background(background(pressed: pressed, hovering: hovering), in: shape)
+                .background(variant == .secondary ? GColor.surface : .clear, in: shape)
                 .overlay { if variant == .secondary { shape.strokeBorder(GColor.border.opacity(hovering ? 0.8 : 0.6), lineWidth: 1) } }
-                .gRaised(shape, pressed: configuration.isPressed, onInk: variant == .primary || variant == .danger, active: variant != .ghost)
+                .gRaised(shape, hovering: hovering, pressed: pressed, onInk: variant == .primary || variant == .danger, active: variant != .ghost)
                 .opacity(isEnabled ? 1 : GOpacity.disabled)
                 .contentShape(shape)
                 .gTouchTarget(height: compact ? GControlMetrics.button : 44)
+                .animation(GAnimation.press, value: pressed)
         }
     }
 
@@ -65,10 +69,12 @@ public struct GButtonStyle: ButtonStyle {
     /// Hovered, a step lighter (the ink) or under the veil (the surfaces); pressed, a little more.
     private func background(pressed: Bool, hovering: Bool) -> Color {
         switch variant {
-        case .primary: pressed ? GColor.primaryHover.opacity(0.85) : (hovering ? GColor.primaryHover : GColor.primary)
-        case .secondary: pressed ? GColor.track : (hovering ? GColor.hover : GColor.surface)
-        case .ghost: pressed ? GColor.track : (hovering ? GColor.hover : .clear)
-        case .danger: GTone.error.base.opacity(pressed ? 0.8 : (hovering ? 0.9 : 1))
+        // On ink, a step towards the hover's colour; held down, the whole way, under its shade (gRaised): it never fades.
+        case .primary: pressed ? GColor.primaryHover : (hovering ? GColor.primary.mix(with: GColor.primaryHover, by: 0.55) : GColor.primary)
+        // On the surface (laid below), a veil; a stronger one held down.
+        case .secondary: pressed ? GColor.press : (hovering ? GColor.hover : .clear)
+        case .ghost: pressed ? GColor.press : (hovering ? GColor.hover : .clear)
+        case .danger: pressed ? GTone.error.base.mix(with: .black, by: 0.18) : (hovering ? GTone.error.base.mix(with: .white, by: 0.1) : GTone.error.base)
         }
     }
 }
@@ -76,13 +82,15 @@ public struct GButtonStyle: ButtonStyle {
 /// A frameless button that takes Gabarit's hover veil while pressed.
 public struct GPressStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.gPointerPreview) private var preview
 
     public init() {}
 
     public func makeBody(configuration: Configuration) -> some View {
+        let pressed = configuration.isPressed || (preview == .pressed && isEnabled)
         GHover { hovering in
             configuration.label
-                .background(configuration.isPressed ? GColor.track : (hovering ? GColor.hover : Color.clear))
+                .background(pressed ? GColor.press : (hovering ? GColor.hover : Color.clear))
                 .opacity(isEnabled ? 1 : GOpacity.disabled)
         }
     }
@@ -106,9 +114,9 @@ public struct GCloseButton: View {
 
     public var body: some View {
         Button(action: action) {
-            GHover { hovering in cross(hovering) }
+            GLive { hovering, pressed in cross(hovering, pressed) }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(GLiveStyle())
         .gDimmedWhenDisabled()
         .keyboardShortcut(.cancelAction)
         #if os(macOS)
@@ -117,14 +125,15 @@ public struct GCloseButton: View {
         .accessibilityLabel(title)
     }
 
-    private func cross(_ hovering: Bool) -> some View {
+    private func cross(_ hovering: Bool, _ pressed: Bool) -> some View {
         Image(systemName: "xmark")
             .font(.system(size: glyph, weight: .bold))
             .foregroundStyle(onFrame ? GFrameColor.text : GColor.textSecondary)
             .frame(width: circle, height: circle)
-            .background(hovering ? (onFrame ? GFrameColor.closeHover : GColor.hover) : Color.clear, in: Circle())
+            .background(pressed ? (onFrame ? GFrameColor.selected : GColor.press) : hovering ? (onFrame ? GFrameColor.closeHover : GColor.hover) : Color.clear, in: Circle())
             .overlay { Circle().strokeBorder(onFrame ? GFrameColor.rim : GColor.hairline, lineWidth: 1) }
-            .gRaised(Circle(), active: !onFrame)
+            .gRaised(Circle(), hovering: hovering, pressed: pressed, active: !onFrame)
+            .scaleEffect(onFrame && pressed ? 0.94 : 1)
             #if os(iOS)
             // Under the finger: a 44-point target around the circle.
             .padding(8)

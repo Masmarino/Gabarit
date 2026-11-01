@@ -614,6 +614,13 @@ header is on the page's grey, the dark frame is for pages. Apple: `gRaised`, `gC
 `GKnob`; Android: `gRaised`, `gCard`; tokens: `reliefHighlight`, `reliefShadow`, `cardShadow`, the `card`, `raised` and
 `bar` shadows.
 
+Under the pointer and held down, on the desktop: what can be pressed rises towards the pointer (a wider shadow, more
+light) and sinks when held (its own shade from the top edge, the `press` veil); a switch's knob stretches, a slider's grows.
+On Apple, `GLive { hovering, pressed in … }` with `GLiveStyle` reads both. Each control's states are drawn side by side by
+the galleries (`states-*.png`, forced with `gPointerPreview` on the Mac, with GTK's state flags on Linux), and
+`swift run GabaritGallery --live` opens a window to try them with the real pointer. `tools/states_check.py` (CI) checks
+that every GTK selector and WinUI template answers.
+
 How they answer: every clickable thing has a hovered state (`GHover`), the pointing hand on the Mac (`gPointer`), the
 keyboard's focus (the switch's row is a button, the slider moves with the arrows), one dimming when disabled
 (`gDimmedWhenDisabled`, `GOpacity.disabled`), 44-point touch targets on iPhone and iPad (`gTouchTarget`), and no

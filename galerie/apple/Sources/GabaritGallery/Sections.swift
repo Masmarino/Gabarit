@@ -209,3 +209,91 @@ struct WindowSection: View {
         .frame(width: 600, height: 380)
     }
 }
+
+// MARK: Pointer states
+
+/// Each control at rest, under the pointer, held down (forced by `gPointerPreview`), to look at them side by side.
+struct StatesSection: View {
+    private func row<V: View>(_ name: String, @ViewBuilder _ control: @escaping () -> V) -> some View {
+        GridRow {
+            Text(name).font(GFont.caption).foregroundStyle(GColor.textDiscret).gridColumnAlignment(.leading)
+            control()
+            control().environment(\.gPointerPreview, .hover)
+            control().environment(\.gPointerPreview, .pressed)
+        }
+    }
+
+    var body: some View {
+        Grid(alignment: .center, horizontalSpacing: 18, verticalSpacing: 14) {
+            GridRow {
+                Color.clear.frame(width: 1, height: 1)
+                ForEach(["Rest", "Hover", "Pressed"], id: \.self) { Text($0).font(GFont.headline).foregroundStyle(GColor.textPrimary) }
+            }
+            row("Primary") { Button("Save") {}.buttonStyle(GButtonStyle(variant: .primary)) }
+            row("Secondary") { Button("Reset") {}.buttonStyle(GButtonStyle(variant: .secondary)) }
+            row("Ghost") { Button("Later") {}.buttonStyle(GButtonStyle(variant: .ghost)) }
+            row("Danger") { Button("Delete") {}.buttonStyle(GButtonStyle(variant: .danger)) }
+            row("Destructive") { Button("Leave", role: .destructive) {}.buttonStyle(GButtonStyle(variant: .secondary)) }
+            row("Close") { GCloseButton(title: "Close", onFrame: false) {} }
+            row("Chips") { GPicker("", selection: .constant(1), options: [(1, "On"), (2, "Off")], style: .chips) }
+            row("Menu") { GPicker("", selection: .constant(1), options: [(1, "Light"), (2, "Dark")]) }
+            row("Switch") { Toggle("", isOn: .constant(true)).toggleStyle(GToggleStyle()).frame(width: 60) }
+            row("Slider") { GSlider(value: .constant(0.5), in: 0...1).frame(width: 110) }
+            row("Stepper") { GStepper("", value: .constant(3), in: 0...9) }
+            row("Field") { Text("Florian").font(GFont.body).frame(width: 90, alignment: .leading).modifier(GFieldFrame()) }
+            row("Sidebar") { GSidebarRow(title: "Privacy", symbol: "lock", selected: false).frame(width: 130) }
+            row("Selected") { GSidebarRow(title: "Profile", symbol: "person", selected: true).frame(width: 130) }
+            row("Menu line") { GMenuItem(title: "Reply", systemImage: "arrowshape.turn.up.left") {}.frame(width: 130) }
+        }
+        .environment(\.gFormLayout, true)
+    }
+}
+
+/// The same controls in a window, to try with the real pointer: `swift run GabaritGallery --live`.
+struct LiveSection: View {
+    @State private var on = true
+    @State private var chip = 1
+    @State private var menu = 1
+    @State private var value = 0.5
+    @State private var count = 3
+    @State private var text = "Florian"
+    @State private var page = "Messages"
+
+    var body: some View {
+        HStack(spacing: 0) {
+            VStack(spacing: 4) {
+                ForEach(["Today", "Messages", "Spaces"], id: \.self) { name in
+                    GRailItem(title: name, systemImage: "bubble.left", current: page == name) { page = name }
+                }
+                Spacer()
+            }
+            .padding(8).frame(width: 92).background(GFrameColor.ground)
+            GForm {
+                Section("Buttons") {
+                    HStack {
+                        Button("Save") {}.buttonStyle(GButtonStyle(variant: .primary))
+                        Button("Reset") {}.buttonStyle(GButtonStyle(variant: .secondary))
+                        Button("Later") {}.buttonStyle(GButtonStyle(variant: .ghost))
+                        Button("Delete") {}.buttonStyle(GButtonStyle(variant: .danger))
+                        GCloseButton(title: "Close", onFrame: false) {}
+                    }
+                    Button("A row of the card") {}
+                }
+                Section("Controls") {
+                    Toggle("A switch", isOn: $on)
+                    GPicker("Chips", selection: $chip, options: [(1, "One"), (2, "Two"), (3, "Three")], style: .chips)
+                    GPicker("A menu", selection: $menu, options: [(1, "Light"), (2, "Dark")])
+                    GSlider(value: $value, in: 0...1)
+                    GStepper("A stepper", value: $count, in: 0...9)
+                    TextField("A field", text: $text)
+                }
+                Section("Column") {
+                    ForEach(["Profile", "Privacy"], id: \.self) { name in
+                        Button {} label: { GSidebarRow(title: name, symbol: "person", selected: name == "Profile") }.buttonStyle(GLiveStyle())
+                    }
+                }
+            }
+        }
+        .frame(width: 720, height: 640)
+    }
+}

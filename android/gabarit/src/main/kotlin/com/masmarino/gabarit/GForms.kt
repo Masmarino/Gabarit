@@ -86,8 +86,8 @@ fun Modifier.gCard(): Modifier {
     return this.shadow(2.dp, shape, clip = false).gSurface(shape, G.colors.surface, G.colors.hairline).clip(shape).drawWithContent {
         drawContent()
         val edge = 1.5.dp.toPx()
-        drawRect(Brush.verticalGradient(listOf(light, Color.Transparent), endY = edge), size = Size(size.width, edge))
-        drawRect(Brush.verticalGradient(listOf(Color.Transparent, shade), startY = size.height - edge, endY = size.height),
+        drawRect(Brush.verticalGradient(listOf(light, light.copy(alpha = 0f)), endY = edge), size = Size(size.width, edge))
+        drawRect(Brush.verticalGradient(listOf(shade.copy(alpha = 0f), shade), startY = size.height - edge, endY = size.height),
             Offset(0f, size.height - edge), Size(size.width, edge))
     }
 }

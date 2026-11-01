@@ -140,10 +140,10 @@ public struct GNavTabs<Tab: Hashable>: View {
             ForEach(tabs, id: \.self) { tab in
                 let current = tab == selection
                 Button { gWithAnimation(.snappy(duration: 0.2), reduceMotion: reduceMotion) { selection = tab } } label: {
-                    GHover { hovering in
+                    GLive { hovering, pressed in
                         Text(title(tab))
                             .font(GFont.body.weight(current ? .semibold : .medium))
-                            .foregroundStyle(current || hovering ? GColor.textPrimary : GColor.textSecondary)
+                            .foregroundStyle(pressed ? GColor.textDiscret : current || hovering ? GColor.textPrimary : GColor.textSecondary)
                             .padding(.vertical, 8)
                             .overlay(alignment: .bottom) {
                                 if current {
@@ -156,7 +156,7 @@ public struct GNavTabs<Tab: Hashable>: View {
                             .gTouchTarget(height: 38)
                     }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(GLiveStyle())
                 .accessibilityAddTraits(current ? .isSelected : [])
             }
             Spacer(minLength: 0)

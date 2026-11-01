@@ -105,6 +105,10 @@
         "light": "slate900/0.07",
         "dark": "graphite100/0.07"
       },
+      "press": {
+        "light": "slate900/0.14",
+        "dark": "graphite100/0.14"
+      },
       "track": {
         "light": "slate200",
         "dark": "graphite700"

@@ -143,18 +143,19 @@ public struct GRailButton: View {
 
     public var body: some View {
         Button(action: action) {
-            GHover { hovering in
+            GLive { hovering, pressed in
                 Image(systemName: symbol)
                     .font(.system(size: 15))
                     .foregroundStyle(isOn ? GColor.accent : (hovering ? GFrameColor.text : GFrameColor.textDiscret))
                     .frame(maxWidth: .infinity, minHeight: 32)
-                    .background(isOn ? GFrameColor.selected : (hovering ? GFrameColor.hover : .clear),
+                    .background(isOn || pressed ? GFrameColor.selected : (hovering ? GFrameColor.hover : .clear),
                                 in: .rect(cornerRadius: GRadius.sm))
+                    .scaleEffect(pressed ? 0.94 : 1)
                     .contentShape(Rectangle())
                     .gTouchTarget(height: 32)
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(GLiveStyle())
         .gDimmedWhenDisabled()
         .help(value.map { gText("\(help): \($0)") } ?? help)
         .accessibilityLabel(help)
@@ -176,17 +177,18 @@ public struct GRailSquareButton: View {
 
     public var body: some View {
         Button(action: action) {
-            GHover { hovering in
+            GLive { hovering, pressed in
                 Image(systemName: symbol)
                     .font(.system(size: 18))
                     .foregroundStyle(hovering ? GFrameColor.text : GFrameColor.textSecondary)
                     .frame(width: 44, height: 44)
-                    .background(hovering ? GFrameColor.hover : .clear, in: .rect(cornerRadius: GRadius.sm))
+                    .background(pressed ? GFrameColor.selected : hovering ? GFrameColor.hover : .clear, in: .rect(cornerRadius: GRadius.sm))
                     .overlay { RoundedRectangle(cornerRadius: GRadius.sm).strokeBorder(GFrameColor.rim, lineWidth: 1) }
+                    .scaleEffect(pressed ? 0.96 : 1)
                     .contentShape(Rectangle())
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(GLiveStyle())
         .gDimmedWhenDisabled()
         .help(help)
         .accessibilityLabel(help)

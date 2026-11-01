@@ -21,6 +21,11 @@
          danger), as on the Mac. -->
 
     <SolidColorBrush x:Key="GReliefOnInkBrush" Color="#2EFFFFFF"/>
+    <!-- Held down: the shade falls from the top edge. -->
+    <LinearGradientBrush x:Key="GReliefSunkBrush" StartPoint="0,0" EndPoint="0,0.45">
+        <GradientStop Offset="0" Color="#24000000"/>
+        <GradientStop Offset="1" Color="#00000000"/>
+    </LinearGradientBrush>
     <!-- A little volume on what can be pressed: lighter at the top, a touch darker at the bottom. -->
     <LinearGradientBrush x:Key="GReliefVolumeBrush" StartPoint="0,0" EndPoint="0,1">
         <GradientStop Offset="0" Color="#12FFFFFF"/>
@@ -53,7 +58,9 @@
                     <Grid x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
                           MinHeight="{TemplateBinding MinHeight}">
-                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid.BackgroundTransition><BrushTransition Duration="0:0:0.12"/></Grid.BackgroundTransition>
+                        </Grid>
                         <ContentPresenter x:Name="Content" Padding="{TemplateBinding Padding}"
                                           Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}"
                                           FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
@@ -71,7 +78,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="Veil.Background" Value="{ThemeResource GTrackBrush}"/>
+                                        <Setter Target="Veil.Background" Value="{ThemeResource GPressBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
@@ -97,7 +104,10 @@
                     <Grid x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
                           MinHeight="{TemplateBinding MinHeight}">
-                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid.BackgroundTransition><BrushTransition Duration="0:0:0.12"/></Grid.BackgroundTransition>
+                        </Grid>
+                        <Border x:Name="Sunk" Background="{StaticResource GReliefSunkBrush}" Opacity="0" CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False"/>
                         <!-- The light on the top edge: what can be pressed stands above the page, and sinks when pressed. -->
                         <Border x:Name="Relief" Background="{StaticResource GReliefVolumeBrush}" BorderThickness="0,1,0,0" BorderBrush="{StaticResource GReliefOnInkBrush}"
                                 CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False"/>
@@ -119,6 +129,7 @@
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="Relief.Opacity" Value="0"/>
+                                        <Setter Target="Sunk.Opacity" Value="1"/>
                                         <Setter Target="Veil.Background" Value="{ThemeResource GPrimaryPressedBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -147,7 +158,10 @@
                     <Grid x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
                           MinHeight="{TemplateBinding MinHeight}">
-                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid.BackgroundTransition><BrushTransition Duration="0:0:0.12"/></Grid.BackgroundTransition>
+                        </Grid>
+                        <Border x:Name="Sunk" Background="{StaticResource GReliefSunkBrush}" Opacity="0" CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False"/>
                         <!-- The light on the top edge: what can be pressed stands above the page, and sinks when pressed. -->
                         <Border x:Name="Relief" Background="{StaticResource GReliefVolumeBrush}" BorderThickness="0,1,0,0" BorderBrush="{ThemeResource GReliefHighlightBrush}"
                                 CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False"/>
@@ -170,7 +184,8 @@
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="Relief.Opacity" Value="0"/>
-                                        <Setter Target="Veil.Background" Value="{ThemeResource GTrackBrush}"/>
+                                        <Setter Target="Sunk.Opacity" Value="1"/>
+                                        <Setter Target="Veil.Background" Value="{ThemeResource GPressBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
@@ -202,7 +217,10 @@
                     <Grid x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
                           MinHeight="{TemplateBinding MinHeight}">
-                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid.BackgroundTransition><BrushTransition Duration="0:0:0.12"/></Grid.BackgroundTransition>
+                        </Grid>
+                        <Border x:Name="Sunk" Background="{StaticResource GReliefSunkBrush}" Opacity="0" CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False"/>
                         <!-- The light on the top edge: what can be pressed stands above the page, and sinks when pressed. -->
                         <Border x:Name="Relief" Background="{StaticResource GReliefVolumeBrush}" BorderThickness="0,1,0,0" BorderBrush="{StaticResource GReliefOnInkBrush}"
                                 CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False"/>
@@ -224,6 +242,7 @@
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="Relief.Opacity" Value="0"/>
+                                        <Setter Target="Sunk.Opacity" Value="1"/>
                                         <Setter Target="Veil.Background" Value="{ThemeResource GErrorPressedBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -285,7 +304,9 @@
                     <Grid x:Name="Root" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
                           MinHeight="{TemplateBinding MinHeight}">
-                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid.BackgroundTransition><BrushTransition Duration="0:0:0.12"/></Grid.BackgroundTransition>
+                        </Grid>
                         <ContentPresenter x:Name="Content" Padding="{TemplateBinding Padding}"
                                           Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}"
                                           FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
@@ -381,7 +402,9 @@
                         <!-- The current page's ground and the hover's veil on their own layers: the two states never write the
                              same property. -->
                         <Grid x:Name="Selection" Background="{ThemeResource GFrameSelectedBrush}" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0"/>
-                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid.BackgroundTransition><BrushTransition Duration="0:0:0.12"/></Grid.BackgroundTransition>
+                        </Grid>
                         <Rectangle x:Name="Bar" Width="2" Margin="0,6" HorizontalAlignment="Left"
                                    Fill="{ThemeResource GOnFrameAccentBrush}" Visibility="Collapsed"/>
                         <ContentPresenter x:Name="Content" Padding="{TemplateBinding Padding}"
@@ -537,7 +560,9 @@
                     <Grid x:Name="Root" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"
                           MinHeight="{TemplateBinding MinHeight}">
                         <Border x:Name="Rim" BorderBrush="{ThemeResource GHairlineBrush}" BorderThickness="1" CornerRadius="{TemplateBinding CornerRadius}"/>
-                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid.BackgroundTransition><BrushTransition Duration="0:0:0.12"/></Grid.BackgroundTransition>
+                        </Grid>
                         <Border x:Name="Selection" Background="{ThemeResource GSelectedFillBrush}" BorderBrush="{ThemeResource GAccentRimBrush}"
                                 BorderThickness="1" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0"/>
                         <ContentPresenter x:Name="Content" Padding="{TemplateBinding Padding}"
@@ -558,7 +583,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="Veil.Background" Value="{ThemeResource GTrackBrush}"/>
+                                        <Setter Target="Veil.Background" Value="{ThemeResource GPressBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">

@@ -162,9 +162,9 @@ fun Modifier.gRaised(shape: Shape, pressed: Boolean = false, onInk: Boolean = fa
     return this.shadow(1.dp, shape, clip = false).drawWithCache {
         val outline = shape.createOutline(size, layoutDirection, this)
         // One light, from above: on the top edge, shade on the bottom one.
-        val brush = Brush.verticalGradient(0f to light, 0.5f to Color.Transparent, 1f to shade)
+        val brush = Brush.verticalGradient(0f to light, 0.5f to light.copy(alpha = 0f), 1f to shade)
         // A little volume: lighter at the top, a touch darker at the bottom.
-        val volume = Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.07f), Color.Transparent, Color.Black.copy(alpha = 0.04f)))
+        val volume = Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.07f), Color.White.copy(alpha = 0f), Color.Black.copy(alpha = 0.04f)))
         val line = Stroke(1.dp.toPx())
         onDrawWithContent {
             drawContent()

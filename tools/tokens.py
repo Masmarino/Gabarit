@@ -273,7 +273,7 @@ def xaml_color(value: str) -> str:
 WINUI_CONTROLS = {
     "ToggleSwitchFillOn": "accent", "ToggleSwitchFillOnPointerOver": "accent", "ToggleSwitchFillOnPressed": "accent",
     "ToggleSwitchFillOff": "track", "ToggleSwitchFillOffPointerOver": "track", "ToggleSwitchFillOffPressed": "track",
-    "ToggleSwitchStrokeOff": "border/0.35", "ToggleSwitchStrokeOffPointerOver": "border/0.35",
+    "ToggleSwitchStrokeOff": "border/0.35", "ToggleSwitchStrokeOffPointerOver": "border/0.7",
     "ToggleSwitchStrokeOffPressed": "border/0.35",
     "ToggleSwitchStrokeOn": "accent", "ToggleSwitchStrokeOnPointerOver": "accent", "ToggleSwitchStrokeOnPressed": "accent",
     "ToggleSwitchKnobFillOn": "#FFFFFF", "ToggleSwitchKnobFillOff": "#FFFFFF", "ToggleSwitchKnobFillOnPointerOver": "#FFFFFF",
@@ -281,7 +281,7 @@ WINUI_CONTROLS = {
     "ToggleSwitchKnobFillOffPressed": "#FFFFFF",
     "TextControlBackground": "background", "TextControlBackgroundPointerOver": "background",
     "TextControlBackgroundFocused": "background", "TextControlBorderBrush": "hairline",
-    "TextControlBorderBrushPointerOver": "hairline", "TextControlBorderBrushFocused": "accent",
+    "TextControlBorderBrushPointerOver": "border/0.7", "TextControlBorderBrushFocused": "accent",
     "TextControlBorderBrushDisabled": "hairline",
     "TextControlForeground": "textPrimary", "TextControlForegroundFocused": "textPrimary",
     "TextControlPlaceholderForeground": "textDiscret", "TextControlPlaceholderForegroundFocused": "textDiscret",

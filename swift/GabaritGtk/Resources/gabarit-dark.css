@@ -51,6 +51,7 @@
 @define-color g_surface #181F27;
 @define-color g_sidebar #181F27;
 @define-color g_hover alpha(#E7EBF1, 0.07);
+@define-color g_press alpha(#E7EBF1, 0.14);
 @define-color g_track #28323D;
 @define-color g_border #646C77;
 @define-color g_hairline alpha(#CDD7E6, 0.12);

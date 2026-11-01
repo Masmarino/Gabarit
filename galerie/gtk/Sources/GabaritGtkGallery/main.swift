@@ -49,6 +49,50 @@ let folder = CommandLine.arguments.dropFirst().first ?? "."
     return gStyle(gBox(GTK_ORIENTATION_VERTICAL, [margins(column, 24)]), "g-surface")
 }
 
+/// Forces a control's state, and its first child's (a dropdown's button): the CSS of :hover and :active, without a pointer.
+@MainActor func forced(_ widget: GWidget, _ flags: GtkStateFlags) -> GWidget {
+    gtk_widget_set_state_flags(widget, flags, 0)
+    var child = gtk_widget_get_first_child(widget)
+    while let current = child {
+        _ = forced(current, flags)
+        child = gtk_widget_get_next_sibling(current)
+    }
+    return widget
+}
+
+/// Each control at rest, under the pointer and held down, as the Mac's gallery shows them.
+@MainActor func states() -> GWidget {
+    let controls: [(String, @MainActor () -> GWidget)] = [
+        ("Primary", { gButton("Save", variant: .primary) {} }), ("Secondary", { gButton("Reset") {} }),
+        ("Ghost", { gButton("Later", variant: .ghost) {} }), ("Danger", { gButton("Delete", variant: .danger) {} }),
+        ("Destructive", { gButton("Leave", destructive: true) {} }), ("Close", { gCloseButton(tooltip: "Close") {} }),
+        ("Chips", { gPicker("", options: ["On", "Off"], selected: 0, style: .chips) { _ in } }),
+        ("Menu", { gPicker("", options: ["Light", "Dark"], selected: 0) { _ in } }),
+        ("Switch", { gSwitchRow("", isOn: true) { _ in } }), ("Slider", { gSlider(value: 0.5, in: 0...1) { _ in } }),
+        ("Stepper", { gStepper("", value: 3, in: 0...9) { _ in } }), ("Field", { gTextField("", text: "Florian").view }),
+    ]
+    let widget = gtk_grid_new()!
+    let grid = UnsafeMutableRawPointer(widget).assumingMemoryBound(to: GtkGrid.self)
+    gtk_grid_set_row_spacing(grid, 12)
+    gtk_grid_set_column_spacing(grid, 18)
+    for (column, title) in ["Rest", "Hover", "Pressed"].enumerated() {
+        gtk_grid_attach(grid, gLabel(title, style: "headline"), Int32(column + 1), 0, 1, 1)
+    }
+    // Each at its own size, as in a form: a cell would stretch it.
+    func placed(_ control: GWidget) -> GWidget {
+        gtk_widget_set_halign(control, GTK_ALIGN_START)
+        gtk_widget_set_hexpand(control, 0)
+        return control
+    }
+    for (row, control) in controls.enumerated() {
+        gtk_grid_attach(grid, gLabel(control.0, style: "caption"), 0, Int32(row + 1), 1, 1)
+        gtk_grid_attach(grid, placed(control.1()), 1, Int32(row + 1), 1, 1)
+        gtk_grid_attach(grid, placed(forced(control.1(), GTK_STATE_FLAG_PRELIGHT)), 2, Int32(row + 1), 1, 1)
+        gtk_grid_attach(grid, placed(forced(control.1(), GtkStateFlags(GTK_STATE_FLAG_PRELIGHT.rawValue | GTK_STATE_FLAG_ACTIVE.rawValue))), 3, Int32(row + 1), 1, 1)
+    }
+    return margins(widget, 24)
+}
+
 @MainActor func forms() -> GWidget {
     let messages = gFormSection("Messages", rows: [
         gSwitchRow("Show previews", detail: "The first words of a message.", isOn: true) { _ in },
@@ -229,7 +273,7 @@ let activate: @convention(c) (UnsafeMutableRawPointer?, UnsafeMutableRawPointer?
             g_object_unref(provider)
         }
         let app = OpaquePointer(application)
-        let sections: [(String, GWidget)] = [("controls", controls()), ("forms", forms()), ("frame", frame()),
+        let sections: [(String, GWidget)] = [("states", states()), ("controls", controls()), ("forms", forms()), ("frame", frame()),
                                              ("feedback", feedback()), ("window", window()), ("overlays", overlays()),
                                              ("search", search())]
         let windows = sections.map { (name: $0.0, window: open(app, $0.1)) }

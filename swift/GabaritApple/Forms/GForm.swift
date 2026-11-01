@@ -175,8 +175,9 @@ public struct GFormLayout<Content: View>: View {
                 if let page {
                     if let back = page.back, let onBack = page.onBack {
                         Button(action: onBack) {
-                            GHover { hovering in
+                            GLive { hovering, pressed in
                                 Label(back, systemImage: "chevron.left")
+                                    .opacity(pressed ? 0.6 : 1)
                                     .labelStyle(GCompactLabelStyle())
                                     .font(GFont.callout.weight(.medium))
                                     .foregroundStyle(GColor.accentText)
@@ -184,7 +185,7 @@ public struct GFormLayout<Content: View>: View {
                                     .contentShape(Rectangle())
                             }
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(GLiveStyle())
                         .keyboardShortcut("[", modifiers: .command)
                         .help(gText("Back to \(back) (⌘[)"))
                         .padding(.bottom, 10)
@@ -295,8 +296,9 @@ private struct GFormRowButton: View {
             .foregroundStyle(configuration.role == .destructive ? GTone.error.text : GColor.accentText)
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
-            .opacity(isEnabled ? (configuration.isPressed ? 0.6 : 1) : GOpacity.disabled)
+            .opacity(isEnabled ? 1 : GOpacity.disabled)
             .modifier(GRowHover())
+            .environment(\.gButtonPressed, configuration.isPressed)
     }
 }
 
@@ -427,15 +429,16 @@ public struct GSheetTitle: View {
         HStack(alignment: .top, spacing: 16) {
             if let back {
                 Button(action: back) {
-                    GHover { hovering in
+                    GLive { hovering, pressed in
                         Image(systemName: "chevron.left").font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(hovering ? GColor.textPrimary : GColor.textSecondary)
                             .frame(width: 30, height: 30)
-                            .background(hovering ? GColor.border.opacity(0.3) : GColor.track, in: Circle())
+                            .background(pressed ? GColor.border.opacity(0.5) : hovering ? GColor.border.opacity(0.3) : GColor.track, in: Circle())
+                            .gRaised(Circle(), hovering: hovering, pressed: pressed)
                             .contentShape(Circle())
                     }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(GLiveStyle())
                 // ⌘[ as the page's back link: ⌘← stays the text fields' (the start of the line).
                 .keyboardShortcut("[", modifiers: .command)
                 .help(gText("Back"))
