@@ -50,6 +50,42 @@ struct GContrastTests {
         }
     }
 
+    /// `top` at its opacity on the opaque `under`.
+    private func laid(_ top: GRGBA, on under: GRGBA) -> GRGBA {
+        let a = top.alpha
+        return GRGBA(red: top.red * a + under.red * (1 - a), green: top.green * a + under.green * (1 - a),
+                     blue: top.blue * a + under.blue * (1 - a), alpha: 1)
+    }
+
+    private func mix(_ a: GRGBA, _ b: GRGBA, by t: Double) -> GRGBA {
+        GRGBA(red: a.red * (1 - t) + b.red * t, green: a.green * (1 - t) + b.green * t, blue: a.blue * (1 - t) + b.blue * t, alpha: 1)
+    }
+
+    /// Text stays readable under the pointer and held down: on the veils of hover and press, over the page and a
+    /// surface, and on the ink buttons' grounds of those states (as GButtonStyle draws them).
+    @Test func pointerStates() {
+        let black = GRGBA(hex: 0x000000), white = GRGBA(hex: 0xFFFFFF)
+        for (appearance, pick) in Self.appearances {
+            for (groundName, ground) in Self.grounds {
+                let under = laid(pick(ground), on: pick(GColorValues.background))
+                for (veilName, veil) in [("hover", GColorValues.hover), ("press", GColorValues.press)] {
+                    let lit = laid(pick(veil), on: under)
+                    for (name, colour) in [("textPrimary", GColorValues.textPrimary), ("textSecondary", GColorValues.textSecondary),
+                                           ("errorText", GColorValues.errorText)] {
+                        let value = ratio(pick(colour), over: lit)
+                        #expect(value >= 4.5, "\(name) on \(veilName) on \(groundName), \(appearance): \(value)")
+                    }
+                }
+            }
+            let on = pick(GColorValues.onPrimary), ink = pick(GColorValues.primary), inkHover = pick(GColorValues.primaryHover), red = pick(GColorValues.error)
+            for (name, ground) in [("primary hovered", mix(ink, inkHover, by: 0.55)), ("primary pressed", inkHover),
+                                   ("danger hovered", mix(red, white, by: 0.1)), ("danger pressed", mix(red, black, by: 0.18))] {
+                let value = ratio(on, over: ground)
+                #expect(value >= 4.5, "\(name), \(appearance): \(value)")
+            }
+        }
+    }
+
     /// `over` an opaque ground: a translucent colour is first laid on it.
     private func ratio(_ colour: GRGBA, over ground: GRGBA) -> Double {
         let a = colour.alpha

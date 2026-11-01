@@ -106,7 +106,7 @@ public struct GRailItem: View {
         .frame(maxWidth: .infinity, minHeight: 52)
         .background(pressed || current ? GFrameColor.selected : (hovering ? GFrameColor.hover : .clear),
                     in: .rect(cornerRadius: GRadius.sm))
-        .scaleEffect(pressed ? 0.97 : 1)
+        .gPressScale(pressed)
         .overlay(alignment: .leading) {
             if current { Rectangle().fill(GColor.accent).frame(width: 2).padding(.vertical, 6).gGlow(radius: 5) }
         }

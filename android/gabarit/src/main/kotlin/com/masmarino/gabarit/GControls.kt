@@ -11,7 +11,6 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -50,7 +49,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -156,7 +158,19 @@ fun GIcon(name: String, contentDescription: String?, modifier: Modifier = Modifi
  */
 @Composable
 fun Modifier.gRaised(shape: Shape, pressed: Boolean = false, onInk: Boolean = false): Modifier {
-    if (pressed) return this
+    if (pressed) {
+        // Sunk: the shade falls from its top edge, a hair lower.
+        val depth = if (onInk) 0.28f else 0.13f
+        val still = gReduceMotion()
+        return this.then(if (still) Modifier else Modifier.offset(y = 0.5.dp)).drawWithCache {
+            val outline = shape.createOutline(size, layoutDirection, this)
+            val shade = Brush.verticalGradient(0f to Color.Black.copy(alpha = depth), 0.45f to Color.Black.copy(alpha = 0f))
+            onDrawWithContent {
+                drawContent()
+                drawOutline(outline, shade)
+            }
+        }
+    }
     val light = if (onInk) Color.White.copy(alpha = 0.2f) else G.colors.reliefHighlight
     val shade = G.colors.reliefShade
     return this.shadow(1.dp, shape, clip = false).drawWithCache {
@@ -199,13 +213,14 @@ fun GButton(
 ) {
     val colors = G.colors
     val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
+    val pressed = interaction.gPressed()
     val shape = RoundedCornerShape(GRadius.sm)
+    // Held down it never fades: towards the hover's colour on ink, a stronger veil elsewhere, darker on red.
     val ground = when (variant) {
-        GButtonVariant.Primary -> if (pressed) colors.primaryHover.copy(alpha = 0.85f).compositeOverSafe(colors.background) else colors.primary
-        GButtonVariant.Secondary -> if (pressed) colors.track else colors.surface
-        GButtonVariant.Ghost -> if (pressed) colors.track else Color.Transparent
-        GButtonVariant.Danger -> colors.error.copy(alpha = if (pressed) 0.8f else 1f)
+        GButtonVariant.Primary -> if (pressed) colors.primaryHover else colors.primary
+        GButtonVariant.Secondary -> if (pressed) colors.press.compositeOverSafe(colors.surface) else colors.surface
+        GButtonVariant.Ghost -> if (pressed) colors.press else Color.Transparent
+        GButtonVariant.Danger -> if (pressed) lerp(colors.error, Color.Black, 0.18f) else colors.error
     }
     // The text's red on the press's ground too (4.5:1).
     val foreground = when {
@@ -265,10 +280,10 @@ fun GSheetButton(title: String, onClick: () -> Unit, variant: GButtonVariant = G
 fun GIconButton(icon: String, title: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true,
                 tint: Color = G.colors.textSecondary, size: Float = 17f) {
     val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
+    val pressed = interaction.gPressed()
     Box(
         modifier.size(GControlMetrics.touchTarget).alpha(if (enabled) 1f else GOpacity.disabled).clip(CircleShape)
-            .background(if (pressed) G.colors.track else Color.Transparent)
+            .background(if (pressed) G.colors.press else Color.Transparent)
             .clickable(interaction, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
             .semantics { contentDescription = title },
         contentAlignment = Alignment.Center,
@@ -283,7 +298,7 @@ fun GIconButton(icon: String, title: String, onClick: () -> Unit, modifier: Modi
 fun GCloseButton(title: String, onFrame: Boolean = false, onClick: () -> Unit) {
     val colors = G.colors
     val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
+    val pressed = interaction.gPressed()
     Box(
         Modifier.size(GControlMetrics.touchTarget)
             .clickable(interaction, indication = null, role = Role.Button, onClick = onClick)
@@ -292,7 +307,7 @@ fun GCloseButton(title: String, onFrame: Boolean = false, onClick: () -> Unit) {
     ) {
         Box(
             Modifier.size(28.dp).then(if (onFrame) Modifier else Modifier.gRaised(CircleShape, pressed)).clip(CircleShape)
-                .background(if (pressed) (if (onFrame) GFrameColor.closeHover else colors.hover) else Color.Transparent)
+                .background(if (pressed) (if (onFrame) GFrameColor.closeHover else colors.press) else Color.Transparent)
                 .border(1.dp, if (onFrame) GFrameColor.rim else colors.hairline, CircleShape),
             contentAlignment = Alignment.Center,
         ) { GIcon("xmark", size = 11f, weight = FontWeight.Bold, color = if (onFrame) GFrameColor.text else colors.textSecondary) }
@@ -301,9 +316,9 @@ fun GCloseButton(title: String, onFrame: Boolean = false, onClick: () -> Unit) {
 
 // MARK: Switches
 
-/** A switch's track and knob (46 × 28 under the finger): rust when on, the track's grey and a soft rim when off. */
+/** A switch's track and knob (46 × 28 under the finger): rust when on, the track's grey and a soft rim when off; `pressed`: its row is held down. */
 @Composable
-fun GSwitch(isOn: Boolean, modifier: Modifier = Modifier) {
+fun GSwitch(isOn: Boolean, modifier: Modifier = Modifier, pressed: Boolean = false) {
     val colors = G.colors
     val still = gReduceMotion()
     val track by animateColorAsState(if (isOn) colors.accent else colors.track, if (still) snap() else tween(180), label = "switch")
@@ -316,7 +331,9 @@ fun GSwitch(isOn: Boolean, modifier: Modifier = Modifier) {
             .then(if (isOn) Modifier else Modifier.border(1.dp, colors.border.copy(alpha = 0.35f), shape))
             .clearAndSetSemantics {},
     ) {
-        Box(Modifier.offset(x = knob, y = 2.dp).size(24.dp).shadow(1.5.dp, CircleShape)
+        // Held down, the knob stretches towards the middle.
+        val stretch = if (pressed && !still) 4.dp else 0.dp
+        Box(Modifier.offset(x = if (isOn) knob - stretch else knob, y = 2.dp).size(width = 24.dp + stretch, height = 24.dp).shadow(1.5.dp, CircleShape)
             .background(Brush.verticalGradient(listOf(Color.White, Color(0xFFEDEDED))), CircleShape))
     }
 }
@@ -330,10 +347,11 @@ fun GSwitch(isOn: Boolean, modifier: Modifier = Modifier) {
 fun GToggleRow(title: String, isOn: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier, detail: String? = null,
                enabled: Boolean = true, contentPadding: PaddingValues = PaddingValues(0.dp)) {
     val colors = G.colors
+    val interaction = remember { MutableInteractionSource() }
     Row(
         modifier.fillMaxWidth().heightIn(min = GControlMetrics.touchTarget)
             .alpha(if (enabled) 1f else GOpacity.disabled)
-            .clickable(enabled = enabled, role = Role.Switch) { onChange(!isOn) }
+            .clickable(interaction, LocalIndication.current, enabled = enabled, role = Role.Switch) { onChange(!isOn) }
             .semantics(mergeDescendants = true) { toggleableState = ToggleableState(isOn) }
             .padding(contentPadding),
         verticalAlignment = Alignment.CenterVertically,
@@ -343,7 +361,7 @@ fun GToggleRow(title: String, isOn: Boolean, onChange: (Boolean) -> Unit, modifi
             Text(title, style = G.type.body, color = colors.textPrimary)
             if (detail != null) Text(detail, style = G.type.caption, color = colors.textDiscret)
         }
-        GSwitch(isOn)
+        GSwitch(isOn, pressed = interaction.gPressed())
     }
 }
 
@@ -461,12 +479,13 @@ fun GTextField(
 
 /** A choice's face: the current choice in a field, the two arrows on the right; rust rim while the list is open. */
 @Composable
-fun GMenuFace(text: String, modifier: Modifier = Modifier, open: Boolean = false) {
+fun GMenuFace(text: String, modifier: Modifier = Modifier, open: Boolean = false, pressed: Boolean = false) {
     val colors = G.colors
     val shape = RoundedCornerShape(GRadius.sm)
     Row(
-        modifier.widthIn(max = 260.dp).heightIn(min = GControlMetrics.compact).then(if (open) Modifier else Modifier.gRaised(shape)).clip(shape)
+        modifier.widthIn(max = 260.dp).heightIn(min = GControlMetrics.compact).then(if (open) Modifier else Modifier.gRaised(shape, pressed)).clip(shape)
             .background(if (open) colors.hover.compositeOverSafe(colors.background) else colors.background, shape)
+            .background(if (pressed) colors.press else Color.Transparent, shape)
             .border(if (open) 1.5.dp else 1.dp, if (open) colors.accent else colors.hairline, shape)
             .padding(start = 10.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -499,10 +518,11 @@ fun <T> GMenuField(options: List<T>, selection: T, title: (T) -> String, onSelec
                    label: String? = null, enabled: Boolean = true) {
     val colors = G.colors
     var open by remember { mutableStateOf(false) }
+    val interaction = remember { MutableInteractionSource() }
     Box(modifier) {
-        GMenuFace(title(selection), open = open,
+        GMenuFace(title(selection), open = open, pressed = interaction.gPressed(),
             modifier = Modifier.alpha(if (enabled) 1f else GOpacity.disabled).clip(RoundedCornerShape(GRadius.sm))
-                .clickable(enabled = enabled, role = Role.DropdownList) { open = !open }
+                .clickable(interaction, indication = null, enabled = enabled, role = Role.DropdownList) { open = !open }
                 .semantics {
                     if (label != null) contentDescription = label
                     stateDescription = title(selection)
@@ -524,12 +544,16 @@ fun <T> GMenuField(options: List<T>, selection: T, title: (T) -> String, onSelec
 fun GChip(title: String, selected: Boolean, onClick: () -> Unit) {
     val colors = G.colors
     val shape = RoundedCornerShape(GRadius.sm)
+    val interaction = remember { MutableInteractionSource() }
+    val pressed = interaction.gPressed()
     Box(
-        Modifier.heightIn(min = GControlMetrics.compact).then(if (selected) Modifier.gGlow(colors.accent, shape, 3.dp) else Modifier.gRaised(shape)).clip(shape)
+        Modifier.heightIn(min = GControlMetrics.compact)
+            .then(if (selected && !pressed) Modifier.gGlow(colors.accent, shape, 3.dp) else Modifier.gRaised(shape, pressed)).clip(shape)
             .background(if (selected) colors.selectedFill.compositeOverSafe(colors.background) else colors.background, shape)
+            .background(if (pressed) colors.press else Color.Transparent, shape)
             .border(1.dp, if (selected) colors.accent.copy(alpha = 0.7f) else colors.hairline, shape)
             .semantics { this.selected = selected }
-            .clickable(role = Role.RadioButton, onClick = onClick)
+            .clickable(interaction, indication = null, role = Role.RadioButton, onClick = onClick)
             .padding(horizontal = 12.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -613,7 +637,9 @@ fun GSlider(value: Float, onValueChange: (Float) -> Unit, modifier: Modifier = M
     val colors = G.colors
     val span = range.endInclusive - range.start
     val fraction = if (span > 0) ((value - range.start) / span).coerceIn(0f, 1f) else 0f
-    var dragging by remember { mutableStateOf(false) }
+    val preview = LocalGPressedPreview.current
+    var dragging by remember { mutableStateOf(preview) }
+    val still = gReduceMotion()
     // The gestures outlive a composition: they call the latest callbacks, not those of the first one.
     val change by rememberUpdatedState(onValueChange)
     val finished by rememberUpdatedState(onValueChangeFinished)
@@ -648,7 +674,9 @@ fun GSlider(value: Float, onValueChange: (Float) -> Unit, modifier: Modifier = M
             contentAlignment = Alignment.CenterStart) {
             Box(Modifier.padding(horizontal = knob / 2).fillMaxWidth().height(4.dp).clip(CircleShape).background(colors.track))
             Box(Modifier.padding(start = knob / 2).width(run * fraction).height(4.dp).clip(CircleShape).background(colors.accent))
-            Box(Modifier.offset(x = run * fraction).size(knob).shadow(1.5.dp, CircleShape)
+            Box(Modifier.offset(x = run * fraction).size(knob)
+                .graphicsLayer { if (dragging && !still) { scaleX = 1.1f; scaleY = 1.1f } }
+                .then(if (dragging) Modifier.gGlow(colors.accent, CircleShape, 4.dp) else Modifier.shadow(1.5.dp, CircleShape))
                 .background(Color.White, CircleShape)
                 .border(1.dp, if (dragging) colors.accent else colors.border.copy(alpha = 0.5f), CircleShape))
         }
@@ -689,8 +717,8 @@ fun GStepper(title: String, value: Int, onValueChange: (Int) -> Unit, range: Int
 private fun StepperButton(symbol: String, label: String, enabled: Boolean, onClick: () -> Unit) {
     val colors = G.colors
     val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
-    Box(Modifier.width(GControlMetrics.compact + 8.dp).fillMaxHeight().background(if (pressed) colors.track else Color.Transparent)
+    val pressed = interaction.gPressed()
+    Box(Modifier.width(GControlMetrics.compact + 8.dp).fillMaxHeight().background(if (pressed) colors.press else Color.Transparent)
         .alpha(if (enabled) 1f else GOpacity.disabled)
         .clickable(interaction, indication = null, enabled = enabled, role = Role.Button, onClickLabel = label, onClick = onClick),
         contentAlignment = Alignment.Center) {

@@ -563,6 +563,7 @@
                         <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}">
                             <Grid.BackgroundTransition><BrushTransition Duration="0:0:0.12"/></Grid.BackgroundTransition>
                         </Grid>
+                        <Border x:Name="Sunk" Background="{StaticResource GReliefSunkBrush}" Opacity="0" CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False"/>
                         <Border x:Name="Selection" Background="{ThemeResource GSelectedFillBrush}" BorderBrush="{ThemeResource GAccentRimBrush}"
                                 BorderThickness="1" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0"/>
                         <ContentPresenter x:Name="Content" Padding="{TemplateBinding Padding}"
@@ -583,6 +584,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
+                                        <Setter Target="Sunk.Opacity" Value="1"/>
                                         <Setter Target="Veil.Background" Value="{ThemeResource GPressBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>

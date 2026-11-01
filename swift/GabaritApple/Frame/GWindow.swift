@@ -150,7 +150,7 @@ public struct GRailButton: View {
                     .frame(maxWidth: .infinity, minHeight: 32)
                     .background(isOn || pressed ? GFrameColor.selected : (hovering ? GFrameColor.hover : .clear),
                                 in: .rect(cornerRadius: GRadius.sm))
-                    .scaleEffect(pressed ? 0.94 : 1)
+                    .gPressScale(pressed, to: 0.94)
                     .contentShape(Rectangle())
                     .gTouchTarget(height: 32)
             }
@@ -184,7 +184,7 @@ public struct GRailSquareButton: View {
                     .frame(width: 44, height: 44)
                     .background(pressed ? GFrameColor.selected : hovering ? GFrameColor.hover : .clear, in: .rect(cornerRadius: GRadius.sm))
                     .overlay { RoundedRectangle(cornerRadius: GRadius.sm).strokeBorder(GFrameColor.rim, lineWidth: 1) }
-                    .scaleEffect(pressed ? 0.96 : 1)
+                    .gPressScale(pressed, to: 0.96)
                     .contentShape(Rectangle())
             }
         }

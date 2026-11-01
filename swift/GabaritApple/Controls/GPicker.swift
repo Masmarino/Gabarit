@@ -248,8 +248,9 @@ private struct GChips<Value: Hashable>: View {
                             .foregroundStyle(current ? GColor.accentText : (hovering ? GColor.textPrimary : GColor.textSecondary))
                             .padding(.horizontal, 12)
                             .frame(minHeight: GControlMetrics.compact)
-                            .background(pressed ? GColor.press : current ? GColor.selectedFill : (hovering ? GColor.hover : .clear), in: shape)
-                            .background(current ? .clear : GColor.background, in: shape)
+                            // The veil on what it is laid on: a chosen chip keeps its tint under the finger.
+                            .background(pressed ? GColor.press : (hovering && !current ? GColor.hover : .clear), in: shape)
+                            .background(current ? GColor.selectedFill : GColor.background, in: shape)
                             .overlay { shape.strokeBorder(current ? GColor.accent.opacity(0.7) : (hovering ? GColor.border.opacity(0.5) : GColor.hairline), lineWidth: 1) }
                             .gRaised(shape, hovering: hovering, pressed: pressed, active: !current || pressed)
                             .gGlow(radius: hovering ? 5 : 3, active: current && !pressed)

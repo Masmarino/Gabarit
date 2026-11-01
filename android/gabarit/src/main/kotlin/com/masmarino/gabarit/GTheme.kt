@@ -1,5 +1,7 @@
 package com.masmarino.gabarit
 
+import androidx.compose.foundation.LocalIndication
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -128,7 +130,10 @@ fun GScheme(dark: Boolean, grounds: GGrounds? = null, content: @Composable () ->
     )
     CompositionLocalProvider(LocalColors provides colors, LocalTypography provides type, LocalDark provides dark,
         LocalGrounds provides grounds) {
-        MaterialTheme(colorScheme = material, typography = materialType, content = content)
+        MaterialTheme(colorScheme = material, typography = materialType) {
+            // Set inside: MaterialTheme sets its ripple.
+            CompositionLocalProvider(LocalIndication provides GVeilIndication(colors.press), content = content)
+        }
     }
 }
 

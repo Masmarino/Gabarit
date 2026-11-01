@@ -9,9 +9,9 @@ let live = CommandLine.arguments.contains("--live")
 let folder = URL(fileURLWithPath: CommandLine.arguments.dropFirst().first ?? ".")
 if !live { try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true) }
 
-@MainActor func draw<V: View>(_ name: String, _ view: V) {
+@MainActor func draw<V: View>(_ name: String, _ view: V, width: CGFloat = 600) {
     for (appearance, scheme) in [("light", ColorScheme.light), ("dark", .dark)] {
-        let page = view.frame(width: 600).padding(20).background(GColor.background).environment(\.colorScheme, scheme)
+        let page = view.frame(width: width).padding(20).background(GColor.background).environment(\.colorScheme, scheme)
         var png: Data?
         // Gabarit's colours resolve against the drawing appearance, as in an app's window.
         NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)!.performAsCurrentDrawingAppearance {
@@ -39,7 +39,7 @@ MainActor.assumeIsolated {
         application.activate()
         application.run()
     }
-    draw("states", StatesSection())
+    draw("states", StatesSection(), width: 800)
     draw("controls", ControlsSection())
     draw("forms", FormsSection())
     draw("frame", FrameSection())

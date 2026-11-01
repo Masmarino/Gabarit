@@ -220,14 +220,15 @@ struct StatesSection: View {
             control()
             control().environment(\.gPointerPreview, .hover)
             control().environment(\.gPointerPreview, .pressed)
+            control().disabled(true)
         }
     }
 
     var body: some View {
-        Grid(alignment: .center, horizontalSpacing: 18, verticalSpacing: 14) {
+        Grid(alignment: .center, horizontalSpacing: 14, verticalSpacing: 14) {
             GridRow {
                 Color.clear.frame(width: 1, height: 1)
-                ForEach(["Rest", "Hover", "Pressed"], id: \.self) { Text($0).font(GFont.headline).foregroundStyle(GColor.textPrimary) }
+                ForEach(["Rest", "Hover", "Pressed", "Disabled"], id: \.self) { Text($0).font(GFont.headline).foregroundStyle(GColor.textPrimary) }
             }
             row("Primary") { Button("Save") {}.buttonStyle(GButtonStyle(variant: .primary)) }
             row("Secondary") { Button("Reset") {}.buttonStyle(GButtonStyle(variant: .secondary)) }

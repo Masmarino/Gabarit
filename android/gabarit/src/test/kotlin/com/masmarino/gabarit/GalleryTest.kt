@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -88,6 +89,38 @@ class GalleryTest {
             GSlider(value, { value = it }, label = "Volume")
             GStepper("Reminders", count, { count = it }, 0..10)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { GTone.entries.forEach { GBadge("state", tone = it) } }
+        }
+    }
+
+    /** Each control at rest, held down and disabled, as the Mac's and Linux's galleries show them. */
+    @Test fun states() = draw("states") {
+        val controls: List<Pair<String, @Composable () -> Unit>> = listOf(
+            "Primary" to { GButton("Save", {}, variant = GButtonVariant.Primary) },
+            "Secondary" to { GButton("Reset", {}) },
+            "Ghost" to { GButton("Later", {}, variant = GButtonVariant.Ghost) },
+            "Danger" to { GButton("Delete", {}, variant = GButtonVariant.Danger) },
+            "Destructive" to { GButton("Leave", {}, destructive = true) },
+            "Close" to { GCloseButton("Close") {} },
+            "Chips" to { Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) { GChip("On", true) {}; GChip("Off", false) {} } },
+            "Menu" to { GMenuFace("Light") },
+            "Switch" to { GSwitch(true) },
+            "Icon" to { GIconButton("trash", "Delete", {}) },
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row { Spacer(Modifier.width(90.dp)); listOf("Rest", "Pressed").forEach { Text(it, style = G.type.headline, color = G.colors.textPrimary, modifier = Modifier.width(130.dp)) } }
+            controls.forEach { (name, control) ->
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Text(name, style = G.type.caption, color = G.colors.textDiscret, modifier = Modifier.width(90.dp))
+                    Box(Modifier.width(130.dp)) { control() }
+                    Box(Modifier.width(130.dp)) {
+                        androidx.compose.runtime.CompositionLocalProvider(LocalGPressedPreview provides true) {
+                            if (name == "Menu") GMenuFace("Light", pressed = true)
+                            else if (name == "Switch") GSwitch(true, pressed = true)
+                            else control()
+                        }
+                    }
+                }
+            }
         }
     }
 

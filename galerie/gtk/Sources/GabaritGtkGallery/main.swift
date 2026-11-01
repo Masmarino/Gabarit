@@ -75,7 +75,7 @@ let folder = CommandLine.arguments.dropFirst().first ?? "."
     let grid = UnsafeMutableRawPointer(widget).assumingMemoryBound(to: GtkGrid.self)
     gtk_grid_set_row_spacing(grid, 12)
     gtk_grid_set_column_spacing(grid, 18)
-    for (column, title) in ["Rest", "Hover", "Pressed"].enumerated() {
+    for (column, title) in ["Rest", "Hover", "Pressed", "Disabled"].enumerated() {
         gtk_grid_attach(grid, gLabel(title, style: "headline"), Int32(column + 1), 0, 1, 1)
     }
     // Each at its own size, as in a form: a cell would stretch it.
@@ -85,10 +85,15 @@ let folder = CommandLine.arguments.dropFirst().first ?? "."
         return control
     }
     for (row, control) in controls.enumerated() {
-        gtk_grid_attach(grid, gLabel(control.0, style: "caption"), 0, Int32(row + 1), 1, 1)
+        let name = gLabel(control.0, style: "caption")
+        gtk_widget_set_size_request(name, 84, -1)
+        gtk_grid_attach(grid, name, 0, Int32(row + 1), 1, 1)
         gtk_grid_attach(grid, placed(control.1()), 1, Int32(row + 1), 1, 1)
         gtk_grid_attach(grid, placed(forced(control.1(), GTK_STATE_FLAG_PRELIGHT)), 2, Int32(row + 1), 1, 1)
         gtk_grid_attach(grid, placed(forced(control.1(), GtkStateFlags(GTK_STATE_FLAG_PRELIGHT.rawValue | GTK_STATE_FLAG_ACTIVE.rawValue))), 3, Int32(row + 1), 1, 1)
+        let disabled = placed(control.1())
+        gtk_widget_set_sensitive(disabled, 0)
+        gtk_grid_attach(grid, disabled, 4, Int32(row + 1), 1, 1)
     }
     return margins(widget, 24)
 }

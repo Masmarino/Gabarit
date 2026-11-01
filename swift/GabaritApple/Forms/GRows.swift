@@ -37,10 +37,10 @@ public struct GSidebarRow: View {
 
     @Environment(\.gPointerPreview) private var preview
     @Environment(\.gButtonPressed) private var buttonPressed
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var lit: Bool { hovering || preview != nil }
-    private var pressed: Bool { buttonPressed || preview == .pressed }
+    @Environment(\.isEnabled) private var isEnabled
+    private var lit: Bool { isEnabled && (hovering || preview != nil) }
+    private var pressed: Bool { isEnabled && (buttonPressed || preview == .pressed) }
 
     public var body: some View {
         HStack(spacing: 10) {
@@ -63,10 +63,12 @@ public struct GSidebarRow: View {
         .gTouchTarget(height: GSidebarRow.height)
         .background {
             RoundedRectangle(cornerRadius: GRadius.md, style: .continuous)
-                .fill(pressed ? (selected ? Self.selectedFill : GColor.press) : selected ? Self.selectedFill : (lit ? Self.hoverFill : Color.clear))
+                .fill(selected ? Self.selectedFill : (lit && !pressed ? Self.hoverFill : Color.clear))
+                .overlay { if pressed { RoundedRectangle(cornerRadius: GRadius.md, style: .continuous).fill(GColor.press) } }
                 .gGlow(radius: lit ? 6 : 4, active: selected && !pressed)
         }
-        .scaleEffect(pressed && !reduceMotion ? 0.99 : 1)
+        .gPressScale(pressed, to: 0.99)
+        .gDimmedWhenDisabled()
         .onHover { hovering = $0 }
         .gPointer()
         .animation(GAnimation.hover, value: hovering)

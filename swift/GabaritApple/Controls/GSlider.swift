@@ -164,6 +164,7 @@ public struct GStepper: View {
             .gRaised(shape)
             .clipShape(shape)
             .fixedSize()
+            .gDimmedWhenDisabled()
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)

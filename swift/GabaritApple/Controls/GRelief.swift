@@ -17,6 +17,21 @@ public extension View {
     }
 }
 
+public extension View {
+    /// Shrinks a little while held down; not when the system asks for reduced motion.
+    func gPressScale(_ pressed: Bool, to scale: CGFloat = 0.97) -> some View { modifier(GPressScale(pressed: pressed, scale: scale)) }
+}
+
+private struct GPressScale: ViewModifier {
+    let pressed: Bool
+    let scale: CGFloat
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func body(content: Content) -> some View {
+        content.scaleEffect(pressed && !reduceMotion ? scale : 1)
+    }
+}
+
 /// A slight hollow, for what holds a value: `GColor.track.gHollow()` as a shape's fill.
 public extension ShapeStyle where Self == Color {
     func gHollow(_ strength: Double = 0.12) -> some ShapeStyle {

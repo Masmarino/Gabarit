@@ -133,7 +133,7 @@ public struct GCloseButton: View {
             .background(pressed ? (onFrame ? GFrameColor.selected : GColor.press) : hovering ? (onFrame ? GFrameColor.closeHover : GColor.hover) : Color.clear, in: Circle())
             .overlay { Circle().strokeBorder(onFrame ? GFrameColor.rim : GColor.hairline, lineWidth: 1) }
             .gRaised(Circle(), hovering: hovering, pressed: pressed, active: !onFrame)
-            .scaleEffect(onFrame && pressed ? 0.94 : 1)
+            .gPressScale(onFrame && pressed, to: 0.94)
             #if os(iOS)
             // Under the finger: a 44-point target around the circle.
             .padding(8)

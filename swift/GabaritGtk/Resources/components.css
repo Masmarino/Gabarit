@@ -378,3 +378,5 @@ scale.g-slider > trough > slider:active { border-color: @g_accent; box-shadow: 0
 /* The menu's rim: rust only while it is open, as on the Mac. */
 dropdown.g-menu > button:hover { border-color: alpha(@g_border, 0.7); }
 dropdown.g-menu > button:checked, dropdown.g-menu > button:hover:checked { border-color: @g_accent; }
+/* Disabled: the whole stepper dims, its value too. */
+.g-stepper-value:disabled { opacity: 0.45; }
