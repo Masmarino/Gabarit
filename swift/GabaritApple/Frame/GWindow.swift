@@ -107,6 +107,8 @@ public struct GAppShell<Rail: View, Bar: View, Page: View, Over: View>: View {
                         case .background: GColor.frame.overlay { GColor.background.clipShape(corner) }
                         }
                     }
+                    // The band casts its shadow on the page, cut by the same corner.
+                    .overlay(alignment: .top) { GBarShadowEdge() }
                     .clipShape(corner)
             }
             .overlay { over }

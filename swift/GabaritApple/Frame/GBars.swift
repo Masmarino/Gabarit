@@ -37,6 +37,9 @@ private struct GFrameToolbar: ViewModifier {
                 // The sheet's ground, dark like the frame: otherwise the system's light glass shows as a white thread
                 // along the rounded top corners (the content paints its own ground over it).
                 .presentationBackground(GFrameColor.ground)
+                // The bar casts its shadow on the page, as the tab bar does: the system's bar cannot draw one, so it is
+                // drawn from just above the content.
+                .overlay(alignment: .top) { GBarShadowEdge() }
         }
         #else
         content

@@ -74,6 +74,23 @@ public extension View {
     }
 }
 
+/// The shadow one of the frame's bars casts on the page below it, for a bar that cannot draw its own: put it on top of
+/// the page. Painted, not cast: nothing would draw the shadow of a shape that lies outside the page's clip.
+public struct GBarShadowEdge: View {
+    public init() {}
+
+    public var body: some View {
+        let shade = Color(GShadowValues.bar.color)
+        LinearGradient(stops: [.init(color: shade.opacity(0.42), location: 0),
+                               .init(color: shade.opacity(0.18), location: 0.4),
+                               .init(color: shade.opacity(0), location: 1)],
+                       startPoint: .top, endPoint: .bottom)
+            .frame(height: 8)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}
+
 /// A switch's or a slider's knob: white, a little rounded by the light.
 public struct GKnob: View {
     public init() {}

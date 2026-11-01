@@ -18,7 +18,9 @@ public extension GTone {
 public extension View {
     /// A Gabarit surface: flat, with a fine border. `tint`: a tinted surface (selection, state).
     func gSurface<S: InsettableShape>(_ shape: S, tint: Color? = nil) -> some View {
-        background(tint?.opacity(0.12) ?? GColor.surface, in: shape)
+        // A card, whatever it holds: it rests on the page (`gCardDepth`), tinted or not.
+        background(tint?.opacity(0.12) ?? .clear, in: shape)
+            .gCardDepth(shape)
             .overlay { shape.strokeBorder(tint?.opacity(0.4) ?? GColor.hairline, lineWidth: 1) }
     }
 }

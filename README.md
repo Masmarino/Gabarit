@@ -610,7 +610,7 @@ Light and depth, a little of them, on every platform, one light from above: the 
 (a switch, the current tab or rail item, a selected row or chip) glows; the page; what rests on it (a form's card: a soft shadow, the light on its top
 edge); what can be pressed (buttons, chips, menu faces: some volume, a tighter shadow, and they sink when pressed); what
 holds a value is slightly hollow (switch and slider tracks, fields); the frame's bars cast a shadow on the page. A sheet's
-header is on the page's grey, the dark frame is for pages. Apple: `gRaised`, `gCardDepth`, `gHollow`, `gBarShadow`,
+header is on the page's grey, the dark frame is for pages. Apple: `gRaised`, `gCardDepth`, `gHollow`, `gBarShadow`, `GBarShadowEdge`,
 `GKnob`; Android: `gRaised`, `gCard`; tokens: `reliefHighlight`, `reliefShadow`, `cardShadow`, the `card`, `raised` and
 `bar` shadows.
 
