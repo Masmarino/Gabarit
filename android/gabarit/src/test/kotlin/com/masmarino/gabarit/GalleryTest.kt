@@ -102,10 +102,40 @@ class GalleryTest {
         }
     }
 
+    @Test fun rows() = draw("rows") {
+        var on by remember { mutableStateOf(true) }
+        var choice by remember { mutableStateOf(0) }
+        var query by remember { mutableStateOf("") }
+        Column(verticalArrangement = Arrangement.spacedBy(GFormMetrics.sectionSpacing)) {
+            GSearchField(query, { query = it }, prompt = "Search")
+            GFormSection("Account", "Rows laid as they come, each with its line.") {
+                GFormRow("Profile", detail = "Name, photo, pronouns", icon = "person.crop.circle", divider = true, onClick = {}) {
+                    GIcon("chevron.right", size = 13f)
+                }
+                GToggleRow("Read receipts", on, { on = it }, Modifier.gRowDivider(), "Others see when you read.", contentPadding = GFormMetrics.rowPadding)
+                GFormRow("Devices", icon = "macbook.and.iphone", divider = true) { Text("3") }
+                GFormRow("Sign out", icon = "rectangle.portrait.and.arrow.right", destructive = true, onClick = {})
+            }
+            GFormSection("Theme") {
+                listOf("System", "Light", "Dark").forEachIndexed { i, t -> GChoiceRow(t, choice == i, { choice = i }, divider = i < 2) }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                GIconTile("bell", G.colors.accent)
+                GIconTile("lock", GTone.Info.base)
+                GSpinner()
+                GSpinner(progress = 0.6f)
+                GIconButton("trash", "Delete", {})
+                GIcon("star.fill", "Favourite", tint = G.colors.warning)
+            }
+            GProgressBar(0.4f)
+        }
+    }
+
     @Test fun frame() = draw("frame") {
         var tab by remember { mutableStateOf("messages") }
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            GTopBar("Messages", subtitle = "2 unread", trailing = { GFrameButton("magnifyingglass", "Search") {} })
+            GTopBar("Messages", subtitle = "2 unread", statusBar = false, trailing = { GFrameButton("magnifyingglass", "Search") {} })
+            GTopBar("Léa", subtitle = "online", back = {}, statusBar = false, trailing = { GFrameButton("phone", "Call") {} })
             GPageBand("bell", "Notifications", "What reaches you, and when.")
             Row {
                 GRail(Modifier.height(260.dp)) {

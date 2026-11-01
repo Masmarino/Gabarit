@@ -12,6 +12,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -225,4 +228,39 @@ fun GErrorAlert(title: String, message: String?, onDismiss: () -> Unit, ok: Stri
         title = { Text(title, style = G.type.title3, color = colors.textPrimary) },
         text = { Text(message, style = G.type.body, color = colors.textSecondary) },
         confirmButton = { TextButton(onDismiss) { Text(ok, style = G.type.body.copy(fontWeight = FontWeight.SemiBold), color = colors.accentText) } })
+}
+
+/**
+ * Gabarit's alert: the title (none if null or empty), the message (or `content`), its buttons (Gabarit's, ghost or primary) at the bottom, on
+ * the opaque surface.
+ */
+@Composable
+fun GAlert(title: String?, onDismiss: () -> Unit, confirm: @Composable () -> Unit, modifier: Modifier = Modifier, message: String? = null,
+           dismiss: (@Composable () -> Unit)? = null, content: (@Composable ColumnScope.() -> Unit)? = null) {
+    val colors = G.colors
+    AlertDialog(onDismissRequest = onDismiss, confirmButton = confirm, modifier = modifier, dismissButton = dismiss,
+        containerColor = G.surfaceOpaque, shape = RoundedCornerShape(GRadius.lg), tonalElevation = 0.dp,
+        title = if (title.isNullOrEmpty()) null else ({ Text(title, style = G.type.title3, color = colors.textPrimary) }),
+        text = if (message == null && content == null) null else ({
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                if (message != null) Text(message, style = G.type.body, color = colors.textSecondary)
+                content?.invoke(this)
+            }
+        }))
+}
+
+/** Something on its way: a fine rust ring turning; `progress`: how far it is (0 to 1), the ring filling up. */
+@Composable
+fun GSpinner(modifier: Modifier = Modifier, size: Dp = 20.dp, color: Color = G.colors.accent, progress: Float? = null) {
+    if (progress == null) CircularProgressIndicator(modifier.size(size), color = color, strokeWidth = 2.dp, trackColor = Color.Transparent)
+    else CircularProgressIndicator({ progress }, modifier.size(size), color = color, strokeWidth = 2.dp, trackColor = color.copy(alpha = 0.2f))
+}
+
+/** A progress bar: rust on the track; `progress` null: on its way, unknown how far. */
+@Composable
+fun GProgressBar(progress: Float?, modifier: Modifier = Modifier) {
+    val colors = G.colors
+    if (progress == null) LinearProgressIndicator(modifier.fillMaxWidth(), color = colors.accent, trackColor = colors.track, gapSize = 0.dp)
+    else LinearProgressIndicator({ progress }, modifier.fillMaxWidth(), color = colors.accent, trackColor = colors.track, gapSize = 0.dp,
+        drawStopIndicator = {})
 }

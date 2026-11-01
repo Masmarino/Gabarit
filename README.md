@@ -587,16 +587,20 @@ The gallery draws every component, light and dark, to PNG files at twice their s
 previous one, and the Mac with Linux: `cd galerie/apple && swift run GabaritGallery <folder>`.
 
 Android (Jetpack Compose) is in `android/`: the `gabarit` library, the iPhone's components at the finger's sizes
-(`GTheme`, `G.colors`, `G.type`; `GButton`, `GCloseButton`, `GToggleRow`, `GTextField`, `GPicker`, `GSlider`,
-`GStepper`; `GBadge`, `GEmptyState`, `GSkeleton`, `GTypingDots`, `GToastHost`, `GErrorAlert`; `GForm`,
-`GFormSection`, `GRow`, `GValueRow`, `GRowButton`, `GSidebarRow`, `GNavTabs`; `GTopBar`, `GTabBar`, `GRail`,
-`GRailItem`, `GPageBand`, `GMenu`, `GSheet`, `GSideDrawer`, `GCommandPalette`). Icons take the Mac's names
-(`GIcon("bell")`), drawn by Phosphor's fonts. An app's colour themes replace the grounds with `GTheme(grounds = …)`.
+(`GTheme`, `G.colors`, `G.type`; `GButton`, `GIconButton`, `GCloseButton`, `GToggleRow`, `GTextField`,
+`GFieldFrame`, `GSearchField`, `GPicker`, `GSlider`, `GStepper`; `GBadge`, `GEmptyState`, `GSkeleton`,
+`GTypingDots`, `GSpinner`, `GProgressBar`, `GToastHost`, `GAlert`, `GErrorAlert`; `GForm`, `GFormSection`, `GRow`,
+`GFormRow`, `GChoiceRow`, `GValueRow`, `GRowButton`, `GIconTile`, `gFormSectionRows` for long lazy lists,
+`GSidebarRow`, `GNavTabs`; `GTopBar`, `GTabBar`, `GRail`, `GRailItem`, `GPageBand`, `GDropdownMenu`, `GMenu`,
+`GBottomSheet`, `GSheet`, `GSideDrawer`, `GCommandPalette`). Icons take the Mac's names, drawn by Phosphor's fonts:
+`GIcon("bell", size = 17f)` at an SF Symbol's point size, or `GIcon("bell", contentDescription, modifier, tint)`
+shaped as Material's `Icon` (24 square, the glyph filling its box). An app's colour themes replace the grounds with
+`GTheme(grounds = …)`.
 JitPack builds it from the tags (`jitpack.yml`):
 
 ```kotlin
 // settings.gradle.kts: maven("https://jitpack.io") { content { includeGroup("com.github.Masmarino") } }
-implementation("com.github.Masmarino:Gabarit:3.0.0-beta.21")
+implementation("com.github.Masmarino:Gabarit:3.0.0-beta.22")
 ```
 
 Its gallery draws the Mac gallery's sections, light and dark, on the JVM (Robolectric) to `android/gabarit/build/galerie`:

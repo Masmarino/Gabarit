@@ -41,6 +41,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -72,6 +73,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.LineHeightStyle
 import kotlin.math.roundToInt
 
 // Gabarit's controls for Compose, as GabaritApple draws them on the iPhone: drawn by Gabarit, not the system's, at the
@@ -102,6 +114,33 @@ fun GIcon(name: String, modifier: Modifier = Modifier, size: Float = 17f, color:
         fontSize = (size * 1.25f).sp, lineHeight = (size * 1.25f).sp,
         modifier = modifier.then(if (description == null) Modifier.clearAndSetSemantics {}
         else Modifier.clearAndSetSemantics { contentDescription = description }))
+}
+
+/**
+ * An icon by the Mac's name, shaped as Material's `Icon`: 24 square unless the modifier sizes it, Phosphor's glyph
+ * filling its box, in `tint`. `contentDescription`: what screen readers say (null: hidden from them).
+ */
+@Composable
+fun GIcon(name: String, contentDescription: String?, modifier: Modifier = Modifier, tint: Color = LocalContentColor.current,
+          weight: FontWeight = FontWeight.Normal) {
+    val glyph = GSymbols.glyph(name) ?: GSymbols.glyph("questionmark")
+    val measurer = rememberTextMeasurer()
+    Spacer(
+        modifier.size(24.dp)
+            .then(if (contentDescription == null) Modifier.clearAndSetSemantics {}
+            else Modifier.clearAndSetSemantics { this.contentDescription = contentDescription; role = Role.Image })
+            .drawWithCache {
+                val side = size.minDimension.toSp()
+                val layout = glyph?.let {
+                    measurer.measure(it.first.toString(), TextStyle(fontFamily = if (it.second) phosphorFill else phosphor, fontWeight = weight,
+                        fontSize = side, lineHeight = side,
+                        lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)))
+                }
+                onDrawBehind {
+                    if (layout != null) drawText(layout, tint, Offset((size.width - layout.size.width) / 2f, (size.height - layout.size.height) / 2f))
+                }
+            },
+    )
 }
 
 // MARK: Buttons
@@ -182,6 +221,24 @@ fun GSheetButton(title: String, onClick: () -> Unit, variant: GButtonVariant = G
     GButton(title, onClick, Modifier.fillMaxWidth(), variant, compact = false, enabled = enabled, destructive = destructive)
 
 /**
+ * A round icon button on the page (a field's, a row's action): the icon (the Mac's name) in `tint`, the track's grey
+ * while pressed, a 44 target. `title`: what screen readers say.
+ */
+@Composable
+fun GIconButton(icon: String, title: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true,
+                tint: Color = G.colors.textSecondary, size: Float = 17f) {
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    Box(
+        modifier.size(GControlMetrics.touchTarget).alpha(if (enabled) 1f else GOpacity.disabled).clip(CircleShape)
+            .background(if (pressed) G.colors.track else Color.Transparent)
+            .clickable(interaction, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
+            .semantics { contentDescription = title },
+        contentAlignment = Alignment.Center,
+    ) { GIcon(icon, size = size, color = tint) }
+}
+
+/**
  * Gabarit's close button: a cross in a circle with a fine rim (on the dark frame when `onFrame`), a 44 target under the
  * finger. `title`: what screen readers say.
  */
@@ -226,17 +283,19 @@ fun GSwitch(isOn: Boolean, modifier: Modifier = Modifier) {
 
 /**
  * A switch row: its title, the sentence that explains it more discreet below, the switch on the right. The whole row
- * is the switch (a touch anywhere, said as one switch).
+ * is the switch (a touch anywhere, said as one switch), `contentPadding` included (a form card's row:
+ * `GFormMetrics.rowPadding`).
  */
 @Composable
 fun GToggleRow(title: String, isOn: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier, detail: String? = null,
-               enabled: Boolean = true) {
+               enabled: Boolean = true, contentPadding: PaddingValues = PaddingValues(0.dp)) {
     val colors = G.colors
     Row(
         modifier.fillMaxWidth().heightIn(min = GControlMetrics.touchTarget)
             .alpha(if (enabled) 1f else GOpacity.disabled)
             .clickable(enabled = enabled, role = Role.Switch) { onChange(!isOn) }
-            .semantics(mergeDescendants = true) { toggleableState = ToggleableState(isOn) },
+            .semantics(mergeDescendants = true) { toggleableState = ToggleableState(isOn) }
+            .padding(contentPadding),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -250,7 +309,10 @@ fun GToggleRow(title: String, isOn: Boolean, onChange: (Boolean) -> Unit, modifi
 
 // MARK: Text
 
-/** A field's frame: the ground, a fine rim, rust and thicker when it has the focus. */
+/**
+ * A field's frame: the ground, a fine rim, rust and thicker when it has the focus, red if `isError`. `icon`: discreet
+ * before the text (a search's magnifying glass); `keyboardActions`: in place of `onSubmit` (on Done, Go, Send, Search).
+ */
 @Composable
 fun GFieldFrame(
     value: String,
@@ -261,31 +323,57 @@ fun GFieldFrame(
     enabled: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onSubmit: (() -> Unit)? = null,
+    icon: String? = null,
+    isError: Boolean = false,
+    minLines: Int = if (singleLine) 1 else 3,
+    maxLines: Int = if (singleLine) 1 else 8,
+    textStyle: TextStyle = G.type.body,
+    keyboardActions: KeyboardActions? = null,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     val colors = G.colors
     val shape = RoundedCornerShape(GRadius.sm)
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
+    val submit = { onSubmit?.invoke(); Unit }
     BasicTextField(
         value, onValueChange, modifier.fillMaxWidth().alpha(if (enabled) 1f else GOpacity.disabled),
-        enabled = enabled, singleLine = singleLine, minLines = if (singleLine) 1 else 3, maxLines = if (singleLine) 1 else 8,
-        interactionSource = interaction, keyboardOptions = keyboardOptions,
-        keyboardActions = KeyboardActions(onDone = { onSubmit?.invoke() }, onGo = { onSubmit?.invoke() }),
-        textStyle = G.type.body.copy(color = colors.textPrimary), cursorBrush = SolidColor(colors.accent),
+        enabled = enabled, singleLine = singleLine, minLines = minLines, maxLines = maxLines,
+        interactionSource = interaction, keyboardOptions = keyboardOptions, visualTransformation = visualTransformation,
+        keyboardActions = keyboardActions ?: KeyboardActions(onDone = { submit() }, onGo = { submit() }, onSend = { submit() }, onSearch = { submit() }),
+        textStyle = textStyle.copy(color = colors.textPrimary), cursorBrush = SolidColor(colors.accent),
         decorationBox = { field ->
-            Box(Modifier.fillMaxWidth().heightIn(min = GControlMetrics.height).background(colors.background, shape)
-                .border(if (focused) 1.5.dp else 1.dp, if (focused) colors.accent else colors.hairline, shape)
-                .padding(horizontal = 10.dp, vertical = 6.dp), contentAlignment = Alignment.CenterStart) {
-                if (value.isEmpty() && prompt.isNotEmpty()) Text(prompt, style = G.type.body, color = colors.textDiscret, maxLines = 1)
-                field()
+            val rim = when {
+                isError -> colors.error
+                focused -> colors.accent
+                else -> colors.hairline
+            }
+            Row(Modifier.fillMaxWidth().heightIn(min = GControlMetrics.height).background(colors.background, shape)
+                .border(if (focused || isError) 1.5.dp else 1.dp, rim, shape)
+                .padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (icon != null) GIcon(icon, size = 15f, color = colors.textDiscret)
+                Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                    if (value.isEmpty() && prompt.isNotEmpty()) {
+                        Text(prompt, style = textStyle, color = colors.textDiscret, maxLines = maxLines, overflow = TextOverflow.Ellipsis)
+                    }
+                    field()
+                }
             }
         },
     )
 }
 
+/** A search field: the magnifying glass before the text, `prompt` as the placeholder; "Search" on the keyboard. */
+@Composable
+fun GSearchField(value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier, prompt: String = "", onSubmit: (() -> Unit)? = null) =
+    GFieldFrame(value, onValueChange, modifier.semantics { if (prompt.isNotEmpty()) contentDescription = prompt }, prompt,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search), onSubmit = onSubmit, icon = "magnifyingglass")
+
 /**
  * A text field with its title: the title above (small, discreet), the field below, full width, `prompt` as the
- * placeholder. The title names the field for screen readers (said once). `trailing`: a button at the field's end.
+ * placeholder. The title names the field for screen readers (said once). `trailing`: a button at the field's end;
+ * `footer`: a sentence below (the error's, in red, if `isError`).
  */
 @Composable
 fun GTextField(
@@ -298,6 +386,13 @@ fun GTextField(
     enabled: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     onSubmit: (() -> Unit)? = null,
+    footer: String? = null,
+    isError: Boolean = false,
+    minLines: Int = if (singleLine) 1 else 3,
+    maxLines: Int = if (singleLine) 1 else 8,
+    textStyle: TextStyle = G.type.body,
+    keyboardActions: KeyboardActions? = null,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
     trailing: @Composable RowScope.() -> Unit = {},
 ) {
     val colors = G.colors
@@ -307,10 +402,14 @@ fun GTextField(
                 modifier = Modifier.clearAndSetSemantics {})
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            GFieldFrame(value, onValueChange, Modifier.weight(1f).semantics { contentDescription = title }, prompt, singleLine, enabled,
-                keyboardOptions, onSubmit)
+            GFieldFrame(value, onValueChange, Modifier.weight(1f).semantics {
+                contentDescription = title
+                if (isError && footer != null) error(footer)
+            }, prompt, singleLine, enabled, keyboardOptions, onSubmit, isError = isError, minLines = minLines, maxLines = maxLines,
+                textStyle = textStyle, keyboardActions = keyboardActions, visualTransformation = visualTransformation)
             trailing()
         }
+        if (footer != null) Text(footer, style = G.type.caption, color = if (isError) colors.errorText else colors.textDiscret)
     }
 }
 
@@ -432,15 +531,19 @@ fun <T> GPicker(title: String, options: List<T>, selection: T, optionTitle: (T) 
  */
 @Composable
 fun GSlider(value: Float, onValueChange: (Float) -> Unit, modifier: Modifier = Modifier, range: ClosedFloatingPointRange<Float> = 0f..1f,
-            step: Float? = null, label: String? = null, format: ((Float) -> String)? = null, enabled: Boolean = true) {
+            step: Float? = null, label: String? = null, format: ((Float) -> String)? = null, enabled: Boolean = true,
+            onValueChangeFinished: (() -> Unit)? = null) {
     val colors = G.colors
     val span = range.endInclusive - range.start
     val fraction = if (span > 0) ((value - range.start) / span).coerceIn(0f, 1f) else 0f
     var dragging by remember { mutableStateOf(false) }
+    // The gestures outlive a composition: they call the latest callbacks, not those of the first one.
+    val change by rememberUpdatedState(onValueChange)
+    val finished by rememberUpdatedState(onValueChangeFinished)
     fun set(f: Float) {
         var next = range.start + f.coerceIn(0f, 1f) * span
         if (step != null && step > 0) next = range.start + ((next - range.start) / step).roundToInt() * step
-        onValueChange(next.coerceIn(range.start, range.endInclusive))
+        change(next.coerceIn(range.start, range.endInclusive))
     }
     val knob = 24.dp
     BoxWithConstraints(
@@ -449,7 +552,7 @@ fun GSlider(value: Float, onValueChange: (Float) -> Unit, modifier: Modifier = M
                 if (label != null) contentDescription = label
                 stateDescription = format?.invoke(value) ?: "${(fraction * 100).roundToInt()} %"
                 progressBarRangeInfo = ProgressBarRangeInfo(value, range, if (step != null && step > 0) (span / step).roundToInt() - 1 else 0)
-                if (enabled) setProgress { target -> onValueChange(target.coerceIn(range.start, range.endInclusive)); true }
+                if (enabled) setProgress { target -> change(target.coerceIn(range.start, range.endInclusive)); finished?.invoke(); true }
             },
         contentAlignment = Alignment.CenterStart,
     ) {
@@ -457,11 +560,13 @@ fun GSlider(value: Float, onValueChange: (Float) -> Unit, modifier: Modifier = M
         val width = with(LocalDensity.current) { run.toPx().coerceAtLeast(1f) }
         val half = with(LocalDensity.current) { (knob / 2).toPx() }
         Box(Modifier.fillMaxWidth().fillMaxHeight()
-            .then(if (enabled) Modifier.pointerInput(range, step) {
-                detectTapGestures { set((it.x - half) / width) }
-            }.pointerInput(range, step) {
+            .then(if (enabled) Modifier.pointerInput(range, step, width) {
+                detectTapGestures { set((it.x - half) / width); finished?.invoke() }
+            }.pointerInput(range, step, width) {
                 detectHorizontalDragGestures(onDragStart = { dragging = true; set((it.x - half) / width) },
-                    onDragEnd = { dragging = false }, onDragCancel = { dragging = false }) { change, _ -> set((change.position.x - half) / width) }
+                    onDragEnd = { dragging = false; finished?.invoke() }, onDragCancel = { dragging = false; finished?.invoke() }) { moved, _ ->
+                    set((moved.position.x - half) / width)
+                }
             } else Modifier),
             contentAlignment = Alignment.CenterStart) {
             Box(Modifier.padding(horizontal = knob / 2).fillMaxWidth().height(4.dp).clip(CircleShape).background(colors.track))

@@ -1,6 +1,21 @@
 package com.masmarino.gabarit
 
 import androidx.activity.compose.BackHandler
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.SheetValue
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
@@ -91,8 +106,8 @@ fun gBadgeText(count: Int): String = if (count > 99) "99+" else count.toString()
 
 // MARK: Bars
 
-/** A tab of the bottom bar: its title, its icon (the Mac's name), a count. */
-data class GTab(val id: String, val title: String, val icon: String, val badge: Int = 0)
+/** A tab of the bottom bar: its title, its icon (the Mac's name) or the app's own image (`image`, drawn in the tab's colour), a count. */
+data class GTab(val id: String, val title: String, val icon: String = "", val badge: Int = 0, @param:DrawableRes val image: Int? = null)
 
 /** Gabarit's bottom bar: flat on the surface, a fine line above, the current tab in rust and underlined from the top. */
 @Composable
@@ -121,7 +136,8 @@ fun GTabBar(tabs: List<GTab>, selection: String, onSelect: (String) -> Unit, mod
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically),
             ) {
                 Box {
-                    GIcon(tab.icon, size = 20f, weight = if (current) FontWeight.SemiBold else FontWeight.Normal, color = tint)
+                    if (tab.image != null) Image(painterResource(tab.image), null, Modifier.size(24.dp), colorFilter = ColorFilter.tint(tint))
+                    else GIcon(tab.icon, size = 20f, weight = if (current) FontWeight.SemiBold else FontWeight.Normal, color = tint)
                     if (tab.badge > 0) {
                         Text(gBadgeText(tab.badge), style = G.type.caption2.copy(fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
                             color = colors.textPrimary, modifier = Modifier.align(Alignment.TopEnd).offset(16.dp, (-6).dp)
@@ -136,21 +152,40 @@ fun GTabBar(tabs: List<GTab>, selection: String, onSelect: (String) -> Unit, mod
 }
 
 /**
- * The dark band on top of a screen (the frame): its title and what sits on each side, the same in both appearances.
- * `subtitle`: discreet under the title.
+ * The dark band on top of a screen (the frame), under the status bar (`statusBar` false: the room is someone else's):
+ * the back arrow if `back`, `leading` (a logo, a conversation's face), the title (`subtitle` discreet below) or
+ * `center` in the middle, then `trailing`; the same in both appearances.
  */
 @Composable
-fun GTopBar(title: String, modifier: Modifier = Modifier, subtitle: String? = null, leading: @Composable RowScope.() -> Unit = {},
-            trailing: @Composable RowScope.() -> Unit = {}) {
+fun GTopBar(
+    title: String? = null,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    back: (() -> Unit)? = null,
+    backTitle: String = "Back",
+    statusBar: Boolean = true,
+    leading: @Composable RowScope.() -> Unit = {},
+    center: (@Composable () -> Unit)? = null,
+    trailing: @Composable RowScope.() -> Unit = {},
+) {
     GScheme(dark = true) {
-        Row(modifier.fillMaxWidth().background(GFrameColor.ground).heightIn(min = 52.dp).padding(horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            leading()
-            Column(Modifier.weight(1f).padding(horizontal = 8.dp).semantics(mergeDescendants = true) { heading() }) {
-                Text(title, style = G.type.headline, color = GFrameColor.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                if (subtitle != null) Text(subtitle, style = G.type.caption, color = GFrameColor.textDiscret, maxLines = 1)
+        CompositionLocalProvider(LocalContentColor provides GFrameColor.text) {
+            Box(modifier.fillMaxWidth().background(GFrameColor.ground)
+                .then(if (statusBar) Modifier.windowInsetsPadding(WindowInsets.statusBars) else Modifier)
+                .heightIn(min = 56.dp).padding(horizontal = 4.dp), contentAlignment = Alignment.CenterStart) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    if (back != null) GFrameButton("chevron.left", backTitle, onClick = back) else Spacer(Modifier.width(8.dp))
+                    leading()
+                    if (title != null && center == null) {
+                        Column(Modifier.weight(1f).padding(horizontal = 8.dp).semantics(mergeDescendants = true) { heading() }) {
+                            Text(title, style = G.type.headline, color = GFrameColor.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            if (!subtitle.isNullOrEmpty()) Text(subtitle, style = G.type.caption, color = GFrameColor.textDiscret, maxLines = 1)
+                        }
+                    } else Spacer(Modifier.weight(1f))
+                    trailing()
+                }
+                if (center != null) Box(Modifier.align(Alignment.Center)) { center() }
             }
-            trailing()
         }
     }
 }
@@ -241,7 +276,15 @@ fun GMenuItem(title: String, icon: String, onClick: () -> Unit, destructive: Boo
     }
 }
 
-/** A bubble menu's lines, split by a fine line, on the surface: put it in a `DropdownMenu`. */
+/** A bubble menu: opaque on the surface, a fine rim, the medium radius; its lines below the place it opens from. */
+@Composable
+fun GDropdownMenu(expanded: Boolean, onDismiss: () -> Unit, modifier: Modifier = Modifier, offset: DpOffset = DpOffset(0.dp, 4.dp),
+                  content: @Composable ColumnScope.() -> Unit) {
+    DropdownMenu(expanded, onDismiss, modifier, offset = offset, shape = RoundedCornerShape(GRadius.md), containerColor = G.surfaceOpaque,
+        tonalElevation = 0.dp, shadowElevation = 8.dp, border = BorderStroke(1.dp, G.colors.hairline), content = content)
+}
+
+/** A bubble menu's lines, split by a fine line, on the surface: put it in a `GDropdownMenu`. */
 @Composable
 fun GMenu(items: List<@Composable () -> Unit>) {
     Column(Modifier.widthIn(min = 240.dp).background(G.surfaceOpaque)) {
@@ -254,12 +297,15 @@ fun GMenu(items: List<@Composable () -> Unit>) {
 
 // MARK: Sheets
 
-/** A sheet's title: large, its sentence below, the back arrow before it if `back`, the cross on the right. */
+/**
+ * A sheet's title: large, its sentence below, the back arrow before it if `back`, `actions` then the cross on the right
+ * (no cross without `dismiss`).
+ */
 @Composable
 fun GSheetTitle(title: String, summary: String? = null, closeTitle: String = "Close", backTitle: String = "Back", back: (() -> Unit)? = null,
-                dismiss: () -> Unit) {
+                actions: @Composable RowScope.() -> Unit = {}, modifier: Modifier = Modifier, dismiss: (() -> Unit)? = null) {
     val colors = G.colors
-    Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.Top,
+    Row(modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         if (back != null) {
             Box(Modifier.size(GControlMetrics.touchTarget).clickable(role = Role.Button, onClick = back).semantics { contentDescription = backTitle },
@@ -271,22 +317,44 @@ fun GSheetTitle(title: String, summary: String? = null, closeTitle: String = "Cl
         }
         Column(Modifier.weight(1f).padding(top = 6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(title, style = G.type.title2, color = colors.textPrimary, maxLines = 2, modifier = Modifier.semantics { heading() })
-            if (summary != null) Text(summary, style = G.type.callout, color = colors.textDiscret)
+            if (!summary.isNullOrEmpty()) Text(summary, style = G.type.callout, color = colors.textDiscret)
         }
-        GCloseButton(closeTitle, onClick = dismiss)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            CompositionLocalProvider(LocalContentColor provides colors.textPrimary) { actions() }
+            if (dismiss != null) GCloseButton(closeTitle, onClick = dismiss)
+        }
     }
+}
+
+/**
+ * A sheet from the bottom with what it holds as it is: on `ground` (the page's, opaque), the large radius on top;
+ * `handle`: the small bar to pull it by; `halfway`: it may stop half open. The system's back gesture and a swipe down
+ * close it; `dismissible` false: neither a swipe nor a touch beside it does (while something is being edited).
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier, ground: Color = G.backgroundOpaque, handle: Boolean = false,
+                 halfway: Boolean = false, dismissible: Boolean = true,
+                 contentWindowInsets: @Composable () -> WindowInsets = { BottomSheetDefaults.windowInsets },
+                 content: @Composable ColumnScope.() -> Unit) {
+    val stays by rememberUpdatedState(!dismissible)
+    val state = rememberModalBottomSheetState(skipPartiallyExpanded = !halfway, confirmValueChange = { !stays || it != SheetValue.Hidden })
+    val rim = if (ground.luminance() < 0.2f) GFrameColor.rim else G.colors.border
+    ModalBottomSheet(onDismissRequest = onDismiss, modifier = modifier, sheetState = state, containerColor = ground,
+        contentColor = G.colors.textPrimary, tonalElevation = 0.dp, shape = RoundedCornerShape(topStart = GRadius.xl, topEnd = GRadius.xl),
+        contentWindowInsets = contentWindowInsets, sheetGesturesEnabled = dismissible,
+        dragHandle = if (!handle) null else ({
+            Box(Modifier.padding(top = 10.dp, bottom = 6.dp).size(width = 36.dp, height = 5.dp).background(rim, RoundedCornerShape(3.dp)))
+        }), content = content)
 }
 
 /**
  * A sheet from the bottom: Gabarit's title and cross on top, then the content on the page's ground. The system's back
  * gesture and a swipe down close it too.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GSheet(title: String, onDismiss: () -> Unit, summary: String? = null, closeTitle: String = "Close", content: @Composable ColumnScope.() -> Unit) {
-    val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = state, containerColor = G.backgroundOpaque,
-        shape = RoundedCornerShape(topStart = GRadius.xl, topEnd = GRadius.xl), dragHandle = null) {
+    GBottomSheet(onDismiss) {
         Column(Modifier.semantics { paneTitle = title }) {
             GSheetTitle(title, summary, closeTitle, dismiss = onDismiss)
             content()

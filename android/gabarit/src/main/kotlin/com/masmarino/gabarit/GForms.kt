@@ -1,6 +1,24 @@
 package com.masmarino.gabarit
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -49,6 +67,28 @@ object GFormMetrics {
     val pageMargin = 20.dp
     val sectionSpacing = 28.dp
     val rowHeight = GControlMetrics.touchTarget
+    /** A card's row: 16 on the sides, 10 above and below. */
+    val rowPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+}
+
+/** A form's card: the surface, a fine rim, the large radius; what it holds is cut to its corners. */
+@Composable
+fun Modifier.gCard(): Modifier {
+    val shape = RoundedCornerShape(GRadius.lg)
+    return this.gSurface(shape, G.colors.surface, G.colors.hairline).clip(shape)
+}
+
+/** The fine line under a card's row, inset 16 from the leading edge (`show` false: nothing). */
+@Composable
+fun Modifier.gRowDivider(show: Boolean = true): Modifier {
+    if (!show) return this
+    val color = G.colors.hairline
+    return drawBehind {
+        val line = 1.dp.toPx()
+        val inset = 16.dp.toPx()
+        val start = if (layoutDirection == LayoutDirection.Ltr) inset else 0f
+        drawRect(color, Offset(start, size.height - line), Size(size.width - inset, line))
+    }
 }
 
 /** A page's title: large, the sentence that says what it is for more discreet below. */
@@ -68,11 +108,8 @@ fun GPageTitle(title: String, summary: String? = null, modifier: Modifier = Modi
 fun GFormSection(title: String? = null, footer: String? = null, modifier: Modifier = Modifier, rows: List<@Composable () -> Unit>) {
     val colors = G.colors
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (title != null) {
-            Text(title, style = G.type.headline, color = colors.textPrimary,
-                modifier = Modifier.padding(horizontal = 4.dp).semantics { heading() })
-        }
-        Column(Modifier.fillMaxWidth().gSurface(RoundedCornerShape(GRadius.lg), colors.surface, colors.hairline).clip(RoundedCornerShape(GRadius.lg))) {
+        if (title != null) GFormSectionTitle(title)
+        Column(Modifier.fillMaxWidth().gCard()) {
             rows.forEachIndexed { index, row ->
                 if (index > 0) Box(Modifier.padding(start = 16.dp).fillMaxWidth().height(1.dp).background(colors.hairline))
                 row()
@@ -80,6 +117,153 @@ fun GFormSection(title: String? = null, footer: String? = null, modifier: Modifi
         }
         if (footer != null) Text(footer, style = G.type.footnote, color = colors.textDiscret, modifier = Modifier.padding(horizontal = 4.dp))
     }
+}
+
+/**
+ * A form's section whose rows are laid as they come (`GFormRow`, `GToggleRow`…): each row draws its own line
+ * (`divider`), the last one none.
+ */
+@Composable
+fun GFormSection(title: String? = null, footer: String? = null, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (title != null) GFormSectionTitle(title)
+        Column(Modifier.fillMaxWidth().gCard(), content = content)
+        if (footer != null) Text(footer, style = G.type.footnote, color = G.colors.textDiscret, modifier = Modifier.padding(horizontal = 4.dp))
+    }
+}
+
+/** A section's title, above its card (a heading for screen readers). */
+@Composable
+fun GFormSectionTitle(title: String, modifier: Modifier = Modifier) {
+    Text(title, style = G.type.headline, color = G.colors.textPrimary, modifier = modifier.padding(horizontal = 4.dp).semantics { heading() })
+}
+
+/**
+ * A card's row: an icon (the Mac's name), its title and detail, what sits on the right (`trailing`); red if it
+ * destroys. Touched if `onClick`; `divider`: the fine line under it.
+ */
+@Composable
+fun GFormRow(
+    title: String,
+    modifier: Modifier = Modifier,
+    detail: String? = null,
+    icon: String? = null,
+    destructive: Boolean = false,
+    divider: Boolean = false,
+    enabled: Boolean = true,
+    onClick: (() -> Unit)? = null,
+    trailing: @Composable RowScope.() -> Unit = {},
+) {
+    val colors = G.colors
+    val tint = if (destructive) colors.errorText else colors.textPrimary
+    Row(
+        modifier.fillMaxWidth().gRowDivider(divider).alpha(if (enabled) 1f else GOpacity.disabled)
+            .then(if (onClick != null) Modifier.clickable(enabled = enabled, role = Role.Button, onClick = onClick) else Modifier)
+            .heightIn(min = GFormMetrics.rowHeight).padding(GFormMetrics.rowPadding),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        if (icon != null) Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) {
+            GIcon(icon, size = 17f, color = if (destructive) tint else colors.textSecondary)
+        }
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title, style = G.type.body, color = tint)
+            if (detail != null) Text(detail, style = G.type.footnote, color = colors.textDiscret)
+        }
+        CompositionLocalProvider(LocalContentColor provides colors.textSecondary) {
+            ProvideTextStyle(G.type.body.copy(color = colors.textSecondary)) { trailing() }
+        }
+    }
+}
+
+/** A choice among a card's rows (an inline picker): its name, the rust tick on the right of the current one. */
+@Composable
+fun GChoiceRow(title: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, divider: Boolean = false) {
+    val colors = G.colors
+    Row(
+        modifier.fillMaxWidth().gRowDivider(divider).semantics { this.selected = selected }
+            .clickable(role = Role.RadioButton, onClick = onClick)
+            .heightIn(min = GFormMetrics.rowHeight).padding(GFormMetrics.rowPadding),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(title, style = G.type.body, color = colors.textPrimary, modifier = Modifier.weight(1f))
+        if (selected) GIcon("checkmark", size = 15f, weight = FontWeight.SemiBold, color = colors.accent)
+    }
+}
+
+/** A settings section's coloured tile (as on the iPhone): a gradient of its colour, the icon in white. */
+@Composable
+fun GIconTile(icon: String, color: Color, size: Dp = 30.dp) {
+    val shape = RoundedCornerShape(size * 0.28f)
+    Box(
+        Modifier.size(size).background(Brush.linearGradient(listOf(color.copy(alpha = 0.95f), color.copy(alpha = 0.6f))), shape)
+            .border(0.6.dp, Color.White.copy(alpha = 0.3f), shape),
+        contentAlignment = Alignment.Center,
+    ) { GIcon(icon, null, Modifier.size(size * 0.55f), tint = Color.White) }
+}
+
+// MARK: Long forms
+
+/** A form's section as one item of a lazy list. */
+fun LazyListScope.gFormSection(title: String? = null, footer: String? = null, key: Any? = title, content: @Composable ColumnScope.() -> Unit) {
+    item(key = key) { GFormSection(title, footer, content = content) }
+}
+
+/**
+ * A section whose rows are each an item of the lazy list: only the rows on screen are composed (a long list of
+ * members). The title is an item of its own (`gap` above it); each row carries its part of the card (the top corners
+ * on the first, the bottom ones on the last). For a list with no spacing between its items.
+ */
+fun LazyListScope.gFormSectionRows(
+    title: String?,
+    key: Any,
+    count: Int,
+    rowKey: (Int) -> Any,
+    gap: Dp = GFormMetrics.sectionSpacing,
+    row: @Composable ColumnScope.(Int) -> Unit,
+) {
+    item(key = key) {
+        Column(Modifier.fillMaxWidth().padding(top = gap, bottom = 8.dp)) { if (title != null) GFormSectionTitle(title) }
+    }
+    items(count, key = rowKey) { index -> GFormCardSlice(first = index == 0, last = index == count - 1) { row(index) } }
+}
+
+/**
+ * A card's slice, for a card laid row by row: the surface and its fine rim (the sides; the top on the first, the bottom
+ * on the last), as `gCard`.
+ */
+@Composable
+fun GFormCardSlice(first: Boolean, last: Boolean, content: @Composable ColumnScope.() -> Unit) {
+    val colors = G.colors
+    val r = GRadius.lg
+    val shape = RoundedCornerShape(topStart = if (first) r else 0.dp, topEnd = if (first) r else 0.dp,
+        bottomStart = if (last) r else 0.dp, bottomEnd = if (last) r else 0.dp)
+    Column(Modifier.fillMaxWidth().clip(shape).background(colors.surface, shape).drawWithContent {
+        drawContent()
+        // The whole card's rim, drawn beyond the slice and cut to it: only the sides stay between two rows.
+        val line = 1.dp.toPx()
+        val radius = r.toPx()
+        val top = if (first) 0f else -radius * 2
+        val bottom = if (last) size.height else size.height + radius * 2
+        clipRect {
+            drawRoundRect(colors.hairline, topLeft = Offset(line / 2, top + line / 2), size = Size(size.width - line, bottom - top - line),
+                cornerRadius = CornerRadius(radius), style = Stroke(line))
+        }
+    }, content = content)
+}
+
+/**
+ * The room of Android's navigation bar (buttons or gesture), at the bottom of a page that scrolls under it: the last
+ * item can rise above it.
+ */
+@Composable
+fun GNavigationBarSpacer(modifier: Modifier = Modifier) {
+    Spacer(modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+}
+
+/** The room of Android's navigation bar, as a lazy list's last item. */
+fun LazyListScope.gNavigationBarSpace() {
+    item(key = "gabarit.navigationBar", contentType = "gabarit.navigationBar") { GNavigationBarSpacer() }
 }
 
 /** A row of a form's card: what it holds, 44 high at least, 16 on the sides. */
