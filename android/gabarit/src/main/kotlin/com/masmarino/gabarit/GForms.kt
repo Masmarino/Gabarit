@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Size
@@ -71,6 +72,9 @@ object GFormMetrics {
     val rowPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
 }
 
+/** Inside a form's card: its fields lose their rim at rest (the card is their frame). Set by the cards of Gabarit's forms. */
+val LocalGFormCard = compositionLocalOf { false }
+
 /** A form's card: the surface, a fine rim, the large radius; what it holds is cut to its corners. */
 @Composable
 fun Modifier.gCard(): Modifier {
@@ -110,9 +114,11 @@ fun GFormSection(title: String? = null, footer: String? = null, modifier: Modifi
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (title != null) GFormSectionTitle(title)
         Column(Modifier.fillMaxWidth().gCard()) {
-            rows.forEachIndexed { index, row ->
-                if (index > 0) Box(Modifier.padding(start = 16.dp).fillMaxWidth().height(1.dp).background(colors.hairline))
-                row()
+            CompositionLocalProvider(LocalGFormCard provides true) {
+                rows.forEachIndexed { index, row ->
+                    if (index > 0) Box(Modifier.padding(start = 16.dp).fillMaxWidth().height(1.dp).background(colors.hairline))
+                    row()
+                }
             }
         }
         if (footer != null) Text(footer, style = G.type.footnote, color = colors.textDiscret, modifier = Modifier.padding(horizontal = 4.dp))
@@ -127,7 +133,7 @@ fun GFormSection(title: String? = null, footer: String? = null, modifier: Modifi
 fun GFormSection(title: String? = null, footer: String? = null, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (title != null) GFormSectionTitle(title)
-        Column(Modifier.fillMaxWidth().gCard(), content = content)
+        Column(Modifier.fillMaxWidth().gCard()) { CompositionLocalProvider(LocalGFormCard provides true) { content() } }
         if (footer != null) Text(footer, style = G.type.footnote, color = G.colors.textDiscret, modifier = Modifier.padding(horizontal = 4.dp))
     }
 }
@@ -249,7 +255,7 @@ fun GFormCardSlice(first: Boolean, last: Boolean, content: @Composable ColumnSco
             drawRoundRect(colors.hairline, topLeft = Offset(line / 2, top + line / 2), size = Size(size.width - line, bottom - top - line),
                 cornerRadius = CornerRadius(radius), style = Stroke(line))
         }
-    }, content = content)
+    }) { CompositionLocalProvider(LocalGFormCard provides true) { content() } }
 }
 
 /**

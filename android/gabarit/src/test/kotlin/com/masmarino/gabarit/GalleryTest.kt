@@ -116,6 +116,12 @@ class GalleryTest {
                 GFormRow("Devices", icon = "macbook.and.iphone", divider = true) { Text("3") }
                 GFormRow("Sign out", icon = "rectangle.portrait.and.arrow.right", destructive = true, onClick = {})
             }
+            GFormSection("Profile card", "Fields in a card: the ground marks them, the card is their frame.") {
+                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    GTextField("Display name", "Florian", {})
+                    GTextField("Pronouns", "", {}, prompt = "they/them")
+                }
+            }
             GFormSection("Theme") {
                 listOf("System", "Light", "Dark").forEachIndexed { i, t -> GChoiceRow(t, choice == i, { choice = i }, divider = i < 2) }
             }

@@ -310,7 +310,8 @@ fun GToggleRow(title: String, isOn: Boolean, onChange: (Boolean) -> Unit, modifi
 // MARK: Text
 
 /**
- * A field's frame: the ground, a fine rim, rust and thicker when it has the focus, red if `isError`. `icon`: discreet
+ * A field's frame: the ground, a fine rim, rust and thicker when it has the focus, red if `isError`. In a form's card
+ * (`LocalGFormCard`), no rim at rest: the card is its frame, not a frame in a frame. `icon`: discreet
  * before the text (a search's magnifying glass); `keyboardActions`: in place of `onSubmit` (on Done, Go, Send, Search).
  */
 @Composable
@@ -336,6 +337,7 @@ fun GFieldFrame(
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     val submit = { onSubmit?.invoke(); Unit }
+    val inCard = LocalGFormCard.current
     BasicTextField(
         value, onValueChange, modifier.fillMaxWidth().alpha(if (enabled) 1f else GOpacity.disabled),
         enabled = enabled, singleLine = singleLine, minLines = minLines, maxLines = maxLines,
@@ -346,6 +348,8 @@ fun GFieldFrame(
             val rim = when {
                 isError -> colors.error
                 focused -> colors.accent
+                // In a form's card, no rim at rest: the card is the frame, the ground marks the field.
+                inCard -> Color.Transparent
                 else -> colors.hairline
             }
             Row(Modifier.fillMaxWidth().heightIn(min = GControlMetrics.height).background(colors.background, shape)
