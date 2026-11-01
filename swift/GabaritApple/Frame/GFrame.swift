@@ -178,21 +178,28 @@ private struct GWindowChrome: NSViewRepresentable {
     func updateNSView(_ view: NSView, context: Context) {}
 
     private final class WindowWatcher: NSView {
+        private var updates: NSObjectProtocol?
+
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
-            titlebar = nil
+            if let updates { NotificationCenter.default.removeObserver(updates) }
+            updates = nil
+            guard let window else { return }
             strip()
-            for delay in [0.1, 0.5, 1.5] { DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in self?.strip() } }
+            // SwiftUI and macOS put the title bar back when they please (on opening again, on a page change, when the
+            // window becomes key), with no layout of this view: it is looked at each time the window updates.
+            updates = NotificationCenter.default.addObserver(forName: NSWindow.didUpdateNotification, object: window, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.strip() }
+            }
         }
 
-        // SwiftUI puts the title bar back afterwards (on opening, on a page change): at each layout, it is removed again.
         override func layout() {
             super.layout()
             strip()
         }
 
-        /// The title bar's container, found once per window (not searched again at every layout).
-        private weak var titlebar: NSView?
+        /// The class of the title bar's container, private to AppKit.
+        private static let titlebarClass: AnyClass? = NSClassFromString("NSTitlebarContainerView")
 
         // Each property is set only when it differs: setting it again would lay the title bar out again.
         private func strip() {
@@ -205,10 +212,10 @@ private struct GWindowChrome: NSViewRepresentable {
             // No system toolbar (SwiftUI puts an empty one in a Settings window), no red, yellow and green buttons, nor
             // the title bar's glass, which stayed painted over the header.
             if window.toolbar != nil { window.toolbar = nil }
-            if titlebar == nil {
-                titlebar = window.contentView?.superview?.subviews.first { String(describing: type(of: $0)) == "NSTitlebarContainerView" }
+            guard let titlebarClass = Self.titlebarClass else { return }
+            for view in window.contentView?.superview?.subviews ?? [] where view.isKind(of: titlebarClass) && !view.isHidden {
+                view.isHidden = true
             }
-            if titlebar?.isHidden == false { titlebar?.isHidden = true }
         }
     }
 }

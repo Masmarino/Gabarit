@@ -75,7 +75,7 @@ public extension View {
     /// A row laid right on the ground, out of its section's card: in the system's `Form`, with no row ground; in
     /// Gabarit's, out of the card.
     func gFormBare() -> some View {
-        listRowBackground(Color.clear).containerValue(\.gFormBare, true)
+        environment(\.gFormCardRow, false).listRowBackground(Color.clear).containerValue(\.gFormBare, true)
     }
 }
 
@@ -210,6 +210,9 @@ public struct GFormLayout<Content: View>: View {
         // Its fields have no frame of their own: the card is their frame (a frame in a frame), the row their room. Set
         // for the whole form: a field takes its style from where the form's rows are declared, not from its card.
         .textFieldStyle(GTextFieldStyle(bare: true))
+        // Its rows are in cards, and know it from here for the same reason: set around a card, it would not reach them.
+        // A row put right on the ground (`gFormBare`) says otherwise where it is declared.
+        .environment(\.gFormCardRow, true)
         .gControls()
         .labelStyle(GFormRowLabelStyle())
         .gPageGround()
@@ -276,7 +279,7 @@ private struct GFormSection: View {
     }
 }
 
-/// A card-row button: its text in the accent (red if it destroys), full width; the veil on hover (Mac), dimmed while
+/// A card-row button: its text in the accent (red if it destroys); the veil on hover (Mac), dimmed while
 /// pressed.
 public struct GFormRowButtonStyle: ButtonStyle {
     public init() {}
@@ -294,7 +297,8 @@ private struct GFormRowButton: View {
         configuration.label
             .font(GFont.body)
             .foregroundStyle(configuration.role == .destructive ? GTone.error.text : GColor.accentText)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            // Its own width: beside a text and a spacer, it stays on the trailing side. A row that wants all of its
+            // width says so in its label (a spacer).
             .contentShape(Rectangle())
             .opacity(isEnabled ? 1 : GOpacity.disabled)
             .modifier(GRowHover())
