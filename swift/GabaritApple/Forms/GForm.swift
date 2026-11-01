@@ -279,8 +279,21 @@ private struct GFormSection: View {
     }
 }
 
-/// A card-row button: its text in the accent (red if it destroys); the veil on hover (Mac), dimmed while
-/// pressed.
+public extension EnvironmentValues {
+    /// A card-row button keeps its own width instead of taking the row's (`gCompactRowButton`).
+    @Entry var gFormRowButtonCompact = false
+}
+
+public extension View {
+    /// A card-row button that sits beside a text: its own width, on the side where the row puts it. By default a
+    /// card-row button is the whole row, clickable everywhere the veil shows.
+    func gCompactRowButton() -> some View {
+        environment(\.gFormRowButtonCompact, true)
+    }
+}
+
+/// A card-row button: its text in the accent (red if it destroys), the whole row clickable (`gCompactRowButton` beside a
+/// text); the veil on hover (Mac), dimmed while pressed.
 public struct GFormRowButtonStyle: ButtonStyle {
     public init() {}
 
@@ -292,13 +305,14 @@ public struct GFormRowButtonStyle: ButtonStyle {
 private struct GFormRowButton: View {
     let configuration: ButtonStyleConfiguration
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.gFormRowButtonCompact) private var compact
 
     var body: some View {
         configuration.label
             .font(GFont.body)
             .foregroundStyle(configuration.role == .destructive ? GTone.error.text : GColor.accentText)
-            // Its own width: beside a text and a spacer, it stays on the trailing side. A row that wants all of its
-            // width says so in its label (a spacer).
+            // The whole row, like the veil that shows on hover; beside a text, its own width (`gCompactRowButton`).
+            .frame(maxWidth: compact ? nil : .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .opacity(isEnabled ? 1 : GOpacity.disabled)
             .modifier(GRowHover())
@@ -347,6 +361,7 @@ public struct GLabeledContentStyle: LabeledContentStyle {
             configuration.label.font(GFont.body).foregroundStyle(GColor.textPrimary)
             Spacer(minLength: 12)
             configuration.content
+                .gCompactRowButton()
                 .font(GFont.body.monospacedDigit())
                 .foregroundStyle(GColor.textSecondary)
                 .multilineTextAlignment(.trailing)
