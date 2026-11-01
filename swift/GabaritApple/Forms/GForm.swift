@@ -210,6 +210,7 @@ public struct GFormLayout<Content: View>: View {
         // for the whole form: a field takes its style from where the form's rows are declared, not from its card.
         .textFieldStyle(GTextFieldStyle(bare: true))
         .gControls()
+        .labelStyle(GFormRowLabelStyle())
         .gPageGround()
     }
 }
@@ -295,6 +296,18 @@ private struct GFormRowButton: View {
             .contentShape(Rectangle())
             .opacity(isEnabled ? (configuration.isPressed ? 0.6 : 1) : GOpacity.disabled)
             .modifier(GRowHover())
+    }
+}
+
+/// A form's label: its icon in a column of its own, so that the rows' texts line up whatever the icon's width.
+private struct GFormRowLabelStyle: LabelStyle {
+    @ScaledMetric(relativeTo: .body) private var column: CGFloat = 32
+
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: 8) {
+            configuration.icon.frame(width: column)
+            configuration.title
+        }
     }
 }
 
