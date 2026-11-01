@@ -250,6 +250,7 @@ private struct GChips<Value: Hashable>: View {
                             .background(current ? GColor.selectedFill : (hovering ? GColor.hover : GColor.background), in: shape)
                             .overlay { shape.strokeBorder(current ? GColor.accent.opacity(0.7) : (hovering ? GColor.border.opacity(0.5) : GColor.hairline), lineWidth: 1) }
                             .gRaised(shape, active: !current)
+                            .gGlow(radius: 3, active: current)
                             .contentShape(shape)
                             .gTouchTarget(height: GControlMetrics.compact)
                     }

@@ -41,7 +41,7 @@ public struct GPageBand<Accessory: View>: View {
         .padding(.top, top)
         .padding(.bottom, 18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background { if !inSheet { GFrameColor.ground.gBarShadow() } }
+        .background { if !inSheet { GFrameColor.ground.gFrameSheen().gBarShadow() } }
         .zIndex(1)
     }
 }
@@ -107,7 +107,7 @@ public struct GRailItem: View {
         .background(current ? GFrameColor.selected : (hovering ? GFrameColor.hover : .clear),
                     in: .rect(cornerRadius: GRadius.sm))
         .overlay(alignment: .leading) {
-            if current { Rectangle().fill(GColor.accent).frame(width: 2).padding(.vertical, 6) }
+            if current { Rectangle().fill(GColor.accent).frame(width: 2).padding(.vertical, 6).gGlow(radius: 5) }
         }
         .contentShape(Rectangle())
     }
@@ -158,7 +158,7 @@ public struct GWindowHeader<Icon: View, Trailing: View>: View {
         .padding(.leading, leading).padding(.trailing, 14)
         .frame(height: 52)
         .frame(maxWidth: .infinity)
-        .background(GFrameColor.ground.gBarShadow())
+        .background(GFrameColor.ground.gFrameSheen().gBarShadow())
         .zIndex(1)
         .overlay(alignment: .bottom) { Rectangle().fill(GFrameColor.line).frame(height: 1) }
         .environment(\.colorScheme, .dark)

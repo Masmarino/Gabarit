@@ -520,8 +520,8 @@ the native apps) and `web` (this package's roles and names, kept as they are). N
 The Swift packages are at the root (`Package.swift`): add `https://github.com/Masmarino/Gabarit` in
 Xcode or SwiftPM and use `GabaritApple` (call `GFonts.register()` once at launch) or `GabaritCommon`.
 
-`GabaritApple` also holds the native components, SkollN's design being the reference. Gabarit is flat
-everywhere: no Liquid Glass, surfaces with a fine border (`gSurface`). So far, the
+`GabaritApple` also holds the native components, SkollN's design being the reference. No Liquid Glass:
+surfaces with a fine border (`gSurface`), a little depth, one light from above. So far, the
 controls: `GButtonStyle` (`GButtonVariant`), `GPressStyle`, `GCloseButton`, `GToggleStyle` and `GSwitch`,
 `GTextFieldStyle`, `GFieldFrame` and `GTextField` (`gEditorFrame()`, `gFieldBox()`), `GPicker` (menu or
 chips), `GSlider`, `GStepper`, `GTone`, `gSurface(_:tint:)`, and `gControls()` to put them on a whole form.
@@ -606,7 +606,8 @@ implementation("com.github.Masmarino:Gabarit:3.0.0-beta.22")
 Its gallery draws the Mac gallery's sections, light and dark, on the JVM (Robolectric) to `android/gabarit/build/galerie`:
 `cd android && ./gradlew :gabarit:testDebugUnitTest`.
 
-Depth, a little of it, on every platform: the page; what rests on it (a form's card: a soft shadow, the light on its top
+Light and depth, a little of them, on every platform, one light from above: the page is lit at its top; what is on
+(a switch, the current tab or rail item, a selected row or chip) glows; the page; what rests on it (a form's card: a soft shadow, the light on its top
 edge); what can be pressed (buttons, chips, menu faces: some volume, a tighter shadow, and they sink when pressed); what
 holds a value is slightly hollow (switch and slider tracks, fields); the frame's bars cast a shadow on the page. A sheet's
 header is on the page's grey, the dark frame is for pages. Apple: `gRaised`, `gCardDepth`, `gHollow`, `gBarShadow`,

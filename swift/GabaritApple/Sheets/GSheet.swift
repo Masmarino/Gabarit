@@ -38,7 +38,12 @@ private struct GPageGround: ViewModifier {
     @Environment(\.gGround) private var ground
 
     func body(content: Content) -> some View {
-        ground.paint(AnyView(content), edges)
+        // One light, from above: the page is lit at its top, whatever its ground.
+        ground.paint(AnyView(content.background {
+            LinearGradient(stops: [.init(color: GColor.pageLight, location: 0), .init(color: .clear, location: 0.4)], startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea(edges: edges ? .all : [])
+                .allowsHitTesting(false)
+        }), edges)
     }
 }
 

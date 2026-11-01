@@ -321,16 +321,24 @@ window.g-window.solid-csd { border-color: @g_graphite700; box-shadow: inset 0 0 
 
 /* Depth, a little of it: a card rests on the page, what can be pressed has some volume and sinks when pressed, what holds
    a value is slightly hollow, the frame casts a shadow on the page. */
-.g-surface { box-shadow: 0 2px 6px @g_cardShadow, inset 0 1px @g_reliefHighlight; }
+.g-surface { box-shadow: 0 2px 6px @g_cardShadow, inset 0 1px @g_reliefHighlight, inset 0 -1px @g_reliefShade; }
 button.g-secondary, dropdown.g-menu > button, button.g-chip:not(:checked), button.g-close {
   background-image: linear-gradient(alpha(white, 0.07), transparent 50%, alpha(black, 0.04));
-  box-shadow: 0 1px 2px @g_reliefShadow, inset 0 1px @g_reliefHighlight; }
+  box-shadow: 0 1px 2px @g_reliefShadow, inset 0 1px @g_reliefHighlight, inset 0 -1px @g_reliefShade; }
 button.g-primary, button.g-danger {
   background-image: linear-gradient(alpha(white, 0.07), transparent 50%, alpha(black, 0.04));
-  box-shadow: 0 1px 2px @g_reliefShadow, inset 0 1px alpha(white, 0.18); }
+  box-shadow: 0 1px 2px @g_reliefShadow, inset 0 1px alpha(white, 0.2), inset 0 -1px @g_reliefShade; }
 button.g-secondary:active, button.g-primary:active, button.g-danger:active, button.g-chip:active, button.g-close:active,
 dropdown.g-menu > button:active { background-image: none; box-shadow: none; }
 .g-frame button.g-close { background-image: none; box-shadow: none; }
 entry.g-field, textview.g-field, switch.g-switch, scale.g-slider > trough { box-shadow: inset 0 1px 2px alpha(black, 0.1); }
 .g-rail { box-shadow: 1px 0 5px alpha(black, 0.22); }
 dropdown.g-menu popover > contents { box-shadow: 0 8px 18px alpha(black, 0.18); }
+
+/* One light, from above: the page is lit at its top, the frame has a sheen, what is on glows a little. */
+.g-page { background-image: linear-gradient(to bottom, @g_pageLight, transparent 40%); }
+.g-frame { background-image: linear-gradient(to bottom, @g_graphite900, @g_frame); }
+switch.g-switch:checked { box-shadow: 0 0 6px alpha(@g_accent, 0.45); }
+button.g-chip:checked { box-shadow: 0 0 4px alpha(@g_accent, 0.4); }
+.g-rail-item.g-current { box-shadow: 0 0 8px alpha(@g_rust400, 0.18); }
+scale.g-slider > trough > highlight { box-shadow: 0 0 4px alpha(@g_accent, 0.4); }

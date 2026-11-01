@@ -125,6 +125,14 @@
         "light": "#000000/0.14",
         "dark": "#000000/0.5"
       },
+      "reliefShade": {
+        "light": "#000000/0.08",
+        "dark": "#000000/0.32"
+      },
+      "pageLight": {
+        "light": "#FFFFFF/0.55",
+        "dark": "#FFFFFF/0.04"
+      },
       "cardShadow": {
         "light": "#000000/0.09",
         "dark": "#000000/0.35"

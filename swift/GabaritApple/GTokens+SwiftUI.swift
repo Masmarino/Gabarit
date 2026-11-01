@@ -65,6 +65,8 @@ public enum GColor {
     public static var hairline: Color { GTheme.current.hairline ?? GColorDefault.hairline }
     public static let reliefHighlight = Color(GColorValues.reliefHighlight)
     public static let reliefShadow = Color(GColorValues.reliefShadow)
+    public static let reliefShade = Color(GColorValues.reliefShade)
+    public static let pageLight = Color(GColorValues.pageLight)
     public static let cardShadow = Color(GColorValues.cardShadow)
     public static let textPrimary = Color(GColorValues.textPrimary)
     public static let textSecondary = Color(GColorValues.textSecondary)

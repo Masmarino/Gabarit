@@ -28,7 +28,8 @@ private struct GFrameToolbar: ViewModifier {
                 .toolbarBackground(.visible, for: .navigationBar)
         } else {
             content
-                .toolbarBackground(GFrameColor.ground, for: .navigationBar)
+                // The light on the frame: a soft sheen from above.
+                .toolbarBackground(LinearGradient(colors: [GPalette.graphite900, GFrameColor.ground], startPoint: .top, endPoint: .bottom), for: .navigationBar)
                 .toolbarBackground(.visible, for: .navigationBar)
                 .toolbarColorScheme(.dark, for: .navigationBar)
                 // The sheet's ground, dark like the frame: otherwise the system's light glass shows as a white thread
@@ -144,7 +145,7 @@ public struct GNavTabs<Tab: Hashable>: View {
                             .padding(.vertical, 8)
                             .overlay(alignment: .bottom) {
                                 if current {
-                                    Rectangle().fill(GColor.accent).frame(height: 2)
+                                    Rectangle().fill(GColor.accent).frame(height: 2).gGlow(radius: 4)
                                 } else if hovering {
                                     Rectangle().fill(GColor.border.opacity(0.5)).frame(height: 2)
                                 }

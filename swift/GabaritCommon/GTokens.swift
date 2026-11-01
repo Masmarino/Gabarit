@@ -93,6 +93,8 @@ public enum GColorValues {
     public static let hairline = GColorPair(light: GPaletteValues.slate300, dark: GRGBA(hex: 0xCDD7E6, alpha: 0.12))
     public static let reliefHighlight = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.6), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.08))
     public static let reliefShadow = GColorPair(light: GRGBA(hex: 0x000000, alpha: 0.14), dark: GRGBA(hex: 0x000000, alpha: 0.5))
+    public static let reliefShade = GColorPair(light: GRGBA(hex: 0x000000, alpha: 0.08), dark: GRGBA(hex: 0x000000, alpha: 0.32))
+    public static let pageLight = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.55), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.04))
     public static let cardShadow = GColorPair(light: GRGBA(hex: 0x000000, alpha: 0.09), dark: GRGBA(hex: 0x000000, alpha: 0.35))
     public static let textPrimary = GColorPair(light: GPaletteValues.slate900, dark: GPaletteValues.graphite100)
     public static let textSecondary = GColorPair(light: GPaletteValues.slate700, dark: GPaletteValues.graphite300)

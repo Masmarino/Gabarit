@@ -57,7 +57,7 @@ public struct GSidebarRow: View {
         .background {
             RoundedRectangle(cornerRadius: GRadius.md, style: .continuous)
                 .fill(selected ? Self.selectedFill : (hovering ? Self.hoverFill : Color.clear))
-                .shadow(color: selected ? GColor.reliefShadow : .clear, radius: 1.5, y: 1)
+                .gGlow(radius: 4, active: selected)
         }
         .onHover { hovering = $0 }
         .gPointer()

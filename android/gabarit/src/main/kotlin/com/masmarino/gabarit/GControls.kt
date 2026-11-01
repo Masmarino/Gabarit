@@ -157,10 +157,12 @@ fun GIcon(name: String, contentDescription: String?, modifier: Modifier = Modifi
 @Composable
 fun Modifier.gRaised(shape: Shape, pressed: Boolean = false, onInk: Boolean = false): Modifier {
     if (pressed) return this
-    val light = if (onInk) Color.White.copy(alpha = 0.18f) else G.colors.reliefHighlight
+    val light = if (onInk) Color.White.copy(alpha = 0.2f) else G.colors.reliefHighlight
+    val shade = G.colors.reliefShade
     return this.shadow(1.dp, shape, clip = false).drawWithCache {
         val outline = shape.createOutline(size, layoutDirection, this)
-        val brush = Brush.verticalGradient(listOf(light, Color.Transparent), endY = size.height / 2)
+        // One light, from above: on the top edge, shade on the bottom one.
+        val brush = Brush.verticalGradient(0f to light, 0.5f to Color.Transparent, 1f to shade)
         // A little volume: lighter at the top, a touch darker at the bottom.
         val volume = Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.07f), Color.Transparent, Color.Black.copy(alpha = 0.04f)))
         val line = Stroke(1.dp.toPx())
@@ -171,6 +173,10 @@ fun Modifier.gRaised(shape: Shape, pressed: Boolean = false, onInk: Boolean = fa
         }
     }
 }
+
+/** What is on glows a little, in its colour (a switch, a selection). */
+fun Modifier.gGlow(color: Color, shape: Shape, radius: Dp = 5.dp): Modifier =
+    this.shadow(radius, shape, clip = false, ambientColor = color, spotColor = color)
 
 // MARK: Buttons
 
@@ -304,7 +310,9 @@ fun GSwitch(isOn: Boolean, modifier: Modifier = Modifier) {
     val knob by animateDpAsState(if (isOn) 20.dp else 2.dp, if (still) snap() else tween(180), label = "switch")
     val shape = RoundedCornerShape(14.dp)
     Box(
-        modifier.size(width = 46.dp, height = 28.dp).clip(shape).background(track)
+        modifier.size(width = 46.dp, height = 28.dp)
+            .then(if (isOn) Modifier.gGlow(colors.accent, shape) else Modifier)
+            .clip(shape).background(track)
             .then(if (isOn) Modifier else Modifier.border(1.dp, colors.border.copy(alpha = 0.35f), shape))
             .clearAndSetSemantics {},
     ) {
@@ -517,7 +525,7 @@ fun GChip(title: String, selected: Boolean, onClick: () -> Unit) {
     val colors = G.colors
     val shape = RoundedCornerShape(GRadius.sm)
     Box(
-        Modifier.heightIn(min = GControlMetrics.compact).then(if (selected) Modifier else Modifier.gRaised(shape)).clip(shape)
+        Modifier.heightIn(min = GControlMetrics.compact).then(if (selected) Modifier.gGlow(colors.accent, shape, 3.dp) else Modifier.gRaised(shape)).clip(shape)
             .background(if (selected) colors.selectedFill.compositeOverSafe(colors.background) else colors.background, shape)
             .border(1.dp, if (selected) colors.accent.copy(alpha = 0.7f) else colors.hairline, shape)
             .semantics { this.selected = selected }

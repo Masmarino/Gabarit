@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpOffset
@@ -109,6 +110,9 @@ fun gBadgeText(count: Int): String = if (count > 99) "99+" else count.toString()
 /** In a sheet: its header is on the page's grey, not on the dark frame (what tells a sheet from a page). Set by `GBottomSheet`. */
 val LocalGInSheet = compositionLocalOf { false }
 
+/** The light on the frame's dark bars: a soft sheen from above. */
+private val gFrameSheen get() = Brush.verticalGradient(listOf(GPalette.graphite900, GFrameColor.ground))
+
 // MARK: Bars
 
 /** A tab of the bottom bar: its title, its icon (the Mac's name) or the app's own image (`image`, drawn in the tab's colour), a count. */
@@ -136,6 +140,9 @@ fun GTabBar(tabs: List<GTab>, selection: String, onSelect: (String) -> Unit, mod
                     .drawBehind {
                         if (current) {
                             val inset = 18.dp.toPx()
+                            // Its light falls on the tab, from the line above.
+                            drawRect(Brush.verticalGradient(listOf(colors.accent.copy(alpha = 0.16f), Color.Transparent), endY = 20.dp.toPx()),
+                                Offset(inset, 0f), Size(size.width - 2 * inset, 20.dp.toPx()))
                             drawRect(colors.accent, Offset(inset, 0f), Size(size.width - 2 * inset, 2.dp.toPx()))
                         }
                     },
@@ -179,7 +186,7 @@ fun GTopBar(
         val text = if (inSheet) G.colors.textPrimary else GFrameColor.text
         CompositionLocalProvider(LocalContentColor provides text) {
             Box(modifier.fillMaxWidth().then(if (inSheet) Modifier else Modifier.zIndex(1f).shadow(6.dp))
-                .background(if (inSheet) G.colors.background else GFrameColor.ground)
+                .then(if (inSheet) Modifier.background(G.colors.background) else Modifier.background(gFrameSheen))
                 .then(if (statusBar) Modifier.windowInsetsPadding(WindowInsets.statusBars) else Modifier)
                 .heightIn(min = 56.dp).padding(horizontal = 4.dp), contentAlignment = Alignment.CenterStart) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -253,7 +260,7 @@ fun GRailItem(title: String, icon: String, current: Boolean, onClick: () -> Unit
 @Composable
 fun GRail(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     GScheme(dark = true) {
-        Column(modifier.width(92.dp).fillMaxHeight().zIndex(1f).shadow(6.dp).background(GFrameColor.ground).padding(horizontal = 6.dp, vertical = 8.dp),
+        Column(modifier.width(92.dp).fillMaxHeight().zIndex(1f).shadow(6.dp).background(gFrameSheen).padding(horizontal = 6.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp), content = content)
     }
 }
@@ -267,7 +274,7 @@ fun GPageBand(icon: String, title: String, summary: String, accessory: @Composab
     val inSheet = LocalGInSheet.current
     val text = if (inSheet) G.colors.textPrimary else GFrameColor.text
     Row(Modifier.fillMaxWidth().then(if (inSheet) Modifier else Modifier.zIndex(1f).shadow(6.dp))
-        .background(if (inSheet) G.colors.background else GFrameColor.ground)
+        .then(if (inSheet) Modifier.background(G.colors.background) else Modifier.background(gFrameSheen))
         .padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 18.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
         Box(Modifier.size(48.dp).border(1.dp, if (inSheet) G.colors.hairline else GFrameColor.rim, RoundedCornerShape(GRadius.md)),

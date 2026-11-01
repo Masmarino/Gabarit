@@ -56,6 +56,8 @@
 @define-color g_hairline alpha(#CDD7E6, 0.12);
 @define-color g_reliefHighlight alpha(#FFFFFF, 0.08);
 @define-color g_reliefShadow alpha(#000000, 0.5);
+@define-color g_reliefShade alpha(#000000, 0.32);
+@define-color g_pageLight alpha(#FFFFFF, 0.04);
 @define-color g_cardShadow alpha(#000000, 0.35);
 @define-color g_textPrimary #E7EBF1;
 @define-color g_textSecondary #B8BFCA;

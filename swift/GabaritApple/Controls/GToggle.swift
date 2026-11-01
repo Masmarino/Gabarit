@@ -68,6 +68,7 @@ public struct GSwitch: View {
             // Off, a rim stronger than the fine line: the track shows on a white card too.
             .overlay { Capsule().strokeBorder(isOn ? Color.clear : contrast == .increased ? GColor.border : GColor.border.opacity(0.35), lineWidth: 1) }
             .frame(width: size.width, height: size.height)
+            .gGlow(active: isOn)
             .overlay(alignment: isOn ? .trailing : .leading) {
                 GKnob()
                     .frame(width: size.height - 4, height: size.height - 4)
