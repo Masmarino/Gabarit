@@ -83,6 +83,8 @@ class GalleryTest {
             GTextField("Name", name, { name = it })
             GPicker("Appearance", listOf("System", "Light", "Dark"), listOf("System", "Light", "Dark")[choice], { it }, { })
             GPicker("Size", listOf(0, 1, 2), choice, { listOf("Small", "Medium", "Large")[it] }, { choice = it }, style = GPickerStyle.Chips)
+            GPicker("Who sees when I am online, and when I was", listOf(0, 1), choice % 2, { listOf("My contacts", "Nobody")[it] }, { choice = it },
+                style = GPickerStyle.Chips)
             GSlider(value, { value = it }, label = "Volume")
             GStepper("Reminders", count, { count = it }, 0..10)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { GTone.entries.forEach { GBadge("state", tone = it) } }

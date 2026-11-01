@@ -1,7 +1,8 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
-/// A choice among options, its value and its name: the title on the left, Gabarit's menu or chips on the right.
+/// A choice among options, its value and its name: the title on the left, Gabarit's menu or chips on the right (the
+/// chips below it when they do not hold beside it).
 public struct GPicker<Value: Hashable>: View {
     let title: String
     @Binding var selection: Value
@@ -32,8 +33,35 @@ public struct GPicker<Value: Hashable>: View {
     }
 
     private var gabarit: some View {
-        HStack(alignment: .center, spacing: 12) {
-            if !title.isEmpty {
+        Group {
+            switch style {
+            case .menu:
+                HStack(alignment: .center, spacing: 12) {
+                    label
+                    GMenuField(title: title, selection: $selection, options: options)
+                }
+            case .chips:
+                // The chips beside the title while both hold on one line; below it otherwise (a phone), rather than a
+                // title crushed onto four lines.
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .center, spacing: 12) {
+                        label
+                        GChips(selection: $selection, options: options)
+                    }
+                    VStack(alignment: .leading, spacing: 10) {
+                        label
+                        GChips(selection: $selection, options: options)
+                    }
+                }
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(title)
+    }
+
+    @ViewBuilder private var label: some View {
+        if !title.isEmpty {
+            HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     // Said by the menu or the chips' group, not twice.
                     Text(title).font(GFont.body).foregroundStyle(GColor.textPrimary).accessibilityHidden(true)
@@ -43,13 +71,7 @@ public struct GPicker<Value: Hashable>: View {
                 }
                 Spacer(minLength: 12)
             }
-            switch style {
-            case .menu: GMenuField(title: title, selection: $selection, options: options)
-            case .chips: GChips(selection: $selection, options: options)
-            }
         }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel(title)
     }
 }
 

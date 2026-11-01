@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
@@ -513,16 +514,49 @@ enum class GPickerStyle { Menu, Chips }
 fun <T> GPicker(title: String, options: List<T>, selection: T, optionTitle: (T) -> String, onSelect: (T) -> Unit,
                 modifier: Modifier = Modifier, style: GPickerStyle = GPickerStyle.Menu, detail: String? = null) {
     val colors = G.colors
-    Row(modifier.fillMaxWidth().heightIn(min = GControlMetrics.touchTarget), verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    val label = @Composable {
         // Said once, by the control.
-        Column(Modifier.weight(1f).clearAndSetSemantics {}, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Column(Modifier.clearAndSetSemantics {}, verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(title, style = G.type.body, color = colors.textPrimary)
             if (detail != null) Text(detail, style = G.type.caption, color = colors.textDiscret)
         }
-        when (style) {
-            GPickerStyle.Menu -> GMenuField(options, selection, optionTitle, onSelect, label = title)
-            GPickerStyle.Chips -> GChips(options, selection, optionTitle, onSelect, Modifier.semantics { contentDescription = title })
+    }
+    when (style) {
+        GPickerStyle.Menu -> Row(modifier.fillMaxWidth().heightIn(min = GControlMetrics.touchTarget),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Box(Modifier.weight(1f)) { label() }
+            GMenuField(options, selection, optionTitle, onSelect, label = title)
+        }
+        // The chips beside the title while both hold on one line; below it otherwise, rather than a crushed title.
+        GPickerStyle.Chips -> GBesideOrBelow(modifier.fillMaxWidth().heightIn(min = GControlMetrics.touchTarget), label) {
+            GChips(options, selection, optionTitle, onSelect, Modifier.semantics { contentDescription = title })
+        }
+    }
+}
+
+/** A title and a control: side by side (the control at the end) while the title holds on one line, else stacked. */
+@Composable
+private fun GBesideOrBelow(modifier: Modifier, title: @Composable () -> Unit, control: @Composable () -> Unit) {
+    val gap = with(LocalDensity.current) { 12.dp.roundToPx() }
+    val below = with(LocalDensity.current) { 10.dp.roundToPx() }
+    Layout({ title(); control() }, modifier) { (t, c), constraints ->
+        val free = constraints.copy(minWidth = 0, minHeight = 0)
+        val controlPlaced = c.measure(free)
+        val beside = t.maxIntrinsicWidth(constraints.maxHeight) + gap + controlPlaced.width <= constraints.maxWidth
+        if (beside) {
+            val titlePlaced = t.measure(free.copy(maxWidth = constraints.maxWidth - gap - controlPlaced.width))
+            val height = maxOf(titlePlaced.height, controlPlaced.height, constraints.minHeight)
+            layout(constraints.maxWidth, height) {
+                titlePlaced.placeRelative(0, (height - titlePlaced.height) / 2)
+                controlPlaced.placeRelative(constraints.maxWidth - controlPlaced.width, (height - controlPlaced.height) / 2)
+            }
+        } else {
+            val titlePlaced = t.measure(free)
+            val height = maxOf(titlePlaced.height + below + controlPlaced.height, constraints.minHeight)
+            layout(constraints.maxWidth, height) {
+                titlePlaced.placeRelative(0, 0)
+                controlPlaced.placeRelative(0, titlePlaced.height + below)
+            }
         }
     }
 }
