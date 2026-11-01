@@ -70,7 +70,7 @@ public struct GMenu<Content: View>: View {
             }
         }
         .frame(minWidth: 240)
-        .background(GColor.surface)
+        .background(GColor.surfaceOpaque)
         .presentationCompactAdaptation(.popover)
         .preferredColorScheme(colorScheme)
     }

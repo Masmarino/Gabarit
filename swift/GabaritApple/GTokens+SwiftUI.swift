@@ -58,6 +58,8 @@ public enum GPalette {
 public enum GColor {
     public static var background: Color { GTheme.current.background ?? GColorDefault.background }
     public static var surface: Color { GTheme.current.surface ?? GColorDefault.surface }
+    /// What floats above a page: nothing shows through, under a colour theme either.
+    public static var surfaceOpaque: Color { GTheme.current.surfaceOpaque ?? surface }
     public static var sidebar: Color { GTheme.current.sidebar ?? GColorDefault.sidebar }
     public static let hover = Color(GColorValues.hover)
     public static let press = Color(GColorValues.press)
@@ -110,6 +112,8 @@ public final class GTheme: @unchecked Sendable {
 
     public var background: Color?
     public var surface: Color?
+    /// The surfaces, opaque, when `surface` lets the ground through: what floats above a page (a menu, a bar).
+    public var surfaceOpaque: Color?
     public var sidebar: Color?
     public var track: Color?
     public var hairline: Color?
