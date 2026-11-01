@@ -3,25 +3,42 @@ import SwiftUI
 
 /// Gabarit's text field: the ground, a fine rim, rust when it has the focus; the title as the prompt.
 public struct GTextFieldStyle: TextFieldStyle {
-    public init() {}
+    /// In a Gabarit form, whose rows are in cards: no frame of its own (`GForm` sets it).
+    var bare: Bool
+
+    public init() { bare = false }
+    init(bare: Bool) { self.bare = bare }
 
     // swiftlint:disable:next identifier_name
     public func _body(configuration: TextField<Self._Label>) -> some View {
-        configuration.textFieldStyle(.plain).modifier(GFieldFrame())
+        configuration.textFieldStyle(.plain).modifier(GFieldFrame(bare: bare))
     }
 }
 
-/// A field's frame (text, long text): ground, rim, rust when it has the focus.
+/// A field's frame (text, long text): ground, rim, rust when it has the focus. `bare` (a form card's row): none, the
+/// card is its frame (a frame in a frame), the row its room, the text and the cursor what is seen.
 public struct GFieldFrame: ViewModifier {
+    var isBare: Bool
     @FocusState private var focused: Bool
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.colorSchemeContrast) private var contrast
 
-    public nonisolated init() {}
+    public nonisolated init(bare: Bool = false) { isBare = bare }
 
     public func body(content: Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: GRadius.sm, style: .continuous)
+        if isBare { bare(content) } else { framed(content) }
+    }
+
+    private func bare(_ content: Content) -> some View {
         content
+            .font(GFont.body)
+            .frame(maxWidth: .infinity, minHeight: GControlMetrics.height - 16, alignment: .leading)
+            .opacity(isEnabled ? 1 : GOpacity.disabled)
+    }
+
+    private func framed(_ content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: GRadius.sm, style: .continuous)
+        return content
             .font(GFont.body)
             .focused($focused)
             .padding(.horizontal, 10)

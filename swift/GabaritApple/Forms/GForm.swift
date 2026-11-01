@@ -206,6 +206,9 @@ public struct GFormLayout<Content: View>: View {
         }
         .scrollBounceBehavior(.basedOnSize)
         .labeledContentStyle(GLabeledContentStyle())
+        // Its fields have no frame of their own: the card is their frame (a frame in a frame), the row their room. Set
+        // for the whole form: a field takes its style from where the form's rows are declared, not from its card.
+        .textFieldStyle(GTextFieldStyle(bare: true))
         .gControls()
         .gPageGround()
     }
