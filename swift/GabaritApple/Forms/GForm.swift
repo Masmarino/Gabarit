@@ -379,6 +379,8 @@ public struct GFormButtons<Content: View>: View {
                 }
                 VStack(alignment: .leading, spacing: 8) { content }
             }
+            // Buttons side by side, each its own: in a card too, they do not become the row.
+            .environment(\.gFormCardRow, false)
         }
     }
 }
