@@ -24,8 +24,10 @@ private struct GFrameToolbar: ViewModifier {
         #if os(iOS)
         if inSheet {
             content
-                .toolbarBackground(GColor.background, for: .navigationBar)
-                .toolbarBackground(.visible, for: .navigationBar)
+                // No ground of its own: the page's light runs under it, without a line.
+                .toolbarBackground(.hidden, for: .navigationBar)
+                // What scrolls under it fades out, rather than running behind its buttons.
+                .scrollEdgeEffectStyle(.soft, for: .top)
         } else {
             content
                 // The light on the frame: a soft sheen from above.
