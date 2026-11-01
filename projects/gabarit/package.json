@@ -1,7 +1,7 @@
 {
   "name": "@masmarino/gabarit",
   "version": "2.2.1",
-  "description": "Angular design system — UI components and dataviz for self-hosted applications.",
+  "description": "Angular design system \u2014 UI components and dataviz for self-hosted applications.",
   "license": "MIT",
   "homepage": "https://github.com/Masmarino/Gabarit",
   "repository": {
@@ -26,7 +26,7 @@
     "@angular/forms": "^22.0.0",
     "@angular/platform-browser": "^22.0.0",
     "@angular/router": "^22.0.0",
-    "dompurify": "^3.2.0",
+    "dompurify": "^3.4.17",
     "marked": "^18.0.0"
   },
   "dependencies": {
