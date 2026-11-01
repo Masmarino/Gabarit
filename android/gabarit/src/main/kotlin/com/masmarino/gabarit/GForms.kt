@@ -89,7 +89,7 @@ val LocalGFormCard = compositionLocalOf { false }
 fun Modifier.gCardDepth(shape: Shape): Modifier {
     val light = G.colors.reliefHighlight
     val shade = G.colors.reliefShade
-    return this.shadow(2.dp, shape, clip = false).drawWithCache {
+    return this.gResting(2.dp, shape).drawWithCache {
         val outline = Path().apply { addOutline(shape.createOutline(size, layoutDirection, this@drawWithCache)) }
         val edge = 1.5.dp.toPx()
         val top = Brush.verticalGradient(listOf(light, light.copy(alpha = 0f)), endY = edge)

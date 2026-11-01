@@ -46,8 +46,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.ui.graphics.Brush
@@ -180,7 +183,7 @@ fun Modifier.gRaised(shape: Shape, pressed: Boolean = false, onInk: Boolean = fa
     }
     val light = if (onInk) Color.White.copy(alpha = 0.2f) else G.colors.reliefHighlight
     val shade = G.colors.reliefShade
-    return this.shadow(1.dp, shape, clip = false).drawWithCache {
+    return this.then(if (onInk) Modifier.shadow(1.dp, shape, clip = false) else Modifier.gResting(1.dp, shape)).drawWithCache {
         val outline = shape.createOutline(size, layoutDirection, this)
         // One light, from above: on the top edge, shade on the bottom one.
         val brush = Brush.verticalGradient(0f to light, 0.5f to light.copy(alpha = 0f), 1f to shade)
@@ -191,6 +194,24 @@ fun Modifier.gRaised(shape: Shape, pressed: Boolean = false, onInk: Boolean = fa
             drawContent()
             drawOutline(outline, volume)
             drawOutline(outline, brush, style = line)
+        }
+    }
+}
+
+/**
+ * What rests on the page casts a soft shadow. Under a colour theme the surfaces are veils, and the system's shadow shows
+ * through them as a grey frame: the shadow is then painted around the shape, never under it.
+ */
+@Composable
+internal fun Modifier.gResting(elevation: Dp, shape: Shape): Modifier {
+    if (G.colors.surface.alpha >= 1f) return this.shadow(elevation, shape, clip = false)
+    val shade = Color.Black.copy(alpha = if (G.isDark) 0.09f else 0.035f)
+    return this.drawBehind {
+        val outline = Path().apply { addOutline(shape.createOutline(size, layoutDirection, this@drawBehind)) }
+        clipPath(outline, ClipOp.Difference) {
+            translate(top = elevation.toPx() / 2) {
+                for (ring in 1..3) drawPath(outline, shade, style = Stroke(elevation.toPx() * ring))
+            }
         }
     }
 }
