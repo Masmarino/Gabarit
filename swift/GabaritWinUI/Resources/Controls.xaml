@@ -20,6 +20,8 @@
          veil over the ground, never over the text: the veil (secondary, ghost), or a solid step of the ink (primary,
          danger), as on the Mac. -->
 
+    <SolidColorBrush x:Key="GReliefOnInkBrush" Color="#2EFFFFFF"/>
+
     <Style x:Key="GButtonCommonStyle" TargetType="Button">
         <Setter Property="MinHeight" Value="30"/>
         <Setter Property="Padding" Value="12,0"/>
@@ -90,6 +92,9 @@
                           BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
                           MinHeight="{TemplateBinding MinHeight}">
                         <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <!-- The light on the top edge: what can be pressed stands above the page, and sinks when pressed. -->
+                        <Border x:Name="Relief" BorderThickness="0,1,0,0" BorderBrush="{StaticResource GReliefOnInkBrush}"
+                                CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False"/>
                         <ContentPresenter x:Name="Content" Padding="{TemplateBinding Padding}"
                                           Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}"
                                           FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
@@ -107,6 +112,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
+                                        <Setter Target="Relief.Opacity" Value="0"/>
                                         <Setter Target="Veil.Background" Value="{ThemeResource GPrimaryPressedBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -136,6 +142,9 @@
                           BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
                           MinHeight="{TemplateBinding MinHeight}">
                         <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <!-- The light on the top edge: what can be pressed stands above the page, and sinks when pressed. -->
+                        <Border x:Name="Relief" BorderThickness="0,1,0,0" BorderBrush="{ThemeResource GReliefHighlightBrush}"
+                                CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False"/>
                         <ContentPresenter x:Name="Content" Padding="{TemplateBinding Padding}"
                                           Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}"
                                           FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
@@ -154,6 +163,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
+                                        <Setter Target="Relief.Opacity" Value="0"/>
                                         <Setter Target="Veil.Background" Value="{ThemeResource GTrackBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -187,6 +197,9 @@
                           BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
                           MinHeight="{TemplateBinding MinHeight}">
                         <Grid x:Name="Veil" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}"/>
+                        <!-- The light on the top edge: what can be pressed stands above the page, and sinks when pressed. -->
+                        <Border x:Name="Relief" BorderThickness="0,1,0,0" BorderBrush="{StaticResource GReliefOnInkBrush}"
+                                CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False"/>
                         <ContentPresenter x:Name="Content" Padding="{TemplateBinding Padding}"
                                           Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}"
                                           FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}"
@@ -204,6 +217,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
+                                        <Setter Target="Relief.Opacity" Value="0"/>
                                         <Setter Target="Veil.Background" Value="{ThemeResource GErrorPressedBrush}"/>
                                     </VisualState.Setters>
                                 </VisualState>

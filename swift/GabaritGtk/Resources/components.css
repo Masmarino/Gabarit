@@ -318,3 +318,9 @@ window.g-alert { background-color: @g_surface; border-radius: 12px; }
 /* Without a compositor (no shadow), GTK frames its windows: dark like Gabarit's frame, not white */
 
 window.g-window.solid-csd { border-color: @g_graphite700; box-shadow: inset 0 0 0 4px @g_frame; }
+
+/* Relief, discreet: what can be pressed stands above the page and sinks when pressed; a card rests on the page. */
+.g-surface { box-shadow: 0 1px 3px alpha(black, 0.06); }
+button.g-secondary { box-shadow: 0 1px 2px @g_reliefShadow, inset 0 1px @g_reliefHighlight; }
+button.g-primary, button.g-danger { box-shadow: 0 1px 2px @g_reliefShadow, inset 0 1px alpha(white, 0.18); }
+button.g-secondary:active, button.g-primary:active, button.g-danger:active { box-shadow: none; }

@@ -46,7 +46,7 @@ public struct GFieldFrame: ViewModifier {
             .frame(minHeight: GControlMetrics.height)
             // A click on the padding too puts the cursor in the field (on the ground behind it: the field keeps its own
             // clicks).
-            .background { shape.fill(GColor.background).onTapGesture { focused = true } }
+            .background { shape.fill(GColor.background.gHollow(0.06)).onTapGesture { focused = true } }
             .overlay { shape.strokeBorder(focused ? GColor.accent : GColor.controlRim(contrast), lineWidth: focused ? 1.5 : 1) }
             .opacity(isEnabled ? 1 : GOpacity.disabled)
             .animation(GAnimation.hover, value: focused)

@@ -54,6 +54,8 @@
 @define-color g_track #28323D;
 @define-color g_border #646C77;
 @define-color g_hairline alpha(#CDD7E6, 0.12);
+@define-color g_reliefHighlight alpha(#FFFFFF, 0.08);
+@define-color g_reliefShadow alpha(#000000, 0.45);
 @define-color g_textPrimary #E7EBF1;
 @define-color g_textSecondary #B8BFCA;
 @define-color g_textDiscret #A1A9B5;

@@ -63,6 +63,8 @@ public enum GColor {
     public static var track: Color { GTheme.current.track ?? GColorDefault.track }
     public static let border = Color(GColorValues.border)
     public static var hairline: Color { GTheme.current.hairline ?? GColorDefault.hairline }
+    public static let reliefHighlight = Color(GColorValues.reliefHighlight)
+    public static let reliefShadow = Color(GColorValues.reliefShadow)
     public static let textPrimary = Color(GColorValues.textPrimary)
     public static let textSecondary = Color(GColorValues.textSecondary)
     public static let textDiscret = Color(GColorValues.textDiscret)

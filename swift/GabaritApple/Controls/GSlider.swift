@@ -60,7 +60,7 @@ private struct GSliderTrack: View {
             #endif
             let width = max(geometry.size.width - knob, 1)
             ZStack(alignment: .leading) {
-                Capsule().fill(GColor.track).frame(height: 4).padding(.horizontal, knob / 2)
+                Capsule().fill(GColor.track.gHollow(0.1)).frame(height: 4).padding(.horizontal, knob / 2)
                 Capsule().fill(GColor.accent).frame(width: knob / 2 + width * fraction, height: 4).padding(.leading, knob / 2)
                 Circle().fill(.white)
                     .overlay { Circle().strokeBorder(dragging ? GColor.accent : GColor.border.opacity(0.5), lineWidth: 1) }

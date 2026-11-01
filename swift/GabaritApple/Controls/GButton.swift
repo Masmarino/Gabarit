@@ -44,6 +44,7 @@ public struct GButtonStyle: ButtonStyle {
                 .frame(minHeight: compact ? GControlMetrics.button : 44)
                 .background(background(pressed: configuration.isPressed, hovering: hovering), in: shape)
                 .overlay { if variant == .secondary { shape.strokeBorder(GColor.border.opacity(hovering ? 0.8 : 0.6), lineWidth: 1) } }
+                .gRaised(shape, pressed: configuration.isPressed, onInk: variant == .primary || variant == .danger, active: variant != .ghost)
                 .opacity(isEnabled ? 1 : GOpacity.disabled)
                 .contentShape(shape)
                 .gTouchTarget(height: compact ? GControlMetrics.button : 44)

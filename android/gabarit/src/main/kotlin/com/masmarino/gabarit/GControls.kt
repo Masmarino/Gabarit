@@ -50,6 +50,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
@@ -144,6 +148,27 @@ fun GIcon(name: String, contentDescription: String?, modifier: Modifier = Modifi
     )
 }
 
+// MARK: Relief
+
+/**
+ * Raised, discreetly: a soft shadow and the light on the top edge; `pressed`: sunk, neither. `onInk`: on a dark ground (a
+ * primary button), the light is the same in both appearances. A hairline stays the edge of things: this only adds to it.
+ */
+@Composable
+fun Modifier.gRaised(shape: Shape, pressed: Boolean = false, onInk: Boolean = false): Modifier {
+    if (pressed) return this
+    val light = if (onInk) Color.White.copy(alpha = 0.18f) else G.colors.reliefHighlight
+    return this.shadow(1.dp, shape, clip = false).drawWithCache {
+        val outline = shape.createOutline(size, layoutDirection, this)
+        val brush = Brush.verticalGradient(listOf(light, Color.Transparent), endY = size.height / 2)
+        val line = Stroke(1.dp.toPx())
+        onDrawWithContent {
+            drawContent()
+            drawOutline(outline, brush, style = line)
+        }
+    }
+}
+
 // MARK: Buttons
 
 /** Gabarit's buttons: ink (primary), fine frame (secondary), no ground (ghost), red (danger). */
@@ -185,6 +210,8 @@ fun GButton(
         modifier
             .alpha(if (enabled) 1f else GOpacity.disabled)
             .heightIn(min = height)
+            .then(if (variant == GButtonVariant.Ghost) Modifier
+            else Modifier.gRaised(shape, pressed, onInk = variant == GButtonVariant.Primary || variant == GButtonVariant.Danger))
             .clip(shape)
             .background(ground, shape)
             .then(if (variant == GButtonVariant.Secondary) Modifier.border(1.dp, colors.border.copy(alpha = 0.6f), shape) else Modifier)
@@ -426,7 +453,7 @@ fun GMenuFace(text: String, modifier: Modifier = Modifier, open: Boolean = false
     val colors = G.colors
     val shape = RoundedCornerShape(GRadius.sm)
     Row(
-        modifier.widthIn(max = 260.dp).heightIn(min = GControlMetrics.compact).clip(shape)
+        modifier.widthIn(max = 260.dp).heightIn(min = GControlMetrics.compact).then(if (open) Modifier else Modifier.gRaised(shape)).clip(shape)
             .background(if (open) colors.hover.compositeOverSafe(colors.background) else colors.background, shape)
             .border(if (open) 1.5.dp else 1.dp, if (open) colors.accent else colors.hairline, shape)
             .padding(start = 10.dp, end = 8.dp),
@@ -486,7 +513,7 @@ fun GChip(title: String, selected: Boolean, onClick: () -> Unit) {
     val colors = G.colors
     val shape = RoundedCornerShape(GRadius.sm)
     Box(
-        Modifier.heightIn(min = GControlMetrics.compact).clip(shape)
+        Modifier.heightIn(min = GControlMetrics.compact).then(if (selected) Modifier else Modifier.gRaised(shape)).clip(shape)
             .background(if (selected) colors.selectedFill.compositeOverSafe(colors.background) else colors.background, shape)
             .border(1.dp, if (selected) colors.accent.copy(alpha = 0.7f) else colors.hairline, shape)
             .semantics { this.selected = selected }

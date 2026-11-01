@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
@@ -79,7 +80,8 @@ val LocalGFormCard = compositionLocalOf { false }
 @Composable
 fun Modifier.gCard(): Modifier {
     val shape = RoundedCornerShape(GRadius.lg)
-    return this.gSurface(shape, G.colors.surface, G.colors.hairline).clip(shape)
+    // It rests on the page.
+    return this.shadow(1.dp, shape, clip = false).gSurface(shape, G.colors.surface, G.colors.hairline).clip(shape)
 }
 
 /** The fine line under a card's row, inset 16 from the leading edge (`show` false: nothing). */

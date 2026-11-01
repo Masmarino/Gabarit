@@ -91,6 +91,8 @@ public enum GColorValues {
     public static let track = GColorPair(light: GPaletteValues.slate200, dark: GPaletteValues.graphite700)
     public static let border = GColorPair(light: GPaletteValues.slate500, dark: GPaletteValues.graphite500)
     public static let hairline = GColorPair(light: GPaletteValues.slate300, dark: GRGBA(hex: 0xCDD7E6, alpha: 0.12))
+    public static let reliefHighlight = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.6), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.08))
+    public static let reliefShadow = GColorPair(light: GRGBA(hex: 0x000000, alpha: 0.12), dark: GRGBA(hex: 0x000000, alpha: 0.45))
     public static let textPrimary = GColorPair(light: GPaletteValues.slate900, dark: GPaletteValues.graphite100)
     public static let textSecondary = GColorPair(light: GPaletteValues.slate700, dark: GPaletteValues.graphite300)
     public static let textDiscret = GColorPair(light: GPaletteValues.slate600, dark: GPaletteValues.graphite400)
@@ -151,6 +153,8 @@ public struct GShadowSpec: Sendable, Hashable {
 }
 
 public enum GShadowValues {
+    public static let card = GShadowSpec(color: GRGBA(hex: 0x000000, alpha: 0.06), radius: 3, x: 0, y: 1)
+    public static let raised = GShadowSpec(color: GRGBA(hex: 0x000000, alpha: 0.12), radius: 1.5, x: 0, y: 1)
     public static let floating = GShadowSpec(color: GRGBA(hex: 0x000000, alpha: 0.16), radius: 16, x: 0, y: 12)
 }
 

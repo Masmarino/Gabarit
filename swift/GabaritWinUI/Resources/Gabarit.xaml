@@ -18,6 +18,10 @@
             <SolidColorBrush x:Key="GBorderBrush" Color="#FF7D8794"/>
             <Color x:Key="GHairlineColor">#FFCFD5DC</Color>
             <SolidColorBrush x:Key="GHairlineBrush" Color="#FFCFD5DC"/>
+            <Color x:Key="GReliefHighlightColor">#99FFFFFF</Color>
+            <SolidColorBrush x:Key="GReliefHighlightBrush" Color="#99FFFFFF"/>
+            <Color x:Key="GReliefShadowColor">#1F000000</Color>
+            <SolidColorBrush x:Key="GReliefShadowBrush" Color="#1F000000"/>
             <Color x:Key="GTextPrimaryColor">#FF10151C</Color>
             <SolidColorBrush x:Key="GTextPrimaryBrush" Color="#FF10151C"/>
             <Color x:Key="GTextSecondaryColor">#FF404954</Color>
@@ -164,6 +168,10 @@
             <SolidColorBrush x:Key="GBorderBrush" Color="#FF646C77"/>
             <Color x:Key="GHairlineColor">#1FCDD7E6</Color>
             <SolidColorBrush x:Key="GHairlineBrush" Color="#1FCDD7E6"/>
+            <Color x:Key="GReliefHighlightColor">#14FFFFFF</Color>
+            <SolidColorBrush x:Key="GReliefHighlightBrush" Color="#14FFFFFF"/>
+            <Color x:Key="GReliefShadowColor">#73000000</Color>
+            <SolidColorBrush x:Key="GReliefShadowBrush" Color="#73000000"/>
             <Color x:Key="GTextPrimaryColor">#FFE7EBF1</Color>
             <SolidColorBrush x:Key="GTextPrimaryBrush" Color="#FFE7EBF1"/>
             <Color x:Key="GTextSecondaryColor">#FFB8BFCA</Color>
@@ -310,6 +318,10 @@
             <SolidColorBrush x:Key="GBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
             <StaticResource x:Key="GHairlineColor" ResourceKey="SystemColorWindowTextColor"/>
             <SolidColorBrush x:Key="GHairlineBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GReliefHighlightColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GReliefHighlightBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GReliefShadowColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GReliefShadowBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
             <StaticResource x:Key="GTextPrimaryColor" ResourceKey="SystemColorWindowTextColor"/>
             <SolidColorBrush x:Key="GTextPrimaryBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
             <StaticResource x:Key="GTextSecondaryColor" ResourceKey="SystemColorWindowTextColor"/>

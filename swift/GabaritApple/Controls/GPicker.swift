@@ -93,6 +93,7 @@ private struct GMenuFace: View {
         .background(active ? GColor.hover : Color.clear, in: shape)
         .background(GColor.background, in: shape)
         .overlay { shape.strokeBorder(active ? GColor.accent : GColor.controlRim(contrast), lineWidth: active ? 1.5 : 1) }
+        .gRaised(shape, active: !active)
         .contentShape(shape)
         .opacity(isEnabled ? 1 : GOpacity.disabled)
     }
@@ -248,6 +249,7 @@ private struct GChips<Value: Hashable>: View {
                             .frame(minHeight: GControlMetrics.compact)
                             .background(current ? GColor.selectedFill : (hovering ? GColor.hover : GColor.background), in: shape)
                             .overlay { shape.strokeBorder(current ? GColor.accent.opacity(0.7) : (hovering ? GColor.border.opacity(0.5) : GColor.hairline), lineWidth: 1) }
+                            .gRaised(shape, active: !current)
                             .contentShape(shape)
                             .gTouchTarget(height: GControlMetrics.compact)
                     }
