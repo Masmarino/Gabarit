@@ -266,16 +266,14 @@ private struct GFormSection: View {
         }
         .background(GColor.surface, in: shape)
         .overlay { shape.strokeBorder(GColor.hairline, lineWidth: 1) }
-        #if os(macOS)
-        // A button laid as it is in a card is a row, not a framed system button (a frame in the frame); those with a
-        // style of their own keep it.
+        // A button laid as it is in a card is a row, not a framed button (a frame in the frame), on the Mac as on the
+        // iPhone; those with a style of their own keep it.
         .buttonStyle(GFormRowButtonStyle())
-        #endif
     }
 }
 
-#if os(macOS)
-/// A card-row button (Mac): its text in the accent (red if it destroys), full width, the veil on hover.
+/// A card-row button: its text in the accent (red if it destroys), full width; the veil on hover (Mac), dimmed while
+/// pressed.
 public struct GFormRowButtonStyle: ButtonStyle {
     public init() {}
 
@@ -298,7 +296,6 @@ private struct GFormRowButton: View {
             .modifier(GRowHover())
     }
 }
-#endif
 
 /// A section title with an icon: the icon discreet, tight against the text.
 private struct GHeaderLabelStyle: LabelStyle {
