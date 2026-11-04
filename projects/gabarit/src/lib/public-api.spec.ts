@@ -88,7 +88,7 @@ describe('public surface', () => {
   })
 
   it('exposes the version', () => {
-    expect(api.GABARIT_VERSION).toBe('2.2.1')
+    expect(api.GABARIT_VERSION).toBe('3.0.0')
   })
 
   it('exports the thirteen dataviz primitives', () => {
