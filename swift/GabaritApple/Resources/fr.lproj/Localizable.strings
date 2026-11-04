@@ -1,0 +1,23 @@
+/* A switch's accessibility value. */
+"on" = "activé";
+"off" = "désactivé";
+/* GCloseButton's default title, and its tooltip. */
+"Close" = "Fermer";
+"%@ (Esc)" = "%@ (Échap)";
+/* The link back to the previous page, above a form's title, and its tooltip. */
+"Back to %@ (⌘[)" = "Revenir à %@ (⌘[)";
+"Back" = "Retour";
+/* A warning dot on a sidebar row. */
+"Needs attention" = "À vérifier";
+/* An error alert's button. */
+"OK" = "OK";
+/* A sheet's default closing button. */
+"Cancel" = "Annuler";
+/* The quick search (⌘K). */
+"Search" = "Rechercher";
+"Quick search" = "Recherche rapide";
+"Quick search (⌘ + K)" = "Recherche rapide (⌘ + K)";
+"Shortcut: Command K" = "Raccourci : Commande K";
+"Esc" = "Échap";
+"Nothing matches." = "Rien ne correspond.";
+"%@: %@" = "%1$@ : %2$@";

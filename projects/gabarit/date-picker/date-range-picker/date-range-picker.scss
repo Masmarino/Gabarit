@@ -1,4 +1,5 @@
 @use '../../src/lib/tokens/a11y';
+@use '../../src/lib/tokens/depth';
 
 $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -38,9 +39,20 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   color: var(--text-primary);
   font-size: 14px;
   cursor: pointer;
+  @include depth.raised;
   transition: border-color 0.15s $easing-std;
 
-  &--open {
+  &:hover:not(:disabled) {
+    border-color: var(--text-discret);
+    @include depth.surface-hover;
+  }
+
+  &:active:not(:disabled) {
+    @include depth.surface-sunk;
+  }
+
+  &--open,
+  &--open:hover:not(:disabled) {
     border-color: var(--primary);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent);
   }
@@ -98,6 +110,11 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
     color: var(--text-primary);
   }
 
+  &:active {
+    background: var(--bg-press);
+    color: var(--text-primary);
+  }
+
   &:focus-visible {
     @include a11y.focus-ring(2px);
   }
@@ -147,6 +164,11 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
     color: var(--text-primary);
   }
 
+  &:active {
+    background: var(--bg-press);
+    color: var(--text-primary);
+  }
+
   &:focus-visible {
     @include a11y.focus-ring(2px);
   }
@@ -166,6 +188,11 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
     background: var(--bg-hover);
+  }
+
+  &:active {
+    background: var(--bg-press);
+    color: var(--text-primary);
   }
 
   &:focus-visible {
@@ -243,6 +270,11 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   &:hover:not(:disabled):not(.gbt-date-range-picker__day--empty) {
     border-radius: 50%;
     background: var(--bg-hover);
+  }
+
+  &:active:not(:disabled):not(.gbt-date-range-picker__day--empty) {
+    background: var(--bg-press);
+    color: var(--text-primary);
   }
 
   &:focus-visible {

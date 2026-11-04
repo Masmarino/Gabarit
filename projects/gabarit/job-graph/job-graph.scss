@@ -41,7 +41,7 @@
   padding: 0.5rem 0.75rem;
   background: var(--bg-principal);
   border: 1px solid var(--border-color);
-  border-radius: var(--gbt-radius-tile, 4px);
+  border-radius: var(--gbt-radius-tile, var(--site-border-radius));
   color: var(--text-primary);
   font: inherit;
   text-align: left;
@@ -49,6 +49,10 @@
 
   &:hover {
     border-color: var(--primary);
+  }
+
+  &:active {
+    background: var(--bg-hover);
   }
 
   &:focus-visible {

@@ -54,10 +54,11 @@ input[type='range'] {
   &::-webkit-slider-runnable-track {
     height: 4px;
     border-radius: 999px;
+    box-shadow: var(--gbt-depth-hollow);
     background: linear-gradient(
       to right,
-      var(--primary) 0%,
-      var(--primary) var(--gbt-slider-fill),
+      var(--accent) 0%,
+      var(--accent) var(--gbt-slider-fill),
       var(--border-color) var(--gbt-slider-fill),
       var(--border-color) 100%
     );
@@ -68,11 +69,22 @@ input[type='range'] {
     width: 18px;
     height: 18px;
     margin-top: -7px;
-    background: var(--bg-principal);
-    border: 2px solid var(--primary);
+    background: var(--gbt-knob);
+    border: 1px solid var(--border-color);
     border-radius: 50%;
+    box-shadow: var(--gbt-depth-knob);
     appearance: none;
     cursor: pointer;
+  }
+
+  &:not(:disabled):hover::-webkit-slider-thumb {
+    border-color: var(--text-discret);
+    box-shadow: var(--gbt-depth-knob-hover);
+  }
+
+  &:not(:disabled):active::-webkit-slider-thumb {
+    border-color: var(--accent);
+    box-shadow: var(--gbt-glow);
   }
 
   &:focus-visible::-webkit-slider-thumb {
@@ -82,23 +94,36 @@ input[type='range'] {
   &::-moz-range-track {
     height: 4px;
     border-radius: 999px;
+    box-shadow: var(--gbt-depth-hollow);
     background: var(--border-color);
   }
 
   &::-moz-range-progress {
     height: 4px;
     border-radius: 999px;
-    background: var(--primary);
+    background: var(--accent);
+    box-shadow: var(--gbt-glow);
   }
 
   &::-moz-range-thumb {
     box-sizing: border-box;
     width: 18px;
     height: 18px;
-    background: var(--bg-principal);
-    border: 2px solid var(--primary);
+    background: var(--gbt-knob);
+    border: 1px solid var(--border-color);
     border-radius: 50%;
+    box-shadow: var(--gbt-depth-knob);
     cursor: pointer;
+  }
+
+  &:not(:disabled):hover::-moz-range-thumb {
+    border-color: var(--text-discret);
+    box-shadow: var(--gbt-depth-knob-hover);
+  }
+
+  &:not(:disabled):active::-moz-range-thumb {
+    border-color: var(--accent);
+    box-shadow: var(--gbt-glow);
   }
 
   &:focus-visible::-moz-range-thumb {

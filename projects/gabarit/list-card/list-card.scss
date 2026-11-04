@@ -43,7 +43,8 @@
   min-width: 0;
   overflow: hidden;
   border: 1px solid var(--gbt-card-border);
-  border-radius: var(--site-border-radius);
+  border-radius: var(--site-border-radius-lg);
+  box-shadow: var(--site-shadow-sm);
   background: var(--bg-principal);
 }
 

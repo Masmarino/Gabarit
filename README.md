@@ -326,7 +326,7 @@ keep their source order); with `compare`, `desc` reverses the ascending result.
 ## Styles
 
 Gabarit carries the look of the Ferris family: white paper and near-black ink in the light theme, a
-cool graphite in the dark one, IBM Plex throughout, hairlines and square-ish corners. Neutrals carry
+cool graphite in the dark one, IBM Plex throughout, hairlines and the apps' corners. Neutrals carry
 the screens; the crab's rust is kept for the marks that are the brand's own (focus, the current page),
 patina green says success. Every text token reaches 7:1 on the page and on a panel, in both themes
 (`contrast.spec.ts`).
@@ -393,9 +393,25 @@ component (enforced by `token-usage.spec.ts`).
 | Dataviz     | `--chart-series-1-base` … `-6-base`                                      | The chart series, in order                                        |
 |             | `--chart-grid`                                                           | Chart grid and axes                                               |
 
-Other tokens live on `:root` without being colours: border radii (`--site-border-radius*`, 3 to
-6px), shadows (`--site-shadow-*`, rings rather than drops), transitions (`--site-transition-*`) and
+Other tokens live on `:root` without being colours: border radii (`--site-border-radius*`, 4 to
+12px, the apps' scale: a control 6, what floats 8, a card or a sheet 12), shadows (`--site-shadow-*`, and the depth recipes below), transitions (`--site-transition-*`) and
 the type stacks (`--font-family`, `--font-display`, `--gbt-font-mono`).
+
+### Volume and light
+
+As on the apps, a little depth and one light from above, in both themes, from `tokens/gabarit.json`
+(`semantic.web.depth`: the apps' roles and the common shadows, composed for CSS). The page is lit at its
+top (`--gbt-page-ground`, in `document-base` and the shell's sheet). A card rests on it (`--site-shadow-sm`,
+now `--gbt-depth-card`). What can be pressed has some volume and sinks when held (`--gbt-depth-raised`,
+`--gbt-depth-ink`, `--gbt-sheen`, `--gbt-sunk`, with the `depth` mixins: `raised`, `ink`, `surface-hover`,
+`surface-sunk`, `sunk`, `sink`). What holds a value is slightly hollow (`--gbt-depth-hollow`). The frame has
+a sheen and casts a shadow on the page (`--gbt-frame-sheen`, `--gbt-depth-bar`). What is on glows, in the
+accent (`--gbt-glow`): a switch, a slider's filled part, the current tab or page. Under the pointer and held
+down, everywhere: `--bg-hover`, then the stronger `--bg-press`; the sink is off when the system asks for
+reduced motion (`depth.spec.ts` holds both). A sheet's header (`gbt-modal`, `gbt-drawer`) is on the panel's
+grey, the graphite is for the frame. In `<gbt-card form>` the card is the fields' frame: `gbt-input`,
+`gbt-textarea` and `gbt-tag-input` lose theirs, a focused field keeps its ring; it is opt-in, a field with no
+edge of its own does not meet WCAG 1.4.11 by itself, so check it with the row's label and line.
 
 ### Theming hooks
 
@@ -406,11 +422,11 @@ so an app that leaves them alone gets the family's look. Set one to take that pa
 | ----------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------ |
 | `--gbt-focus-ring`                              | Every focus outline                                                       | `var(--focus-ring)`                  |
 | `--gbt-font-display`                            | Page, card, panel, modal and drawer titles, stat tile values, empty state | `var(--font-display)`                |
-| `--gbt-radius-badge`                            | Badges, card and tab counts                                               | `3px`                                |
-| `--gbt-radius-chip`                             | Mono badges, inline code in a list row, search bar keys                   | `2px`                                |
-| `--gbt-radius-menu`                             | Select and autocomplete panels, menu items, search results                | `4px`                                |
-| `--gbt-radius-tile`                             | Icon marker tiles, job graph nodes, avatar group overflow, TOTP QR code   | `4px`                                |
-| `--gbt-radius-search`                           | The search bar field                                                      | `3px`                                |
+| `--gbt-radius-badge`                            | Badges, card and tab counts                                               | `6px`                                |
+| `--gbt-radius-chip`                             | Mono badges, inline code in a list row, search bar keys                   | `4px`                                |
+| `--gbt-radius-menu`                             | Select and autocomplete panels, menu items, search results                | `6px`                                |
+| `--gbt-radius-tile`                             | Icon marker tiles, job graph nodes, avatar group overflow, TOTP QR code   | `8px`                                |
+| `--gbt-radius-search`                           | The search bar field                                                      | `6px`                                |
 | `--gbt-nav-active-bg` / `--gbt-nav-active-text` | The current page in the app shell navigation                              | a 9% ink tint / `--text-primary`     |
 | `--gbt-nav-active-mark`                         | A 2px rule on the start edge of the current page link                     | `var(--accent)`                      |
 | `--gbt-shell-bar`                               | The height of the app shell's bar and of the logo's corner                | `4rem`                               |
@@ -478,9 +494,11 @@ statement — without it, that statement will be incomplete.
 **Not every non-resting state is covered by a test.** Hover and focus
 are: `contrast.spec.ts` checks every hover fill and its perceptibility,
 and `token-usage.spec.ts` measures the text/fill pairing as it will
-actually be painted, translucent overlays and compositing included. The
-`:active` and `:disabled` states are not — the latter is out of scope
-for RGAA, which exempts inactive controls.
+actually be painted, translucent overlays and compositing included,
+`:active` too. `tools/web_states.mjs` holds, on the compiled CSS, that what
+is clickable answers the pointer and keeps still under reduced motion. The
+`:disabled` state is not measured: it is out of scope for RGAA, which exempts
+inactive controls.
 
 **Token-usage checking only reads the library's own CSS.** If your
 application overrides a semantic token, verifying the resulting contrast
@@ -497,6 +515,138 @@ names collides with it. Inside the library's own components
 `.sr-only`, and the scoping attribute Angular adds under encapsulation
 (specificity 0-2-0) beats the unscoped global rule (0-1-0). The other
 utilities in the same file do carry the `gbt-` prefix.
+
+## Tokens and native packages
+
+Gabarit 3 is no longer only for the web. Its tokens have one source, `tokens/gabarit.json`, and
+`npm run tokens` (`python3 tools/tokens.py`) writes them for every platform; `--check` fails when a
+generated file is out of date (CI). Never edit a generated file.
+
+| Generated file                                                    | For                                     |
+| ----------------------------------------------------------------- | --------------------------------------- |
+| `projects/gabarit/src/lib/tokens/_palette.scss`, `_themes.scss`   | the web (its own set of roles, `web`)   |
+| `swift/GabaritCommon/GTokens.swift`                               | Swift, every platform: plain values     |
+| `swift/GabaritApple/GTokens+SwiftUI.swift`                        | SwiftUI: `GColor`, `GFont`, `GAnimation` |
+| `swift/GabaritGtk/Resources/gabarit-light.css`, `-dark.css`, `gabarit.css` | GTK 4                          |
+| `swift/GabaritWinUI/Resources/Gabarit.xaml`                       | WinUI 3                                 |
+| `android/gabarit/src/main/kotlin/com/masmarino/gabarit/GTokens.kt`, `GText.kt`, `GSymbols.kt` | Jetpack Compose |
+
+The palette is shared. The colours by role come in two sets: `apps` (SkollN's design, the reference for
+the native apps) and `web` (this package's roles and names, kept as they are). Native names take the
+`G` prefix (`GColor.background`, `GRadius.md`, `GFont.body`), so they never clash with SwiftUI's own.
+
+The Swift packages are at the root (`Package.swift`): add `https://github.com/Masmarino/Gabarit` in
+Xcode or SwiftPM and use `GabaritApple` (call `GFonts.register()` once at launch) or `GabaritCommon`.
+
+`GabaritApple` also holds the native components, SkollN's design being the reference. No Liquid Glass:
+surfaces with a fine border (`gSurface`), a little depth, one light from above. So far, the
+controls: `GButtonStyle` (`GButtonVariant`), `GPressStyle`, `GCloseButton`, `GToggleStyle` and `GSwitch`,
+`GTextFieldStyle`, `GFieldFrame` and `GTextField` (`gEditorFrame()`, `gFieldBox()`), `GPicker` (menu or
+chips), `GSlider`, `GStepper`, `GTone`, `gSurface(_:tint:)`, and `gControls()` to put them on a whole form.
+The forms: `GForm` and `GFormLayout` (the page's title from `gFormTitle`, sections as cards, `gFormBare()`
+for a row out of its card), `GPageTitle`, `GPageContainer`, `GFormButtons`, `GSheetButton`, `GSheetTitle`,
+`GLabeledContentStyle`, `GSidebarRow`, `GSidebarIcon`, `GSidebarLabelStyle`, `GRowHover` and `GFormMetrics`.
+
+The frame: `gFrameToolbar()`, `GToolbarItem` and `GToolbarItemGroup` (flat bar buttons), `GBarTitle`,
+`GNavTabs`, `GTabBar` and `GTab` (iPhone), `GMenu` and `GMenuItem` (bubble menus), `GPageBand`, `GRailItem`,
+and on the Mac `GWindowHeader` and `gWindowChrome()`.
+
+The feedback: `GBadge` (with `GTone.tintText`), `GEmptyState`, `GSkeleton`, `GTypingDots`, passing messages
+(`GToastCenter`, `gToastOverlay(_:)`), `gErrorAlert(_:message:)` and `gSideDrawer(isPresented:drawer:)`.
+
+The sheets: `gSheet(symbol:title:summary:…)` (the title large in the sheet, Gabarit's cross), `gSheetPage`,
+`GSheetStack`. Pages, forms and sheets paint their ground through `gPageGround()`: Gabarit's background, or
+an application's own (a colour theme's gradient) set once per window in `gGround`; `gGroundPainted` tells
+that a ground is already painted above.
+
+The windows (Mac): `GWindow` (a secondary window without macOS's decoration, Gabarit's dark header and its cross),
+`GAppShell` (the main window's layout: the dark rail, the top band, the page under a rounded corner), `GRailButton`,
+`GRailSquareButton`, and `GWindows.main(…)`, which makes the main window with AppKit.
+
+The quick search (⌘K): `gCommandPalette(isPresented:prompt:groups:)`, `GCommandPalette`, `GCommandItem`,
+`GCommandGroup`, `GCommandKButton`; its matching, `GCommandSearch`, is in `GabaritCommon` for every platform.
+
+`GabaritGtk` (Linux) builds the same components with GTK 4's widgets, dressed by Gabarit's style sheets
+(`swift/GabaritGtk/Resources`: the generated colours and text styles, and `components.css`), at the Mac's sizes and
+line heights. Call `GGtk.install()` once at launch (IBM Plex through fontconfig, Gabarit's icons, light or dark as
+GNOME prefers), then use:
+
+- icons: the apps write the Mac's names (SF Symbols: `gIcon("bell")`, `"lock.fill"`); GTK draws Phosphor's icon
+  (MIT, 2.1.1, regular and filled) that `tokens/symbols.json` gives (generated into `GSymbols`, in `GabaritCommon` for
+  WinUI too). `tools/phosphor.py <@phosphor-icons/core folder> <@phosphor-icons/web folder>` imports the icons (and
+  WinUI's fonts); a new SF name goes into `symbols.json`;
+
+- controls: `gButton` (an optional icon), `gCloseButton`, `gSwitchRow`, `gTextField`, `gPicker` (menu or chips),
+  `gSlider`, `gStepper`;
+- forms: `gForm` (a reading width of 680 at most, `gClamp`), `gPageTitle`, `gFormSection`, `gValueRow`, `gRowButton`,
+  `gFormButtons`, `gSheetButton`, `gSidebarRow`, `gNavTabs`;
+- feedback: `gBadge`, `gToast`, `gEmptyState`, `gSkeleton`, `gTypingDots`;
+- menus: `gMenuItem`, `gMenuList`, `gMenuButton`;
+- windows, as on the Mac: `gAppShell` (the rail from top to bottom, the band over the page with the desktop's window
+  buttons, the page under a rounded corner; `gAppShellContent` alone), `gRailItem`, `gRailButton`,
+  `gRailSquareButton`, `gCommandKButton`, `gBandTitle`, `gPageBand`; `gWindow` (a secondary window: `gWindowHeader`,
+  its cross, Escape closes it);
+- over a page: `gSheet` and `gSheetTitle` (a modal window), `gErrorAlert`, and, in a `gOverlayHost`, `gShowToast` and
+  the quick search, `gCommandPalette` (Ctrl + K with `gCommandShortcut`);
+- for screen readers: titles are headings (`gLabel(heading:)`), `gNew` gives a widget its role, `gAccessibleLabel`,
+  `gAccessibleText`, `gAccessibleState` and `gAccessibleHidden` its name, value and states, `gAnnounce` says a
+  sentence (only through AT-SPI: GTK 4.14 crashes when another accessibility context is asked to announce).
+
+Its gallery draws the Mac gallery's sections, plus the quick search, to PNG files at twice their size, light and dark,
+to compare side by side: `galerie/gtk/capture.sh <folder>` builds it in a Linux image with GTK 4 (Podman).
+
+`GabaritWinUI` (Windows) is a set of XAML resources for WinUI 3 (Swift or C#): `Gabarit.xaml`, generated (the
+colours, light and dark, and WinUI's own controls in Gabarit's colours), and `Controls.xaml` (the buttons, the switch, the close
+cross, the windows' dark header, the rail, cards), with `Icons.xaml`, generated: Phosphor's fonts and each SF name's
+character (`GIcon_bell`; `GSymbols.glyph(for:)` in Swift). See `swift/GabaritWinUI/README.md`.
+
+The gallery draws every component, light and dark, to PNG files at twice their size, to compare a pre-release with the
+previous one, and the Mac with Linux: `cd galerie/apple && swift run GabaritGallery <folder>`.
+
+Android (Jetpack Compose) is in `android/`: the `gabarit` library, the iPhone's components at the finger's sizes
+(`GTheme`, `G.colors`, `G.type`; `GButton`, `GIconButton`, `GCloseButton`, `GToggleRow`, `GTextField`,
+`GFieldFrame`, `GSearchField`, `GPicker`, `GSlider`, `GStepper`; `GBadge`, `GEmptyState`, `GSkeleton`,
+`GTypingDots`, `GSpinner`, `GProgressBar`, `GToastHost`, `GAlert`, `GErrorAlert`; `GForm`, `GFormSection`, `GRow`,
+`GFormRow`, `GChoiceRow`, `GValueRow`, `GRowButton`, `GIconTile`, `gFormSectionRows` for long lazy lists,
+`GSidebarRow`, `GNavTabs`; `GTopBar`, `GTabBar`, `GRail`, `GRailItem`, `GPageBand`, `GDropdownMenu`, `GMenu`,
+`GBottomSheet`, `GSheet`, `GSideDrawer`, `GCommandPalette`). Icons take the Mac's names, drawn by Phosphor's fonts:
+`GIcon("bell", size = 17f)` at an SF Symbol's point size, or `GIcon("bell", contentDescription, modifier, tint)`
+shaped as Material's `Icon` (24 square, the glyph filling its box). An app's colour themes replace the grounds with
+`GTheme(grounds = …)`.
+JitPack builds it from the tags (`jitpack.yml`):
+
+```kotlin
+// settings.gradle.kts: maven("https://jitpack.io") { content { includeGroup("com.github.Masmarino") } }
+implementation("com.github.Masmarino:Gabarit:3.0.0-beta.22")
+```
+
+Its gallery draws the Mac gallery's sections, light and dark, on the JVM (Robolectric) to `android/gabarit/build/galerie`:
+`cd android && ./gradlew :gabarit:testDebugUnitTest`.
+
+Light and depth, a little of them, on every platform, one light from above: the page is lit at its top; what is on
+(a switch, the current tab or rail item, a selected row or chip) glows; the page; what rests on it (a form's card: a soft shadow, the light on its top
+edge); what can be pressed (buttons, chips, menu faces: some volume, a tighter shadow, and they sink when pressed); what
+holds a value is slightly hollow (switch and slider tracks, fields); the frame's bars cast a shadow on the page. A sheet's
+header is on the page's grey, the dark frame is for pages. Apple: `gRaised`, `gCardDepth`, `gHollow`, `gBarShadow`, `GBarShadowEdge`,
+`GKnob`; Android: `gRaised`, `gCard`; tokens: `reliefHighlight`, `reliefShadow`, `cardShadow`, the `card`, `raised` and
+`bar` shadows.
+
+Under the pointer and held down, on the desktop: what can be pressed rises towards the pointer (a wider shadow, more
+light) and sinks when held (its own shade from the top edge, the `press` veil); a switch's knob stretches, a slider's grows.
+On Apple, `GLive { hovering, pressed in … }` with `GLiveStyle` reads both. Each control's states are drawn side by side by
+the galleries (`states-*.png`, forced with `gPointerPreview` on the Mac, with GTK's state flags on Linux), and
+`swift run GabaritGallery --live` opens a window to try them with the real pointer. `tools/states_check.py` (CI) checks
+that every GTK selector and WinUI template answers.
+
+How they answer: every clickable thing has a hovered state (`GHover`), the pointing hand on the Mac (`gPointer`), the
+keyboard's focus (the switch's row is a button, the slider moves with the arrows), one dimming when disabled
+(`gDimmedWhenDisabled`, `GOpacity.disabled`), 44-point touch targets on iPhone and iPad (`gTouchTarget`), and no
+movement when the system asks for reduced motion (`gWithAnimation`). The apps' colours are checked against WCAG,
+light and dark, by `GContrastTests`; the states' texts (`successText`…, `successOnTint`…) and the side columns'
+selection and hover (`selectedFill`, `rowHover`) are roles of the apps' set, the same on every platform.
+
+An application's colour themes replace the grounds through `GTheme.current` (`background`, `surface`,
+`sidebar`, `track`, `hairline`). Their own strings are in English and French.
 
 ## Release
 

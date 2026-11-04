@@ -17,7 +17,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    border-radius: var(--site-border-radius);
+    border-radius: var(--site-border-radius-lg);
   }
 
   &:focus-visible::after {

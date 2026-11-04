@@ -47,6 +47,8 @@ export class Card {
   flush = input(false, { transform: booleanAttribute })
   tone = input<CardTone>('default')
   selected = input(false, { transform: booleanAttribute })
+  /** A form's card: its fields lose their own frame, the card is theirs, and its rows are split by a fine line. */
+  form = input(false, { transform: booleanAttribute })
   selectedLabel = input<string>('Selected')
 
   href = input<string | null>(null)

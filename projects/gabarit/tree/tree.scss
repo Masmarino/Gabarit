@@ -24,6 +24,10 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
     background: var(--bg-hover);
   }
 
+  &:active {
+    background: var(--bg-press);
+  }
+
   &:focus-visible {
     @include a11y.focus-ring(-2px);
   }
@@ -45,8 +49,19 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   height: 20px;
   background: none;
   border: none;
+  border-radius: var(--site-border-radius-xs);
   color: var(--text-secondary);
   cursor: pointer;
+
+  &:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  &:active {
+    background: var(--bg-press);
+    color: var(--text-primary);
+  }
 }
 
 .gbt-tree__spacer {

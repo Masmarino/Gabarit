@@ -61,6 +61,14 @@
   }
 }
 
+.gbt-radio-group__option:hover:not(:has(input:disabled)) input {
+  box-shadow: 0 0 0 3px var(--bg-hover);
+}
+
+.gbt-radio-group__option:active:not(:has(input:disabled)) input {
+  box-shadow: 0 0 0 3px var(--bg-press);
+}
+
 .gbt-radio-group__error {
   margin: 0;
   font-size: 0.75rem;

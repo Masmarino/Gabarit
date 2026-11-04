@@ -93,7 +93,7 @@ $easing: cubic-bezier(0.34, 1.56, 0.64, 1);
   padding: 8px 10px;
   background: transparent;
   border: none;
-  border-radius: var(--gbt-radius-menu, 4px);
+  border-radius: var(--gbt-radius-menu, var(--site-border-radius-sm));
   color: var(--text-primary);
   font-size: 14px;
   text-align: left;
@@ -103,6 +103,10 @@ $easing: cubic-bezier(0.34, 1.56, 0.64, 1);
   &:hover,
   &--active {
     background: var(--bg-hover);
+  }
+
+  &:active {
+    background: var(--bg-press);
   }
 }
 
@@ -145,5 +149,10 @@ $easing: cubic-bezier(0.34, 1.56, 0.64, 1);
 @media (prefers-reduced-motion: reduce) {
   .gbt-autocomplete__panel {
     animation: none;
+  }
+
+  .gbt-autocomplete__input,
+  .gbt-autocomplete__option {
+    transition: none;
   }
 }

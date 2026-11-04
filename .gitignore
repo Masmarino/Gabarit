@@ -8,3 +8,13 @@ storybook-static/
 /docs/
 .claude/
 .worktrees/
+.build/
+.swiftpm/
+
+# Android (Gradle)
+android/.gradle/
+android/build/
+android/gabarit/build/
+android/local.properties
+android/.kotlin/
+__pycache__/

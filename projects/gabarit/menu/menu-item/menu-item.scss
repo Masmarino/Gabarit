@@ -12,11 +12,17 @@
   color: var(--color-error-bg-text);
 }
 
+:host([data-variant='danger']:active) {
+  background: color-mix(in srgb, var(--color-error-bg-text) 12%, transparent);
+  color: var(--color-error-bg-text);
+}
+
 :host([aria-disabled='true']) {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-:host([aria-disabled='true']:hover) {
+:host([aria-disabled='true']:hover),
+:host([aria-disabled='true']:active) {
   background: transparent;
 }

@@ -1,4 +1,5 @@
 @use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/depth';
 
 :host {
   --gbt-card-radius: var(--site-border-radius-lg);
@@ -11,10 +12,6 @@
     'gbt-card-box';
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto 1fr;
-}
-
-:host:has(> .gbt-card[data-variant='outlined']) {
-  --gbt-card-radius: var(--site-border-radius);
 }
 
 :host:has(> .gbt-card[data-selected]) {
@@ -97,7 +94,7 @@
   min-width: 1.25rem;
   box-sizing: border-box;
   padding: 0 0.375rem;
-  border-radius: var(--gbt-radius-badge, 3px);
+  border-radius: var(--gbt-radius-badge, var(--site-border-radius-sm));
   background: color-mix(in srgb, var(--border-color) 8%, transparent);
   color: var(--text-primary);
   font-size: 0.75rem;
@@ -141,6 +138,11 @@
     &:hover {
       box-shadow: var(--site-shadow-lg);
     }
+
+    &:active {
+      box-shadow: var(--gbt-depth-hollow);
+      @include depth.sink;
+    }
   }
 }
 
@@ -149,17 +151,21 @@
 }
 
 .gbt-card[data-variant='outlined'] {
-  --gbt-card-radius: var(--site-border-radius);
-  --gbt-card-inner-radius: calc(var(--site-border-radius) - 1px);
+  --gbt-card-inner-radius: calc(var(--site-border-radius-lg) - 1px);
 
   border: 1px solid var(--gbt-card-edge);
-  box-shadow: none;
+  box-shadow: var(--site-shadow-sm);
   overflow: visible;
 
   &.gbt-card--hoverable:hover,
   &[data-link]:hover {
     border-color: var(--border-color);
-    box-shadow: none;
+    box-shadow: var(--site-shadow-sm);
+  }
+
+  &.gbt-card--hoverable:active,
+  &[data-link]:active {
+    box-shadow: var(--gbt-depth-hollow);
   }
 }
 
@@ -207,6 +213,11 @@
   &:not([data-variant='outlined']):hover {
     box-shadow: var(--site-shadow-lg);
   }
+
+  &:active {
+    box-shadow: var(--gbt-depth-hollow);
+    @include depth.sink;
+  }
 }
 
 :host:has(> .gbt-card__header .gbt-card__link:hover) > .gbt-card[data-link] {
@@ -214,7 +225,28 @@
 
   &[data-variant='outlined'] {
     border-color: var(--border-color);
-    box-shadow: none;
+    box-shadow: var(--site-shadow-sm);
+  }
+}
+
+:host:has(> .gbt-card__header .gbt-card__link:active) > .gbt-card[data-link] {
+  box-shadow: var(--gbt-depth-hollow);
+}
+
+// A form's card: it is the fields' frame, a frame in a frame would be one too many. Its fields lose theirs (a focused
+// one still shows its ring), and the card's rows are split by a fine line.
+.gbt-card[data-form] {
+  --gbt-field-border: transparent;
+  --gbt-field-border-hover: transparent;
+  --gbt-field-ground: transparent;
+  --gbt-field-hollow: none;
+  --gbt-field-padding: 0;
+
+  .gbt-card__body ::ng-deep > * + * {
+    display: block;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--gbt-hairline);
   }
 }
 
@@ -255,8 +287,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .gbt-card,
-  .gbt-card[data-link] {
+  .gbt-card[data-link],
+  .gbt-card--hoverable:active,
+  .gbt-card[data-link]:active {
     transition: none;
+    transform: none;
   }
 }
 

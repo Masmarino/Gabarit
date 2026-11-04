@@ -46,11 +46,24 @@
   height: 1.25rem;
   background: var(--border-color);
   border-radius: 999px;
-  transition: background 0.15s ease;
+  box-shadow: var(--gbt-depth-hollow);
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.gbt-switch:not(.gbt-switch--disabled):hover .gbt-switch__track {
+  background: var(--text-discret);
 }
 
 .gbt-switch__input:checked + .gbt-switch__track {
-  background: var(--primary);
+  background: var(--accent);
+  box-shadow: var(--gbt-depth-hollow), var(--gbt-glow);
+}
+
+.gbt-switch:not(.gbt-switch--disabled):hover .gbt-switch__input:checked + .gbt-switch__track {
+  background: var(--accent);
+  box-shadow: var(--gbt-depth-hollow), var(--gbt-glow-hover);
 }
 
 .gbt-switch__input:focus-visible + .gbt-switch__track {
@@ -63,10 +76,26 @@
   left: 0.125rem;
   width: 1rem;
   height: 1rem;
-  background: var(--bg-principal);
+  background: var(--gbt-knob);
   border-radius: 50%;
-  box-shadow: var(--site-shadow-sm);
-  transition: transform 0.15s ease;
+  box-shadow: var(--gbt-depth-knob);
+  transition:
+    transform 0.15s ease,
+    width 0.15s ease;
+}
+
+// Held down, the knob stretches towards where it would go; off when less motion is asked for.
+@media (prefers-reduced-motion: no-preference) {
+  .gbt-switch:not(.gbt-switch--disabled):active .gbt-switch__thumb {
+    width: 1.1875rem;
+  }
+
+  .gbt-switch:not(.gbt-switch--disabled):active
+    .gbt-switch__input:checked
+    ~ .gbt-switch__track
+    .gbt-switch__thumb {
+    transform: translateX(0.8125rem);
+  }
 }
 
 .gbt-switch__input:checked ~ .gbt-switch__track .gbt-switch__thumb {

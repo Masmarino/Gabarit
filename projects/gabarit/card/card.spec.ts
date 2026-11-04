@@ -194,6 +194,7 @@ describe('Card — variant, flush, tone', () => {
         'count',
         'description',
         'flush',
+        'form',
         'heading',
         'headingLevel',
         'hoverable',
@@ -435,9 +436,7 @@ describe('Card — link mode', () => {
     )
     // The box's radius and the selected focus offset are mirrored on the host for a header link.
     const card = CARD_SCSS.replace(/\s+/g, ' ')
-    expect(card).toMatch(
-      /:host:has\(> \.gbt-card\[data-variant='outlined'\]\) \{ --gbt-card-radius: var\(--site-border-radius\); \}/,
-    )
+    expect(card).toMatch(/:host \{ --gbt-card-radius: var\(--site-border-radius-lg\);/)
     expect(card).toMatch(
       /:host:has\(> \.gbt-card\[data-selected\]\) \{ --gbt-card-focus-offset: -5px; \}/,
     )
@@ -603,7 +602,7 @@ describe('Card — the body wrapper does not change the default layout', () => {
     const flat = CARD_SCSS.replace(/\s+/g, ' ')
     expect(flat).toMatch(/\.gbt-card\[data-flush\] \.gbt-card__body \{ display: block;/)
     // …and nowhere else: a single rule turns the wrapper into a box.
-    expect(flat.match(/\.gbt-card__body[^{]*\{ display: block;/g)?.length).toBe(1)
+    expect(flat.match(/\.gbt-card__body \{ display: block;/g)?.length).toBe(1)
   })
 
   it('keeps the projected children inside the wrapper, in order', () => {
@@ -747,6 +746,20 @@ describe('Card — tone with a custom [card-header]', () => {
   })
 })
 
+describe("Card — a form card is its fields' frame", () => {
+  it('marks the box only when asked, and takes the fields out of their frame through hooks', () => {
+    const fixture = TestBed.createComponent(Card)
+    fixture.detectChanges()
+    const box = fixture.nativeElement.querySelector('.gbt-card') as HTMLElement
+    expect(box.hasAttribute('data-form')).toBe(false)
+    fixture.componentRef.setInput('form', true)
+    fixture.detectChanges()
+    expect(box.hasAttribute('data-form')).toBe(true)
+    const flat = CARD_SCSS.replace(/\s+/g, ' ')
+    expect(flat).toMatch(/\.gbt-card\[data-form\] \{ --gbt-field-border: transparent;/)
+  })
+})
+
 describe('Card — the selection ring follows the inner corners of the box', () => {
   it('rounds the ring with the inner radius (radius minus the 1px edge on an outlined box)', () => {
     expect(ruleBody(CARD_SCSS, '.gbt-card[data-selected]::before')).toContain(
@@ -754,7 +767,7 @@ describe('Card — the selection ring follows the inner corners of the box', () 
     )
     const flat = CARD_SCSS.replace(/\s+/g, ' ')
     expect(flat).toMatch(
-      /\.gbt-card\[data-variant='outlined'\] \{[^}]*--gbt-card-inner-radius: calc\(var\(--site-border-radius\) - 1px\);/,
+      /\.gbt-card\[data-variant='outlined'\] \{[^}]*--gbt-card-inner-radius: calc\(var\(--site-border-radius-lg\) - 1px\);/,
     )
   })
 })

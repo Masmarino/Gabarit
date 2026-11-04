@@ -1,0 +1,53 @@
+// Gabarit's depth, a little of it, as on the apps: one light from above. What can be pressed has some volume, rises towards
+// the pointer and sinks when held; what holds a value is slightly hollow. The recipes are tokens (`_themes.scss`), so
+// they follow the frame's and the themes' colours.
+
+// The sink is a movement: none when the system asks for less of it, the shade stays.
+@mixin sink {
+  @media (prefers-reduced-motion: no-preference) {
+    transform: translateY(0.5px);
+  }
+}
+
+@mixin raised {
+  background-image: var(--gbt-sheen);
+  box-shadow: var(--gbt-depth-raised);
+}
+
+@mixin raised-hover {
+  background-image: var(--gbt-sheen-hover);
+  box-shadow: var(--gbt-depth-raised-hover);
+}
+
+@mixin ink {
+  background-image: var(--gbt-sheen);
+  box-shadow: var(--gbt-depth-ink);
+}
+
+@mixin ink-hover {
+  background-image: var(--gbt-sheen-hover);
+  box-shadow: var(--gbt-depth-ink-hover);
+}
+
+// Held down: its own shade falls from the top edge. `$ink`: on a dark ground, a stronger one.
+@mixin sunk($ink: false) {
+  @if $ink {
+    background-image: var(--gbt-sunk-ink);
+  } @else {
+    background-image: var(--gbt-sunk);
+  }
+  box-shadow: none;
+  @include sink;
+}
+
+// A surface under the pointer: its ground stays, under the veil.
+@mixin surface-hover {
+  background-image: linear-gradient(var(--bg-hover), var(--bg-hover)), var(--gbt-sheen-hover);
+  box-shadow: var(--gbt-depth-raised-hover);
+}
+
+@mixin surface-sunk {
+  background-image: var(--gbt-sunk), linear-gradient(var(--bg-press), var(--bg-press));
+  box-shadow: none;
+  @include sink;
+}

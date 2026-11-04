@@ -39,6 +39,10 @@
     transform: translateY(-2px);
   }
 
+  &:active {
+    transform: none;
+  }
+
   &:focus-visible {
     @include a11y.focus-ring(2px);
   }
@@ -97,7 +101,7 @@
   padding: 6px 10px;
   background: transparent;
   border: none;
-  border-radius: var(--gbt-radius-tile, 4px);
+  border-radius: var(--gbt-radius-tile, var(--site-border-radius));
   color: var(--text-primary);
   font-size: 14px;
   text-align: left;
@@ -107,6 +111,10 @@
   &:hover,
   &:focus-visible {
     background: var(--bg-hover);
+  }
+
+  &:active {
+    background: var(--bg-press);
   }
 }
 
@@ -140,7 +148,8 @@
   }
 
   .gbt-avatar-group__button,
-  .gbt-avatar-group__more {
+  .gbt-avatar-group__more,
+  .gbt-avatar-group__panel-item {
     transition: none;
   }
 }

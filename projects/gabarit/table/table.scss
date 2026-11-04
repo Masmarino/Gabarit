@@ -35,6 +35,10 @@
       &:hover {
         background: var(--bg-hover);
       }
+
+      &:active {
+        background: var(--bg-press);
+      }
     }
 
     &:focus-visible {
@@ -47,8 +51,15 @@
     text-align: center;
     color: var(--text-discret);
 
-    &:hover {
+    &:hover,
+    &:active {
       background: none;
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-table tbody tr {
+    transition: none;
   }
 }

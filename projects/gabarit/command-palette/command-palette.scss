@@ -22,7 +22,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   background: var(--bg-principal);
   border: 1px solid var(--border-color);
-  border-radius: var(--site-border-radius);
+  border-radius: var(--site-border-radius-lg);
   box-shadow:
     0 16px 48px rgba(0, 0, 0, 0.18),
     0 4px 12px rgba(0, 0, 0, 0.08);
@@ -53,10 +53,20 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   margin-inline-end: -12px;
   padding: 0;
   border: none;
-  border-radius: var(--gbt-radius-chip, 3px);
+  border-radius: var(--gbt-radius-chip, var(--site-border-radius-xs));
   background: none;
   color: var(--text-secondary);
   cursor: pointer;
+
+  &:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  &:active {
+    background: var(--bg-press);
+    color: var(--text-primary);
+  }
 
   &:focus-visible {
     @include a11y.focus-ring(2px);
@@ -105,9 +115,17 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   gap: 10px;
   min-height: 40px;
   padding: 6px 10px;
-  border-radius: var(--gbt-radius-menu, 4px);
+  border-radius: var(--gbt-radius-menu, var(--site-border-radius-sm));
   color: var(--text-primary);
   cursor: pointer;
+
+  &:hover {
+    background: var(--bg-hover);
+  }
+
+  &:active {
+    background: var(--bg-press);
+  }
 
   &--active {
     background: color-mix(in srgb, var(--primary) 9%, transparent);
@@ -173,7 +191,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0 5px;
   box-sizing: border-box;
   border: 1px solid var(--border-color);
-  border-radius: var(--gbt-radius-chip, 3px);
+  border-radius: var(--gbt-radius-chip, var(--site-border-radius-xs));
   background: var(--bg-panel, var(--bg-principal));
   color: var(--text-secondary);
   font-family: inherit;

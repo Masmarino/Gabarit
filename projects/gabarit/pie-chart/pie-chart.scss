@@ -31,6 +31,10 @@
       opacity: 0.85;
     }
 
+    &:active {
+      opacity: 0.7;
+    }
+
     &:focus-visible {
       outline: none;
       stroke: var(--primary);
@@ -43,5 +47,11 @@
     font-size: 9px;
     font-variant-numeric: tabular-nums;
     dominant-baseline: middle;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-pie-chart__slice {
+    transition: none;
   }
 }

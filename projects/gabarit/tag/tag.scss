@@ -40,4 +40,14 @@
   &:hover {
     background: color-mix(in srgb, currentColor 20%, transparent);
   }
+
+  &:active {
+    background: color-mix(in srgb, currentColor 32%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-tag__remove {
+    transition: none;
+  }
 }

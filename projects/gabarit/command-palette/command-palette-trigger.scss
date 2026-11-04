@@ -14,8 +14,9 @@
   height: 40px;
   padding: 0 8px 0 12px;
   border: 1px solid var(--border-color);
-  border-radius: var(--gbt-radius-search, 3px);
+  border-radius: var(--gbt-radius-search, var(--site-border-radius-sm));
   background: var(--bg-principal);
+  box-shadow: var(--gbt-depth-hollow);
   color: var(--text-secondary);
   font: inherit;
   font-size: 14px;
@@ -25,6 +26,11 @@
 
   &:hover {
     border-color: var(--text-secondary);
+    background-image: linear-gradient(var(--bg-hover), var(--bg-hover));
+  }
+
+  &:active {
+    background-image: linear-gradient(var(--bg-press), var(--bg-press));
   }
 
   &:focus-visible {
@@ -48,7 +54,7 @@
   flex: none;
   padding: 2px 6px;
   border: 1px solid var(--border-color);
-  border-radius: var(--gbt-radius-chip, 3px);
+  border-radius: var(--gbt-radius-chip, var(--site-border-radius-xs));
   font-family: inherit;
   font-size: 11px;
   font-weight: 600;

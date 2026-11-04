@@ -332,7 +332,7 @@ keep their source order); with `compare`, `desc` reverses the ascending result.
 ## Styles
 
 Gabarit carries the look of the Ferris family: white paper and near-black ink in the light theme, a
-cool graphite in the dark one, IBM Plex throughout, hairlines and square-ish corners. Neutrals carry
+cool graphite in the dark one, IBM Plex throughout, hairlines and the apps' corners. Neutrals carry
 the screens; the crab's rust is kept for the marks that are the brand's own (focus, the current page),
 patina green says success. Every text token reaches 7:1 on the page and on a panel, in both themes
 (`contrast.spec.ts`).
@@ -399,9 +399,25 @@ component (enforced by `token-usage.spec.ts`).
 | Dataviz     | `--chart-series-1-base` … `-6-base`                                      | The chart series, in order                                        |
 |             | `--chart-grid`                                                           | Chart grid and axes                                               |
 
-Other tokens live on `:root` without being colours: border radii (`--site-border-radius*`, 3 to
-6px), shadows (`--site-shadow-*`, rings rather than drops), transitions (`--site-transition-*`) and
+Other tokens live on `:root` without being colours: border radii (`--site-border-radius*`, 4 to
+12px, the apps' scale: a control 6, what floats 8, a card or a sheet 12), shadows (`--site-shadow-*`, and the depth recipes below), transitions (`--site-transition-*`) and
 the type stacks (`--font-family`, `--font-display`, `--gbt-font-mono`).
+
+### Volume and light
+
+As on the apps, a little depth and one light from above, in both themes, from `tokens/gabarit.json`
+(`semantic.web.depth`: the apps' roles and the common shadows, composed for CSS). The page is lit at its
+top (`--gbt-page-ground`, in `document-base` and the shell's sheet). A card rests on it (`--site-shadow-sm`,
+now `--gbt-depth-card`). What can be pressed has some volume and sinks when held (`--gbt-depth-raised`,
+`--gbt-depth-ink`, `--gbt-sheen`, `--gbt-sunk`, with the `depth` mixins: `raised`, `ink`, `surface-hover`,
+`surface-sunk`, `sunk`, `sink`). What holds a value is slightly hollow (`--gbt-depth-hollow`). The frame has
+a sheen and casts a shadow on the page (`--gbt-frame-sheen`, `--gbt-depth-bar`). What is on glows, in the
+accent (`--gbt-glow`): a switch, a slider's filled part, the current tab or page. Under the pointer and held
+down, everywhere: `--bg-hover`, then the stronger `--bg-press`; the sink is off when the system asks for
+reduced motion (`depth.spec.ts` holds both). A sheet's header (`gbt-modal`, `gbt-drawer`) is on the panel's
+grey, the graphite is for the frame. In `<gbt-card form>` the card is the fields' frame: `gbt-input`,
+`gbt-textarea` and `gbt-tag-input` lose theirs, a focused field keeps its ring; it is opt-in, a field with no
+edge of its own does not meet WCAG 1.4.11 by itself, so check it with the row's label and line.
 
 ### Theming hooks
 
@@ -412,11 +428,11 @@ so an app that leaves them alone gets the family's look. Set one to take that pa
 | ----------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------ |
 | `--gbt-focus-ring`                              | Every focus outline                                                       | `var(--focus-ring)`                  |
 | `--gbt-font-display`                            | Page, card, panel, modal and drawer titles, stat tile values, empty state | `var(--font-display)`                |
-| `--gbt-radius-badge`                            | Badges, card and tab counts                                               | `3px`                                |
-| `--gbt-radius-chip`                             | Mono badges, inline code in a list row, search bar keys                   | `2px`                                |
-| `--gbt-radius-menu`                             | Select and autocomplete panels, menu items, search results                | `4px`                                |
-| `--gbt-radius-tile`                             | Icon marker tiles, job graph nodes, avatar group overflow, TOTP QR code   | `4px`                                |
-| `--gbt-radius-search`                           | The search bar field                                                      | `3px`                                |
+| `--gbt-radius-badge`                            | Badges, card and tab counts                                               | `6px`                                |
+| `--gbt-radius-chip`                             | Mono badges, inline code in a list row, search bar keys                   | `4px`                                |
+| `--gbt-radius-menu`                             | Select and autocomplete panels, menu items, search results                | `6px`                                |
+| `--gbt-radius-tile`                             | Icon marker tiles, job graph nodes, avatar group overflow, TOTP QR code   | `8px`                                |
+| `--gbt-radius-search`                           | The search bar field                                                      | `6px`                                |
 | `--gbt-nav-active-bg` / `--gbt-nav-active-text` | The current page in the app shell navigation                              | a 9% ink tint / `--text-primary`     |
 | `--gbt-nav-active-mark`                         | A 2px rule on the start edge of the current page link                     | `var(--accent)`                      |
 | `--gbt-shell-bar`                               | The height of the app shell's bar and of the logo's corner                | `4rem`                               |
@@ -484,9 +500,11 @@ statement — without it, that statement will be incomplete.
 **Not every non-resting state is covered by a test.** Hover and focus
 are: `contrast.spec.ts` checks every hover fill and its perceptibility,
 and `token-usage.spec.ts` measures the text/fill pairing as it will
-actually be painted, translucent overlays and compositing included. The
-`:active` and `:disabled` states are not — the latter is out of scope
-for RGAA, which exempts inactive controls.
+actually be painted, translucent overlays and compositing included,
+`:active` too. `tools/web_states.mjs` holds, on the compiled CSS, that what
+is clickable answers the pointer and keeps still under reduced motion. The
+`:disabled` state is not measured: it is out of scope for RGAA, which exempts
+inactive controls.
 
 **Token-usage checking only reads the library's own CSS.** If your
 application overrides a semantic token, verifying the resulting contrast

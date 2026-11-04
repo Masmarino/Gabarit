@@ -25,14 +25,19 @@
     box-sizing: border-box;
     width: 100%;
     height: var(--gbt-control-height-md);
-    padding: 0 0.75rem;
+    padding: 0 var(--gbt-field-padding, 0.75rem);
     font-family: var(--font-family);
     font-size: 0.875rem;
     color: var(--text-primary);
-    background: var(--bg-principal);
-    border: 1px solid var(--border-color);
+    background: var(--gbt-field-ground, var(--bg-principal));
+    border: 1px solid var(--gbt-field-border, var(--border-color));
     border-radius: var(--site-border-radius-sm);
+    box-shadow: var(--gbt-field-hollow, var(--gbt-depth-hollow));
     transition: border-color var(--site-transition-fast);
+
+    &:hover:not(:disabled):not(:focus) {
+      border-color: var(--gbt-field-border-hover, var(--text-discret));
+    }
 
     &:focus {
       outline: none;
@@ -113,8 +118,19 @@
     min-height: 24px;
     background: none;
     border: none;
+    border-radius: var(--site-border-radius-sm);
     color: var(--text-discret);
     cursor: pointer;
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    &:active {
+      background: var(--bg-press);
+      color: var(--text-primary);
+    }
 
     &::before {
       content: '';
@@ -130,5 +146,11 @@
     margin: 0;
     font-size: 0.75rem;
     color: var(--color-error-text);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-input input {
+    transition: none;
   }
 }

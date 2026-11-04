@@ -147,6 +147,10 @@
     opacity: 1;
   }
 
+  &:active {
+    opacity: 0.6;
+  }
+
   &:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 2px;
@@ -205,5 +209,11 @@
   .gbt-alert__actions {
     --gbt-control-height-sm: 2.75rem;
     --gbt-control-height-md: 2.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-alert__close {
+    transition: none;
   }
 }

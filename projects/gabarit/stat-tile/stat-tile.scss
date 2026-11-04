@@ -20,8 +20,9 @@
   min-width: 0;
   padding: 0.875rem 1rem 0.9375rem;
   border: 1px solid var(--gbt-card-border);
-  border-radius: var(--site-border-radius);
+  border-radius: var(--site-border-radius-lg);
   background: var(--bg-principal);
+  box-shadow: var(--site-shadow-sm);
   transition:
     border-color var(--site-transition-fast),
     box-shadow var(--site-transition-fast);
@@ -29,7 +30,11 @@
 
 :host([data-link]) .gbt-stat-tile:hover {
   border-color: var(--border-color);
-  box-shadow: var(--site-shadow-sm);
+  box-shadow: var(--site-shadow-lg);
+}
+
+:host([data-link]) .gbt-stat-tile:active {
+  box-shadow: var(--gbt-depth-hollow);
 }
 
 .gbt-stat-tile__label {

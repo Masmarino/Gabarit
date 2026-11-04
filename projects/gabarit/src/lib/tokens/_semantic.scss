@@ -6,9 +6,7 @@
 
   --frame: var(--graphite-950);
 
-  --site-border-radius: 4px;
-  --site-border-radius-sm: 3px;
-  --site-border-radius-lg: 6px;
+  @include themes.shape-tokens;
 
   --gbt-control-height-sm: 2rem;
   --gbt-control-height-md: 2.375rem;
@@ -34,4 +32,12 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
   @include themes.dark-tokens;
+}
+
+// More contrast asked of the system: the fine lines take the controls' edge, as on the apps.
+@media (prefers-contrast: more) {
+  :root {
+    --gbt-hairline: var(--border-color);
+    --gbt-card-border: var(--border-color);
+  }
 }

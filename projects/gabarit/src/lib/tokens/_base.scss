@@ -6,6 +6,10 @@
     font-family: var(--font-family);
     font-feature-settings: 'kern', 'liga';
     background: var(--bg-panel);
+    // One light, from above: the page is lit at its top.
+    background-image: var(--gbt-page-ground);
+    background-repeat: no-repeat;
+    background-size: 100% 40vh;
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
   }

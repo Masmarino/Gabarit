@@ -115,6 +115,10 @@
         background: var(--bg-hover);
       }
 
+      &:active {
+        background: var(--bg-press);
+      }
+
       &[data-active] {
         background: color-mix(in srgb, var(--primary) 10%, transparent);
         font-weight: 600;

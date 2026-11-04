@@ -26,7 +26,8 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0 12px;
   background: var(--bg-principal);
   border: 1px solid var(--border-color);
-  border-radius: var(--gbt-radius-search, 3px);
+  border-radius: var(--gbt-radius-search, var(--site-border-radius-sm));
+  box-shadow: var(--gbt-depth-hollow);
   transition:
     width 0.35s $easing,
     border-color 0.2s $easing-std,
@@ -78,7 +79,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: var(--gbt-radius-chip, 2px);
+  border-radius: var(--gbt-radius-chip, var(--site-border-radius-xs));
   color: var(--text-secondary);
   cursor: pointer;
   transition:
@@ -87,6 +88,11 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
     background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  &:active {
+    background: var(--bg-press);
     color: var(--text-primary);
   }
 
@@ -120,6 +126,11 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
     background: var(--bg-hover);
   }
 
+  &:active {
+    background: var(--bg-press);
+    color: var(--text-primary);
+  }
+
   &:focus-visible {
     @include a11y.focus-ring(2px);
   }
@@ -136,8 +147,8 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: calc(var(--gbt-radius-search, 3px) - 1px) 0 0
-    calc(var(--gbt-radius-search, 3px) - 1px);
+  border-radius: calc(var(--gbt-radius-search, var(--site-border-radius-sm)) - 1px) 0 0
+    calc(var(--gbt-radius-search, var(--site-border-radius-sm)) - 1px);
   color: var(--text-secondary);
   cursor: pointer;
   transition:
@@ -146,6 +157,11 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
     background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  &:active {
+    background: var(--bg-press);
     color: var(--text-primary);
   }
 
@@ -216,7 +232,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   max-height: $panel-max-height;
   background: var(--bg-principal);
   border: 1px solid var(--border-color);
-  border-radius: var(--site-border-radius);
+  border-radius: var(--site-border-radius-lg);
   box-shadow:
     0 16px 48px rgba(0, 0, 0, 0.18),
     0 4px 12px rgba(0, 0, 0, 0.08);
@@ -265,7 +281,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   margin-left: auto;
   padding: 1px 7px;
   background: var(--bg-hover);
-  border-radius: var(--gbt-radius-badge, 3px);
+  border-radius: var(--gbt-radius-badge, var(--site-border-radius-sm));
   font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
@@ -280,13 +296,18 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   padding: 9px 10px;
   background: transparent;
   border: none;
-  border-radius: var(--gbt-radius-menu, 4px);
+  border-radius: var(--gbt-radius-menu, var(--site-border-radius-sm));
   text-align: left;
   cursor: pointer;
   transition: background 0.12s $easing-std;
 
   &:hover {
     background: var(--bg-hover);
+  }
+
+  &:active {
+    background: var(--bg-press);
+    color: var(--text-primary);
   }
 
   &--active {
@@ -351,7 +372,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
   border-bottom-width: 2px;
-  border-radius: var(--gbt-radius-chip, 2px);
+  border-radius: var(--gbt-radius-chip, var(--site-border-radius-xs));
   color: var(--text-secondary);
   font-size: 11px;
   font-family: var(--gbt-font-mono);
@@ -417,7 +438,9 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gbt-sb-toggle {
+  .gbt-sb-toggle,
+  .gbt-sb-item,
+  .gbt-sb-item__icon {
     transition: none;
   }
 

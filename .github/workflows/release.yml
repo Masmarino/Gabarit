@@ -1,5 +1,11 @@
 name: Release
 
+# A tag v*.*.* publishes to npm. The work is split so that third-party code never sees the publishing identity:
+# - `build` installs and runs the dev tools (lint, tests, Angular), with a read-only token and no id-token;
+# - `publish` installs nothing and runs no project script: it only hands the built package to npm, with the
+#   id-token. It goes through the `npm-release` environment: give that environment a required reviewer in the
+#   repository settings, so that a tag alone never publishes.
+
 on:
   push:
     tags:
@@ -7,21 +13,33 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
-  publish:
-    name: Build and publish to npm
+  build:
+    name: Build and test
     runs-on: ubuntu-latest
-    environment: npm-release
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # A tag can be pushed on any commit: only what is already on a release branch is published.
+      - name: Tag is on a release branch
+        run: |
+          for branch in main v3; do
+            if git merge-base --is-ancestor "$GITHUB_SHA" "origin/$branch" 2> /dev/null; then
+              echo "$GITHUB_REF_NAME is on $branch."
+              exit 0
+            fi
+          done
+          echo "::error::$GITHUB_REF_NAME ($GITHUB_SHA) is on neither main nor v3: not published."
+          exit 1
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 26
           cache: npm
-          registry-url: https://registry.npmjs.org
 
       - run: npm ci
 
@@ -38,6 +56,33 @@ jobs:
       - run: npm test
       - run: npm run build
 
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: gabarit-package
+          path: dist/gabarit
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: Publish to npm
+    needs: build
+    runs-on: ubuntu-latest
+    environment: npm-release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      # No checkout, no npm ci: nothing from the repository or its dependencies runs next to the id-token.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 26
+          registry-url: https://registry.npmjs.org
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: gabarit-package
+          path: package
+
       - name: Publish to npm
-        working-directory: dist/gabarit
-        run: npm publish --provenance --access public
+        working-directory: package
+        run: npm publish --provenance --access public --ignore-scripts

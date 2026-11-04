@@ -33,6 +33,14 @@
   }
 }
 
+.gbt-checkbox:hover:not(:has(input:disabled)) input {
+  box-shadow: 0 0 0 3px var(--bg-hover);
+}
+
+.gbt-checkbox:active:not(:has(input:disabled)) input {
+  box-shadow: 0 0 0 3px var(--bg-press);
+}
+
 .gbt-checkbox__hint {
   margin: 0.125rem 0 0;
   padding-left: 1.5rem;

@@ -1,0 +1,6 @@
+module CGtk [system] {
+    header "gtk.h"
+    link "gtk-4"
+    link "fontconfig"
+    export *
+}

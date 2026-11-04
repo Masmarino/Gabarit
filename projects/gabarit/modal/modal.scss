@@ -12,7 +12,7 @@
 
 .gbt-modal__dialog {
   background: var(--bg-principal);
-  border-radius: var(--site-border-radius);
+  border-radius: var(--site-border-radius-lg);
   box-shadow: var(--site-shadow-lg);
   width: min(90vw, 480px);
   max-height: 90vh;
@@ -32,7 +32,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--gbt-hairline);
+  background: var(--bg-panel);
+  background-image: var(--gbt-page-ground);
 
   .gbt-modal__title {
     font-family: var(--gbt-font-display, var(--font-display));
@@ -48,8 +50,22 @@
   display: inline-flex;
   background: none;
   border: none;
+  border-radius: 50%;
   color: var(--text-discret);
   cursor: pointer;
+  transition:
+    background var(--site-transition-fast),
+    color var(--site-transition-fast);
+
+  &:hover:not([aria-disabled='true']) {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  &:active:not([aria-disabled='true']) {
+    background: var(--bg-press);
+    color: var(--text-primary);
+  }
 
   &::before {
     content: '';
@@ -123,5 +139,11 @@
   .gbt-modal__footer {
     --gbt-control-height-sm: 2.75rem;
     --gbt-control-height-md: 2.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-modal__close {
+    transition: none;
   }
 }

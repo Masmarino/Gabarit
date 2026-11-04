@@ -1,4 +1,5 @@
 @use 'sass:string';
+@use '../src/lib/tokens/depth';
 
 @function selector($host, $mods: '', $state: 'any', $pseudo: '') {
   $off: ':disabled';
@@ -51,7 +52,19 @@
       background-color var(--site-transition-fast),
       color var(--site-transition-fast),
       box-shadow var(--site-transition-fast),
+      transform var(--site-transition-fast),
       opacity var(--site-transition-fast);
+  }
+
+  // Held down, the sink comes at once; it comes back up at the usual pace.
+  @include rule($host, '', 'enabled', ':active') {
+    transition-duration: 70ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    @include rule($host) {
+      transition: none;
+    }
   }
 
   @include rule($host, '', 'disabled') {
@@ -104,29 +117,47 @@
     min-height: var(--gbt-control-height-lg);
   }
 
+  $not-toggled: ":not([aria-pressed='true'])";
+
   @include rule($host, '.gbt-button--primary') {
     background: var(--primary);
     color: var(--text-on-primary);
+    @include depth.ink;
   }
-  @include rule($host, '.gbt-button--primary', 'enabled', ':hover') {
-    background: var(--primary-hover);
+  @include rule($host, '.gbt-button--primary' + $not-toggled, 'enabled', ':hover') {
+    background-color: var(--primary-hover);
+    @include depth.ink-hover;
+  }
+  @include rule($host, '.gbt-button--primary' + $not-toggled, 'enabled', ':active') {
+    background-color: var(--primary-hover);
+    @include depth.sunk($ink: true);
   }
 
   @include rule($host, '.gbt-button--secondary') {
-    background: var(--bg-panel);
+    background: var(--bg-principal);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
+    @include depth.raised;
   }
-  @include rule($host, '.gbt-button--secondary', 'enabled', ':hover') {
-    background: var(--bg-hover);
+  @include rule($host, '.gbt-button--secondary' + $not-toggled, 'enabled', ':hover') {
+    @include depth.surface-hover;
+  }
+  @include rule($host, '.gbt-button--secondary' + $not-toggled, 'enabled', ':active') {
+    @include depth.surface-sunk;
   }
 
   @include rule($host, '.gbt-button--danger') {
     background: var(--color-error-fill);
     color: var(--text-on-error);
+    @include depth.ink;
   }
-  @include rule($host, '.gbt-button--danger', 'enabled', ':hover') {
-    background: var(--color-error-hover);
+  @include rule($host, '.gbt-button--danger' + $not-toggled, 'enabled', ':hover') {
+    background-color: var(--color-error-hover);
+    @include depth.ink-hover;
+  }
+  @include rule($host, '.gbt-button--danger' + $not-toggled, 'enabled', ':active') {
+    background-color: var(--color-error-hover);
+    @include depth.sunk($ink: true);
   }
 
   @include rule($host, '.gbt-button--ghost') {
@@ -136,6 +167,11 @@
   @include rule($host, '.gbt-button--ghost', 'enabled', ':hover') {
     background: var(--bg-hover);
     color: var(--text-primary);
+  }
+  @include rule($host, '.gbt-button--ghost', 'enabled', ':active') {
+    background: var(--bg-press);
+    color: var(--text-primary);
+    @include depth.sink;
   }
 
   @include rule($host, '.gbt-button--ghost-danger') {
@@ -151,6 +187,12 @@
     color: var(--color-error-bg-text);
   }
 
+  @include rule($host, '.gbt-button--ghost-danger', 'enabled', ':active') {
+    background: color-mix(in srgb, var(--color-error-bg-text) 12%, transparent);
+    color: var(--color-error-bg-text);
+    @include depth.sink;
+  }
+
   @include rule($host, '.gbt-button--link') {
     min-height: 0;
     padding: 0.25rem 0.125rem;
@@ -161,6 +203,11 @@
   }
   @include rule($host, '.gbt-button--link', 'enabled', ':hover') {
     color: var(--primary-hover);
+    text-decoration-thickness: 2px;
+  }
+
+  @include rule($host, '.gbt-button--link', 'enabled', ':active') {
+    color: var(--text-secondary);
     text-decoration-thickness: 2px;
   }
 

@@ -34,14 +34,19 @@
       color: var(--text-primary);
     }
 
+    &:active {
+      color: var(--text-discret);
+    }
+
     &:focus-visible {
       @include a11y.focus-ring(-2px);
       border-radius: var(--site-border-radius-sm);
     }
 
     &--active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
+      color: var(--text-primary);
+      border-bottom-color: var(--accent);
+      box-shadow: var(--gbt-glow-line);
     }
   }
 
@@ -50,5 +55,11 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-tabs__trigger {
+    transition: none;
   }
 }

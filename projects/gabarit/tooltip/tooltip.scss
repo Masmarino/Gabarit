@@ -60,3 +60,10 @@
     opacity: 0;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-tooltip__bubble,
+  .gbt-tooltip__bubble.gbt-tooltip__bubble--leaving {
+    animation-duration: 1ms;
+  }
+}

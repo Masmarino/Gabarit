@@ -119,6 +119,11 @@
     background: var(--bg-hover);
   }
 
+  &:active {
+    background: var(--bg-press);
+    color: var(--text-primary);
+  }
+
   &:focus-visible {
     @include a11y.focus-ring(-2px);
   }
@@ -128,7 +133,9 @@
     background: var(--gbt-nav-active-bg, color-mix(in srgb, var(--text-primary) 9%, transparent));
     color: var(--gbt-nav-active-text, var(--text-primary));
     font-weight: 600;
-    box-shadow: inset 2px 0 0 var(--gbt-nav-active-mark, var(--accent));
+    box-shadow:
+      inset 2px 0 0 var(--gbt-nav-active-mark, var(--accent)),
+      var(--gbt-glow-soft);
   }
 }
 
@@ -224,7 +231,7 @@
   gap: 0.5rem;
   width: 100%;
   padding: 8px 10px;
-  border-radius: var(--gbt-radius-menu, 4px);
+  border-radius: var(--gbt-radius-menu, var(--site-border-radius-sm));
   color: var(--text-primary);
   font-size: 14px;
   text-align: left;
@@ -236,6 +243,11 @@
 
   &:hover {
     background: var(--bg-hover);
+  }
+
+  &:active {
+    background: var(--bg-press);
+    color: var(--text-primary);
   }
 
   &:focus-visible {
@@ -272,9 +284,20 @@
   &:hover {
     text-decoration: underline;
   }
+
+  &:active {
+    color: var(--text-primary);
+  }
 }
 
 .gbt-breadcrumb__current {
   color: var(--text-primary);
   font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-tooltip-trigger .gbt-tooltip,
+  .gbt-menu__item {
+    transition: none;
+  }
 }

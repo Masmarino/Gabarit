@@ -124,6 +124,10 @@
     opacity: 1;
   }
 
+  &:active {
+    opacity: 0.6;
+  }
+
   &:focus-visible {
     outline: 2px solid var(--text-on-color);
     outline-offset: 2px;
@@ -148,5 +152,15 @@
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gbt-toaster__item {
+    animation-duration: 1ms;
+  }
+
+  .gbt-toaster__close {
+    transition: none;
   }
 }

@@ -252,3 +252,7 @@ The other 76 criteria. The main ones:
 - **Token overrides** — if you redefine the semantic colors, you take on
   criteria 3.2 and 3.3 yourself. Gabarit's contrast test only checks its
   own values.
+- **`<gbt-card form>`:** its fields have no edge of their own, the card and the line
+  between its rows stand for it. This is opt-in, and criterion 3.3 (WCAG 1.4.11) is
+  yours to judge for each form: a focused field keeps its ring, and each field
+  keeps its visible label.

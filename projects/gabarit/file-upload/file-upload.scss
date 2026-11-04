@@ -35,6 +35,10 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
     border-color: var(--primary);
   }
 
+  &:active:not(:disabled) {
+    background: var(--bg-hover);
+  }
+
   &:focus-visible {
     @include a11y.focus-ring(2px);
   }
@@ -124,6 +128,10 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover:not(:disabled) {
     color: var(--text-primary);
+  }
+
+  &:active:not(:disabled) {
+    color: var(--text-discret);
   }
 
   &:focus-visible {

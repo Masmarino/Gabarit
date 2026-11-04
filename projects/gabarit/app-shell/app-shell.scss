@@ -1,10 +1,20 @@
 @use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/depth';
 @use '../src/lib/tokens/themes';
 
 $drawer-breakpoint: 768px;
 $nav-width: 220px;
 $bar: var(--gbt-shell-bar, 4rem);
 $corner: var(--site-border-radius-lg);
+
+// The light on the frame, from the window's top and over the bar's height: the rail and the bar are one strip, the
+// same black at the same height.
+@mixin frame-sheen {
+  background-image: var(--gbt-frame-sheen);
+  background-origin: border-box;
+  background-repeat: no-repeat;
+  background-size: 100% $bar;
+}
 
 :host {
   display: block;
@@ -68,6 +78,7 @@ $corner: var(--site-border-radius-lg);
     padding: 1rem 0.75rem;
     @include themes.frame-tokens;
     background: var(--bg-panel);
+    @include frame-sheen;
     border-right: 1px solid var(--gbt-shell-border, transparent);
     overflow-x: hidden;
     overflow-y: auto;
@@ -111,7 +122,8 @@ $corner: var(--site-border-radius-lg);
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    background: inherit;
+    // Its own colour, not the rail's sheen again.
+    background: var(--bg-panel);
   }
 
   &__collapse-toggle {
@@ -131,6 +143,11 @@ $corner: var(--site-border-radius-lg);
 
     &:hover {
       background: var(--bg-hover);
+    }
+
+    &:active {
+      background: var(--bg-press);
+      color: var(--text-primary);
     }
 
     &:focus-visible {
@@ -154,10 +171,30 @@ $corner: var(--site-border-radius-lg);
   }
 
   &__body {
+    position: relative;
     display: flex;
     flex-direction: column;
     flex: 1;
     min-width: 0;
+
+    // The shadow the rail casts on the page: painted, the rail lies under the page in the stacking order.
+    @media (min-width: $drawer-breakpoint + 1) {
+      &::after {
+        content: '';
+        position: absolute;
+        inset: $bar auto 0 0;
+        z-index: 1;
+        width: 0.5rem;
+        background: linear-gradient(to right, var(--gbt-bar-shade), transparent);
+        pointer-events: none;
+      }
+    }
+
+    @media print {
+      &::after {
+        display: none;
+      }
+    }
   }
 
   // Sticky, with a background of its own so the page doesn't show through.
@@ -173,7 +210,24 @@ $corner: var(--site-border-radius-lg);
     padding: 0 var(--gbt-shell-content-padding, clamp(1rem, 0.25rem + 2vw, 2rem));
     @include themes.frame-tokens;
     background: var(--gbt-shell-header-bg, var(--bg-panel));
+    @include frame-sheen;
     border-bottom: 1px solid var(--gbt-shell-border, transparent);
+
+    // The shadow it casts on the page: painted below it, a real one would darken the rail beside it too.
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 100% 0 auto;
+      height: 0.5rem;
+      background: linear-gradient(to bottom, var(--gbt-bar-shade), transparent);
+      pointer-events: none;
+    }
+
+    @media print {
+      &::after {
+        display: none;
+      }
+    }
   }
 
   &__toggle {
@@ -186,6 +240,16 @@ $corner: var(--site-border-radius-lg);
     border-radius: var(--site-border-radius-sm);
     background: transparent;
     cursor: pointer;
+    transition: background var(--site-transition-fast);
+
+    &:hover {
+      background: var(--bg-hover);
+    }
+
+    &:active {
+      background: var(--bg-press);
+      color: var(--text-primary);
+    }
 
     &:focus-visible {
       @include a11y.focus-ring(2px);
@@ -224,6 +288,9 @@ $corner: var(--site-border-radius-lg);
     min-width: 0;
     padding: var(--gbt-shell-content-padding, clamp(1rem, 0.25rem + 2vw, 2rem));
     background: var(--bg-panel);
+    background-image: var(--gbt-page-ground);
+    background-repeat: no-repeat;
+    background-size: 100% 40vh;
     border-top-left-radius: $corner;
 
     // The sheet is the scroller: what scrolls stays inside its rounded corner.
@@ -261,6 +328,7 @@ $corner: var(--site-border-radius-lg);
 
       &--open {
         transform: translateX(0);
+        box-shadow: var(--gbt-depth-bar);
       }
     }
 
@@ -281,7 +349,8 @@ $corner: var(--site-border-radius-lg);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    &__nav {
+    &__nav,
+    &__toggle {
       transition: none;
     }
 

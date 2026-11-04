@@ -22,7 +22,8 @@ function mixin(name: string): string {
   return found[1]
 }
 // The light theme, plus what :root sets for both themes (the type stacks).
-const LIGHT_SCOPE = mixin('light-tokens') + semantic
+// The media queries aside: they are measured apart, or are the other theme.
+const LIGHT_SCOPE = mixin('light-tokens') + semantic.split('@media')[0]
 const DARK_SCOPE = mixin('dark-tokens')
 
 // A translucent token (the status tints) is measured as painted on `ground`, the page by default.

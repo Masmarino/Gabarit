@@ -33,7 +33,7 @@
   }
 
   &[data-shape='tile'] {
-    border-radius: var(--gbt-radius-tile, 4px);
+    border-radius: var(--gbt-radius-tile, var(--site-border-radius));
   }
 
   &[data-tone='primary'] {

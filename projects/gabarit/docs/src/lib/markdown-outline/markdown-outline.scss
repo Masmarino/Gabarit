@@ -30,6 +30,10 @@
     color: var(--text-primary);
   }
 
+  &:active {
+    color: var(--text-secondary);
+  }
+
   &:focus-visible {
     border-radius: var(--site-border-radius-sm);
     @include a11y.focus-ring(-2px);

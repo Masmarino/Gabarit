@@ -165,6 +165,18 @@ describe('AppShell', () => {
     expect(header).toContain('var(--gbt-shell-header-bg, var(--bg-panel))')
   })
 
+  it('draws the rail and the bar as one strip: the same sheen, and no shadow of the bar on the rail', () => {
+    const scss = readFileSync(
+      join(process.cwd(), 'projects/gabarit/app-shell/app-shell.scss'),
+      'utf8',
+    )
+    expect(scss).toMatch(/@mixin frame-sheen \{[^}]*background-size: 100% \$bar;/)
+    expect(scss.match(/@include frame-sheen;/g)).toHaveLength(2)
+    expect(scss.match(/background-image: var\(--gbt-frame-sheen\);/g)).toHaveLength(1)
+    const header = scss.slice(scss.indexOf('&__header {'), scss.indexOf('&__toggle {'))
+    expect(header).not.toContain('box-shadow')
+  })
+
   it('on a wide screen, holds the frame still and lets the sheet scroll its own content, under its corner', () => {
     const componentScss = readFileSync(
       join(process.cwd(), 'projects/gabarit/app-shell/app-shell.scss'),

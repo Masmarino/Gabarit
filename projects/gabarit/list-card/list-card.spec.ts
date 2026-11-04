@@ -358,7 +358,7 @@ describe('ListCard', () => {
       expect(box).toContain('position: relative;')
       expect(box).toContain('overflow: hidden;')
       expect(box).toContain('border: 1px solid var(--gbt-card-border);')
-      expect(box).toContain('border-radius: var(--site-border-radius);')
+      expect(box).toContain('border-radius: var(--site-border-radius-lg);')
       expect(box).toContain('background: var(--bg-principal);')
       expect(scss).toContain('var(--gbt-hairline)')
       // Only the box clips: the header above it is never cut.

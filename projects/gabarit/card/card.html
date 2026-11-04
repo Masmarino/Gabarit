@@ -28,6 +28,7 @@
   [attr.data-flush]="flush() ? '' : null"
   [attr.data-selected]="selected() ? '' : null"
   [attr.data-link]="linked() ? '' : null"
+  [attr.data-form]="form() ? '' : null"
 >
   @if (selected() && selectedLabel()) {
     <span class="gbt-card__selected-label">{{ selectedLabel() }}</span>

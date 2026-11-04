@@ -46,6 +46,10 @@
       background: var(--bg-hover);
     }
 
+    &:active {
+      background: var(--bg-press);
+    }
+
     &:focus-visible {
       @include a11y.focus-ring(2px);
     }

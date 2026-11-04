@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""Phosphor's icons (MIT) for GTK and WinUI, from the @phosphor-icons/core and @phosphor-icons/web packages
+(`npm pack @phosphor-icons/core@<version>`, `npm pack @phosphor-icons/web@<version>`, unpacked, the same version).
+
+    python3 tools/phosphor.py <core package folder> <web package folder>
+
+GTK: copies the regular and filled icons to swift/GabaritGtk/Resources/icons/hicolor/scalable/actions as symbolic icons
+(gabarit-ph-<name>-symbolic.svg, gabarit-ph-<name>-fill-symbolic.svg: GTK paints them in the text's colour).
+WinUI and Android: copy the two fonts (Phosphor.ttf, Phosphor-Fill.ttf: the same character for an icon in both) to
+swift/GabaritWinUI/Resources/Fonts (and android/gabarit's font resources), and each icon's character to tokens/phosphor-glyphs.json (tools/tokens.py turns it
+into XAML and Swift). The licence goes with both. tokens/symbols.json says which Phosphor icon draws each SF Symbol.
+"""
+import json
+import re
+import shutil
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+THEME = ROOT / "swift/GabaritGtk/Resources/icons/hicolor"
+# In an icon theme (hicolor, which GTK always searches): GTK paints only a theme's icons in the text's colour.
+OUT = THEME / "scalable/actions"
+FONTS = ROOT / "swift/GabaritWinUI/Resources/Fonts"
+ANDROID_FONTS = ROOT / "android/gabarit/src/main/res/font"
+GLYPHS = ROOT / "tokens/phosphor-glyphs.json"
+
+
+HEAD = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor">'
+
+
+def symbolic(text: str) -> str:
+    """As GTK's symbolic icons are drawn: a size of 16 and one plain colour (GTK replaces it with the text's)."""
+    if HEAD not in text:
+        raise SystemExit("Phosphor's SVG head has changed: update symbolic() in tools/phosphor.py")
+    return (text.replace('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor">',
+                         '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="#2e3436">')
+                .replace("currentColor", "#2e3436"))
+
+
+def characters(css: Path, selector: str) -> dict[str, str]:
+    """Each icon's character, from the package's style sheet (`.ph.ph-bell:before { content: "\\e0ce"; }`)."""
+    found = re.findall(selector + r'([a-z0-9-]+):before\s*\{\s*content:\s*"\\([0-9a-f]+)"', css.read_text(encoding="utf-8"))
+    return {name: code.upper() for name, code in found}
+
+
+def main() -> int:
+    if len(sys.argv) != 3:
+        print(__doc__)
+        return 2
+    package, web = Path(sys.argv[1]), Path(sys.argv[2])
+    version = json.loads((package / "package.json").read_text(encoding="utf-8"))["version"]
+    web_version = json.loads((web / "package.json").read_text(encoding="utf-8"))["version"]
+    if web_version != version:
+        print(f"@phosphor-icons/core {version} and @phosphor-icons/web {web_version}: take the same version")
+        return 1
+    glyphs = characters(web / "src/regular/style.css", r"\.ph\.ph-")
+    if characters(web / "src/fill/style.css", r"\.ph-fill\.ph-") != glyphs:
+        print("Phosphor.ttf and Phosphor-Fill.ttf do not give the same characters")
+        return 1
+    svgs = {svg.stem for svg in (package / "assets/regular").glob("*.svg")}
+    wanted = set(json.loads((ROOT / "tokens/symbols.json").read_text(encoding="utf-8"))["symbols"].values())
+    missing = sorted(name for name in wanted if name not in svgs or name not in glyphs)
+    if not glyphs or missing:
+        print(f"Phosphor {version}: no characters found" if not glyphs else f"missing for symbols.json: {missing}")
+        return 1
+    # Everything is read and checked: now write.
+    shutil.rmtree(THEME, ignore_errors=True)
+    OUT.mkdir(parents=True)
+    (THEME / "index.theme").write_text("[Icon Theme]\nName=Hicolor\nComment=Gabarit's icons (Phosphor)\nDirectories=scalable/actions\n\n"
+                                       "[scalable/actions]\nSize=16\nMinSize=8\nMaxSize=512\nType=Scalable\nContext=Actions\n", encoding="utf-8")
+    count = 0
+    for weight, suffix in (("regular", ""), ("fill", "-fill")):
+        for svg in sorted((package / "assets" / weight).glob("*.svg")):
+            name = svg.stem.removesuffix("-fill")
+            (OUT / f"gabarit-ph-{name}{suffix}-symbolic.svg").write_text(symbolic(svg.read_text(encoding="utf-8")), encoding="utf-8")
+            count += 1
+    shutil.copy(package / "LICENSE", THEME / "PHOSPHOR-LICENSE")
+    (THEME / "PHOSPHOR-VERSION").write_text(f"@phosphor-icons/core {version}\n", encoding="utf-8")
+    for weight, font, android in (("regular", "Phosphor.ttf", "phosphor.ttf"), ("fill", "Phosphor-Fill.ttf", "phosphor_fill.ttf")):
+        shutil.copy(web / "src" / weight / font, FONTS / font)
+        shutil.copy(web / "src" / weight / font, ANDROID_FONTS / android)
+    shutil.copy(package / "LICENSE", FONTS / "PHOSPHOR-LICENSE")
+    GLYPHS.write_text(json.dumps({"$comment": f"Generated by tools/phosphor.py from @phosphor-icons/web {version}: each "
+                                              "icon's character in Phosphor.ttf and Phosphor-Fill.ttf.",
+                                  "glyphs": dict(sorted(glyphs.items()))}, indent=2) + "\n", encoding="utf-8")
+    (FONTS / "PHOSPHOR-VERSION").write_text(f"@phosphor-icons/web {version}\n", encoding="utf-8")
+    print(f"Phosphor {version}: {count} icons, {len(glyphs)} characters")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
