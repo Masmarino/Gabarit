@@ -13,29 +13,17 @@ updates:
         patterns:
           - '@storybook/*'
           - 'storybook'
+    ignore:
+      # Angular 22, ng-packagr and typescript-eslint want TypeScript below 6.1, and the build stops on 7. Remove this
+      # once Angular supports it.
+      - dependency-name: typescript
+        versions: ['>=6.1.0']
+      # @angular/build pins sass exactly: the root follows it, so tools/web_states.mjs compiles as the build does and
+      # there is one copy. Move this along with Angular.
+      - dependency-name: sass
+        versions: ['>1.104.1']
 
   - package-ecosystem: github-actions
     directory: /
-    schedule:
-      interval: weekly
-
-  - package-ecosystem: npm
-    directory: /
-    target-branch: v3
-    schedule:
-      interval: weekly
-    groups:
-      angular:
-        patterns:
-          - '@angular/*'
-          - 'angular-eslint'
-      storybook:
-        patterns:
-          - '@storybook/*'
-          - 'storybook'
-
-  - package-ecosystem: github-actions
-    directory: /
-    target-branch: v3
     schedule:
       interval: weekly
