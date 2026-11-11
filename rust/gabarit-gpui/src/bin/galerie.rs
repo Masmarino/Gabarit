@@ -913,16 +913,17 @@ fn main() {
             )
             .expect("the window opens");
         stage("window open");
-        if measure_start {
-            window
-                .update(cx, move |_, window, _| {
-                    window.on_next_frame(move |_, cx| {
-                        println!("first frame: {:.1} ms after the start of main", launched.elapsed().as_secs_f64() * 1000.);
+        // The time to the first frame, said in the journal each time; with --measure-start, it quits there.
+        window
+            .update(cx, move |_, window, _| {
+                window.on_next_frame(move |_, cx| {
+                    println!("first frame: {:.1} ms after the start of main", launched.elapsed().as_secs_f64() * 1000.);
+                    if measure_start {
                         cx.quit();
-                    });
-                })
-                .ok();
-        }
+                    }
+                });
+            })
+            .ok();
         window.update(cx, |gallery, window, cx| window.focus(&gallery.focus, cx)).ok();
         cx.activate(true);
     });
