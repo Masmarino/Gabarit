@@ -5,9 +5,15 @@
 //!     cargo run --release --bin galerie -- --measure-list     scrolls the 10,000 messages and prints the frames
 //!     cargo run --release --bin galerie -- --measure-start    prints the time to the first frame, then quits
 //!
-//! Pages: controls, states, forms, frame, feedback, sheet, menus, text, list.
+//! Pages: controls, states, forms, frame, feedback, sheet, menus, text, list. `--journal <file>`: what it says goes
+//! to that file (under Windows, a release build has no console).
+
+// Under Windows, a window of its own, without a console beside it.
+#![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
 
 use std::cell::RefCell;
+use std::io::Write;
+use std::sync::OnceLock;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
@@ -716,7 +722,7 @@ impl Gallery {
         }
         measure.last = Some(now);
         if now - measure.started > Duration::from_secs(10) {
-            println!("{}", report(&measure.intervals, &measure.cpu.borrow()));
+            say(&report(&measure.intervals, &measure.cpu.borrow()));
             cx.quit();
             return;
         }
@@ -841,10 +847,31 @@ impl Render for Gallery {
     }
 }
 
+/// Where the gallery writes: its journal file, or the standard output.
+static JOURNAL: OnceLock<std::sync::Mutex<std::fs::File>> = OnceLock::new();
+
+fn say(line: &str) {
+    match JOURNAL.get() {
+        Some(file) => {
+            let mut file = file.lock().unwrap();
+            let _ = writeln!(file, "{line}");
+            let _ = file.flush();
+        }
+        None => println!("{line}"),
+    }
+}
+
 fn main() {
     let launched = Instant::now();
-    env_logger::init();
     let args: Vec<String> = std::env::args().collect();
+    let journal = args.iter().position(|arg| arg == "--journal").and_then(|index| args.get(index + 1)).cloned();
+    let mut logger = env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn"));
+    if let Some(path) = journal {
+        let file = std::fs::File::create(&path).expect("the journal file");
+        logger.target(env_logger::Target::Pipe(Box::new(file.try_clone().expect("the journal file"))));
+        let _ = JOURNAL.set(std::sync::Mutex::new(file));
+    }
+    logger.init();
     let flag = |name: &str| args.iter().any(|arg| arg == name);
     let value = |name: &str| args.iter().position(|arg| arg == name).and_then(|index| args.get(index + 1)).cloned();
     let measure_list = flag("--measure-list");
@@ -862,8 +889,8 @@ fn main() {
     let open_sheet = flag("--sheet");
 
     let stage = move |name: &str| {
-        if measure_start {
-            eprintln!("  {name}: {:.1} ms", launched.elapsed().as_secs_f64() * 1000.);
+        if measure_start || JOURNAL.get().is_some() {
+            say(&format!("  {name}: {:.1} ms", launched.elapsed().as_secs_f64() * 1000.));
         }
     };
     let application = gpui_platform::application().with_assets(GAssets);
@@ -917,7 +944,7 @@ fn main() {
         window
             .update(cx, move |_, window, _| {
                 window.on_next_frame(move |_, cx| {
-                    println!("first frame: {:.1} ms after the start of main", launched.elapsed().as_secs_f64() * 1000.);
+                    say(&format!("first frame: {:.1} ms after the start of main", launched.elapsed().as_secs_f64() * 1000.));
                     if measure_start {
                         cx.quit();
                     }
