@@ -904,6 +904,13 @@ fn main() {
     application.run(move |cx: &mut App| {
         stage("run");
         gabarit_gpui::init(cx);
+        // Text smoothing, to compare on Windows: GABARIT_TEXTE=cleartype (subpixel, ClearType) or gris (grayscale, closer
+        // to the Mac). By default, the platform chooses per font and size (DirectWrite's recommendation).
+        match std::env::var("GABARIT_TEXTE").as_deref() {
+            Ok("cleartype") => cx.set_text_rendering_mode(gpui::TextRenderingMode::Subpixel),
+            Ok("gris") => cx.set_text_rendering_mode(gpui::TextRenderingMode::Grayscale),
+            _ => {}
+        }
         stage("fonts and keys");
         cx.bind_keys([
             KeyBinding::new(gabarit_gpui::secondary!("q"), Quit, None),
