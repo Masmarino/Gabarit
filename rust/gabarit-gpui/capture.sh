@@ -12,7 +12,7 @@ cat > "$tools/window.swift" <<'SWIFT'
 import CoreGraphics
 // The number of the first normal window of the process given by its name.
 let owner = CommandLine.arguments[1]
-let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []
+let windows = CGWindowListCopyWindowInfo([.optionAll], kCGNullWindowID) as? [[String: Any]] ?? []
 if let window = windows.first(where: { ($0[kCGWindowOwnerName as String] as? String) == owner && ($0[kCGWindowLayer as String] as? Int) == 0 }) {
     print(window[kCGWindowNumber as String]!)
 }
