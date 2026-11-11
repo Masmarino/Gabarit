@@ -819,7 +819,11 @@ impl Render for Gallery {
             .font_family("IBM Plex Sans")
             .text_color(colors.text_primary)
             .child(
-                GWindowHeader::new("Gabarit")
+                GWindowHeader::new(match std::env::var("GABARIT_TEXTE").as_deref() {
+                    Ok("cleartype") => "Gabarit — ClearType",
+                    Ok("gris") => "Gabarit — lissage en gris",
+                    _ => "Gabarit",
+                })
                     .subtitle("GPUI gallery")
                     .leading(if cfg!(target_os = "macos") { 84. } else { 16. })
                     .window_title_bar()
@@ -923,7 +927,11 @@ fn main() {
                 WindowOptions {
                     window_bounds: Some(WindowBounds::Windowed(bounds)),
                     titlebar: Some(TitlebarOptions {
-                        title: Some("Gabarit".into()),
+                        title: Some(match std::env::var("GABARIT_TEXTE").as_deref() {
+                            Ok("cleartype") => "Gabarit — ClearType".into(),
+                            Ok("gris") => "Gabarit — lissage en gris".into(),
+                            _ => "Gabarit".into(),
+                        }),
                         appears_transparent: true,
                         traffic_light_position: Some(point(px(18.), px(18.))),
                     }),
