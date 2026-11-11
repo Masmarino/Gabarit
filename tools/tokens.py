@@ -11,6 +11,7 @@ Generated, never to be edited by hand:
 - GTK: swift/GabaritGtk/Resources/gabarit-light.css, gabarit-dark.css (colours) and gabarit.css (text);
 - WinUI: swift/GabaritWinUI/Resources/Gabarit.xaml;
 - Compose: android/gabarit/src/main/kotlin/com/masmarino/gabarit/GTokens.kt, GText.kt and GSymbols.kt;
+- Rust (GPUI): rust/gabarit-gpui/src/tokens.rs (plain values, no UI framework; IBM Plex embedded);
 - symbols: swift/GabaritCommon/GSymbols.swift, from tokens/symbols.json (SF Symbols' names → Phosphor's).
 """
 import json
@@ -636,6 +637,129 @@ public enum GSymbols {{
 """
 
 
+# MARK: Rust (GPUI)
+
+def snake(name: str) -> str:
+    """textPrimary → text_primary, slate900 → slate_900."""
+    out = re.sub(r"(?<=[a-z])([A-Z])", r"_\1", name)
+    out = re.sub(r"(?<=[a-z])([0-9])", r"_\1", out)
+    return out.lower()
+
+
+def rust_float(value: float) -> str:
+    text = f"{float(value):g}"
+    return text if "." in text or "e" in text else text + ".0"
+
+
+def rust_rgba(value: str) -> str:
+    hexa, opacity, name = resolve(value)
+    if name:
+        base = f"palette::{snake(name).upper()}"
+        return base if opacity == 1 else f"{base}.opacity({rust_float(opacity)})"
+    return f"GRgba::hex(0x{hexa})" if opacity == 1 else f"GRgba::hexa(0x{hexa}, {rust_float(opacity)})"
+
+
+def rust() -> str:
+    lines = [f"// {HEADER}", "",
+             "//! Gabarit's tokens as plain values, with no UI framework: `theme` turns them into GPUI's.", "",
+             "/// A colour as four components from 0 to 1.",
+             "#[derive(Clone, Copy, Debug, PartialEq)]",
+             "pub struct GRgba {",
+             "    pub red: f32,", "    pub green: f32,", "    pub blue: f32,", "    pub alpha: f32,",
+             "}", "",
+             "impl GRgba {",
+             "    pub const fn hex(hex: u32) -> Self {",
+             "        Self::hexa(hex, 1.0)",
+             "    }", "",
+             "    pub const fn hexa(hex: u32, alpha: f32) -> Self {",
+             "        Self {",
+             "            red: ((hex >> 16) & 0xFF) as f32 / 255.0,",
+             "            green: ((hex >> 8) & 0xFF) as f32 / 255.0,",
+             "            blue: (hex & 0xFF) as f32 / 255.0,",
+             "            alpha,",
+             "        }",
+             "    }", "",
+             "    pub const fn opacity(self, alpha: f32) -> Self {",
+             "        Self { alpha, ..self }",
+             "    }",
+             "}", "",
+             "/// The raw palette. Views read the colours by role (`GColorRoles`), not these.",
+             "pub mod palette {",
+             "    use super::GRgba;", ""]
+    lines += [f"    pub const {snake(name).upper()}: GRgba = GRgba::hex(0x{hexa[1:]});" for name, hexa in PALETTE.items()]
+    lines += ["}", "",
+              "/// The colours by role (the apps' set: SkollN's design), of any type: `GColorValues` holds the tokens,",
+              "/// `theme::GColors` GPUI's colours.",
+              "#[derive(Clone, Copy, Debug, PartialEq)]",
+              "pub struct GColorRoles<C> {"]
+    lines += [f"    pub {snake(name)}: C," for name in APPS]
+    lines += ["}", "",
+              "impl<C: Copy> GColorRoles<C> {",
+              "    /// The same roles, each colour turned by `f`.",
+              "    pub fn map<D>(&self, f: impl Fn(C) -> D) -> GColorRoles<D> {",
+              "        GColorRoles {"]
+    lines += [f"            {snake(name)}: f(self.{snake(name)})," for name in APPS]
+    lines += ["        }", "    }", "}", "", "pub type GColorValues = GColorRoles<GRgba>;", ""]
+    for theme, key in (("LIGHT", "light"), ("DARK", "dark")):
+        lines.append(f"pub const {theme}: GColorValues = GColorRoles {{")
+        lines += [f"    {snake(name)}: {rust_rgba(v[key])}," for name, v in APPS.items()]
+        lines += ["};", ""]
+    for kind in ("radius", "spacing", "opacity"):
+        lines += [f"pub mod {kind} {{"] + [f"    pub const {snake(n).upper()}: f32 = {rust_float(v)};"
+                                           for n, v in TOKENS[kind].items()] + ["}", ""]
+    lines += ["/// A shadow: its colour, its blur radius (as SwiftUI's: half a CSS blur), its offset.",
+              "#[derive(Clone, Copy, Debug, PartialEq)]",
+              "pub struct GShadowSpec {",
+              "    pub color: GRgba,", "    pub radius: f32,", "    pub x: f32,", "    pub y: f32,",
+              "}", "", "pub mod shadows {", "    use super::*;", ""]
+    for name, s in TOKENS["shadows"].items():
+        lines.append(f"    pub const {snake(name).upper()}: GShadowSpec = GShadowSpec {{ color: {rust_rgba(s['color'])}, "
+                     f"radius: {rust_float(s['radius'])}, x: {rust_float(s['x'])}, y: {rust_float(s['y'])} }};")
+    lines += ["}", "",
+              "#[derive(Clone, Copy, Debug, PartialEq)]",
+              "pub enum GAnimationCurve {",
+              "    Spring { response: f32, damping: f32 },",
+              "    EaseInOut { duration: f32 },",
+              "    EaseOut { duration: f32 },",
+              "    Linear { duration: f32 },",
+              "}", "", "pub mod animations {", "    use super::GAnimationCurve;", ""]
+    for name, a in TOKENS["animations"].items():
+        curve = (f"Spring {{ response: {rust_float(a['response'])}, damping: {rust_float(a['damping'])} }}"
+                 if a["curve"] == "spring" else f"{camel(a['curve'])} {{ duration: {rust_float(a['duration'])} }}")
+        lines.append(f"    pub const {snake(name).upper()}: GAnimationCurve = GAnimationCurve::{curve};")
+    lines += ["}", "",
+              "/// The font families.",
+              "#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]",
+              "pub enum GFamily {"]
+    lines += [f"    {camel(name)}," for name in TOKENS["families"]]
+    lines += ["}", "", "impl GFamily {", "    pub const fn name(self) -> &'static str {", "        match self {"]
+    lines += [f"            GFamily::{camel(name)} => \"{f['name']}\"," for name, f in TOKENS["families"].items()]
+    lines += ["        }", "    }", "}", "",
+              "/// IBM Plex's files (SIL Open Font License), embedded: `fonts::register` hands them to GPUI.",
+              "pub const FONT_FILES: &[(&str, &[u8])] = &["]
+    lines += [f"    (\"{file}\", include_bytes!(\"../fonts/{file}\")),"
+              for f in TOKENS["families"].values() for file in f["files"].values()]
+    lines += ["];", "",
+              "#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]",
+              "pub enum GWeight {", "    Regular,", "    Medium,", "    Semibold,", "}", "",
+              "/// A text style: its family and weight, its size on a phone and on a computer, and the system style it",
+              "/// scales with.",
+              "#[derive(Clone, Copy, Debug, PartialEq)]",
+              "pub struct GTextStyle {",
+              "    pub family: GFamily,", "    pub weight: GWeight,", "    pub phone: f32,", "    pub desktop: f32,",
+              "    pub system: &'static str,",
+              "}", "",
+              "/// The line's height, as a multiple of the size (IBM Plex: ascender 1025, descender 275, per 1000).",
+              f"pub const LINE_HEIGHT: f32 = {rust_float(PLEX_LINE)};", "",
+              "pub mod text {", "    use super::*;", ""]
+    for name, t in TOKENS["text"].items():
+        lines.append(f"    pub const {snake(name).upper()}: GTextStyle = GTextStyle {{ family: GFamily::{camel(t['family'])}, "
+                     f"weight: GWeight::{camel(t['weight'])}, phone: {rust_float(t['phone'])}, "
+                     f"desktop: {rust_float(t['desktop'])}, system: \"{t['system']}\" }};")
+    lines += ["}", ""]
+    return "\n".join(lines)
+
+
 # MARK: Writing
 
 OUTPUTS = {
@@ -652,6 +776,7 @@ OUTPUTS = {
     "android/gabarit/src/main/kotlin/com/masmarino/gabarit/GTokens.kt": kotlin,
     "android/gabarit/src/main/kotlin/com/masmarino/gabarit/GText.kt": kotlin_text,
     "android/gabarit/src/main/kotlin/com/masmarino/gabarit/GSymbols.kt": kotlin_symbols,
+    "rust/gabarit-gpui/src/tokens.rs": rust,
 }
 
 
