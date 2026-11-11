@@ -35,8 +35,11 @@ pub use sheet::{GSheet, GSheetTitle};
 pub use text_field::{GFieldFrame, GTextField, GTextInput, GTextInputEvent};
 pub use theme::{ActiveTheme, GAppearance, GTextExt, GTheme};
 
-/// Everything Gabarit needs at start-up: the fonts and the theme, the text fields' keys.
+/// Everything Gabarit needs at start-up: the fonts and the theme, the text fields' keys, the text smoothing.
 pub fn init(cx: &mut gpui::App) {
     theme::init(cx);
     text_field::bind_keys(cx);
+    // Grayscale text smoothing everywhere, the closest to the Mac's rendering (Windows would otherwise pick ClearType for
+    // most sizes). An app can still choose otherwise after `init` (`cx.set_text_rendering_mode`).
+    cx.set_text_rendering_mode(gpui::TextRenderingMode::Grayscale);
 }

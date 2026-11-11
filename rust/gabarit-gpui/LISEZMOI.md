@@ -134,3 +134,10 @@ l'arbre que les composants déclarent (`role`, `aria_label`, valeurs, états, ac
 Gabarit a son rôle et son nom ; le champ de texte expose son texte et sa sélection. Vérifié sur le Mac par l'API
 d'accessibilité (l'arbre de la galerie, voir le compte rendu) ; pas encore avec VoiceOver à l'oreille, ni sous
 Windows et Linux. Les limites sont dans le compte rendu du chantier.
+
+## Le lissage du texte
+
+Gabarit met le **lissage en gris** partout (`gabarit_gpui::init`) : c'est le plus proche du rendu du Mac. Sous Windows,
+GPUI aurait sinon choisi ClearType (sous-pixels) pour la plupart des tailles. Une app peut choisir autrement après `init`
+(`cx.set_text_rendering_mode`). Pour comparer avec la galerie : `GABARIT_TEXTE=cleartype` ou `GABARIT_TEXTE=gris`.
+L'intensité (gamma, contraste) vient du réglage ClearType de Windows (`cttune`).
