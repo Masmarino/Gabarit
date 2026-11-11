@@ -6,7 +6,7 @@ use std::rc::Rc;
 
 use gpui::{
     AnyElement, App, ClickEvent, CursorStyle, Div, ElementId, IntoElement, ParentElement, RenderOnce, Role,
-    SharedString, Styled, Window, div, linear_color_stop, linear_gradient, prelude::*, px,
+    SharedString, Styled, Window, WindowControlArea, div, linear_color_stop, linear_gradient, prelude::*, px,
 };
 
 use crate::assets::icon;
@@ -178,11 +178,20 @@ pub struct GWindowHeader {
     leading: f32,
     trailing: Vec<AnyElement>,
     radius: f32,
+    window_controls: bool,
 }
 
 impl GWindowHeader {
     pub fn new(title: impl Into<SharedString>) -> Self {
-        GWindowHeader { title: title.into(), subtitle: None, icon: None, leading: 16., trailing: Vec::new(), radius: 0. }
+        GWindowHeader {
+            title: title.into(),
+            subtitle: None,
+            icon: None,
+            leading: 16.,
+            trailing: Vec::new(),
+            radius: 0.,
+            window_controls: false,
+        }
     }
 
     pub fn subtitle(mut self, subtitle: impl Into<SharedString>) -> Self {
@@ -203,6 +212,14 @@ impl GWindowHeader {
 
     pub fn trailing(mut self, element: impl IntoElement) -> Self {
         self.trailing.push(element.into_any_element());
+        self
+    }
+
+    /// The header is the window's title bar: it moves the window and, under Windows and Linux, carries the window's
+    /// buttons (minimize, maximize, close), drawn by Gabarit on the dark frame. On the Mac, the system's buttons sit on
+    /// it (leave them room with `leading(84.)`).
+    pub fn window_title_bar(mut self) -> Self {
+        self.window_controls = true;
         self
     }
 
@@ -247,6 +264,38 @@ impl RenderOnce for GWindowHeader {
                     }),
             )
             .children(self.trailing)
+            .when(self.window_controls, |this| this.window_control_area(WindowControlArea::Drag))
+            .when(self.window_controls && !cfg!(target_os = "macos"), |this| {
+                let button = |id: &'static str, symbol: &'static str, area: WindowControlArea, close: bool| {
+                    let hover = if close { cx.theme().colors.error } else { frame.hover };
+                    div()
+                        .id(id)
+                        .flex()
+                        .items_center()
+                        .justify_center()
+                        .w(px(40.))
+                        .h(px(32.))
+                        .rounded(px(radius::SM))
+                        .role(Role::Button)
+                        .aria_label(match area {
+                            WindowControlArea::Min => "Minimize",
+                            WindowControlArea::Max => "Maximize",
+                            _ => "Close",
+                        })
+                        .hover(move |style| style.bg(hover))
+                        .window_control_area(area)
+                        .child(icon(symbol, px(14.), frame.text))
+                };
+                this.child(
+                    div()
+                        .flex()
+                        .gap(px(2.))
+                        .ml(px(8.))
+                        .child(button("g-window-min", "window-minimize", WindowControlArea::Min, false))
+                        .child(button("g-window-max", "window-maximize", WindowControlArea::Max, false))
+                        .child(button("g-window-close", "window-close", WindowControlArea::Close, true)),
+                )
+            })
     }
 }
 

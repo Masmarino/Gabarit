@@ -818,7 +818,13 @@ impl Render for Gallery {
             .bg(colors.background)
             .font_family("IBM Plex Sans")
             .text_color(colors.text_primary)
-            .child(GWindowHeader::new("Gabarit").subtitle("GPUI gallery").leading(84.).trailing(GBadge::new(label)))
+            .child(
+                GWindowHeader::new("Gabarit")
+                    .subtitle("GPUI gallery")
+                    .leading(if cfg!(target_os = "macos") { 84. } else { 16. })
+                    .window_title_bar()
+                    .trailing(GBadge::new(label)),
+            )
             .child(
                 div()
                     .flex()

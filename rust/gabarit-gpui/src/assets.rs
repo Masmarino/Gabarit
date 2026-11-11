@@ -50,6 +50,10 @@ const ICONS: &[(&str, &[u8])] = &[
     ("x", include_bytes!("../icons/x.svg")),
     // Drawn for Gabarit (no Phosphor file): the close cross, bold as SF Symbols' xmark in GCloseButton.
     ("x-bold", include_bytes!("../icons/x-bold.svg")),
+    // Drawn for Gabarit: a window's buttons under Windows and Linux (the window draws them itself).
+    ("window-close", include_bytes!("../icons/window-close.svg")),
+    ("window-maximize", include_bytes!("../icons/window-maximize.svg")),
+    ("window-minimize", include_bytes!("../icons/window-minimize.svg")),
     ("x-circle", include_bytes!("../icons/x-circle.svg")),
 ];
 
