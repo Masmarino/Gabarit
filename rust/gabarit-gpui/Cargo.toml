@@ -19,6 +19,12 @@ env_logger = { version = "0.11", default-features = false, features = ["auto-col
 [target.'cfg(any(target_os = "linux", target_os = "freebsd"))'.dependencies]
 gpui_platform = { package = "gpui-pre-platform", version = "=0.3.12", features = ["font-kit", "x11", "wayland"] }
 
+# Les émojis en couleur sous Linux : `gpui-pre-wgpu` (le texte de GPUI sous Linux, par cosmic-text), corrigé dans
+# `correctifs/gpui-pre-wgpu` (voir LISEZMOI.md, « Les correctifs de GPUI »). Une app qui dépend de gabarit-gpui reprend
+# ce `[patch]` dans son propre Cargo.toml : il ne passe pas d'une crate à celles qui en dépendent.
+[patch.crates-io]
+gpui-pre-wgpu = { path = "correctifs/gpui-pre-wgpu" }
+
 [dev-dependencies]
 gpui = { package = "gpui-pre", version = "=0.3.12", features = ["test-support"] }
 

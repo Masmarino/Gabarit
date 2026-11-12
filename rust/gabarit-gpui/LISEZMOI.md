@@ -22,6 +22,7 @@ carte graphique : la base de l'app de bureau SkollN (Windows, Linux, Mac). Le re
 | `src/avatar.rs`         | `GAvatar` : initiales sur la couleur de la personne, non-lus, présence.                                   |
 | `src/bin/galerie.rs`    | La galerie : tous les composants, en clair et en sombre.                                                  |
 | `fonts/`, `icons/`      | IBM Plex (SIL OFL, copie de celles de GabaritApple) ; les icônes Phosphor utiles (MIT), et quatre dessinées pour Gabarit. |
+| `correctifs/`           | `gpui-pre-wgpu` corrigé : les émojis en couleur sous Linux (voir « Les correctifs de GPUI »).                |
 | `captures/`             | Les captures de la galerie sur le Mac (et une sous Windows, une sous Linux).                              |
 | `tests/`                | Les jetons contre `GTokens.swift` ; la saisie (composition, UTF-16, émojis, arabe, hébreu, presse-papiers). |
 
@@ -36,6 +37,22 @@ passe à une dépendance git sur la même révision de Zed, sans rien changer d'
 
 Pour monter de version : changer `=0.3.12` dans `Cargo.toml` (les deux lignes `gpui-pre` et `gpui-pre-platform`), puis
 relancer les tests et la galerie, et regarder les captures.
+
+## Les correctifs de GPUI
+
+`correctifs/gpui-pre-wgpu` est la crate `gpui-pre-wgpu` 0.3.12 de crates.io (le texte et le dessin de GPUI sous Linux),
+avec un correctif, dans `src/cosmic_text_system.rs` (les passages marqués `GABARIT`) : **les émojis en couleur**. Sans
+lui, ❤, 😂, ⏱ ou ☀ sortent en noir et blanc sous Linux : IBM Plex ne les a pas, et cosmic-text prend la première de
+ses polices de repli qui les a, dans un ordre fixe où DejaVu Sans (et Noto Sans Symbols) passent avant Noto Color
+Emoji. GPUI ne permet pas de mettre la police des émojis dans les replis d'une police (`FontFallbacks`) : il écarte
+toute police sans « m », et la demande à la graisse du texte, qu'elle n'a pas. Le correctif ajoute la police des émojis
+en couleur du système (Noto Color Emoji) à la fin des replis de chaque police, à sa propre graisse : ce qu'IBM Plex n'a
+pas va d'abord à elle, jamais l'ASCII.
+
+Il est branché par `[patch.crates-io]` dans `Cargo.toml` ; une app qui dépend de gabarit-gpui le reprend dans le sien
+(SkollN : `rust/Cargo.toml`). Le Mac (Core Text) et Windows (DirectWrite) ne passent pas par cette crate. À la montée de
+version de GPUI : recopier la nouvelle crate, y reporter les passages `GABARIT` (ou retirer le correctif si Zed l'a
+fait), et regarder les émojis de la galerie sous Linux.
 
 ## Les jetons
 
