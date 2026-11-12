@@ -32,7 +32,7 @@ pub use form::{GForm, GFormButtons, GFormRowButton, GFormSection, GLabeledConten
 pub use list::{GLongList, GMessageRow};
 pub use menu::{
     GContextMenu, GMenu, GMenuBuilder, GMenuButton, GMenuClose, GMenuItem, GMenuPlacement,
-    shortcut_label,
+    GSpotlight, shortcut_label,
 };
 pub use picker::GPicker;
 pub use relief::GPointer;

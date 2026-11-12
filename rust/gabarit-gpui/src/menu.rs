@@ -11,6 +11,11 @@
 //!
 //! Three hosts open a `GMenu`: `GContextMenu` (the right button), `GMenuButton` (a click on a button: « … », « + »)
 //! and `GPicker`'s list (`picker.rs`).
+//!
+//! A context menu can also lift what it wraps out of the page, as the iPhone does with a message held down
+//! (`GContextMenu::spotlight`, `GSpotlight`): the window veiled, the thing in front at its place (moved, or cut with a
+//! fade, for all to fit), the menu's pill above it and its card below, opening on a light spring. `open_request` opens
+//! a context menu without the pointer (the keyboard, a button elsewhere).
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -18,9 +23,10 @@ use std::time::Duration;
 
 use gpui::{
     Anchor, Animation, AnimationExt, AnyElement, App, Bounds, ClickEvent, CursorStyle, ElementId,
-    Entity, FocusHandle, InteractiveElement, IntoElement, KeyDownEvent, Keystroke, MouseButton,
-    ParentElement, Pixels, Point, RenderOnce, Role, ScrollHandle, SharedString, Styled, Task,
-    WeakEntity, Window, anchored, canvas, deferred, div, point, prelude::*, px,
+    Entity, FocusHandle, Hsla, InteractiveElement, IntoElement, KeyDownEvent, Keystroke,
+    MouseButton, ParentElement, Pixels, Point, RenderOnce, Role, ScrollHandle, SharedString, Size,
+    Styled, Task, WeakEntity, Window, anchored, canvas, deferred, div, linear_color_stop,
+    linear_gradient, point, prelude::*, px, size,
 };
 
 use crate::assets::icon;
@@ -352,6 +358,7 @@ pub struct GMenu {
     max_height: Pixels,
     initial: Option<usize>,
     hosted: Option<Hosted>,
+    spotlit: Option<Spotlit>,
 }
 
 impl GMenu {
@@ -364,6 +371,7 @@ impl GMenu {
             max_height: px(metrics::MAX_HEIGHT),
             initial: None,
             hosted: None,
+            spotlit: None,
         }
     }
 
@@ -722,16 +730,19 @@ impl RenderOnce for GMenu {
                 .child(element)
         });
 
-        let mut menu = div()
-            .id(self.id)
-            .role(Role::Menu)
-            .occlude()
-            .flex()
-            .flex_col()
-            .items_start()
-            .gap(px(8.))
-            .children(above)
-            .child(card);
+        let mut menu = match self.spotlit {
+            Some(spotlit) => spotlit.lay(self.id, above, card),
+            None => div()
+                .id(self.id)
+                .role(Role::Menu)
+                .occlude()
+                .flex()
+                .flex_col()
+                .items_start()
+                .gap(px(8.))
+                .children(above)
+                .child(card),
+        };
         if let Some(host) = hosted {
             let keys_state = state.clone();
             let leave_state = state.clone();
@@ -1245,6 +1256,10 @@ pub(crate) struct HostState {
     cards: CardBounds,
     trigger: Rc<RefCell<Bounds<Pixels>>>,
     timer: Option<Task<()>>,
+    /// The pill's and the card's sizes, measured once laid (a spotlight places them by them).
+    spot_sizes: Rc<RefCell<SpotSizes>>,
+    /// The last request to open honoured (`GContextMenu::open_request`).
+    request_seen: u64,
 }
 
 impl HostState {
@@ -1291,8 +1306,9 @@ pub(crate) fn host_closer(state: &Entity<HostState>) -> GMenuClose {
                 window.focus(&previous, cx);
             }
             state.timer = Some(cx.spawn(async move |_, cx| {
+                // The longer of the two closings: a spotlight's preview goes back to its place.
                 cx.background_executor()
-                    .timer(Duration::from_millis(metrics::CLOSE))
+                    .timer(Duration::from_millis(metrics::CLOSE.max(spot::CLOSE)))
                     .await;
                 let _ = weak_timer.update(cx, |state, cx| {
                     state.open = false;
@@ -1419,6 +1435,8 @@ pub struct GContextMenu {
     id: ElementId,
     child: AnyElement,
     menu: GMenuBuilder,
+    spotlight: Option<GSpotlight>,
+    request: u64,
 }
 
 impl GContextMenu {
@@ -1432,23 +1450,55 @@ impl GContextMenu {
             id: id.into(),
             child: child.into_any_element(),
             menu: Rc::new(menu),
+            spotlight: None,
+            request: 0,
         }
+    }
+
+    /// Opens the menu when `request` grows past the last one honoured: from the keyboard, or a button elsewhere. It
+    /// opens by what it wraps (around it, with a spotlight).
+    pub fn open_request(mut self, request: u64) -> Self {
+        self.request = request;
+        self
+    }
+
+    /// Opens the menu around what it wraps, lifted out of the page, as the iPhone does with a message (see
+    /// `GSpotlight`), instead of at the pointer.
+    pub fn spotlight(mut self, spotlight: GSpotlight) -> Self {
+        self.spotlight = Some(spotlight);
+        self
     }
 }
 
 impl RenderOnce for GContextMenu {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let state = host_state(self.id.clone(), window, cx);
-        let overlay = if state.read(cx).open {
+        if self.request > state.read(cx).request_seen {
+            let request = self.request;
+            state.update(cx, |state, _| state.request_seen = request);
+            host_open(&state, None, window, cx);
+        }
+        let is_open = state.read(cx).open;
+        let overlay = if is_open {
             let menu = (self.menu)(host_closer(&state), window, cx);
-            host_overlay(&state, menu, GMenuPlacement::Below, window, cx)
+            match &self.spotlight {
+                Some(spotlight) => spotlight_overlay(&state, menu, spotlight, window, cx),
+                None => host_overlay(&state, menu, GMenuPlacement::Below, window, cx),
+            }
         } else {
             None
         };
+        let spotlit = self.spotlight.is_some();
         let open = state.clone();
         let ctrl_click = state.clone();
         div()
             .id(self.id)
+            // Lifted out: its place stays, empty, under the veil (the preview stands in for it).
+            .when(spotlit, |this| {
+                this.relative()
+                    .child(trigger_probe(&state, cx))
+                    .when(is_open, |this| this.opacity(0.))
+            })
             .on_mouse_down(MouseButton::Right, move |event, window, cx| {
                 host_open(&open, Some(event.position), window, cx);
                 cx.stop_propagation();
@@ -1464,6 +1514,410 @@ impl RenderOnce for GContextMenu {
             .child(self.child)
             .children(overlay)
     }
+}
+
+// MARK: The spotlight
+
+/// What a context menu lifts out of the page while it is open, as the iPhone does with a message held down: the rest
+/// of the window veiled, the thing itself in front, at its place (moved a little when need be, so that everything
+/// fits), the menu's pill above it and its card below. A thing too tall to fit is cut, fading out at the cut.
+///
+/// GPUI cannot blur what lies behind a layer: the veil is a frosted wash of the page's own colour, then a shade, which
+/// takes the page's contrast away as a blur would.
+#[derive(Clone)]
+pub struct GSpotlight {
+    preview: Rc<dyn Fn(&mut Window, &mut App) -> AnyElement>,
+    trailing: bool,
+    fade: Option<Hsla>,
+    radius: Pixels,
+}
+
+impl GSpotlight {
+    /// `preview` draws the thing again (it is laid at the width it had in the page).
+    pub fn new(preview: impl Fn(&mut Window, &mut App) -> AnyElement + 'static) -> Self {
+        GSpotlight {
+            preview: Rc::new(preview),
+            trailing: false,
+            fade: None,
+            radius: px(14.),
+        }
+    }
+
+    /// The pill and the card line up with its right edge (my own messages), not its left one.
+    pub fn trailing(mut self, trailing: bool) -> Self {
+        self.trailing = trailing;
+        self
+    }
+
+    /// Cut, it fades into this colour (its own background; the surface's otherwise).
+    pub fn fade(mut self, color: Hsla) -> Self {
+        self.fade = Some(color);
+        self
+    }
+
+    /// Its corners, for its shadow and its cut.
+    pub fn corner_radius(mut self, radius: Pixels) -> Self {
+        self.radius = radius;
+        self
+    }
+}
+
+/// The spotlight's measures, in points and milliseconds.
+mod spot {
+    /// From the window's edges.
+    pub const MARGIN: f32 = 12.;
+    /// Between the pill, the thing and the card.
+    pub const GAP: f32 = 8.;
+    /// The least of a cut thing that stays seen.
+    pub const MIN_PREVIEW: f32 = 72.;
+    /// The fade at a cut.
+    pub const FADE: f32 = 64.;
+    /// How far the pill and the card come from.
+    pub const TRAVEL: f32 = 14.;
+    pub const OPEN: u64 = 340;
+    pub const CLOSE: u64 = 170;
+}
+
+#[derive(Default, Clone, Copy)]
+struct SpotSizes {
+    pill: Option<Size<Pixels>>,
+    card: Option<Size<Pixels>>,
+}
+
+/// Where a spotlight lays the menu's pill and card, and what it puts under them.
+struct Spotlit {
+    viewport: Size<Pixels>,
+    backdrop: AnyElement,
+    preview: AnyElement,
+    pill_at: Point<Pixels>,
+    card_at: Point<Pixels>,
+    sizes: Rc<RefCell<SpotSizes>>,
+    closing: bool,
+    generation: usize,
+}
+
+impl Spotlit {
+    fn lay(
+        self,
+        id: ElementId,
+        pill: Option<gpui::Div>,
+        card: gpui::Div,
+    ) -> gpui::Stateful<gpui::Div> {
+        let measure = |sizes: Rc<RefCell<SpotSizes>>, is_pill: bool| {
+            canvas(
+                move |b, _, _| {
+                    let mut sizes = sizes.borrow_mut();
+                    if is_pill {
+                        sizes.pill = Some(b.size);
+                    } else {
+                        sizes.card = Some(b.size);
+                    }
+                },
+                |_, _, _, _| {},
+            )
+            .absolute()
+            .top(px(0.))
+            .left(px(0.))
+            .size_full()
+        };
+        let (generation, closing) = (self.generation, self.closing);
+        let piece = |name: &'static str, at: Point<Pixels>, from: f32, element: gpui::Div| {
+            spot_animated(
+                div().absolute().left(at.x).top(at.y).child(element),
+                spot_id(name, generation, closing),
+                closing,
+                move |this, e| {
+                    this.top(at.y + px(from * (1. - e)))
+                        .opacity(e.clamp(0., 1.))
+                },
+            )
+        };
+        let pill = pill.map(|pill| {
+            piece(
+                "g-spot-pill",
+                self.pill_at,
+                spot::TRAVEL,
+                pill.child(measure(self.sizes.clone(), true)),
+            )
+        });
+        let card = piece(
+            "g-spot-card",
+            self.card_at,
+            -spot::TRAVEL,
+            div()
+                .relative()
+                .child(card)
+                .child(measure(self.sizes.clone(), false)),
+        );
+        div()
+            .id(id)
+            .role(Role::Menu)
+            .relative()
+            .w(self.viewport.width)
+            .h(self.viewport.height)
+            .child(self.backdrop)
+            .child(self.preview)
+            .children(pill)
+            .child(card)
+    }
+}
+
+/// A piece's animation, fresh at each opening and at its closing.
+fn spot_id(name: &'static str, generation: usize, closing: bool) -> ElementId {
+    ElementId::NamedInteger(
+        SharedString::new_static(name),
+        generation as u64 * 2 + closing as u64,
+    )
+}
+
+/// Out with a light spring on opening (a touch past, then back), back softly on closing: `e` goes from 0 to 1 when
+/// opening, from 1 to 0 when closing.
+fn spot_animated(
+    element: gpui::Div,
+    id: ElementId,
+    closing: bool,
+    animate: impl Fn(gpui::Div, f32) -> gpui::Div + 'static,
+) -> AnyElement {
+    if closing {
+        element
+            .with_animation(
+                id,
+                Animation::new(Duration::from_millis(spot::CLOSE)).with_easing(gpui::quadratic),
+                move |this, t| animate(this, 1. - t),
+            )
+            .into_any_element()
+    } else {
+        element
+            .with_animation(
+                id,
+                Animation::new(Duration::from_millis(spot::OPEN)).with_easing(spring_out),
+                animate,
+            )
+            .into_any_element()
+    }
+}
+
+/// A spring that settles quickly: a little past the end, then back (a mild « back out »).
+fn spring_out(t: f32) -> f32 {
+    let (c1, u) = (1.1_f32, t - 1.);
+    1. + (c1 + 1.) * u * u * u + c1 * u * u
+}
+
+/// What the menu's card should measure, before it has been laid once.
+fn estimated_height(menu: &GMenu) -> f32 {
+    let rows: f32 = menu
+        .entries
+        .iter()
+        .map(|entry| match entry {
+            Entry::Item(_) | Entry::Element(_) => metrics::ROW,
+            Entry::Separator => 9.,
+            Entry::Section(_) => 26.,
+        })
+        .sum();
+    rows + 2. * metrics::INSET + 2.
+}
+
+/// The veil over the window: a frosted wash of the page's colour, then a shade (`ultraThinMaterial` and a black of
+/// 12 % on the iPhone).
+fn veil(cx: &App) -> (Hsla, Hsla) {
+    let colors = cx.theme().colors;
+    if cx.theme().is_dark() {
+        (alpha(colors.background, 0.74), black(0.32))
+    } else {
+        (
+            alpha(mix(colors.background, white(1.0), 0.30), 0.80),
+            black(0.14),
+        )
+    }
+}
+
+/// An open spotlight menu, over the whole window.
+fn spotlight_overlay(
+    state: &Entity<HostState>,
+    menu: GMenu,
+    spotlight: &GSpotlight,
+    window: &mut Window,
+    cx: &mut App,
+) -> Option<AnyElement> {
+    let (open, closing, generation, cards, trigger, sizes) = {
+        let s = state.read(cx);
+        (
+            s.open,
+            s.closing,
+            s.generation,
+            s.cards.clone(),
+            *s.trigger.borrow(),
+            s.spot_sizes.clone(),
+        )
+    };
+    if !open {
+        return None;
+    }
+    let viewport = window.viewport_size();
+    let measured = *sizes.borrow();
+    let margin = px(spot::MARGIN);
+    let gap = px(spot::GAP);
+    let pill = if menu.above.is_some() {
+        measured.pill.unwrap_or(size(px(300.), px(48.)))
+    } else {
+        size(px(0.), -gap)
+    };
+    let card = measured
+        .card
+        .unwrap_or(size(px(metrics::MIN_WIDTH), px(estimated_height(&menu))));
+    let (top, bottom) = (margin, viewport.height - margin);
+    // The card scrolls rather than push the thing out: it keeps a few rows at least.
+    let card_room = (bottom - top - pill.height - gap * 2. - px(spot::MIN_PREVIEW)).max(px(120.));
+    let card_height = card.height.min(card_room);
+    // The thing, cut when it is too tall for all to fit.
+    let room = (bottom - top - pill.height - card_height - gap * 2.).max(px(spot::MIN_PREVIEW));
+    let height = trigger.size.height.min(room);
+    let cut = height < trigger.size.height;
+    // It stays where it was, unless it must move for the pill and the card to fit.
+    let total = pill.height + gap + height + gap + card_height;
+    let wanted = trigger.origin.y - pill.height - gap;
+    let start = wanted.max(top).min((bottom - total).max(top));
+    let thing_y = start + pill.height + gap;
+    let width = trigger.size.width.min(viewport.width - margin * 2.);
+    let side = |w: Pixels| {
+        let x = if spotlight.trailing {
+            trigger.origin.x + trigger.size.width - w
+        } else {
+            trigger.origin.x
+        };
+        x.min(viewport.width - w - margin).max(margin)
+    };
+    let pill_at = point(side(pill.width), start);
+    let card_at = point(side(card.width), thing_y + height + gap);
+    let thing_x = side(width);
+
+    let close = host_closer(state);
+    let dark = cx.theme().is_dark();
+    let (wash, shade) = veil(cx);
+    let (left_close, right_close) = (close.clone(), close.clone());
+    let backdrop = spot_animated(
+        div().absolute().top(px(0.)).left(px(0.)).size_full().child(
+            div()
+                .id("g-spot-veil")
+                .size_full()
+                .bg(wash)
+                .occlude()
+                .on_mouse_down(MouseButton::Left, move |_, window, cx| {
+                    left_close(window, cx)
+                })
+                .on_mouse_down(MouseButton::Right, move |_, window, cx| {
+                    right_close(window, cx)
+                })
+                .on_scroll(|_, _, cx| cx.stop_propagation())
+                .child(div().size_full().bg(shade)),
+        ),
+        spot_id("g-spot-veil", generation, closing),
+        closing,
+        |this, e| this.opacity(e.clamp(0., 1.)),
+    );
+
+    // The thing, drawn again over its place, lifted on a shadow; cut, it fades into its own colour.
+    let fade = spotlight.fade.unwrap_or(cx.theme().colors.surface);
+    let radius = spotlight.radius;
+    let drawn = (spotlight.preview)(window, cx);
+    let content = if cut {
+        div()
+            .relative()
+            .size_full()
+            .rounded(radius)
+            .bg(fade)
+            .child(
+                div()
+                    .absolute()
+                    .top(px(0.))
+                    .left(px(0.))
+                    .w_full()
+                    .h(height - radius)
+                    .overflow_hidden()
+                    .child(div().w_full().flex_none().child(drawn)),
+            )
+            .child(
+                div()
+                    .absolute()
+                    .left(px(0.))
+                    .w_full()
+                    .bottom(px(0.))
+                    .h(px(spot::FADE) + radius)
+                    .rounded_b(radius)
+                    .bg(linear_gradient(
+                        180.,
+                        linear_color_stop(alpha(fade, 0.), 0.),
+                        linear_color_stop(fade, 0.8),
+                    )),
+            )
+            .into_any_element()
+    } else {
+        drawn
+    };
+    let from_y = trigger.origin.y;
+    let thing_close = close.clone();
+    let preview = spot_animated(
+        div()
+            .absolute()
+            .left(thing_x)
+            .top(thing_y)
+            .w(width)
+            .h(height)
+            .child(
+                div()
+                    .id("g-spot-thing")
+                    .size_full()
+                    .rounded(radius)
+                    .occlude()
+                    .on_mouse_down(MouseButton::Left, move |_, window, cx| {
+                        thing_close(window, cx)
+                    })
+                    .child(content),
+            ),
+        spot_id("g-spot-thing", generation, closing),
+        closing,
+        move |this, e| {
+            let shade = black((if dark { 0.45 } else { 0.20 }) * e.clamp(0., 1.));
+            this.top(from_y + (thing_y - from_y) * e)
+                .shadow(vec![
+                    gpui::BoxShadow::new(px(0.), px(8.), shade).blur_radius(px(24.)),
+                ])
+                .rounded(radius)
+        },
+    );
+
+    let mut menu = menu.max_height(card_room).hosted(Hosted {
+        close,
+        back: None,
+        entered: None,
+        cards,
+        depth: 0,
+        focus: None,
+    });
+    menu.spotlit = Some(Spotlit {
+        viewport,
+        backdrop,
+        preview,
+        pill_at,
+        card_at,
+        sizes,
+        closing,
+        generation,
+    });
+    Some(
+        deferred(
+            anchored().position(point(px(0.), px(0.))).child(
+                div()
+                    .id(ElementId::NamedInteger(
+                        "g-spot-host".into(),
+                        generation as u64,
+                    ))
+                    .child(menu),
+            ),
+        )
+        .with_priority(1)
+        .into_any_element(),
+    )
 }
 
 /// A button that opens a menu (« … », « + »): `trigger` is drawn as it is, a click on it opens `menu` by it.
