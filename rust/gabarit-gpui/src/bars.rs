@@ -225,6 +225,7 @@ pub struct GWindowHeader {
     radius: f32,
     top_radius: f32,
     window_controls: bool,
+    window_buttons: bool,
 }
 
 impl GWindowHeader {
@@ -238,6 +239,7 @@ impl GWindowHeader {
             radius: 0.,
             top_radius: 0.,
             window_controls: false,
+            window_buttons: true,
         }
     }
 
@@ -267,6 +269,14 @@ impl GWindowHeader {
     /// it (leave them room with `leading(84.)`).
     pub fn window_title_bar(mut self) -> Self {
         self.window_controls = true;
+        self
+    }
+
+    /// A title bar without the window's buttons (minimize, maximize, close) under Windows and Linux: a secondary window
+    /// closed by the round cross one puts on the right (`trailing`), and Escape. The header still moves the window. On
+    /// the Mac, the app hides the system's buttons itself (and gives the title the same `leading` as elsewhere).
+    pub fn without_window_buttons(mut self) -> Self {
+        self.window_buttons = false;
         self
     }
 
@@ -373,7 +383,7 @@ pub fn window_button_click(area: WindowControlArea, window: &mut Window) {
 impl RenderOnce for GWindowHeader {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let frame = cx.theme().frame;
-        let buttons = self.window_controls && draws_window_buttons(window);
+        let buttons = self.window_controls && self.window_buttons && draws_window_buttons(window);
         let drag = self.window_controls;
         let header = frame_ground(cx)
             .id("g-window-header")
@@ -419,7 +429,23 @@ impl RenderOnce for GWindowHeader {
                         )
                     }),
             )
-            .children(self.trailing)
+            // On a title bar, what sits on the right takes its clicks from the area that moves the window: under Windows,
+            // the header answers the system's hit test as the caption, and a press there would move the window.
+            .when(!self.trailing.is_empty(), |this| {
+                if self.window_controls {
+                    this.child(
+                        div()
+                            .flex()
+                            .flex_none()
+                            .items_center()
+                            .gap(px(10.))
+                            .occlude()
+                            .children(self.trailing),
+                    )
+                } else {
+                    this.children(self.trailing)
+                }
+            })
             .when(self.window_controls, |this| {
                 this.window_control_area(WindowControlArea::Drag)
             })
