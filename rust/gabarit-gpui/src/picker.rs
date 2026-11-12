@@ -1,17 +1,21 @@
 //! A choice among options (GabaritApple's `GPicker`): the title on the left, Gabarit's menu or chips on the right.
-//! The menu: the current choice in a field, the two arrows on the right; the list opens in a bubble below it, the
-//! current choice ticked in rust; the arrows move along it, Return chooses, Escape closes.
+//! The menu: the current choice in a field, the two arrows on the right; the list opens below it as Gabarit's menu
+//! (`GMenu`), the current choice ticked and lit; the arrows move along it, Return chooses, Escape closes.
 
 use std::rc::Rc;
 
 use gpui::{
-    App, CursorStyle, ElementId, Entity, IntoElement, KeyDownEvent, ParentElement, RenderOnce,
-    Role, SharedString, Styled, Window, anchored, deferred, div, point, prelude::*, px,
+    App, CursorStyle, ElementId, IntoElement, KeyDownEvent, ParentElement, RenderOnce, Role,
+    SharedString, Styled, Window, div, prelude::*, px,
 };
 
 use crate::assets::icon;
 use crate::button::metrics;
 use crate::controls::{ChangeHandler, row_label};
+use crate::menu::{
+    GMenu, GMenuItem, GMenuPlacement, host_closer, host_open, host_overlay, host_state,
+    trigger_probe,
+};
 use crate::relief::{GPointer, Live, glow_through, over, raised, raised_shadow};
 use crate::theme::{ActiveTheme, GTextExt, alpha};
 use crate::tokens::{opacity, radius, text};
@@ -23,13 +27,6 @@ pub enum GPickerStyle {
     Menu,
     /// Chips side by side: the current one tinted rust.
     Chips,
-}
-
-/// The open list's state, held by the picker.
-#[derive(Default)]
-struct MenuState {
-    open: bool,
-    highlighted: Option<usize>,
 }
 
 /// A choice among options: `GPicker::new("theme", "Appearance", options, current)`.
@@ -96,10 +93,8 @@ impl GPicker {
 
     fn menu_field(&self, window: &mut Window, cx: &mut App) -> impl IntoElement + use<> {
         let colors = cx.theme().colors;
-        let state: Entity<MenuState> =
-            window.use_keyed_state(self.id.clone(), cx, |_, _| MenuState::default());
-        let open = state.read(cx).open;
-        let highlighted = state.read(cx).highlighted;
+        let state = host_state(self.id.clone(), window, cx);
+        let open = state.read(cx).is_open();
         let live = Live::new("g-menu-face", self.preview, !self.disabled);
         let shape = px(radius::SM);
         let current = self
@@ -155,6 +150,7 @@ impl GPicker {
             };
             let hover_shadow = raised_shadow(true, cx);
             let toggle = state.clone();
+            let close = host_closer(&state);
             let keys = state.clone();
             let on_change = self.on_change.clone();
             face = face
@@ -163,57 +159,37 @@ impl GPicker {
                 .tab_stop(true)
                 .hover(move |style| style.bg(hover).border_color(hover_rim).shadow(hover_shadow))
                 .active(move |style| style.bg(press).shadow(vec![]))
-                .on_click(move |_, _, cx| {
-                    toggle.update(cx, |state, cx| {
-                        state.open = !state.open;
-                        state.highlighted = Some(selected);
-                        cx.notify();
-                    })
+                .on_click(move |_, window, cx| {
+                    if toggle.read(cx).is_open() {
+                        close(window, cx);
+                    } else {
+                        host_open(&toggle, None, window, cx);
+                    }
                 })
-                // As the Mac's pop-up button: the arrows change the choice with the list closed; open, they move
-                // along it, Return chooses, Escape closes.
+                // As the Mac's pop-up button: the arrows change the choice with the list closed; Return or Space
+                // opens it (the list then has the keyboard).
                 .on_key_down(move |event: &KeyDownEvent, window, cx| {
-                    let (open, highlighted) = {
-                        let state = keys.read(cx);
-                        (state.open, state.highlighted)
-                    };
+                    if keys.read(cx).is_open() {
+                        return;
+                    }
                     let step = match event.keystroke.key.as_str() {
                         "up" => -1,
                         "down" => 1,
-                        "enter" | "space" if open => {
-                            if let (Some(index), Some(handler)) = (highlighted, on_change.as_ref())
-                            {
-                                handler(index, window, cx);
-                            }
-                            keys.update(cx, |state, cx| {
-                                state.open = false;
-                                cx.notify();
-                            });
-                            return;
-                        }
-                        "escape" if open => {
-                            keys.update(cx, |state, cx| {
-                                state.open = false;
-                                cx.notify();
-                            });
+                        "enter" | "space" => {
+                            host_open(&keys, None, window, cx);
+                            cx.stop_propagation();
                             return;
                         }
                         _ => return,
                     };
-                    if open {
-                        keys.update(cx, |state, cx| {
-                            let next = (state.highlighted.unwrap_or(selected) as i64 + step)
-                                .clamp(0, count as i64 - 1);
-                            state.highlighted = Some(next as usize);
-                            cx.notify();
-                        });
-                    } else if let Some(handler) = on_change.as_ref() {
+                    if let Some(handler) = on_change.as_ref() {
                         handler(
                             (selected as i64 + step).clamp(0, count as i64 - 1) as usize,
                             window,
                             cx,
                         );
                     }
+                    cx.stop_propagation();
                 });
         }
         let face = if open {
@@ -230,99 +206,35 @@ impl GPicker {
                     .whitespace_nowrap()
                     .child(current),
             )
-            .child(icon("caret-up-down", px(12.), colors.text_discret));
+            .child(icon("caret-up-down", px(12.), colors.text_discret))
+            .child(trigger_probe(&state, cx));
 
-        let list = open.then(|| {
-            let close = state.clone();
-            let hover_state = state.clone();
-            let on_change = self.on_change.clone();
-            let rows = self.options.iter().enumerate().map(move |(index, title)| {
-                let checked = index == selected;
-                let lit = highlighted == Some(index);
-                let choose = on_change.clone();
-                let close = close.clone();
-                let hover_state = hover_state.clone();
-                div()
-                    .id(("g-menu-row", index))
-                    .flex()
-                    .items_center()
-                    .gap(px(10.))
-                    .px(px(14.))
-                    .py(px(9.))
-                    .when(index > 0, |this| {
-                        this.border_t_1().border_color(colors.hairline)
-                    })
-                    .bg(if lit {
-                        colors.hover
-                    } else {
-                        alpha(colors.hover, 0.0)
-                    })
-                    .cursor(CursorStyle::PointingHand)
-                    .role(Role::MenuItemRadio)
-                    .aria_label(title.clone())
-                    .aria_selected(checked)
-                    // The pointer moves the keyboard's line too: one lit line.
-                    .on_hover(move |hovered, _, cx| {
-                        if *hovered {
-                            hover_state.update(cx, |state, cx| {
-                                state.highlighted = Some(index);
-                                cx.notify();
-                            });
-                        }
-                    })
-                    .on_click(move |_, window, cx| {
-                        if let Some(handler) = choose.as_ref() {
-                            handler(index, window, cx);
-                        }
-                        close.update(cx, |state, cx| {
-                            state.open = false;
-                            cx.notify();
-                        });
-                    })
-                    .child(
-                        div()
-                            .flex_1()
-                            .g_text(text::BODY)
-                            .when(checked, |this| this.font_weight(gpui::FontWeight::SEMIBOLD))
-                            .text_color(colors.text_primary)
-                            .child(title.clone()),
-                    )
-                    .child(div().opacity(if checked { 1. } else { 0. }).child(icon(
-                        "check",
-                        px(13.),
-                        colors.accent,
-                    )))
-            });
-            let dismiss = state.clone();
-            deferred(
-                anchored()
-                    .offset(point(px(0.), px(metrics::COMPACT + 4.)))
-                    .snap_to_window_with_margin(px(8.))
-                    .child(
-                        div()
-                            .id("g-menu-list")
-                            .occlude()
-                            .role(Role::ListBox)
-                            .min_w(px(220.))
-                            .max_h(px(340.))
-                            .overflow_y_scroll()
-                            .rounded(px(radius::MD))
-                            .bg(colors.surface)
-                            .border_1()
-                            .border_color(colors.hairline)
-                            .shadow(crate::relief::floating_shadow())
-                            .on_mouse_down_out(move |_, _, cx| {
-                                dismiss.update(cx, |state, cx| {
-                                    state.open = false;
-                                    cx.notify();
-                                })
-                            })
-                            .children(rows),
-                    ),
-            )
-            .with_priority(1)
-        });
-        div().relative().flex_none().child(face).children(list)
+        let list = if state.read(cx).open {
+            let menu = GMenu::new()
+                .items(self.options.iter().enumerate().map(|(index, title)| {
+                    let choose = self.on_change.clone();
+                    GMenuItem::new(("g-menu-row", index), title.clone())
+                        .checked(index == selected)
+                        .on_click(move |_, window, cx| {
+                            if let Some(handler) = choose.as_ref() {
+                                handler(index, window, cx);
+                            }
+                        })
+                }))
+                .highlight(Some(selected))
+                .max_height(px(340.));
+            host_overlay(&state, menu, GMenuPlacement::Below, window, cx)
+        } else {
+            None
+        };
+        // Its own id around the face: two pickers side by side in a container without one would share the face's
+        // (`g-menu-face`), and only one of them would take clicks.
+        div()
+            .id(self.id.clone())
+            .relative()
+            .flex_none()
+            .child(face)
+            .children(list)
     }
 
     fn chip_row(&self, cx: &mut App) -> impl IntoElement + use<> {

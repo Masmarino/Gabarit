@@ -30,7 +30,10 @@ pub use feedback::{
 };
 pub use form::{GForm, GFormButtons, GFormRowButton, GFormSection, GLabeledContent, GPageTitle};
 pub use list::{GLongList, GMessageRow};
-pub use menu::{GContextMenu, GMenu, GMenuItem};
+pub use menu::{
+    GContextMenu, GMenu, GMenuBuilder, GMenuButton, GMenuClose, GMenuItem, GMenuPlacement,
+    shortcut_label,
+};
 pub use picker::GPicker;
 pub use relief::GPointer;
 pub use sheet::{GSheet, GSheetTitle};

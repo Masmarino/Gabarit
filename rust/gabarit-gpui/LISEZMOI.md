@@ -11,11 +11,11 @@ carte graphique : la base de l'app de bureau SkollN (Windows, Linux, Mac). Le re
 | `src/relief.rs`         | Le relief : carte posée, bouton en volume qui s'enfonce, creux, lueur, ombres, sol éclairé.               |
 | `src/button.rs`         | `GButton` (primary, secondary, ghost, danger, destructeur), `GCloseButton`.                               |
 | `src/controls.rs`       | `GToggle` (et `GSwitch`), `GCheckbox`, `GSlider`, `GStepper`.                                             |
-| `src/picker.rs`         | `GPicker` : menu (la liste dans une bulle) ou pastilles.                                                  |
+| `src/picker.rs`         | `GPicker` : menu (la liste en `GMenu`, la coche sur le choix) ou pastilles.                               |
 | `src/text_field.rs`     | `GTextInput` (l'état), `GTextField` (titre et cadre), `GFieldFrame` : une ligne ou plusieurs.             |
 | `src/form.rs`           | `GForm`, `GFormSection`, `GFormRowButton`, `GLabeledContent`, `GFormButtons`, `GPageTitle`, les mesures. |
 | `src/sheet.rs`          | `GSheet` et `GSheetTitle` : l'en-tête toujours sur le gris de la page.                                    |
-| `src/menu.rs`           | `GMenu`, `GMenuItem`, `GContextMenu` (clic droit).                                                        |
+| `src/menu.rs`           | `GMenu` (carte, sections, sous-menus, raccourcis, clavier), `GContextMenu` (clic droit), `GMenuButton`.   |
 | `src/bars.rs`           | `GWindowHeader`, `GBarTitle`, `GNavTabs`, `GPageBand`, `GRailItem`, `GSidebarRow`.                         |
 | `src/feedback.rs`       | `GBadge`, `GBanner`, `GToastCenter`, bulle d'aide, `GSkeleton`, `GTypingDots`, `GEmptyState`, `GUnreadBadge`. |
 | `src/list.rs`           | `GLongList` (la liste virtualisée, sa barre de défilement) et `GMessageRow`.                              |

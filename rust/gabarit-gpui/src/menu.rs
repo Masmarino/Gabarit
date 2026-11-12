@@ -1,32 +1,78 @@
-//! Gabarit's menus (GabaritApple's `GMenus.swift`): a bubble of flat lines on the surface, split by a fine line; the
-//! line under the pointer under the veil; a tick in rust; a destructive line in red. A context menu opens one where
-//! the right button was pressed.
+//! Gabarit's menus, from SkollN's iPhone context menu brought to a computer: a card with large rounded corners, lit at
+//! its top edge, on a soft shadow, a little translucent; rows of 32 points, the text on the left, the outlined icon on
+//! the right (a shortcut in grey before it, an arrow for a submenu), a fine line between rows and a stronger one
+//! between groups, small grey section titles; the row under the pointer or the keyboard is a rounded pill inside the
+//! card; a destructive row in red, its icon too; a tick on the left of a choice; a disabled row greyed.
+//!
+//! The menus open faded in and dropping slightly into place (GPUI has no transform for a box: no scale), and close
+//! faded out. The keyboard: the arrows move (right opens a submenu, left closes it), Return or Space chooses, Escape
+//! closes, a letter goes to the next row that starts with it, a row's shortcut chooses it. A submenu opens under the
+//! pointer after a short delay. A click outside closes the menu, which stays inside the window near its edges.
+//!
+//! Three hosts open a `GMenu`: `GContextMenu` (the right button), `GMenuButton` (a click on a button: « … », « + »)
+//! and `GPicker`'s list (`picker.rs`).
 
+use std::cell::RefCell;
 use std::rc::Rc;
+use std::time::Duration;
 
 use gpui::{
-    AnyElement, App, ClickEvent, CursorStyle, ElementId, Entity, IntoElement, MouseButton,
-    ParentElement, Pixels, Point, RenderOnce, Role, SharedString, Styled, Window, anchored,
-    deferred, div, prelude::*, px,
+    Anchor, Animation, AnimationExt, AnyElement, App, Bounds, ClickEvent, CursorStyle, ElementId,
+    Entity, FocusHandle, InteractiveElement, IntoElement, KeyDownEvent, Keystroke, MouseButton,
+    ParentElement, Pixels, Point, RenderOnce, Role, ScrollHandle, SharedString, Styled, Task,
+    WeakEntity, Window, anchored, canvas, deferred, div, point, prelude::*, px,
 };
 
 use crate::assets::icon;
 use crate::button::ClickHandler;
-use crate::relief::{GPointer, floating_shadow};
-use crate::theme::{ActiveTheme, GTextExt};
-use crate::tokens::{radius, text};
+use crate::relief::GPointer;
+use crate::theme::{ActiveTheme, GTextExt, alpha, black, mix, white};
+use crate::tokens::{opacity, text};
 
-/// A line of a menu: its icon and its name; a tick on the right for a setting that turns on or off.
+/// Closes a menu (and its submenus): what a host hands to the builder of its menu.
+pub type GMenuClose = Rc<dyn Fn(&mut Window, &mut App)>;
+
+/// Builds a menu each time it opens; its argument closes it.
+pub type GMenuBuilder = Rc<dyn Fn(GMenuClose, &mut Window, &mut App) -> GMenu>;
+
+/// The menus' measures, in points.
+pub mod metrics {
+    /// A row's height (56 on the iPhone, under a finger).
+    pub const ROW: f32 = 32.;
+    /// The card's corners (22 on the iPhone).
+    pub const RADIUS: f32 = 14.;
+    /// Between the card's edge and its rows: the pill's corners follow the card's.
+    pub const INSET: f32 = 5.;
+    pub const ROW_RADIUS: f32 = RADIUS - INSET;
+    /// The row's text from the pill's edge.
+    pub const ROW_PADDING: f32 = 10.;
+    pub const MIN_WIDTH: f32 = 220.;
+    pub const MAX_WIDTH: f32 = 380.;
+    /// Taller lists scroll.
+    pub const MAX_HEIGHT: f32 = 420.;
+    /// From the window's edges.
+    pub const WINDOW_MARGIN: f32 = 8.;
+    /// Before a submenu opens or closes under the pointer, in milliseconds.
+    pub const SUBMENU_DELAY: u64 = 180;
+    /// Opening and closing, in milliseconds.
+    pub const OPEN: u64 = 150;
+    pub const CLOSE: u64 = 110;
+}
+
+/// A line of a menu: its name, its icon on the right; a tick on the left for a choice, a shortcut in grey, an arrow
+/// to a submenu.
 #[derive(IntoElement)]
 pub struct GMenuItem {
     id: ElementId,
     title: SharedString,
     icon: Option<&'static str>,
+    shortcut: Option<&'static str>,
     destructive: bool,
     checked: Option<bool>,
     disabled: bool,
     preview: Option<GPointer>,
     on_click: Option<ClickHandler>,
+    submenu: Option<GMenuBuilder>,
 }
 
 impl GMenuItem {
@@ -35,16 +81,26 @@ impl GMenuItem {
             id: id.into(),
             title: title.into(),
             icon: None,
+            shortcut: None,
             destructive: false,
             checked: None,
             disabled: false,
             preview: None,
             on_click: None,
+            submenu: None,
         }
     }
 
+    /// An outlined icon, on the right (as on the iPhone).
     pub fn icon(mut self, name: &'static str) -> Self {
         self.icon = Some(name);
+        self
+    }
+
+    /// The keys that do the same, written as GPUI's (`"secondary-c"`, `"cmd-shift-z"`, `"backspace"`): shown in grey
+    /// on the right (« ⌘C » on the Mac, « Ctrl + C » elsewhere), and they choose the row while the menu is open.
+    pub fn shortcut(mut self, keys: &'static str) -> Self {
+        self.shortcut = Some(keys);
         self
     }
 
@@ -53,6 +109,7 @@ impl GMenuItem {
         self
     }
 
+    /// A choice: a tick on the left when on (the menu keeps the room for it on every row).
     pub fn checked(mut self, checked: bool) -> Self {
         self.checked = Some(checked);
         self
@@ -63,11 +120,13 @@ impl GMenuItem {
         self
     }
 
+    /// Drawn under a pointer that is not there (a gallery).
     pub fn preview(mut self, preview: Option<GPointer>) -> Self {
         self.preview = preview;
         self
     }
 
+    /// What the row does. The menu closes after it.
     pub fn on_click(
         mut self,
         handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
@@ -75,90 +134,309 @@ impl GMenuItem {
         self.on_click = Some(Rc::new(handler));
         self
     }
-}
 
-impl RenderOnce for GMenuItem {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let colors = cx.theme().colors;
-        let foreground = if self.destructive {
-            colors.error_text
-        } else {
-            colors.text_primary
-        };
-        let (hover, press) = (colors.hover, colors.press);
-        let ground = match self.preview {
-            Some(GPointer::Pressed) => press,
-            Some(GPointer::Hover) => hover,
-            None => crate::theme::alpha(hover, 0.0),
-        };
-        div()
-            .id(self.id)
-            .flex()
-            .items_center()
-            .gap(px(10.))
-            .px(px(14.))
-            .py(px(12.))
-            .w_full()
-            .bg(ground)
-            .text_color(foreground)
-            .g_text(text::BODY)
-            .role(Role::MenuItem)
-            .aria_label(self.title.clone())
-            .when_some(self.checked, |this, checked| this.aria_selected(checked))
-            .when(self.disabled, |this| {
-                this.opacity(crate::tokens::opacity::DISABLED)
-            })
-            .when(!self.disabled && self.preview.is_none(), |this| {
-                this.cursor(CursorStyle::PointingHand)
-                    .hover(move |style| style.bg(hover))
-                    .active(move |style| style.bg(press))
-                    .when_some(self.on_click, |this, handler| {
-                        this.on_click(move |event, window, cx| handler(event, window, cx))
-                    })
-            })
-            .when_some(self.icon, |this, name| {
-                this.child(div().w(px(20.)).flex().justify_center().child(icon(
-                    name,
-                    px(15.),
-                    foreground,
-                )))
-            })
-            .child(div().flex_1().child(self.title))
-            .when_some(self.checked, |this, checked| {
-                // Always there, hidden when unticked: the lines keep the same width.
-                this.child(
-                    div()
-                        .w(px(16.))
-                        .opacity(if checked { 1. } else { 0. })
-                        .child(icon("check", px(14.), colors.accent)),
-                )
-            })
+    /// A submenu, built when it opens; its argument closes the whole menu.
+    pub fn submenu(
+        mut self,
+        builder: impl Fn(GMenuClose, &mut Window, &mut App) -> GMenu + 'static,
+    ) -> Self {
+        self.submenu = Some(Rc::new(builder));
+        self
+    }
+
+    fn enabled(&self) -> bool {
+        !self.disabled && (self.on_click.is_some() || self.submenu.is_some())
     }
 }
 
-/// A bubble menu: flat lines on the surface, split by a fine line, a floating shadow.
+/// How a row is drawn.
+#[derive(Clone, Copy)]
+struct RowLook {
+    lit: bool,
+    pressed: bool,
+    /// Room on the left for the ticks of a menu's choices.
+    tick_column: bool,
+}
+
+fn row_element(item: &GMenuItem, look: RowLook, cx: &App) -> gpui::Stateful<gpui::Div> {
+    let colors = cx.theme().colors;
+    let dark = cx.theme().is_dark();
+    let disabled = item.disabled;
+    let foreground = if disabled {
+        colors.text_discret
+    } else if item.destructive {
+        colors.error_text
+    } else {
+        colors.text_primary
+    };
+    let icon_color = if disabled {
+        colors.text_discret
+    } else if item.destructive {
+        colors.error_text
+    } else {
+        colors.text_secondary
+    };
+    let lit = look.lit && !disabled;
+    let ground = if !lit {
+        alpha(colors.hover, 0.0)
+    } else if item.destructive {
+        alpha(colors.error, if look.pressed { 0.2 } else { 0.12 })
+    } else if look.pressed {
+        colors.press
+    } else if dark {
+        white(0.09)
+    } else {
+        black(0.065)
+    };
+    div()
+        .id(item.id.clone())
+        .relative()
+        .flex()
+        .flex_none()
+        .items_center()
+        .gap(px(10.))
+        .h(px(metrics::ROW))
+        .px(px(metrics::ROW_PADDING))
+        .rounded(px(metrics::ROW_RADIUS))
+        .bg(ground)
+        .text_color(foreground)
+        .g_text(text::BODY)
+        .whitespace_nowrap()
+        .role(if item.checked.is_some() {
+            Role::MenuItemCheckBox
+        } else {
+            Role::MenuItem
+        })
+        .aria_label(item.title.clone())
+        .when_some(item.checked, |this, checked| this.aria_selected(checked))
+        .when_some(item.shortcut, |this, keys| {
+            this.aria_keyshortcuts(shortcut_label(keys))
+        })
+        .when(item.submenu.is_some(), |this| this.aria_expanded(false))
+        .when(disabled, |this| this.opacity(0.75))
+        .when(look.tick_column, |this| {
+            let on = item.checked == Some(true);
+            this.child(
+                div()
+                    .w(px(14.))
+                    .flex()
+                    .flex_none()
+                    .justify_center()
+                    .opacity(if on { 1. } else { 0. })
+                    .child(icon(
+                        "check",
+                        px(13.),
+                        if disabled {
+                            colors.text_discret
+                        } else {
+                            colors.accent
+                        },
+                    )),
+            )
+        })
+        .child(
+            // The whole title: the card grows to it (up to its widest).
+            div().flex_1().child(item.title.clone()),
+        )
+        .when_some(item.shortcut, |this, keys| {
+            this.child(
+                div()
+                    .flex_none()
+                    .pl(px(12.))
+                    .g_text(text::CALLOUT)
+                    .text_color(colors.text_discret)
+                    .when(disabled, |this| this.opacity(opacity::DISABLED))
+                    .child(shortcut_label(keys)),
+            )
+        })
+        .when_some(
+            item.icon.filter(|_| item.submenu.is_none()),
+            |this, name| {
+                this.child(
+                    div()
+                        .w(px(18.))
+                        .flex()
+                        .flex_none()
+                        .justify_center()
+                        .child(icon(name, px(16.), icon_color)),
+                )
+            },
+        )
+        .when(item.submenu.is_some(), |this| {
+            this.child(
+                div()
+                    .w(px(18.))
+                    .flex()
+                    .flex_none()
+                    .justify_center()
+                    .child(icon("caret-right", px(12.), colors.text_discret)),
+            )
+        })
+}
+
+/// A row alone (a gallery): lit when forced under the pointer.
+impl RenderOnce for GMenuItem {
+    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+        let look = RowLook {
+            lit: self.preview.is_some(),
+            pressed: self.preview == Some(GPointer::Pressed),
+            tick_column: self.checked.is_some(),
+        };
+        let interactive = !self.disabled && self.preview.is_none();
+        let handler = self.on_click.clone();
+        let (hover, press) = (cx.theme().colors.hover, cx.theme().colors.press);
+        row_element(&self, look, cx).when(interactive, |this| {
+            this.cursor(CursorStyle::PointingHand)
+                .hover(move |style| style.bg(hover))
+                .active(move |style| style.bg(press))
+                .when_some(handler, |this, handler| {
+                    this.on_click(move |event, window, cx| handler(event, window, cx))
+                })
+        })
+    }
+}
+
+enum Entry {
+    Item(GMenuItem),
+    Separator,
+    Section(SharedString),
+    Element(AnyElement),
+}
+
+/// The bounds of the cards of an open menu and its submenus, by depth: a click in a submenu is not a click outside.
+type CardBounds = Rc<RefCell<Vec<(usize, Bounds<Pixels>)>>>;
+
+/// What a host gives the menu it opens.
+#[derive(Clone)]
+struct Hosted {
+    /// Closes everything.
+    close: GMenuClose,
+    /// Closes this level only (a submenu), back to its parent.
+    back: Option<GMenuClose>,
+    /// The pointer entered this submenu: its parent keeps it open.
+    entered: Option<GMenuClose>,
+    cards: CardBounds,
+    depth: usize,
+    focus: Option<FocusHandle>,
+}
+
+/// A menu's state while it is open.
+struct MenuState {
+    focus: FocusHandle,
+    /// The lit row (an entry's index): the pointer's, or the keyboard's.
+    lit: Option<usize>,
+    /// The lit row is the pointer's (it goes out with it), not the keyboard's.
+    pointer: bool,
+    /// The open submenu (its row's index), opened by the keyboard or the pointer.
+    submenu: Option<usize>,
+    submenu_by_keyboard: bool,
+    /// Bumped when a submenu reopens by the keyboard: a fresh submenu, its first row lit.
+    submenu_generation: usize,
+    /// The rows' bounds, for the submenus' placement.
+    rows: Rc<RefCell<Vec<Bounds<Pixels>>>>,
+    scroll: ScrollHandle,
+    /// The submenu's timer, dropped (cancelled) when the pointer moves on.
+    timer: Option<Task<()>>,
+    /// The submenu's focus, so the parent can hand the keyboard over to it.
+    submenu_focus: FocusHandle,
+}
+
+/// A menu: a card of rows, separators and section titles; above it, optionally, a pill of its own (the reactions of
+/// a message).
 #[derive(IntoElement)]
 pub struct GMenu {
-    items: Vec<AnyElement>,
+    id: ElementId,
+    entries: Vec<Entry>,
+    above: Option<AnyElement>,
     min_width: Pixels,
+    max_height: Pixels,
+    initial: Option<usize>,
+    hosted: Option<Hosted>,
 }
 
 impl GMenu {
     pub fn new() -> Self {
         GMenu {
-            items: Vec::new(),
-            min_width: px(240.),
+            id: "g-menu".into(),
+            entries: Vec::new(),
+            above: None,
+            min_width: px(metrics::MIN_WIDTH),
+            max_height: px(metrics::MAX_HEIGHT),
+            initial: None,
+            hosted: None,
         }
     }
 
-    pub fn item(mut self, item: impl IntoElement) -> Self {
-        self.items.push(item.into_any_element());
+    pub fn item(mut self, item: GMenuItem) -> Self {
+        self.entries.push(Entry::Item(item));
+        self
+    }
+
+    pub fn items(mut self, items: impl IntoIterator<Item = GMenuItem>) -> Self {
+        self.entries.extend(items.into_iter().map(Entry::Item));
+        self
+    }
+
+    /// A line between two groups (none at the top, the bottom, or twice in a row).
+    pub fn separator(mut self) -> Self {
+        self.entries.push(Entry::Separator);
+        self
+    }
+
+    /// A small grey title over the rows that follow (a line before it, after other rows).
+    pub fn section(mut self, title: impl Into<SharedString>) -> Self {
+        self.entries.push(Entry::Section(title.into()));
+        self
+    }
+
+    /// Anything else, as a row of its own (not reached by the keyboard).
+    pub fn element(mut self, element: impl IntoElement) -> Self {
+        self.entries
+            .push(Entry::Element(element.into_any_element()));
+        self
+    }
+
+    /// A pill above the card, of the same material: the reactions above a message's menu.
+    pub fn above(mut self, element: impl IntoElement) -> Self {
+        self.above = Some(element.into_any_element());
         self
     }
 
     pub fn min_width(mut self, width: Pixels) -> Self {
         self.min_width = width;
         self
+    }
+
+    pub fn max_height(mut self, height: Pixels) -> Self {
+        self.max_height = height;
+        self
+    }
+
+    /// The row lit when the menu opens (a picker's current choice).
+    pub fn highlight(mut self, index: Option<usize>) -> Self {
+        self.initial = index;
+        self
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
+    }
+
+    fn hosted(mut self, hosted: Hosted) -> Self {
+        self.hosted = Some(hosted);
+        self
+    }
+
+    /// The entries' index as the keyboard goes: the rows that can be chosen.
+    fn reachable(&self) -> Vec<usize> {
+        self.entries
+            .iter()
+            .enumerate()
+            .filter_map(|(index, entry)| match entry {
+                Entry::Item(item) if item.enabled() => Some(index),
+                _ => None,
+            })
+            .collect()
     }
 }
 
@@ -168,44 +446,970 @@ impl Default for GMenu {
     }
 }
 
+/// The card's material, for the menu and the pill above it.
+pub(crate) fn card_material(base: gpui::Div, radius: Pixels, cx: &App) -> gpui::Div {
+    let colors = cx.theme().colors;
+    let dark = cx.theme().is_dark();
+    // No blur behind in GPUI: a little translucent, lifted a touch from the surface in dark.
+    let ground = if dark {
+        alpha(mix(colors.surface, white(1.0), 0.035), 1.0)
+    } else {
+        alpha(colors.surface, 1.0)
+    };
+    let rim = if dark {
+        white(0.11)
+    } else {
+        alpha(colors.hairline, 0.85)
+    };
+    base.relative()
+        .rounded(radius)
+        .bg(ground)
+        .border_1()
+        .border_color(rim)
+        .shadow(menu_shadow(dark))
+        // The light on the top edge, just inside the rim.
+        .child(
+            div()
+                .absolute()
+                .top(px(0.))
+                .left(px(0.))
+                .right(px(0.))
+                .bottom(px(0.))
+                .rounded(radius - px(1.))
+                .border_t_1()
+                .border_color(if dark { white(0.07) } else { white(0.9) }),
+        )
+}
+
+/// A tight contact shadow and a wide soft one: the card floats above the page.
+pub fn menu_shadow(dark: bool) -> Vec<gpui::BoxShadow> {
+    vec![
+        gpui::BoxShadow::new(px(0.), px(1.), black(if dark { 0.45 } else { 0.10 }))
+            .blur_radius(px(2.)),
+        gpui::BoxShadow::new(px(0.), px(10.), black(if dark { 0.5 } else { 0.16 }))
+            .blur_radius(px(16.)),
+    ]
+}
+
 impl RenderOnce for GMenu {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
-        let count = self.items.len();
-        div()
-            .id("g-menu")
+        let reachable = self.reachable();
+        let initial = self.initial.filter(|i| reachable.contains(i));
+        let hosted = self.hosted.clone();
+        let wants_focus = hosted.as_ref().map(|h| h.focus.clone());
+        let state: Entity<MenuState> = window.use_keyed_state(self.id.clone(), cx, |window, cx| {
+            let focus = wants_focus.flatten().unwrap_or_else(|| cx.focus_handle());
+            if hosted.is_some() {
+                let focus = focus.clone();
+                window.defer(cx, move |window, cx| window.focus(&focus, cx));
+            }
+            let scroll = ScrollHandle::new();
+            if let Some(index) = initial {
+                scroll.scroll_to_item(index);
+            }
+            MenuState {
+                focus,
+                lit: initial,
+                pointer: false,
+                submenu: None,
+                submenu_by_keyboard: false,
+                submenu_generation: 0,
+                rows: Rc::new(RefCell::new(Vec::new())),
+                scroll,
+                timer: None,
+                submenu_focus: cx.focus_handle(),
+            }
+        });
+        let hosted = self.hosted.clone();
+        let (lit, submenu, focus, scroll, rows_bounds) = {
+            let s = state.read(cx);
+            (
+                s.lit,
+                s.submenu,
+                s.focus.clone(),
+                s.scroll.clone(),
+                s.rows.clone(),
+            )
+        };
+        // The ticks' room, only when a row is ticked: a lone switch off (« Sourdine ») does not push every row right.
+        let tick_column = self
+            .entries
+            .iter()
+            .any(|e| matches!(e, Entry::Item(item) if item.checked == Some(true)));
+        // The separators: none at the ends, never twice in a row, nor right before a section's own line.
+        let mut entries: Vec<Entry> = Vec::with_capacity(self.entries.len());
+        for entry in self.entries {
+            let previous_is_line = matches!(entries.last(), None | Some(Entry::Separator));
+            match entry {
+                Entry::Separator if previous_is_line => {}
+                Entry::Section(_) if matches!(entries.last(), Some(Entry::Separator)) => {
+                    entries.pop();
+                    entries.push(entry);
+                }
+                other => entries.push(other),
+            }
+        }
+        while matches!(entries.last(), Some(Entry::Separator)) {
+            entries.pop();
+        }
+        // The indices changed with the separators dropped: count anew.
+        let count = entries.len();
+        let keys: Rc<Vec<Option<RowKeys>>> = Rc::new(
+            entries
+                .iter()
+                .map(|entry| match entry {
+                    Entry::Item(item) if item.enabled() => Some(RowKeys {
+                        title: item.title.clone(),
+                        handler: item.on_click.clone(),
+                        submenu: item.submenu.is_some(),
+                        shortcut: item.shortcut.and_then(parse_shortcut),
+                    }),
+                    _ => None,
+                })
+                .collect(),
+        );
+        rows_bounds.borrow_mut().resize(count, Bounds::default());
+        let lit = lit.filter(|i| *i < count);
+        let submenu = submenu.filter(|i| *i < count);
+
+        let mut children: Vec<AnyElement> = Vec::with_capacity(count);
+        let mut previous_row = false;
+        for (index, entry) in entries.into_iter().enumerate() {
+            match entry {
+                Entry::Separator => {
+                    previous_row = false;
+                    children.push(
+                        div()
+                            .flex_none()
+                            .py(px(4.))
+                            .px(px(4.))
+                            .child(div().h(px(1.)).bg(colors.hairline))
+                            .into_any_element(),
+                    );
+                }
+                Entry::Section(title) => {
+                    let first = index == 0;
+                    previous_row = false;
+                    children.push(
+                        div()
+                            .flex_none()
+                            .flex()
+                            .flex_col()
+                            .when(!first, |this| {
+                                this.child(
+                                    div()
+                                        .py(px(4.))
+                                        .px(px(4.))
+                                        .child(div().h(px(1.)).bg(colors.hairline)),
+                                )
+                            })
+                            .child(
+                                div()
+                                    .px(px(metrics::ROW_PADDING))
+                                    .pt(px(if first { 4. } else { 2. }))
+                                    .pb(px(3.))
+                                    .g_text(text::SUBHEADLINE)
+                                    .font_weight(gpui::FontWeight::SEMIBOLD)
+                                    .text_color(colors.text_discret)
+                                    .child(title),
+                            )
+                            .into_any_element(),
+                    );
+                }
+                Entry::Element(element) => {
+                    previous_row = false;
+                    children.push(div().flex_none().child(element).into_any_element());
+                }
+                Entry::Item(item) => {
+                    let this_lit = lit == Some(index) || submenu == Some(index);
+                    let previous_lit =
+                        index > 0 && (lit == Some(index - 1) || submenu == Some(index - 1));
+                    let line = previous_row && !this_lit && !previous_lit;
+                    previous_row = true;
+                    let look = RowLook {
+                        lit: this_lit || item.preview.is_some(),
+                        pressed: item.preview == Some(GPointer::Pressed),
+                        tick_column,
+                    };
+                    let mut row = row_element(&item, look, cx);
+                    // The fine line between two rows, inset, hidden next to the pill.
+                    row = row.child(
+                        div()
+                            .absolute()
+                            .top(px(-0.5))
+                            .left(px(metrics::ROW_PADDING))
+                            .right(px(metrics::ROW_PADDING))
+                            .h(px(1.))
+                            .bg(alpha(colors.hairline, if line { 0.5 } else { 0. })),
+                    );
+                    // Its bounds, for its submenu.
+                    let bounds = rows_bounds.clone();
+                    row = row.child(
+                        canvas(
+                            move |b, _, _| {
+                                if let Some(slot) = bounds.borrow_mut().get_mut(index) {
+                                    *slot = b;
+                                }
+                            },
+                            |_, _, _, _| {},
+                        )
+                        .absolute()
+                        .top(px(0.))
+                        .left(px(0.))
+                        .size_full(),
+                    );
+                    if item.enabled() && item.preview.is_none() {
+                        row = interactive_row(row, index, &item, state.clone(), hosted.clone());
+                    }
+                    if let (Some(builder), true, Some(host)) =
+                        (item.submenu.clone(), submenu == Some(index), hosted.clone())
+                    {
+                        row = row.child(open_submenu(
+                            builder,
+                            index,
+                            &state,
+                            host,
+                            rows_bounds.borrow().get(index).copied().unwrap_or_default(),
+                            window,
+                            cx,
+                        ));
+                    }
+                    children.push(row.into_any_element());
+                }
+            }
+        }
+
+        let card = card_material(div(), px(metrics::RADIUS), cx)
+            .min_w(self.min_width)
+            .max_w(px(metrics::MAX_WIDTH))
+            .child(
+                div()
+                    .id("g-menu-rows")
+                    .relative()
+                    .flex()
+                    .flex_col()
+                    .p(px(metrics::INSET))
+                    .max_h(self.max_height)
+                    .overflow_y_scroll()
+                    .track_scroll(&scroll)
+                    .children(children),
+            );
+        let cards = hosted.as_ref().map(|h| (h.cards.clone(), h.depth));
+        let card = card.child(
+            canvas(
+                move |b, _, _| {
+                    if let Some((cards, depth)) = &cards {
+                        let mut cards = cards.borrow_mut();
+                        cards.retain(|(d, _)| d != depth);
+                        cards.push((*depth, b));
+                    }
+                },
+                |_, _, _, _| {},
+            )
+            .absolute()
+            .top(px(0.))
+            .left(px(0.))
+            .size_full(),
+        );
+
+        let above = self.above.map(|element| {
+            card_material(div(), px(100.), cx)
+                .flex()
+                .items_center()
+                .px(px(6.))
+                .py(px(4.))
+                .child(element)
+        });
+
+        let mut menu = div()
+            .id(self.id)
             .role(Role::Menu)
+            .occlude()
             .flex()
             .flex_col()
-            .min_w(self.min_width)
-            .rounded(px(radius::MD))
-            .overflow_hidden()
-            .bg(colors.surface)
-            .border_1()
-            .border_color(colors.hairline)
-            .shadow(floating_shadow())
-            .children(
-                self.items
-                    .into_iter()
-                    .enumerate()
-                    .flat_map(move |(index, item)| {
-                        let line = (index > 0 && index < count).then(|| {
-                            div()
-                                .h(px(1.))
-                                .w_full()
-                                .bg(colors.hairline)
-                                .into_any_element()
+            .items_start()
+            .gap(px(8.))
+            .children(above)
+            .child(card);
+        if let Some(host) = hosted {
+            let keys_state = state.clone();
+            let leave_state = state.clone();
+            let host_keys = host.clone();
+            menu = menu
+                .track_focus(&focus)
+                .on_key_down(move |event: &KeyDownEvent, window, cx| {
+                    on_key(event, &keys, &keys_state, &host_keys, window, cx)
+                })
+                .on_hover(move |hovered, _, cx| {
+                    if !*hovered {
+                        leave_state.update(cx, |state, cx| {
+                            if state.submenu.is_none() && state.pointer {
+                                state.lit = None;
+                                cx.notify();
+                            }
                         });
-                        line.into_iter().chain([item])
-                    }),
-            )
+                    }
+                });
+            if host.depth == 0 {
+                let cards = host.cards.clone();
+                let close = host.close.clone();
+                menu = menu.on_mouse_down_out(move |event, window, cx| {
+                    let inside = cards
+                        .borrow()
+                        .iter()
+                        .any(|(_, b)| b.contains(&event.position));
+                    if !inside {
+                        close(window, cx)
+                    }
+                });
+            }
+            if let Some(entered) = host.entered.clone() {
+                menu = menu.on_mouse_move(move |_, window, cx| entered(window, cx));
+            }
+        }
+        menu
     }
 }
 
-/// Where a context menu is open, held by the element that opens it.
+/// What the keyboard needs of a row.
+struct RowKeys {
+    title: SharedString,
+    handler: Option<ClickHandler>,
+    submenu: bool,
+    shortcut: Option<(Modifiers, String)>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+struct Modifiers {
+    control: bool,
+    alt: bool,
+    shift: bool,
+    platform: bool,
+}
+
+fn interactive_row(
+    row: gpui::Stateful<gpui::Div>,
+    index: usize,
+    item: &GMenuItem,
+    state: Entity<MenuState>,
+    hosted: Option<Hosted>,
+) -> gpui::Stateful<gpui::Div> {
+    let has_submenu = item.submenu.is_some();
+    let handler = item.on_click.clone();
+    let hover_state = state.clone();
+    let click_state = state;
+    let close = hosted.as_ref().map(|h| h.close.clone());
+    row.cursor(CursorStyle::PointingHand)
+        .on_hover(move |hovered, _, cx| {
+            if *hovered {
+                pointer_on(&hover_state, index, has_submenu, cx);
+            }
+        })
+        .on_click(move |event, window, cx| {
+            if has_submenu {
+                click_state.update(cx, |state, cx| {
+                    state.timer = None;
+                    state.submenu = Some(index);
+                    state.lit = Some(index);
+                    state.pointer = true;
+                    cx.notify();
+                });
+                return;
+            }
+            if let Some(handler) = handler.as_ref() {
+                handler(event, window, cx);
+            }
+            if let Some(close) = close.as_ref() {
+                close(window, cx);
+            }
+        })
+}
+
+/// The pointer on a row: lit now; its submenu opens (another one closes) after a short delay.
+fn pointer_on(state: &Entity<MenuState>, index: usize, has_submenu: bool, cx: &mut App) {
+    let weak = state.downgrade();
+    state.update(cx, |state, cx| {
+        state.lit = Some(index);
+        state.pointer = true;
+        let wanted = has_submenu.then_some(index);
+        if state.submenu == wanted {
+            state.timer = None;
+        } else {
+            state.timer = Some(cx.spawn(async move |_, cx| {
+                cx.background_executor()
+                    .timer(Duration::from_millis(metrics::SUBMENU_DELAY))
+                    .await;
+                let _ = weak.update(cx, |state, cx| {
+                    if state.lit == Some(index) {
+                        state.submenu = wanted;
+                        state.submenu_by_keyboard = false;
+                        cx.notify();
+                    }
+                });
+            }));
+        }
+        cx.notify();
+    });
+}
+
+fn open_submenu(
+    builder: GMenuBuilder,
+    index: usize,
+    state: &Entity<MenuState>,
+    host: Hosted,
+    row: Bounds<Pixels>,
+    window: &mut Window,
+    cx: &mut App,
+) -> AnyElement {
+    let (generation, by_keyboard, focus) = {
+        let s = state.read(cx);
+        (
+            s.submenu_generation,
+            s.submenu_by_keyboard,
+            s.submenu_focus.clone(),
+        )
+    };
+    let back: GMenuClose = {
+        let weak = state.downgrade();
+        let cards = host.cards.clone();
+        let depth = host.depth;
+        Rc::new(move |window, cx| {
+            cards.borrow_mut().retain(|(d, _)| *d <= depth);
+            let _ = weak.update(cx, |state, cx| {
+                state.submenu = None;
+                window.focus(&state.focus, cx);
+                cx.notify();
+            });
+        })
+    };
+    let entered: GMenuClose = {
+        let weak = state.downgrade();
+        Rc::new(move |_, cx| {
+            let _ = weak.update(cx, |state, cx| {
+                if state.lit != Some(index) || state.timer.is_some() {
+                    state.timer = None;
+                    state.lit = Some(index);
+                    state.pointer = true;
+                    cx.notify();
+                }
+            });
+        })
+    };
+    let menu = builder(host.close.clone(), window, cx);
+    let first = menu.reachable().first().copied();
+    let menu = GMenu {
+        id: ElementId::NamedInteger("g-submenu".into(), (generation << 16 | index) as u64),
+        initial: if by_keyboard { first } else { menu.initial },
+        ..menu
+    }
+    .hosted(Hosted {
+        close: host.close.clone(),
+        back: Some(back),
+        entered: Some(entered),
+        cards: host.cards.clone(),
+        depth: host.depth + 1,
+        focus: by_keyboard.then_some(focus),
+    });
+    deferred(
+        anchored()
+            .attach(row, Anchor::TopRight)
+            .anchor(Anchor::TopLeft)
+            .offset(point(px(metrics::INSET + 2.), px(-metrics::INSET - 1.)))
+            .snap_to_window_with_margin(px(metrics::WINDOW_MARGIN))
+            .child(fade_in(
+                ElementId::NamedInteger("g-submenu-in".into(), generation as u64),
+                menu,
+            )),
+    )
+    .with_priority(2 + host.depth)
+    .into_any_element()
+}
+
+fn on_key(
+    event: &KeyDownEvent,
+    keys: &Rc<Vec<Option<RowKeys>>>,
+    state: &Entity<MenuState>,
+    host: &Hosted,
+    window: &mut Window,
+    cx: &mut App,
+) {
+    let keystroke = &event.keystroke;
+    let reachable: Vec<usize> = keys
+        .iter()
+        .enumerate()
+        .filter_map(|(i, k)| k.as_ref().map(|_| i))
+        .collect();
+    let (lit, submenu) = {
+        let s = state.read(cx);
+        (s.lit, s.submenu)
+    };
+    let choose = |index: usize, window: &mut Window, cx: &mut App| {
+        let Some(Some(row)) = keys.get(index) else {
+            return;
+        };
+        if row.submenu {
+            state.update(cx, |state, cx| {
+                state.timer = None;
+                state.lit = Some(index);
+                state.pointer = false;
+                state.submenu = Some(index);
+                state.submenu_by_keyboard = true;
+                state.submenu_generation += 1;
+                cx.notify();
+            });
+            return;
+        }
+        if let Some(handler) = row.handler.as_ref() {
+            handler(&ClickEvent::default(), window, cx);
+        }
+        (host.close)(window, cx);
+    };
+    let plain =
+        !keystroke.modifiers.control && !keystroke.modifiers.alt && !keystroke.modifiers.platform;
+    let step = |delta: Step, cx: &mut App| {
+        let next = move_lit(&reachable, lit, delta);
+        state.update(cx, |state, cx| {
+            state.lit = next;
+            state.pointer = false;
+            state.timer = None;
+            if let Some(index) = next {
+                state.scroll.scroll_to_item(index);
+            }
+            cx.notify();
+        });
+    };
+    match keystroke.key.as_str() {
+        "down" if plain => step(Step::Next, cx),
+        "up" if plain => step(Step::Previous, cx),
+        "home" | "pageup" if plain => step(Step::First, cx),
+        "end" | "pagedown" if plain => step(Step::Last, cx),
+        "enter" | "space" if plain => {
+            if let Some(index) = lit {
+                choose(index, window, cx);
+            }
+        }
+        "right" if plain => {
+            if let Some(index) = lit.filter(|i| {
+                keys.get(*i)
+                    .is_some_and(|k| k.as_ref().is_some_and(|k| k.submenu))
+            }) {
+                if submenu == Some(index) {
+                    let focus = state.read(cx).submenu_focus.clone();
+                    // Already open under the pointer: a fresh one, its first row lit.
+                    state.update(cx, |state, cx| {
+                        state.submenu_by_keyboard = true;
+                        state.submenu_generation += 1;
+                        cx.notify();
+                    });
+                    window.focus(&focus, cx);
+                } else {
+                    choose(index, window, cx);
+                }
+            }
+        }
+        "left" if plain => {
+            if let Some(back) = host.back.as_ref() {
+                back(window, cx);
+            }
+        }
+        "escape" => match host.back.as_ref() {
+            Some(back) => back(window, cx),
+            None => (host.close)(window, cx),
+        },
+        "tab" => {}
+        key => {
+            // A row's shortcut chooses it.
+            let pressed = Modifiers {
+                control: keystroke.modifiers.control,
+                alt: keystroke.modifiers.alt,
+                shift: keystroke.modifiers.shift,
+                platform: keystroke.modifiers.platform,
+            };
+            let by_shortcut = keys.iter().position(|k| {
+                k.as_ref()
+                    .and_then(|k| k.shortcut.as_ref())
+                    .is_some_and(|(m, k)| *m == pressed && k == key)
+            });
+            if let Some(index) = by_shortcut {
+                choose(index, window, cx);
+            } else if plain && let Some(letter) = typed_letter(keystroke) {
+                let titles: Vec<(usize, &str)> = reachable
+                    .iter()
+                    .filter_map(|i| keys[*i].as_ref().map(|k| (*i, k.title.as_ref())))
+                    .collect();
+                if let Some(index) = next_starting_with(&titles, lit, letter) {
+                    state.update(cx, |state, cx| {
+                        state.lit = Some(index);
+                        state.pointer = false;
+                        state.scroll.scroll_to_item(index);
+                        cx.notify();
+                    });
+                }
+            } else {
+                return;
+            }
+        }
+    }
+    cx.stop_propagation();
+}
+
+fn typed_letter(keystroke: &Keystroke) -> Option<char> {
+    let text = keystroke
+        .key_char
+        .as_deref()
+        .unwrap_or(keystroke.key.as_str());
+    let mut chars = text.chars();
+    let letter = chars.next()?;
+    (chars.next().is_none() && letter.is_alphanumeric()).then_some(letter)
+}
+
+#[derive(Clone, Copy, Debug)]
+enum Step {
+    Next,
+    Previous,
+    First,
+    Last,
+}
+
+/// The next lit row, among those the keyboard reaches: no wrapping, as on the Mac; from none, down goes to the first
+/// row and up to the last.
+fn move_lit(reachable: &[usize], lit: Option<usize>, step: Step) -> Option<usize> {
+    let (first, last) = (reachable.first().copied()?, reachable.last().copied()?);
+    Some(match (step, lit) {
+        (Step::First, _) => first,
+        (Step::Last, _) => last,
+        (Step::Next, None) => first,
+        (Step::Previous, None) => last,
+        (Step::Next, Some(i)) => reachable.iter().copied().find(|r| *r > i).unwrap_or(last),
+        (Step::Previous, Some(i)) => reachable
+            .iter()
+            .rev()
+            .copied()
+            .find(|r| *r < i)
+            .unwrap_or(first),
+    })
+}
+
+/// A letter without its accent, in lower case: « É » is « e ».
+fn fold(letter: char) -> char {
+    let lower = letter.to_lowercase().next().unwrap_or(letter);
+    match lower {
+        'à' | 'â' | 'ä' | 'á' | 'ã' => 'a',
+        'é' | 'è' | 'ê' | 'ë' => 'e',
+        'î' | 'ï' | 'í' | 'ì' => 'i',
+        'ô' | 'ö' | 'ó' | 'ò' | 'õ' => 'o',
+        'ù' | 'û' | 'ü' | 'ú' => 'u',
+        'ç' => 'c',
+        'ÿ' => 'y',
+        'œ' => 'o',
+        'æ' => 'a',
+        other => other,
+    }
+}
+
+/// The next row after the lit one whose title starts with `letter`, going round.
+fn next_starting_with(titles: &[(usize, &str)], lit: Option<usize>, letter: char) -> Option<usize> {
+    let wanted = fold(letter);
+    let starts =
+        |title: &str| title.chars().find(|c| c.is_alphanumeric()).map(fold) == Some(wanted);
+    let after = titles
+        .iter()
+        .filter(|(i, _)| lit.is_none_or(|l| *i > l))
+        .find(|(_, t)| starts(t));
+    after
+        .or_else(|| titles.iter().find(|(_, t)| starts(t)))
+        .map(|(i, _)| *i)
+}
+
+/// `"secondary-shift-z"` as modifiers and a key; `secondary` is ⌘ on the Mac, Ctrl elsewhere.
+fn parse_shortcut(keys: &str) -> Option<(Modifiers, String)> {
+    let mut modifiers = Modifiers::default();
+    let mut parts: Vec<&str> = keys.split('-').collect();
+    let key = parts.pop()?;
+    for part in parts {
+        match part {
+            "ctrl" | "control" => modifiers.control = true,
+            "alt" | "option" => modifiers.alt = true,
+            "shift" => modifiers.shift = true,
+            "cmd" | "platform" | "super" | "win" => modifiers.platform = true,
+            "secondary" => {
+                if cfg!(target_os = "macos") {
+                    modifiers.platform = true
+                } else {
+                    modifiers.control = true
+                }
+            }
+            _ => return None,
+        }
+    }
+    (!key.is_empty()).then(|| (modifiers, key.to_lowercase()))
+}
+
+/// The keys as the system writes them: « ⇧⌘Z » on the Mac, « Ctrl + Maj + Z » under Windows and Linux.
+pub fn shortcut_label(keys: &str) -> String {
+    shortcut_label_for(keys, cfg!(target_os = "macos"))
+}
+
+fn shortcut_label_for(keys: &str, mac: bool) -> String {
+    let Some((modifiers, key)) = parse_shortcut_for(keys, mac) else {
+        return keys.to_owned();
+    };
+    let key = key_name(&key, mac);
+    if mac {
+        let mut label = String::new();
+        if modifiers.control {
+            label.push('⌃');
+        }
+        if modifiers.alt {
+            label.push('⌥');
+        }
+        if modifiers.shift {
+            label.push('⇧');
+        }
+        if modifiers.platform {
+            label.push('⌘');
+        }
+        label.push_str(&key);
+        label
+    } else {
+        let mut parts: Vec<String> = Vec::new();
+        if modifiers.control {
+            parts.push("Ctrl".into());
+        }
+        if modifiers.alt {
+            parts.push("Alt".into());
+        }
+        if modifiers.shift {
+            parts.push("Maj".into());
+        }
+        if modifiers.platform {
+            parts.push(if cfg!(windows) { "Win" } else { "Super" }.into());
+        }
+        parts.push(key);
+        parts.join(" + ")
+    }
+}
+
+fn parse_shortcut_for(keys: &str, mac: bool) -> Option<(Modifiers, String)> {
+    let secondary = if mac { "cmd" } else { "ctrl" };
+    parse_shortcut(&keys.replace("secondary", secondary))
+}
+
+fn key_name(key: &str, mac: bool) -> String {
+    let (on_mac, elsewhere) = match key {
+        "enter" => ("↩", "Entrée"),
+        "escape" => ("⎋", "Échap"),
+        "backspace" => ("⌫", "Retour arrière"),
+        "delete" => ("⌦", "Suppr"),
+        "tab" => ("⇥", "Tab"),
+        "space" => ("Espace", "Espace"),
+        "up" => ("↑", "↑"),
+        "down" => ("↓", "↓"),
+        "left" => ("←", "←"),
+        "right" => ("→", "→"),
+        "home" => ("↖", "Début"),
+        "end" => ("↘", "Fin"),
+        other => return other.to_uppercase(),
+    };
+    (if mac { on_mac } else { elsewhere }).to_owned()
+}
+
+/// Fades in, dropping a few points into place.
+fn fade_in(id: ElementId, element: impl IntoElement) -> impl IntoElement {
+    div().relative().child(element).with_animation(
+        id,
+        Animation::new(Duration::from_millis(metrics::OPEN)).with_easing(gpui::ease_out_quint()),
+        |this, t| this.opacity(t).top(px(-4. * (1. - t))),
+    )
+}
+
+fn fade_out(id: ElementId, element: impl IntoElement) -> impl IntoElement {
+    div().relative().child(element).with_animation(
+        id,
+        Animation::new(Duration::from_millis(metrics::CLOSE)),
+        |this, t| this.opacity(1. - t).top(px(-2. * t)),
+    )
+}
+
+// MARK: The hosts
+
+/// Where an open menu is, held by what opens it.
 #[derive(Default)]
-pub struct GContextMenuState {
+pub(crate) struct HostState {
+    pub(crate) open: bool,
+    closing: bool,
     position: Option<Point<Pixels>>,
+    generation: usize,
+    previous_focus: Option<FocusHandle>,
+    cards: CardBounds,
+    trigger: Rc<RefCell<Bounds<Pixels>>>,
+    timer: Option<Task<()>>,
+}
+
+impl HostState {
+    pub(crate) fn is_open(&self) -> bool {
+        self.open && !self.closing
+    }
+}
+
+pub(crate) fn host_state(id: ElementId, window: &mut Window, cx: &mut App) -> Entity<HostState> {
+    window.use_keyed_state(id, cx, |_, _| HostState::default())
+}
+
+/// Opens the menu (at `position` for a context menu, by its trigger otherwise).
+pub(crate) fn host_open(
+    state: &Entity<HostState>,
+    position: Option<Point<Pixels>>,
+    window: &mut Window,
+    cx: &mut App,
+) {
+    let previous = window.focused(cx);
+    state.update(cx, |state, cx| {
+        state.open = true;
+        state.closing = false;
+        state.timer = None;
+        state.position = position;
+        state.generation += 1;
+        state.previous_focus = previous;
+        state.cards.borrow_mut().clear();
+        cx.notify();
+    });
+}
+
+/// Closes it, faded out; the keyboard goes back where it was.
+pub(crate) fn host_closer(state: &Entity<HostState>) -> GMenuClose {
+    let weak: WeakEntity<HostState> = state.downgrade();
+    Rc::new(move |window, cx| {
+        let weak_timer = weak.clone();
+        let _ = weak.update(cx, |state, cx| {
+            if !state.open || state.closing {
+                return;
+            }
+            state.closing = true;
+            if let Some(previous) = state.previous_focus.take() {
+                window.focus(&previous, cx);
+            }
+            state.timer = Some(cx.spawn(async move |_, cx| {
+                cx.background_executor()
+                    .timer(Duration::from_millis(metrics::CLOSE))
+                    .await;
+                let _ = weak_timer.update(cx, |state, cx| {
+                    state.open = false;
+                    state.closing = false;
+                    state.cards.borrow_mut().clear();
+                    cx.notify();
+                });
+            }));
+            cx.notify();
+        });
+    })
+}
+
+/// Where a host's menu is laid: at a point, or by its trigger.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+pub enum GMenuPlacement {
+    /// Below the trigger, their left edges together (above it if there is no room below).
+    #[default]
+    Below,
+    /// Below, their right edges together.
+    BelowRight,
+    /// Above the trigger, their left edges together.
+    Above,
+    /// Above, their right edges together.
+    AboveRight,
+}
+
+/// Records the trigger's bounds (for a menu laid by it).
+pub(crate) fn trigger_probe(state: &Entity<HostState>, cx: &App) -> impl IntoElement {
+    let trigger = state.read(cx).trigger.clone();
+    canvas(move |b, _, _| *trigger.borrow_mut() = b, |_, _, _, _| {})
+        .absolute()
+        .top(px(0.))
+        .left(px(0.))
+        .size_full()
+}
+
+/// The open menu, laid over the window, animated.
+pub(crate) fn host_overlay(
+    state: &Entity<HostState>,
+    menu: GMenu,
+    placement: GMenuPlacement,
+    window: &mut Window,
+    cx: &mut App,
+) -> Option<AnyElement> {
+    let (open, closing, position, generation, cards, trigger) = {
+        let s = state.read(cx);
+        (
+            s.open,
+            s.closing,
+            s.position,
+            s.generation,
+            s.cards.clone(),
+            *s.trigger.borrow(),
+        )
+    };
+    if !open {
+        return None;
+    }
+    let _ = window;
+    let close = host_closer(state);
+    let menu = menu.hosted(Hosted {
+        close,
+        back: None,
+        entered: None,
+        cards,
+        depth: 0,
+        focus: None,
+    });
+    // A fresh menu at each opening (its own state: nothing lit, no submenu).
+    let menu = div()
+        .id(ElementId::NamedInteger(
+            "g-menu-host".into(),
+            generation as u64,
+        ))
+        .child(menu);
+    let animated = if closing {
+        fade_out(
+            ElementId::NamedInteger("g-menu-out".into(), generation as u64),
+            menu,
+        )
+        .into_any_element()
+    } else {
+        fade_in(
+            ElementId::NamedInteger("g-menu-in".into(), generation as u64),
+            menu,
+        )
+        .into_any_element()
+    };
+    let gap = px(6.);
+    let layer = match position {
+        Some(position) => anchored()
+            .position(position)
+            .snap_to_window_with_margin(px(metrics::WINDOW_MARGIN)),
+        None => {
+            let (corner, anchor, offset) = match placement {
+                GMenuPlacement::Below => (Anchor::BottomLeft, Anchor::TopLeft, point(px(0.), gap)),
+                GMenuPlacement::BelowRight => {
+                    (Anchor::BottomRight, Anchor::TopRight, point(px(0.), gap))
+                }
+                GMenuPlacement::Above => (Anchor::TopLeft, Anchor::BottomLeft, point(px(0.), -gap)),
+                GMenuPlacement::AboveRight => {
+                    (Anchor::TopRight, Anchor::BottomRight, point(px(0.), -gap))
+                }
+            };
+            anchored()
+                .attach(trigger, corner)
+                .anchor(anchor)
+                .offset(offset)
+                .snap_to_window_with_margin(px(metrics::WINDOW_MARGIN))
+        }
+    };
+    Some(
+        deferred(layer.child(animated))
+            .with_priority(1)
+            .into_any_element(),
+    )
 }
 
 /// A context menu on what it wraps: the right button (or Ctrl-click on the Mac) opens `menu` there; a click
@@ -214,15 +1418,15 @@ pub struct GContextMenuState {
 pub struct GContextMenu {
     id: ElementId,
     child: AnyElement,
-    menu: Rc<dyn Fn(Rc<dyn Fn(&mut Window, &mut App)>, &mut Window, &mut App) -> GMenu>,
+    menu: GMenuBuilder,
 }
 
 impl GContextMenu {
-    /// `menu` builds the menu each time it opens; its argument closes it (call it from a line's action).
+    /// `menu` builds the menu each time it opens; its argument closes it (a row's action closes it already).
     pub fn new(
         id: impl Into<ElementId>,
         child: impl IntoElement,
-        menu: impl Fn(Rc<dyn Fn(&mut Window, &mut App)>, &mut Window, &mut App) -> GMenu + 'static,
+        menu: impl Fn(GMenuClose, &mut Window, &mut App) -> GMenu + 'static,
     ) -> Self {
         GContextMenu {
             id: id.into(),
@@ -234,50 +1438,139 @@ impl GContextMenu {
 
 impl RenderOnce for GContextMenu {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let state: Entity<GContextMenuState> =
-            window.use_keyed_state(self.id.clone(), cx, |_, _| GContextMenuState::default());
-        let position = state.read(cx).position;
-        let close: Rc<dyn Fn(&mut Window, &mut App)> = {
-            let state = state.clone();
-            Rc::new(move |_, cx| {
-                state.update(cx, |state, cx| {
-                    state.position = None;
-                    cx.notify();
-                })
-            })
+        let state = host_state(self.id.clone(), window, cx);
+        let overlay = if state.read(cx).open {
+            let menu = (self.menu)(host_closer(&state), window, cx);
+            host_overlay(&state, menu, GMenuPlacement::Below, window, cx)
+        } else {
+            None
         };
         let open = state.clone();
+        let ctrl_click = state.clone();
         div()
             .id(self.id)
-            .on_mouse_down(MouseButton::Right, move |event, _, cx| {
-                open.update(cx, |state, cx| {
-                    state.position = Some(event.position);
-                    cx.notify();
-                });
+            .on_mouse_down(MouseButton::Right, move |event, window, cx| {
+                host_open(&open, Some(event.position), window, cx);
                 cx.stop_propagation();
             })
-            .child(self.child)
-            .when_some(position, |this, position| {
-                let menu = (self.menu)(close.clone(), window, cx);
-                let dismiss = close.clone();
-                let escape = close.clone();
-                this.child(deferred(
-                    anchored()
-                        .position(position)
-                        .snap_to_window_with_margin(px(8.))
-                        .child(
-                            div()
-                                .id("g-context-menu")
-                                .occlude()
-                                .on_mouse_down_out(move |_, window, cx| dismiss(window, cx))
-                                .on_key_down(move |event, window, cx| {
-                                    if event.keystroke.key == "escape" {
-                                        escape(window, cx)
-                                    }
-                                })
-                                .child(menu),
-                        ),
-                ))
+            .when(cfg!(target_os = "macos"), |this| {
+                this.on_mouse_down(MouseButton::Left, move |event, window, cx| {
+                    if event.modifiers.control {
+                        host_open(&ctrl_click, Some(event.position), window, cx);
+                        cx.stop_propagation();
+                    }
+                })
             })
+            .child(self.child)
+            .children(overlay)
+    }
+}
+
+/// A button that opens a menu (« … », « + »): `trigger` is drawn as it is, a click on it opens `menu` by it.
+#[derive(IntoElement)]
+pub struct GMenuButton {
+    id: ElementId,
+    trigger: AnyElement,
+    menu: GMenuBuilder,
+    placement: GMenuPlacement,
+}
+
+impl GMenuButton {
+    pub fn new(
+        id: impl Into<ElementId>,
+        trigger: impl IntoElement,
+        menu: impl Fn(GMenuClose, &mut Window, &mut App) -> GMenu + 'static,
+    ) -> Self {
+        GMenuButton {
+            id: id.into(),
+            trigger: trigger.into_any_element(),
+            menu: Rc::new(menu),
+            placement: GMenuPlacement::Below,
+        }
+    }
+
+    pub fn placement(mut self, placement: GMenuPlacement) -> Self {
+        self.placement = placement;
+        self
+    }
+}
+
+impl RenderOnce for GMenuButton {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        let state = host_state(self.id.clone(), window, cx);
+        let is_open = state.read(cx).is_open();
+        let overlay = if state.read(cx).open {
+            let menu = (self.menu)(host_closer(&state), window, cx);
+            host_overlay(&state, menu, self.placement, window, cx)
+        } else {
+            None
+        };
+        let toggle = state.clone();
+        let close = host_closer(&state);
+        div()
+            .id(self.id)
+            .relative()
+            .flex_none()
+            .role(Role::Button)
+            .aria_expanded(is_open)
+            .on_click(move |_, window, cx| {
+                if toggle.read(cx).is_open() {
+                    close(window, cx);
+                } else {
+                    host_open(&toggle, None, window, cx);
+                }
+            })
+            .child(self.trigger)
+            .child(trigger_probe(&state, cx))
+            .children(overlay)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_keyboard_stops_at_the_ends() {
+        let rows = [1, 2, 4];
+        assert_eq!(move_lit(&rows, None, Step::Next), Some(1));
+        assert_eq!(move_lit(&rows, None, Step::Previous), Some(4));
+        assert_eq!(move_lit(&rows, Some(2), Step::Next), Some(4));
+        assert_eq!(move_lit(&rows, Some(4), Step::Next), Some(4));
+        assert_eq!(move_lit(&rows, Some(1), Step::Previous), Some(1));
+        assert_eq!(move_lit(&rows, Some(4), Step::First), Some(1));
+        assert_eq!(move_lit(&[], None, Step::Next), None);
+    }
+
+    #[test]
+    fn a_letter_goes_to_the_next_row_that_starts_with_it() {
+        let titles = [(0, "Répondre"), (1, "Réagir"), (3, "Copier"), (4, "Écrire")];
+        assert_eq!(next_starting_with(&titles, None, 'r'), Some(0));
+        assert_eq!(next_starting_with(&titles, Some(0), 'r'), Some(1));
+        assert_eq!(next_starting_with(&titles, Some(1), 'r'), Some(0));
+        assert_eq!(next_starting_with(&titles, None, 'e'), Some(4));
+        assert_eq!(next_starting_with(&titles, None, 'z'), None);
+    }
+
+    #[test]
+    fn shortcuts_are_written_as_each_system_does() {
+        assert_eq!(shortcut_label_for("secondary-c", true), "⌘C");
+        assert_eq!(shortcut_label_for("secondary-c", false), "Ctrl + C");
+        assert_eq!(shortcut_label_for("cmd-shift-z", true), "⇧⌘Z");
+        assert_eq!(shortcut_label_for("ctrl-shift-z", false), "Ctrl + Maj + Z");
+        assert_eq!(shortcut_label_for("secondary-backspace", true), "⌘⌫");
+        assert_eq!(
+            shortcut_label_for("secondary-backspace", false),
+            "Ctrl + Retour arrière"
+        );
+        assert_eq!(shortcut_label_for("enter", false), "Entrée");
+    }
+
+    #[test]
+    fn a_shortcut_is_read_as_gpui_writes_keys() {
+        let (modifiers, key) = parse_shortcut("ctrl-alt-shift-k").unwrap();
+        assert!(modifiers.control && modifiers.alt && modifiers.shift && !modifiers.platform);
+        assert_eq!(key, "k");
+        assert!(parse_shortcut("hyper-k").is_none());
     }
 }
