@@ -142,6 +142,15 @@ première image en 90 à 180 ms. Mais sous Xvfb la fenêtre reste noire à la ca
 comme en OpenGL : la présentation de wgpu vers un serveur X sans accélération ne passe pas. Il reste à l'essayer sur
 un vrai bureau Linux (X11 et Wayland), où elle passe par le pilote de la carte.
 
+**La barre de titre dessinée par l'app.** Sous Linux, GPUI ne fait rien des `window_control_area` (elles n'agissent que
+sous Windows et sur le Mac) : `bars::window_drag` déplace la fenêtre par un appui puis un mouvement sur la barre (comme
+Zed), `bars::window_button_click` fait agir ses boutons (réduire, agrandir, fermer) ; `GWindowHeader` les prend tous
+les deux. `bars::draws_window_buttons` dit si l'app dessine ces boutons : pas quand le gestionnaire de fenêtres encadre
+la fenêtre (décorations du serveur : X11 sans compositeur, KDE). Une fenêtre aux décorations dessinées par l'app
+(`WindowDecorations::Client`) arrondit elle-même ses coins (`bars::window_corner_radius`, 10 points comme Zed, 0 agrandie
+ou collée) : GPUI ne découpe qu'en rectangle, chaque élément qui touche un coin s'arrondit
+(`GWindowHeader::window_corners` pour l'en-tête).
+
 Le test des jetons lit `../../swift/GabaritCommon/GTokens.swift` : il se lance depuis le dépôt entier.
 
 ## Accessibilité

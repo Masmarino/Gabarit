@@ -223,6 +223,7 @@ pub struct GWindowHeader {
     leading: f32,
     trailing: Vec<AnyElement>,
     radius: f32,
+    top_radius: f32,
     window_controls: bool,
 }
 
@@ -235,6 +236,7 @@ impl GWindowHeader {
             leading: 16.,
             trailing: Vec::new(),
             radius: 0.,
+            top_radius: 0.,
             window_controls: false,
         }
     }
@@ -274,12 +276,106 @@ impl GWindowHeader {
         self.radius = radius;
         self
     }
+
+    /// The top corners rounded with the window's (under Linux, a window that draws its own decorations: see
+    /// [`window_corner_radius`]). GPUI clips to rectangles: the band at the top of a window rounds itself.
+    pub fn window_corners(mut self, radius: f32) -> Self {
+        self.top_radius = radius;
+        self
+    }
+}
+
+/// The corners of a window that draws its own decorations (`WindowDecorations::Client`, under Linux), like Zed's.
+pub const WINDOW_CORNER_RADIUS: f32 = 10.;
+
+/// The radius of the window's corners that the app draws itself: [`WINDOW_CORNER_RADIUS`] for a window that draws its
+/// own decorations, not maximized, tiled nor full screen (under Linux); 0 elsewhere (the system rounds the window).
+pub fn window_corner_radius(window: &Window) -> gpui::Corners<gpui::Pixels> {
+    match window.window_decorations() {
+        gpui::Decorations::Server => gpui::Corners::default(),
+        gpui::Decorations::Client { tiling } => {
+            let r = |a: bool, b: bool| {
+                if a || b {
+                    px(0.)
+                } else {
+                    px(WINDOW_CORNER_RADIUS)
+                }
+            };
+            gpui::Corners {
+                top_left: r(tiling.top, tiling.left),
+                top_right: r(tiling.top, tiling.right),
+                bottom_left: r(tiling.bottom, tiling.left),
+                bottom_right: r(tiling.bottom, tiling.right),
+            }
+        }
+    }
+}
+
+/// Whether the app draws the window's buttons (minimize, maximize, close) in its title bar: under Windows, and under
+/// Linux when the window draws its own decorations (not when the window manager frames it, with its own buttons).
+pub fn draws_window_buttons(window: &Window) -> bool {
+    if cfg!(target_os = "macos") {
+        return false;
+    }
+    !cfg!(any(target_os = "linux", target_os = "freebsd"))
+        || matches!(
+            window.window_decorations(),
+            gpui::Decorations::Client { .. }
+        )
+}
+
+/// Under Linux, GPUI leaves a window's title bar to the app (`window_control_area` acts on Windows and the Mac only):
+/// a press on `element` then a move moves the window (Zed does the same). Elsewhere, `element` as it is.
+pub fn window_drag<E: InteractiveElement>(
+    element: E,
+    key: impl Into<ElementId>,
+    window: &mut Window,
+    cx: &mut App,
+) -> E {
+    if !cfg!(any(target_os = "linux", target_os = "freebsd")) {
+        return element;
+    }
+    let pressed = window.use_keyed_state(key, cx, |_, _| false);
+    let (down, out, up) = (pressed.clone(), pressed.clone(), pressed.clone());
+    element
+        .on_mouse_down(gpui::MouseButton::Left, move |_, _, cx| {
+            down.update(cx, |p, _| *p = true)
+        })
+        .on_mouse_down_out(move |_, _, cx| out.update(cx, |p, _| *p = false))
+        .on_mouse_up(gpui::MouseButton::Left, move |_, _, cx| {
+            up.update(cx, |p, _| *p = false)
+        })
+        .on_mouse_move(move |event, window, cx| {
+            if !*pressed.read(cx) {
+                return;
+            }
+            pressed.update(cx, |p, _| *p = false);
+            if event.pressed_button == Some(gpui::MouseButton::Left) {
+                window.start_window_move();
+            }
+        })
+}
+
+/// Under Linux, what a window button does on a click (minimize, maximize, close); elsewhere nothing (the system acts on
+/// its `window_control_area`).
+pub fn window_button_click(area: WindowControlArea, window: &mut Window) {
+    if !cfg!(any(target_os = "linux", target_os = "freebsd")) {
+        return;
+    }
+    match area {
+        WindowControlArea::Min => window.minimize_window(),
+        WindowControlArea::Max => window.zoom_window(),
+        WindowControlArea::Close => window.remove_window(),
+        WindowControlArea::Drag => {}
+    }
 }
 
 impl RenderOnce for GWindowHeader {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let frame = cx.theme().frame;
-        frame_ground(cx)
+        let buttons = self.window_controls && draws_window_buttons(window);
+        let drag = self.window_controls;
+        let header = frame_ground(cx)
             .id("g-window-header")
             .role(Role::Banner)
             .flex()
@@ -291,6 +387,9 @@ impl RenderOnce for GWindowHeader {
             .pl(px(self.leading))
             .pr(px(14.))
             .rounded(px(self.radius))
+            .when(self.top_radius > 0., |this| {
+                this.rounded_t(px(self.top_radius))
+            })
             .border_b_1()
             .border_color(frame.line)
             .shadow(bar_shadow(false))
@@ -324,7 +423,7 @@ impl RenderOnce for GWindowHeader {
             .when(self.window_controls, |this| {
                 this.window_control_area(WindowControlArea::Drag)
             })
-            .when(self.window_controls && !cfg!(target_os = "macos"), |this| {
+            .when(buttons, |this| {
                 let button = |id: &'static str,
                               symbol: &'static str,
                               area: WindowControlArea,
@@ -350,6 +449,7 @@ impl RenderOnce for GWindowHeader {
                         })
                         .hover(move |style| style.bg(hover))
                         .window_control_area(area)
+                        .on_click(move |_, window, _| window_button_click(area, window))
                         .child(icon(symbol, px(14.), frame.text))
                 };
                 this.child(
@@ -376,7 +476,12 @@ impl RenderOnce for GWindowHeader {
                             true,
                         )),
                 )
-            })
+            });
+        if drag {
+            window_drag(header, "g-window-header-drag", window, cx)
+        } else {
+            header
+        }
     }
 }
 
