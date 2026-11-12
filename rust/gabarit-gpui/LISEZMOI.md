@@ -8,6 +8,7 @@ carte graphique : la base de l'app de bureau SkollN (Windows, Linux, Mac). Le re
 | ----------------------- | --------------------------------------------------------------------------------------------------------- |
 | `src/tokens.rs`         | Les jetons, **générés** par `tools/tokens.py` depuis `tokens/gabarit.json` : ne pas modifier à la main.    |
 | `src/theme.rs`          | Le thème clair ou sombre (`cx.theme()`), le cadre sombre, IBM Plex, les styles de texte (`g_text`).        |
+| `src/motion.rs`         | Le mouvement : durées (`QUICK` 0,15 s, `NORMAL` 0,25 s, `SLOW`), ressorts (`SPRING`, `BOUNCY`, `SNAPPY`), entrées et sorties (`GMotion`, `g_enter`, `g_exit`, `g_enter_on_change`, `g_collapse`), couleurs et calques qui fondent au survol ; « Réduire les animations » : de simples fondus courts. |
 | `src/relief.rs`         | Le relief : carte posée, bouton en volume qui s'enfonce, creux, lueur, ombres, sol éclairé.               |
 | `src/button.rs`         | `GButton` (primary, secondary, ghost, danger, destructeur), `GCloseButton`.                               |
 | `src/controls.rs`       | `GToggle` (et `GSwitch`), `GCheckbox`, `GSlider`, `GStepper`.                                             |

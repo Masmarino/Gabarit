@@ -3,6 +3,7 @@
 //! title in IBM Plex, the selection underlined in rust. And the side column's rows.
 
 use std::rc::Rc;
+use std::sync::Arc;
 
 use gpui::{
     AnyElement, App, ClickEvent, CursorStyle, Div, ElementId, IntoElement, ParentElement,
@@ -14,6 +15,7 @@ use crate::assets::icon;
 use crate::button::ClickHandler;
 use crate::controls::ChangeHandler;
 use crate::feedback::badge_text;
+use crate::motion::{self, GMotion, GMotionExt};
 use crate::relief::{GPointer, bar_shadow, glow, glow_through};
 use crate::theme::{ActiveTheme, GTextExt, alpha, white};
 use crate::tokens::{opacity, radius, text};
@@ -131,11 +133,57 @@ impl GNavTabs {
 }
 
 impl RenderOnce for GNavTabs {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
+        // Where each tab lies (from the first one's left edge), measured at the last frame: the current tab's line is
+        // one line that slides from tab to tab on a spring. Before the first measure, each tab draws its own.
+        let places = window.use_keyed_state(
+            ElementId::NamedChild(Arc::new(self.id.clone()), "g-tab-places".into()),
+            cx,
+            |_, _| Vec::<(f32, f32)>::new(),
+        );
+        let count = self.tabs.len();
+        let sliding = places.read(cx).get(self.selected).copied();
+        let measure = places.clone();
+        let sliding_line = sliding.map(|(left, width)| {
+            let line = motion::spring_to(
+                div()
+                    .h(px(2.))
+                    .bg(colors.accent)
+                    .shadow(vec![glow(colors.accent, 4.)]),
+                "g-tab-line-width",
+                motion::SNAPPY,
+                px(width),
+                cx,
+                |line, width| line.w(width),
+            );
+            motion::spring_to(
+                div().absolute().bottom(px(-1.)).child(line),
+                "g-tab-line-left",
+                motion::SNAPPY,
+                px(left),
+                cx,
+                |line, left| line.left(left),
+            )
+        });
         div()
+            .on_children_prepainted(move |bounds, _, cx| {
+                let Some(first) = bounds.first() else { return };
+                let measured: Vec<(f32, f32)> = bounds
+                    .iter()
+                    .take(count)
+                    .map(|b| ((b.left() - first.left()).as_f32(), b.size.width.as_f32()))
+                    .collect();
+                measure.update(cx, |places, cx| {
+                    if *places != measured {
+                        *places = measured;
+                        cx.notify();
+                    }
+                });
+            })
             .id(self.id)
             .role(Role::TabList)
+            .relative()
             .flex()
             .items_end()
             .gap(px(20.))
@@ -144,6 +192,8 @@ impl RenderOnce for GNavTabs {
             .border_color(colors.hairline)
             .children(self.tabs.into_iter().enumerate().map(|(index, title)| {
                 let current = index == self.selected;
+                // The current tab's line is the sliding one, once measured.
+                let own_line = current && sliding.is_none();
                 let pointer = self
                     .preview
                     .filter(|(tab, _)| *tab == index)
@@ -154,7 +204,7 @@ impl RenderOnce for GNavTabs {
                     None if current => colors.text_primary,
                     None => colors.text_secondary,
                 };
-                let line = if current {
+                let line = if own_line {
                     Some(colors.accent)
                 } else if pointer.is_some() {
                     Some(alpha(colors.border, 0.5))
@@ -204,12 +254,13 @@ impl RenderOnce for GNavTabs {
                             .right_0()
                             .h(px(2.))
                             .when_some(line, |this, color| this.bg(color))
-                            .when(current, |this| this.shadow(vec![glow(colors.accent, 4.)]))
+                            .when(own_line, |this| this.shadow(vec![glow(colors.accent, 4.)]))
                             .when(follows && !current, |this| {
                                 this.group_hover("g-tab", move |style| style.bg(hover_line))
                             }),
                     )
             }))
+            .children(sliding_line)
     }
 }
 
@@ -646,7 +697,9 @@ impl GRailItem {
 }
 
 impl RenderOnce for GRailItem {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        // The pointer over it, as a state: the hover's ground fades in and out (GPUI's hover style would jump).
+        let (hovered, on_hover) = motion::use_hover(self.id.clone(), window, cx);
         let theme = cx.theme();
         let (frame, accent) = (theme.frame, theme.colors.accent);
         let lit = self.preview.is_some();
@@ -658,15 +711,12 @@ impl RenderOnce for GRailItem {
         } else {
             frame.text_discret
         };
-        let ground = if pressed || self.current {
-            frame.selected
-        } else if lit {
-            frame.hover
-        } else {
-            alpha(frame.hover, 0.0)
-        };
+        // The grounds are layers that fade: the hover's veil, the current page's ground (on a click, it fades in
+        // while the old page's fades out).
         let follows = self.preview.is_none();
-        let (hover_ground, selected, hover_text) = (frame.hover, frame.selected, frame.text);
+        let hover_on = !self.current && (lit || (follows && hovered));
+        let selected_on = pressed || self.current;
+        let (selected, hover_text) = (frame.selected, frame.text);
         let current = self.current;
         let label = if self.badge > 0 {
             format!("{}, {}", self.title, badge_text(self.badge))
@@ -684,7 +734,6 @@ impl RenderOnce for GRailItem {
             .w_full()
             .min_h(px(52.))
             .rounded(px(radius::SM))
-            .bg(ground)
             .text_color(foreground)
             .role(Role::Tab)
             .aria_label(label)
@@ -693,11 +742,12 @@ impl RenderOnce for GRailItem {
                 this.cursor(CursorStyle::PointingHand)
                     .focusable()
                     .tab_stop(true)
+                    .on_hover(on_hover)
                     .hover(move |style| {
                         if current {
                             style
                         } else {
-                            style.bg(hover_ground).text_color(hover_text)
+                            style.text_color(hover_text)
                         }
                     })
                     .active(move |style| style.bg(selected))
@@ -705,18 +755,34 @@ impl RenderOnce for GRailItem {
                         this.on_click(move |event, window, cx| handler(event, window, cx))
                     })
             })
-            .when(self.current, |this| {
-                this.child(
-                    div()
-                        .absolute()
-                        .left_0()
-                        .top(px(6.))
-                        .bottom(px(6.))
-                        .w(px(2.))
-                        .bg(accent)
-                        .shadow(vec![glow(accent, 5.)]),
-                )
-            })
+            .child(motion::fading_layer(
+                "g-rail-hover",
+                hover_on,
+                frame.hover,
+                px(radius::SM),
+            ))
+            .child(motion::fading_layer(
+                "g-rail-selected",
+                selected_on,
+                frame.selected,
+                px(radius::SM),
+            ))
+            // The line on the left fades with the ground.
+            .child(motion::spring_to(
+                div()
+                    .absolute()
+                    .left_0()
+                    .top(px(6.))
+                    .bottom(px(6.))
+                    .w(px(2.))
+                    .bg(accent)
+                    .shadow(vec![glow(accent, 5.)]),
+                "g-rail-line",
+                motion::SNAPPY,
+                current,
+                cx,
+                |line, phase: gpui::AnimationPhase| line.opacity(phase.0.clamp(0., 1.)),
+            ))
             .child(
                 div()
                     .relative()
@@ -725,20 +791,27 @@ impl RenderOnce for GRailItem {
                     .items_center()
                     .child(icon(self.icon, px(20.), foreground))
                     .when(self.badge > 0, |this| {
+                        // A new count pops in (not when the rail is first drawn).
                         this.child(
-                            div()
-                                .absolute()
-                                .top(px(-6.))
-                                .left(px(14.))
-                                .px(px(4.))
-                                .py(px(1.))
-                                .rounded(px(radius::XS))
-                                .bg(frame.rim)
-                                .text_color(frame.text)
-                                .g_text(text::CAPTION_2)
-                                .font_weight(gpui::FontWeight::SEMIBOLD)
-                                .whitespace_nowrap()
-                                .child(badge_text(self.badge)),
+                            div().absolute().top(px(-6.)).left(px(14.)).child(
+                                div()
+                                    .px(px(4.))
+                                    .py(px(1.))
+                                    .rounded(px(radius::XS))
+                                    .bg(frame.rim)
+                                    .text_color(frame.text)
+                                    .g_text(text::CAPTION_2)
+                                    .font_weight(gpui::FontWeight::SEMIBOLD)
+                                    .whitespace_nowrap()
+                                    .child(badge_text(self.badge))
+                                    .g_enter_on_change(
+                                        "g-rail-badge",
+                                        self.badge as u64,
+                                        GMotion::pop(),
+                                        window,
+                                        cx,
+                                    ),
+                            ),
                         )
                     }),
             )
@@ -816,31 +889,31 @@ impl GSidebarRow {
 }
 
 impl RenderOnce for GSidebarRow {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
         let selected = self.selected;
         let lit = self.preview.is_some();
         let pressed = self.preview == Some(GPointer::Pressed);
+        // Pressed, its ground at once; the hover's veil and the selection's ground fade (layers under the row).
+        let (hovered, on_hover) = motion::use_hover(self.id.clone(), window, cx);
         let ground = if selected && pressed {
             crate::relief::over(colors.selected_fill, colors.press)
-        } else if selected {
-            colors.selected_fill
         } else if pressed {
             colors.press
-        } else if lit {
-            colors.row_hover
         } else {
             alpha(colors.row_hover, 0.0)
         };
+        let hover_on = !selected && !pressed && (lit || hovered);
         let foreground = if selected {
             colors.accent_text
         } else {
             colors.text_secondary
         };
         let follows = self.preview.is_none();
-        let (hover, press) = (colors.row_hover, colors.press);
+        let press = colors.press;
         div()
             .id(self.id)
+            .relative()
             .flex()
             .items_center()
             .gap(px(10.))
@@ -863,12 +936,24 @@ impl RenderOnce for GSidebarRow {
                 this.cursor(CursorStyle::PointingHand)
                     .focusable()
                     .tab_stop(true)
-                    .when(!selected, |this| this.hover(move |style| style.bg(hover)))
+                    .on_hover(on_hover)
                     .active(move |style| style.bg(press))
                     .when_some(self.on_click, |this, handler| {
                         this.on_click(move |event, window, cx| handler(event, window, cx))
                     })
             })
+            .child(motion::fading_layer(
+                "g-row-hover",
+                hover_on,
+                colors.row_hover,
+                px(radius::MD),
+            ))
+            .child(motion::fading_layer(
+                "g-row-selected",
+                selected && !pressed,
+                colors.selected_fill,
+                px(radius::MD),
+            ))
             .child(
                 div()
                     .flex()

@@ -13,6 +13,7 @@ pub mod feedback;
 pub mod form;
 pub mod list;
 pub mod menu;
+pub mod motion;
 pub mod picker;
 pub mod relief;
 pub mod sheet;
@@ -34,6 +35,7 @@ pub use menu::{
     GContextMenu, GMenu, GMenuBuilder, GMenuButton, GMenuClose, GMenuItem, GMenuPlacement,
     GSpotlight, shortcut_label,
 };
+pub use motion::{GMotion, GMotionExt};
 pub use picker::GPicker;
 pub use relief::GPointer;
 pub use sheet::{GSheet, GSheetTitle};

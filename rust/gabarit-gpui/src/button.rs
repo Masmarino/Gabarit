@@ -9,6 +9,7 @@ use gpui::{
 };
 
 use crate::assets::icon;
+use crate::motion;
 use crate::relief::{GPointer, Live, over, raised, raised_shadow};
 use crate::theme::{ActiveTheme, GTextExt, alpha, black, mix, white};
 use crate::tokens::{opacity, radius, text};
@@ -165,10 +166,13 @@ impl GButton {
 }
 
 impl RenderOnce for GButton {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
         let shape = px(radius::SM);
         let live = Live::new("g-button", self.preview, !self.disabled);
+        // Under the pointer, its ground fades to the hover's (GPUI's hover style would jump); held down, it changes at
+        // once and sinks.
+        let (hovered, on_hover) = motion::use_hover(self.id.clone(), window, cx);
         let [rest, hover, pressed] = self.grounds(cx);
         let ground = if live.pressed() {
             pressed
@@ -220,8 +224,8 @@ impl RenderOnce for GButton {
                 .cursor(CursorStyle::PointingHand)
                 .focusable()
                 .tab_stop(true)
+                .on_hover(on_hover)
                 .hover(move |style| {
-                    let style = style.bg(hover);
                     let style = if ghost {
                         style
                     } else {
@@ -258,12 +262,25 @@ impl RenderOnce for GButton {
             raised(button, shape, on_ink, live, cx)
         };
 
-        button
+        let button = button
             .when(sink && live.pressed(), |this| this.top(px(0.5)))
             .when_some(self.icon, |this, name| {
                 this.child(icon(name, px(14.), foreground))
             })
-            .child(div().relative().child(self.label))
+            .child(div().relative().child(self.label));
+        if live.follows() {
+            motion::fade_color(
+                button,
+                "g-button-ground",
+                hovered,
+                rest,
+                hover,
+                |b, color| b.bg(color),
+            )
+            .into_any_element()
+        } else {
+            button.into_any_element()
+        }
     }
 }
 

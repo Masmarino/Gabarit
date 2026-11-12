@@ -11,6 +11,7 @@ use gpui::{
 
 use crate::assets::icon;
 use crate::button::GButton;
+use crate::motion::{self, GMotion, GMotionExt};
 use crate::relief::{card, floating_shadow};
 use crate::theme::{ActiveTheme, GTextExt, alpha};
 use crate::tokens::{radius, spacing, text};
@@ -148,9 +149,11 @@ impl GUnreadBadge {
 }
 
 impl RenderOnce for GUnreadBadge {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
         let label = badge_text(self.count);
+        let count = self.count as u64;
+        // A new count pops in (not when it is first drawn).
         div()
             .id(SharedString::from(format!("unread-{}", self.count)))
             .role(Role::Status)
@@ -168,6 +171,7 @@ impl RenderOnce for GUnreadBadge {
             .g_text(text::CAPTION_2)
             .font_weight(gpui::FontWeight::SEMIBOLD)
             .child(gpui::Text::new_inaccessible(label.into()))
+            .g_enter_on_change("g-unread", count, GMotion::pop(), window, cx)
     }
 }
 
@@ -288,6 +292,8 @@ impl RenderOnce for GToastView {
 /// `toast_center.read(cx).view()` at the bottom of the window.
 pub struct GToastCenter {
     current: Option<(SharedString, &'static str)>,
+    /// It is leaving: drawn a moment more, sinking away.
+    leaving: bool,
     dismissal: Option<Task<()>>,
 }
 
@@ -295,6 +301,7 @@ impl GToastCenter {
     pub fn new() -> Self {
         GToastCenter {
             current: None,
+            leaving: false,
             dismissal: None,
         }
     }
@@ -306,12 +313,20 @@ impl GToastCenter {
         cx: &mut Context<Self>,
     ) {
         self.current = Some((text.into(), icon));
+        self.leaving = false;
         self.dismissal = Some(cx.spawn(async move |this, cx| {
             cx.background_executor()
                 .timer(Duration::from_millis(2500))
                 .await;
             this.update(cx, |this, cx| {
+                this.leaving = true;
+                cx.notify();
+            })
+            .ok();
+            cx.background_executor().timer(motion::EXIT).await;
+            this.update(cx, |this, cx| {
                 this.current = None;
+                this.leaving = false;
                 cx.notify();
             })
             .ok();
@@ -333,8 +348,9 @@ impl Default for GToastCenter {
 }
 
 impl Render for GToastCenter {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
-        // Over the bottom of the window, centred; it rises into place.
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        // Over the bottom of the window, centred; it rises into place, and sinks away when it leaves.
+        let leaving = self.leaving;
         div()
             .absolute()
             .bottom(px(spacing::XXL))
@@ -343,15 +359,22 @@ impl Render for GToastCenter {
             .flex()
             .justify_center()
             .children(self.current.clone().map(|(text, icon)| {
-                div()
+                let toast = div()
                     .id(SharedString::from(format!("toast-{text}")))
-                    .child(GToastView::new(text, icon))
-                    .with_animation(
-                        "g-toast-in",
-                        Animation::new(Duration::from_millis(250))
-                            .with_easing(gpui::ease_out_quint()),
-                        |this, delta| this.relative().top(px(24. * (1. - delta))).opacity(delta),
-                    )
+                    .child(GToastView::new(text, icon));
+                if leaving {
+                    toast
+                        .g_exit("g-toast-out", GMotion::rise(16.), cx)
+                        .into_any_element()
+                } else {
+                    toast
+                        .g_enter(
+                            "g-toast-in",
+                            GMotion::rise(24.).on_spring(motion::SPRING),
+                            cx,
+                        )
+                        .into_any_element()
+                }
             }))
     }
 }

@@ -3,17 +3,17 @@
 //! "Start") is a button in the sheet. Escape closes it.
 
 use std::rc::Rc;
-use std::time::Duration;
+use std::sync::Arc;
 
 use gpui::{
-    Animation, AnimationExt, AnyElement, App, ClickEvent, CursorStyle, ElementId, FocusHandle,
-    IntoElement, KeyDownEvent, ParentElement, RenderOnce, Role, SharedString, Styled, Window, div,
-    prelude::*, px,
+    AnyElement, App, ClickEvent, CursorStyle, ElementId, FocusHandle, IntoElement, KeyDownEvent,
+    ParentElement, RenderOnce, Role, SharedString, Styled, Window, div, prelude::*, px,
 };
 
 use crate::assets::icon;
 use crate::button::{ClickHandler, GCloseButton};
 use crate::form::metrics;
+use crate::motion::{self, GMotion, GMotionExt};
 use crate::relief::{Live, floating_shadow, page_ground, raised};
 use crate::theme::{ActiveTheme, GTextExt, alpha, black};
 use crate::tokens::{radius, text};
@@ -147,6 +147,7 @@ pub struct GSheet {
     content: AnyElement,
     on_close: ClickHandler,
     width: f32,
+    closing: bool,
 }
 
 impl GSheet {
@@ -165,6 +166,7 @@ impl GSheet {
             content: div().into_any_element(),
             on_close,
             width: 520.,
+            closing: false,
         }
     }
 
@@ -187,12 +189,18 @@ impl GSheet {
         self.width = width;
         self
     }
+
+    /// It is leaving: its owner keeps drawing it for [`motion::EXIT`] after `on_close`, it fades and sinks away (the
+    /// veil with it), and takes no more clicks.
+    pub fn closing(mut self, closing: bool) -> Self {
+        self.closing = closing;
+        self
+    }
 }
 
 impl RenderOnce for GSheet {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
-        let reduce_motion = cx.theme().reduce_motion;
         // The sheet takes the keyboard when it opens: Tab stays in it, Escape closes it.
         let focus = window.use_keyed_state(self.id.clone(), cx, |window, cx| {
             let handle: FocusHandle = cx.focus_handle();
@@ -225,17 +233,34 @@ impl RenderOnce for GSheet {
             })
             .child(self.title)
             .child(div().flex_1().min_h_0().child(self.content));
-        let panel = if reduce_motion {
-            panel.into_any_element()
+        // It opens on the panes' spring, rising a little as a slight zoom would, its veil fading in; it leaves
+        // quicker, sinking. Less motion: plain fades (`GMotionExt`).
+        let named =
+            |name: &'static str| ElementId::NamedChild(Arc::new(self.id.clone()), name.into());
+        let veil = div()
+            .absolute()
+            .top_0()
+            .left_0()
+            .size_full()
+            .bg(black(if cx.theme().is_dark() { 0.45 } else { 0.25 }));
+        let (veil, panel) = if self.closing {
+            (
+                veil.g_exit(named("veil-closing"), GMotion::fade(), cx)
+                    .into_any_element(),
+                panel
+                    .g_exit(named("closing"), GMotion::rise(10.), cx)
+                    .into_any_element(),
+            )
         } else {
-            panel
-                .with_animation(
-                    ElementId::NamedChild(std::sync::Arc::new(self.id.clone()), "opening".into()),
-                    Animation::new(Duration::from_millis(220)).with_easing(gpui::ease_out_quint()),
-                    |panel, delta| panel.relative().top(px(-16. * (1. - delta))).opacity(delta),
-                )
-                .into_any_element()
+            (
+                veil.g_enter(named("veil"), GMotion::fade().duration(motion::QUICK), cx)
+                    .into_any_element(),
+                panel
+                    .g_enter(named("opening"), GMotion::present(), cx)
+                    .into_any_element(),
+            )
         };
+        let closing = self.closing;
         div()
             .id(self.id)
             .absolute()
@@ -247,10 +272,13 @@ impl RenderOnce for GSheet {
             .items_center()
             .pt(px(40.))
             .pb(px(40.))
-            .bg(black(if cx.theme().is_dark() { 0.45 } else { 0.25 }))
-            .on_mouse_down(gpui::MouseButton::Left, move |_, window, cx| {
-                outside(&ClickEvent::default(), window, cx)
+            .when(!closing, |this| {
+                this.on_mouse_down(gpui::MouseButton::Left, move |_, window, cx| {
+                    outside(&ClickEvent::default(), window, cx)
+                })
             })
+            .when(closing, |this| this.occlude())
+            .child(veil)
             .child(panel)
     }
 }

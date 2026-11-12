@@ -3,16 +3,16 @@
 //! elements do.
 
 use std::rc::Rc;
-use std::time::Duration;
 
 use gpui::{
-    AccessibleAction, Animation, AnimationExt, App, Bounds, CursorStyle, ElementId, Empty,
-    IntoElement, KeyDownEvent, ParentElement, Pixels, RenderOnce, Role, SharedString, Styled,
-    Toggled, Window, canvas, div, prelude::*, px, relative,
+    AccessibleAction, App, Bounds, CursorStyle, ElementId, Empty, IntoElement, KeyDownEvent,
+    ParentElement, Pixels, RenderOnce, Role, SharedString, Styled, Toggled, Window, canvas, div,
+    prelude::*, px, relative,
 };
 
 use crate::assets::icon;
 use crate::button::metrics;
+use crate::motion;
 use crate::relief::{GPointer, Live, glow, hollow, knob, raised};
 use crate::theme::{ActiveTheme, GTextExt, alpha, black};
 use crate::tokens::{opacity, radius, text};
@@ -97,7 +97,6 @@ impl RenderOnce for GSwitch {
             .w(px(SWITCH_WIDTH))
             .h(px(SWITCH_HEIGHT))
             .rounded_full()
-            .bg(if on { colors.accent } else { colors.track })
             .border_1()
             .border_color(rim)
             .shadow(shadows);
@@ -122,35 +121,34 @@ impl RenderOnce for GSwitch {
         } else if live.pressed() && !reduce_motion {
             thumb = thumb.w(px(knob_size + stretch));
         }
-        // On, the knob on the right, its stretch towards the left.
-        let place = move |thumb: gpui::Stateful<gpui::Div>, t: f32| {
-            let left = px(1. + travel * t);
-            if on {
-                thumb.right(px(1.))
-            } else {
-                thumb.left(left)
-            }
-        };
-        let thumb = if reduce_motion {
-            place(thumb, if on { 1. } else { 0. }).into_any_element()
-        } else {
-            thumb
-                .with_animation(
-                    ElementId::NamedInteger("g-knob-slide".into(), on as u64),
-                    Animation::new(Duration::from_millis(180)).with_easing(gpui::ease_in_out),
-                    move |thumb, delta| {
-                        let t = if on { delta } else { 1. - delta };
-                        // During the slide the knob is placed from the left; at rest, on its side.
-                        if delta < 1. {
-                            thumb.left(px(1. + travel * t))
-                        } else {
-                            place(thumb, t)
-                        }
-                    },
-                )
-                .into_any_element()
-        };
-        track.child(thumb)
+        // On, the knob on the right, its stretch towards the left. It slides on a spring that starts where it is: no
+        // movement when the switch is first drawn, a smooth one (interrupted, it turns back) at each change. Less
+        // motion: it jumps.
+        let target = if on { 1. } else { 0. };
+        let thumb = motion::spring_to(
+            thumb,
+            "g-knob-slide",
+            motion::SNAPPY,
+            target,
+            cx,
+            move |thumb, t: f32| {
+                if (t - target).abs() < 0.002 && on {
+                    thumb.right(px(1.))
+                } else {
+                    thumb.left(px(1. + travel * t))
+                }
+            },
+        );
+        // The track's colour follows the knob.
+        let (off_ground, on_ground) = (colors.track, colors.accent);
+        motion::fade_color(
+            track.child(thumb),
+            "g-switch-ground",
+            on,
+            off_ground,
+            on_ground,
+            |track, color| track.bg(color),
+        )
     }
 }
 
@@ -299,18 +297,10 @@ impl RenderOnce for GCheckbox {
             } else {
                 rest_rim
             })
-            .bg(if checked {
-                colors.accent
-            } else {
-                colors.background
-            })
             .shadow(if checked {
                 vec![glow(colors.accent, 3.0)]
             } else {
                 vec![hollow(0.1)]
-            })
-            .when(checked, |this| {
-                this.child(icon("check", px(11.), gpui::white()))
             });
         if live.follows() && !checked {
             let border = colors.border;
@@ -339,6 +329,25 @@ impl RenderOnce for GCheckbox {
                 row = row.on_click(move |_, window, cx| handler(!checked, window, cx));
             }
         }
+        // The check pops in on the bouncy spring (it grows past its size and settles), the ground fills with it;
+        // unchecked, it shrinks away. No movement when first drawn; less motion: at once.
+        let (empty, full) = (colors.background, colors.accent);
+        let box_ = motion::spring_to(
+            box_,
+            "g-check-pop",
+            motion::BOUNCY,
+            checked,
+            cx,
+            move |box_, phase: gpui::AnimationPhase| {
+                let scale = phase.0.max(0.);
+                box_.bg(phase.interpolate_clamped(empty, full))
+                    .when(scale > 0.02, |this| {
+                        this.child(icon("check", px(11.), gpui::white()).with_transformation(
+                            gpui::Transformation::scale(gpui::size(scale, scale)),
+                        ))
+                    })
+            },
+        );
         row.child(box_).child(
             div()
                 .g_text(text::BODY)
