@@ -340,7 +340,7 @@ impl RenderOnce for GCheckbox {
             cx,
             move |box_, phase: gpui::AnimationPhase| {
                 let scale = phase.0.max(0.);
-                box_.bg(phase.interpolate_clamped(empty, full))
+                box_.bg(crate::theme::mix(empty, full, phase.0.clamp(0., 1.)))
                     .when(scale > 0.02, |this| {
                         this.child(icon("check", px(11.), gpui::white()).with_transformation(
                             gpui::Transformation::scale(gpui::size(scale, scale)),

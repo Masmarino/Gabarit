@@ -175,7 +175,7 @@ impl GMotion {
         let movement = if reduced {
             Animation::new(REDUCED).with_easing(gpui::ease_in_out)
         } else if exit {
-            Animation::new(EXIT.min(self.duration)).with_easing(gpui::quadratic)
+            Animation::new(EXIT.min(self.duration)).with_easing(gpui::ease_in_out)
         } else if let Some(config) = self.spring {
             let (duration, easing) = spring_curve(config);
             Animation::new(duration).with_easing(easing)
@@ -188,9 +188,12 @@ impl GMotion {
 }
 
 /// Places an element at `t` of its entrance (0: where it comes from, 1: in place). Opacity never overshoots.
-fn place<E: Styled>(element: E, motion: GMotion, reduced: bool, t: f32) -> E {
-    let element = if motion.fade || reduced {
+fn place<E: Styled>(element: E, motion: GMotion, reduced: bool, t: f32, fade_speed: f32) -> E {
+    let element = if reduced {
         element.opacity(t.clamp(0., 1.))
+    } else if motion.fade {
+        // Seen before it settles: the fade ends at two thirds of the movement.
+        element.opacity((t * fade_speed).clamp(0., 1.))
     } else {
         element
     };
@@ -219,7 +222,13 @@ pub trait GMotionExt: Styled + IntoElement + Sized + 'static {
         let animations = motion.animations(reduced, false);
         let last = animations.len() - 1;
         self.with_animations(id, animations, move |element, index, t| {
-            place(element, motion, reduced, if index < last { 0. } else { t })
+            place(
+                element,
+                motion,
+                reduced,
+                if index < last { 0. } else { t },
+                1.5,
+            )
         })
     }
 
@@ -233,12 +242,14 @@ pub trait GMotionExt: Styled + IntoElement + Sized + 'static {
         self.with_animations(
             id,
             motion.animations(reduced, true),
-            move |element, _, t| place(element, motion, reduced, 1. - t),
+            move |element, _, t| place(element, motion, reduced, 1. - t, 1.),
         )
     }
 
     /// Enters each time `value` changes (a count, a state, a set of reactions), not when it is first drawn: `id`
-    /// stays the same, `value` is anything that says the change (a number, a hash).
+    /// stays the same, `value` is anything that says the change (a number, a hash). The last value is kept under `id`
+    /// in the current element's scope: inside a component's `render`, the component's; in a view's `render`, the
+    /// view's (there, give each item its own `id`: a row's identity in it).
     fn g_enter_on_change(
         self,
         id: impl Into<ElementId>,
@@ -364,10 +375,14 @@ pub fn fade_color<E: Styled + IntoElement + 'static>(
     element.with_spring(
         id,
         SpringAnimation::new(SNAPPY).to(on),
-        move |element, phase| paint(element, phase.interpolate_clamped(from, to)),
+        // In sRGB, as `theme::mix`: an HSL blend would turn through other hues (rust to grey through purple).
+        move |element, phase| paint(element, crate::theme::mix(from, to, phase.0.clamp(0., 1.))),
     )
 }
 
+/// (As for [`GMotionExt::g_enter_on_change`], the state lives under `id` in the current scope: unique per item in a
+/// view's `render`.)
+///
 /// Whether the pointer is over the element `id` (an element with that id must take the returned listener as its
 /// `on_hover`): a state that lasts across frames, so a colour can fade on hover. Redraws when it changes.
 pub fn use_hover(
