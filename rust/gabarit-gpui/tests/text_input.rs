@@ -59,7 +59,12 @@ fn offsets_are_utf16_for_the_platform(cx: &mut TestAppContext) {
             input.set_selected_text_range(1..12, window, cx);
             assert_eq!(input.selection(), 1..26);
             let mut actual = None;
-            assert_eq!(input.text_for_range(1..12, &mut actual, window, cx).as_deref(), Some("👨‍👩‍👧‍👦"));
+            assert_eq!(
+                input
+                    .text_for_range(1..12, &mut actual, window, cx)
+                    .as_deref(),
+                Some("👨‍👩‍👧‍👦")
+            );
         })
         .unwrap();
 }
@@ -68,9 +73,12 @@ fn offsets_are_utf16_for_the_platform(cx: &mut TestAppContext) {
 fn a_composed_emoji_is_one_character(cx: &mut TestAppContext) {
     let window = field(cx, "x👨‍👩‍👧‍👦🇫🇷👍🏽e\u{301}");
     // Backspace takes e with its accent, then the thumb with its skin, the flag, the family: one press each.
-    for expected in ["x👨‍👩‍👧‍👦🇫🇷👍🏽", "x👨‍👩‍👧‍👦🇫🇷", "x👨‍👩‍👧‍👦", "x"] {
+    for expected in ["x👨‍👩‍👧‍👦🇫🇷👍🏽", "x👨‍👩‍👧‍👦🇫🇷", "x👨‍👩‍👧‍👦", "x"]
+    {
         press(cx, window, Backspace);
-        window.update(cx, |input, _, _| assert_eq!(input.text(), expected)).unwrap();
+        window
+            .update(cx, |input, _, _| assert_eq!(input.text(), expected))
+            .unwrap();
     }
 }
 
@@ -79,9 +87,17 @@ fn moves_and_selection_by_grapheme(cx: &mut TestAppContext) {
     let window = field(cx, "مرحبا 🇫🇷");
     press(cx, window, Left);
     // Before the flag: one step over its two regional indicators.
-    window.update(cx, |input, _, _| assert_eq!(input.selection(), "مرحبا ".len().."مرحبا ".len())).unwrap();
+    window
+        .update(cx, |input, _, _| {
+            assert_eq!(input.selection(), "مرحبا ".len().."مرحبا ".len())
+        })
+        .unwrap();
     press(cx, window, SelectLeft);
-    window.update(cx, |input, _, _| assert_eq!(input.selection(), "مرحبا".len().."مرحبا ".len())).unwrap();
+    window
+        .update(cx, |input, _, _| {
+            assert_eq!(input.selection(), "مرحبا".len().."مرحبا ".len())
+        })
+        .unwrap();
 }
 
 #[gpui::test]
@@ -89,9 +105,16 @@ fn copy_and_paste(cx: &mut TestAppContext) {
     let window = field(cx, "שלום");
     press(cx, window, SelectAll);
     press(cx, window, Copy);
-    assert_eq!(cx.read_from_clipboard().and_then(|item| item.text()).as_deref(), Some("שלום"));
+    assert_eq!(
+        cx.read_from_clipboard()
+            .and_then(|item| item.text())
+            .as_deref(),
+        Some("שלום")
+    );
     cx.write_to_clipboard(gpui::ClipboardItem::new_string("one\ntwo".into()));
     press(cx, window, Paste);
     // On one line, a pasted return becomes a space.
-    window.update(cx, |input, _, _| assert_eq!(input.text(), "one two")).unwrap();
+    window
+        .update(cx, |input, _, _| assert_eq!(input.text(), "one two"))
+        .unwrap();
 }

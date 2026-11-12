@@ -1,15 +1,24 @@
 //! The round avatar: a person's initials on a ground of their own colour (or their picture, later), with the unread
 //! count or the presence on its corner.
 
-use gpui::{App, IntoElement, ParentElement, RenderOnce, Role, SharedString, Styled, Window, div, prelude::*, px};
+use gpui::{
+    App, IntoElement, ParentElement, RenderOnce, Role, SharedString, Styled, Window, div,
+    prelude::*, px,
+};
 
 use crate::feedback::GUnreadBadge;
 use crate::theme::{ActiveTheme, GTextExt, hsla, mix};
 use crate::tokens::{palette, text};
 
 /// A person's grounds: the palette's deep tones, each person always the same.
-const GROUNDS: [crate::tokens::GRgba; 6] =
-    [palette::RUST_500, palette::PATINA_600, palette::INDIGO_600, palette::AMBER_600, palette::RED_600, palette::SLATE_600];
+const GROUNDS: [crate::tokens::GRgba; 6] = [
+    palette::RUST_500,
+    palette::PATINA_600,
+    palette::INDIGO_600,
+    palette::AMBER_600,
+    palette::RED_600,
+    palette::SLATE_600,
+];
 
 #[derive(IntoElement)]
 pub struct GAvatar {
@@ -21,7 +30,12 @@ pub struct GAvatar {
 
 impl GAvatar {
     pub fn new(name: impl Into<SharedString>) -> Self {
-        GAvatar { name: name.into(), size: 32., unread: 0, online: false }
+        GAvatar {
+            name: name.into(),
+            size: 32.,
+            unread: 0,
+            online: false,
+        }
     }
 
     pub fn size(mut self, size: f32) -> Self {
@@ -44,17 +58,32 @@ impl GAvatar {
 
 /// "Marie Curie" → "MC"; "florian" → "F".
 pub fn initials(name: &str) -> String {
-    name.split_whitespace().filter_map(|word| word.chars().next()).take(2).flat_map(char::to_uppercase).collect()
+    name.split_whitespace()
+        .filter_map(|word| word.chars().next())
+        .take(2)
+        .flat_map(char::to_uppercase)
+        .collect()
 }
 
 impl RenderOnce for GAvatar {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
-        let hash = self.name.bytes().fold(5381u32, |hash, byte| hash.wrapping_mul(33) ^ byte as u32);
+        let hash = self
+            .name
+            .bytes()
+            .fold(5381u32, |hash, byte| hash.wrapping_mul(33) ^ byte as u32);
         let ground = hsla(GROUNDS[hash as usize % GROUNDS.len()]);
         // A little lighter in dark, so that it does not sink into the page.
-        let ground = if cx.theme().is_dark() { mix(ground, gpui::white(), 0.12) } else { ground };
-        let font = if self.size >= 40. { text::HEADLINE } else { text::CAPTION };
+        let ground = if cx.theme().is_dark() {
+            mix(ground, gpui::white(), 0.12)
+        } else {
+            ground
+        };
+        let font = if self.size >= 40. {
+            text::HEADLINE
+        } else {
+            text::CAPTION
+        };
         div()
             .id(SharedString::from(format!("g-avatar-{}", self.name)))
             .role(Role::Image)
@@ -77,7 +106,13 @@ impl RenderOnce for GAvatar {
                     .child(gpui::Text::new_inaccessible(initials(&self.name).into())),
             )
             .when(self.unread > 0, |this| {
-                this.child(div().absolute().top(px(-4.)).right(px(-6.)).child(GUnreadBadge::new(self.unread)))
+                this.child(
+                    div()
+                        .absolute()
+                        .top(px(-4.))
+                        .right(px(-6.))
+                        .child(GUnreadBadge::new(self.unread)),
+                )
             })
             .when(self.online, |this| {
                 let dot = (self.size * 0.3).max(8.);

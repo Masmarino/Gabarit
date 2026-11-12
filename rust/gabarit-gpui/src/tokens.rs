@@ -290,10 +290,30 @@ pub struct GShadowSpec {
 pub mod shadows {
     use super::*;
 
-    pub const CARD: GShadowSpec = GShadowSpec { color: GRgba::hexa(0x000000, 0.09), radius: 6.0, x: 0.0, y: 2.0 };
-    pub const BAR: GShadowSpec = GShadowSpec { color: GRgba::hexa(0x000000, 0.22), radius: 5.0, x: 0.0, y: 2.0 };
-    pub const RAISED: GShadowSpec = GShadowSpec { color: GRgba::hexa(0x000000, 0.12), radius: 1.5, x: 0.0, y: 1.0 };
-    pub const FLOATING: GShadowSpec = GShadowSpec { color: GRgba::hexa(0x000000, 0.16), radius: 16.0, x: 0.0, y: 12.0 };
+    pub const CARD: GShadowSpec = GShadowSpec {
+        color: GRgba::hexa(0x000000, 0.09),
+        radius: 6.0,
+        x: 0.0,
+        y: 2.0,
+    };
+    pub const BAR: GShadowSpec = GShadowSpec {
+        color: GRgba::hexa(0x000000, 0.22),
+        radius: 5.0,
+        x: 0.0,
+        y: 2.0,
+    };
+    pub const RAISED: GShadowSpec = GShadowSpec {
+        color: GRgba::hexa(0x000000, 0.12),
+        radius: 1.5,
+        x: 0.0,
+        y: 1.0,
+    };
+    pub const FLOATING: GShadowSpec = GShadowSpec {
+        color: GRgba::hexa(0x000000, 0.16),
+        radius: 16.0,
+        x: 0.0,
+        y: 12.0,
+    };
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -307,10 +327,16 @@ pub enum GAnimationCurve {
 pub mod animations {
     use super::GAnimationCurve;
 
-    pub const BOUNCY: GAnimationCurve = GAnimationCurve::Spring { response: 0.4, damping: 0.7 };
+    pub const BOUNCY: GAnimationCurve = GAnimationCurve::Spring {
+        response: 0.4,
+        damping: 0.7,
+    };
     pub const SMOOTH: GAnimationCurve = GAnimationCurve::EaseInOut { duration: 0.25 };
     pub const QUICK: GAnimationCurve = GAnimationCurve::EaseOut { duration: 0.15 };
-    pub const PANE: GAnimationCurve = GAnimationCurve::Spring { response: 0.38, damping: 0.9 };
+    pub const PANE: GAnimationCurve = GAnimationCurve::Spring {
+        response: 0.38,
+        damping: 0.9,
+    };
     pub const LINEAR: GAnimationCurve = GAnimationCurve::Linear { duration: 0.1 };
 }
 
@@ -334,13 +360,34 @@ impl GFamily {
 
 /// IBM Plex's files (SIL Open Font License), embedded: `fonts::register` hands them to GPUI.
 pub const FONT_FILES: &[(&str, &[u8])] = &[
-    ("IBMPlexSans-Regular.ttf", include_bytes!("../fonts/IBMPlexSans-Regular.ttf")),
-    ("IBMPlexSans-Medium.ttf", include_bytes!("../fonts/IBMPlexSans-Medium.ttf")),
-    ("IBMPlexSans-SemiBold.ttf", include_bytes!("../fonts/IBMPlexSans-SemiBold.ttf")),
-    ("IBMPlexSans-Italic.ttf", include_bytes!("../fonts/IBMPlexSans-Italic.ttf")),
-    ("IBMPlexSansCondensed-SemiBold.ttf", include_bytes!("../fonts/IBMPlexSansCondensed-SemiBold.ttf")),
-    ("IBMPlexMono-Regular.ttf", include_bytes!("../fonts/IBMPlexMono-Regular.ttf")),
-    ("IBMPlexMono-Medium.ttf", include_bytes!("../fonts/IBMPlexMono-Medium.ttf")),
+    (
+        "IBMPlexSans-Regular.ttf",
+        include_bytes!("../fonts/IBMPlexSans-Regular.ttf"),
+    ),
+    (
+        "IBMPlexSans-Medium.ttf",
+        include_bytes!("../fonts/IBMPlexSans-Medium.ttf"),
+    ),
+    (
+        "IBMPlexSans-SemiBold.ttf",
+        include_bytes!("../fonts/IBMPlexSans-SemiBold.ttf"),
+    ),
+    (
+        "IBMPlexSans-Italic.ttf",
+        include_bytes!("../fonts/IBMPlexSans-Italic.ttf"),
+    ),
+    (
+        "IBMPlexSansCondensed-SemiBold.ttf",
+        include_bytes!("../fonts/IBMPlexSansCondensed-SemiBold.ttf"),
+    ),
+    (
+        "IBMPlexMono-Regular.ttf",
+        include_bytes!("../fonts/IBMPlexMono-Regular.ttf"),
+    ),
+    (
+        "IBMPlexMono-Medium.ttf",
+        include_bytes!("../fonts/IBMPlexMono-Medium.ttf"),
+    ),
 ];
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -367,16 +414,88 @@ pub const LINE_HEIGHT: f32 = 1.3;
 pub mod text {
     use super::*;
 
-    pub const LARGE_TITLE: GTextStyle = GTextStyle { family: GFamily::Display, weight: GWeight::Semibold, phone: 34.0, desktop: 26.0, system: "largeTitle" };
-    pub const TITLE: GTextStyle = GTextStyle { family: GFamily::Display, weight: GWeight::Semibold, phone: 28.0, desktop: 22.0, system: "title" };
-    pub const TITLE_2: GTextStyle = GTextStyle { family: GFamily::Display, weight: GWeight::Semibold, phone: 22.0, desktop: 17.0, system: "title2" };
-    pub const TITLE_3: GTextStyle = GTextStyle { family: GFamily::Display, weight: GWeight::Semibold, phone: 20.0, desktop: 15.0, system: "title3" };
-    pub const HEADLINE: GTextStyle = GTextStyle { family: GFamily::Text, weight: GWeight::Semibold, phone: 17.0, desktop: 13.0, system: "headline" };
-    pub const SUBHEADLINE: GTextStyle = GTextStyle { family: GFamily::Text, weight: GWeight::Regular, phone: 15.0, desktop: 11.0, system: "subheadline" };
-    pub const BODY: GTextStyle = GTextStyle { family: GFamily::Text, weight: GWeight::Regular, phone: 17.0, desktop: 13.0, system: "body" };
-    pub const CALLOUT: GTextStyle = GTextStyle { family: GFamily::Text, weight: GWeight::Regular, phone: 16.0, desktop: 12.0, system: "callout" };
-    pub const FOOTNOTE: GTextStyle = GTextStyle { family: GFamily::Text, weight: GWeight::Regular, phone: 13.0, desktop: 10.0, system: "footnote" };
-    pub const CAPTION: GTextStyle = GTextStyle { family: GFamily::Text, weight: GWeight::Regular, phone: 12.0, desktop: 10.0, system: "caption" };
-    pub const CAPTION_2: GTextStyle = GTextStyle { family: GFamily::Text, weight: GWeight::Regular, phone: 11.0, desktop: 10.0, system: "caption2" };
-    pub const MONO: GTextStyle = GTextStyle { family: GFamily::Mono, weight: GWeight::Regular, phone: 13.0, desktop: 12.0, system: "footnote" };
+    pub const LARGE_TITLE: GTextStyle = GTextStyle {
+        family: GFamily::Display,
+        weight: GWeight::Semibold,
+        phone: 34.0,
+        desktop: 26.0,
+        system: "largeTitle",
+    };
+    pub const TITLE: GTextStyle = GTextStyle {
+        family: GFamily::Display,
+        weight: GWeight::Semibold,
+        phone: 28.0,
+        desktop: 22.0,
+        system: "title",
+    };
+    pub const TITLE_2: GTextStyle = GTextStyle {
+        family: GFamily::Display,
+        weight: GWeight::Semibold,
+        phone: 22.0,
+        desktop: 17.0,
+        system: "title2",
+    };
+    pub const TITLE_3: GTextStyle = GTextStyle {
+        family: GFamily::Display,
+        weight: GWeight::Semibold,
+        phone: 20.0,
+        desktop: 15.0,
+        system: "title3",
+    };
+    pub const HEADLINE: GTextStyle = GTextStyle {
+        family: GFamily::Text,
+        weight: GWeight::Semibold,
+        phone: 17.0,
+        desktop: 13.0,
+        system: "headline",
+    };
+    pub const SUBHEADLINE: GTextStyle = GTextStyle {
+        family: GFamily::Text,
+        weight: GWeight::Regular,
+        phone: 15.0,
+        desktop: 11.0,
+        system: "subheadline",
+    };
+    pub const BODY: GTextStyle = GTextStyle {
+        family: GFamily::Text,
+        weight: GWeight::Regular,
+        phone: 17.0,
+        desktop: 13.0,
+        system: "body",
+    };
+    pub const CALLOUT: GTextStyle = GTextStyle {
+        family: GFamily::Text,
+        weight: GWeight::Regular,
+        phone: 16.0,
+        desktop: 12.0,
+        system: "callout",
+    };
+    pub const FOOTNOTE: GTextStyle = GTextStyle {
+        family: GFamily::Text,
+        weight: GWeight::Regular,
+        phone: 13.0,
+        desktop: 10.0,
+        system: "footnote",
+    };
+    pub const CAPTION: GTextStyle = GTextStyle {
+        family: GFamily::Text,
+        weight: GWeight::Regular,
+        phone: 12.0,
+        desktop: 10.0,
+        system: "caption",
+    };
+    pub const CAPTION_2: GTextStyle = GTextStyle {
+        family: GFamily::Text,
+        weight: GWeight::Regular,
+        phone: 11.0,
+        desktop: 10.0,
+        system: "caption2",
+    };
+    pub const MONO: GTextStyle = GTextStyle {
+        family: GFamily::Mono,
+        weight: GWeight::Regular,
+        phone: 13.0,
+        desktop: 12.0,
+        system: "footnote",
+    };
 }

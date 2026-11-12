@@ -5,8 +5,9 @@
 use std::rc::Rc;
 
 use gpui::{
-    AnyElement, App, ClickEvent, CursorStyle, Div, ElementId, IntoElement, ParentElement, RenderOnce, Role,
-    SharedString, Styled, Window, WindowControlArea, div, linear_color_stop, linear_gradient, prelude::*, px,
+    AnyElement, App, ClickEvent, CursorStyle, Div, ElementId, IntoElement, ParentElement,
+    RenderOnce, Role, SharedString, Styled, Window, WindowControlArea, div, linear_color_stop,
+    linear_gradient, prelude::*, px,
 };
 
 use crate::assets::icon;
@@ -37,7 +38,11 @@ pub struct GBarTitle {
 
 impl GBarTitle {
     pub fn new(title: impl Into<SharedString>) -> Self {
-        GBarTitle { title: title.into(), subtitle: None, in_sheet: false }
+        GBarTitle {
+            title: title.into(),
+            subtitle: None,
+            in_sheet: false,
+        }
     }
 
     pub fn subtitle(mut self, subtitle: impl Into<SharedString>) -> Self {
@@ -66,10 +71,23 @@ impl RenderOnce for GBarTitle {
             .flex()
             .flex_col()
             .flex_none()
-            .child(div().g_text(text::TITLE_3).text_color(title).child(gpui::Text::new_inaccessible(self.title)))
-            .when_some(self.subtitle.filter(|subtitle| !subtitle.is_empty()), |this, subtitle| {
-                this.child(div().g_text(text::CAPTION_2).text_color(discret).child(subtitle))
-            })
+            .child(
+                div()
+                    .g_text(text::TITLE_3)
+                    .text_color(title)
+                    .child(gpui::Text::new_inaccessible(self.title)),
+            )
+            .when_some(
+                self.subtitle.filter(|subtitle| !subtitle.is_empty()),
+                |this, subtitle| {
+                    this.child(
+                        div()
+                            .g_text(text::CAPTION_2)
+                            .text_color(discret)
+                            .child(subtitle),
+                    )
+                },
+            )
     }
 }
 
@@ -84,8 +102,18 @@ pub struct GNavTabs {
 }
 
 impl GNavTabs {
-    pub fn new(id: impl Into<ElementId>, tabs: impl IntoIterator<Item = impl Into<SharedString>>, selected: usize) -> Self {
-        GNavTabs { id: id.into(), tabs: tabs.into_iter().map(Into::into).collect(), selected, preview: None, on_change: None }
+    pub fn new(
+        id: impl Into<ElementId>,
+        tabs: impl IntoIterator<Item = impl Into<SharedString>>,
+        selected: usize,
+    ) -> Self {
+        GNavTabs {
+            id: id.into(),
+            tabs: tabs.into_iter().map(Into::into).collect(),
+            selected,
+            preview: None,
+            on_change: None,
+        }
     }
 
     /// Draws one tab hovered or pressed (a gallery).
@@ -95,7 +123,9 @@ impl GNavTabs {
     }
 
     pub fn on_change(mut self, handler: impl Fn(&usize, &mut Window, &mut App) + 'static) -> Self {
-        self.on_change = Some(Rc::new(move |value, window, cx| handler(&value, window, cx)));
+        self.on_change = Some(Rc::new(move |value, window, cx| {
+            handler(&value, window, cx)
+        }));
         self
     }
 }
@@ -114,7 +144,10 @@ impl RenderOnce for GNavTabs {
             .border_color(colors.hairline)
             .children(self.tabs.into_iter().enumerate().map(|(index, title)| {
                 let current = index == self.selected;
-                let pointer = self.preview.filter(|(tab, _)| *tab == index).map(|(_, pointer)| pointer);
+                let pointer = self
+                    .preview
+                    .filter(|(tab, _)| *tab == index)
+                    .map(|(_, pointer)| pointer);
                 let foreground = match pointer {
                     Some(GPointer::Pressed) => colors.text_discret,
                     Some(GPointer::Hover) => colors.text_primary,
@@ -128,7 +161,11 @@ impl RenderOnce for GNavTabs {
                 } else {
                     None
                 };
-                let (primary, discret, hover_line) = (colors.text_primary, colors.text_discret, alpha(colors.border, 0.5));
+                let (primary, discret, hover_line) = (
+                    colors.text_primary,
+                    colors.text_discret,
+                    alpha(colors.border, 0.5),
+                );
                 let follows = self.preview.is_none();
                 let handler = self.on_change.clone();
                 div()
@@ -138,7 +175,11 @@ impl RenderOnce for GNavTabs {
                     .py(px(8.))
                     .mb(px(-1.))
                     .g_text(text::BODY)
-                    .font_weight(if current { gpui::FontWeight::SEMIBOLD } else { gpui::FontWeight::MEDIUM })
+                    .font_weight(if current {
+                        gpui::FontWeight::SEMIBOLD
+                    } else {
+                        gpui::FontWeight::MEDIUM
+                    })
                     .text_color(foreground)
                     .role(Role::Tab)
                     .aria_label(title.clone())
@@ -149,7 +190,9 @@ impl RenderOnce for GNavTabs {
                             .tab_stop(true)
                             .hover(move |style| style.text_color(primary))
                             .active(move |style| style.text_color(discret))
-                            .when_some(handler, |this, handler| this.on_click(move |_, window, cx| handler(index, window, cx)))
+                            .when_some(handler, |this, handler| {
+                                this.on_click(move |_, window, cx| handler(index, window, cx))
+                            })
                     })
                     .child(gpui::Text::new_inaccessible(title))
                     .child(
@@ -162,7 +205,9 @@ impl RenderOnce for GNavTabs {
                             .h(px(2.))
                             .when_some(line, |this, color| this.bg(color))
                             .when(current, |this| this.shadow(vec![glow(colors.accent, 4.)]))
-                            .when(follows && !current, |this| this.group_hover("g-tab", move |style| style.bg(hover_line))),
+                            .when(follows && !current, |this| {
+                                this.group_hover("g-tab", move |style| style.bg(hover_line))
+                            }),
                     )
             }))
     }
@@ -249,7 +294,9 @@ impl RenderOnce for GWindowHeader {
             .border_b_1()
             .border_color(frame.line)
             .shadow(bar_shadow(false))
-            .when_some(self.icon, |this, name| this.child(icon(name, px(18.), frame.text)))
+            .when_some(self.icon, |this, name| {
+                this.child(icon(name, px(18.), frame.text))
+            })
             .child(
                 div()
                     .id("g-window-title")
@@ -258,16 +305,35 @@ impl RenderOnce for GWindowHeader {
                     .flex()
                     .flex_col()
                     .flex_1()
-                    .child(div().g_text(text::HEADLINE).text_color(frame.text).child(gpui::Text::new_inaccessible(self.title)))
+                    .child(
+                        div()
+                            .g_text(text::HEADLINE)
+                            .text_color(frame.text)
+                            .child(gpui::Text::new_inaccessible(self.title)),
+                    )
                     .when_some(self.subtitle, |this, subtitle| {
-                        this.child(div().g_text(text::CAPTION).text_color(frame.text_discret).child(subtitle))
+                        this.child(
+                            div()
+                                .g_text(text::CAPTION)
+                                .text_color(frame.text_discret)
+                                .child(subtitle),
+                        )
                     }),
             )
             .children(self.trailing)
-            .when(self.window_controls, |this| this.window_control_area(WindowControlArea::Drag))
+            .when(self.window_controls, |this| {
+                this.window_control_area(WindowControlArea::Drag)
+            })
             .when(self.window_controls && !cfg!(target_os = "macos"), |this| {
-                let button = |id: &'static str, symbol: &'static str, area: WindowControlArea, close: bool| {
-                    let hover = if close { cx.theme().colors.error } else { frame.hover };
+                let button = |id: &'static str,
+                              symbol: &'static str,
+                              area: WindowControlArea,
+                              close: bool| {
+                    let hover = if close {
+                        cx.theme().colors.error
+                    } else {
+                        frame.hover
+                    };
                     div()
                         .id(id)
                         .flex()
@@ -291,9 +357,24 @@ impl RenderOnce for GWindowHeader {
                         .flex()
                         .gap(px(2.))
                         .ml(px(8.))
-                        .child(button("g-window-min", "window-minimize", WindowControlArea::Min, false))
-                        .child(button("g-window-max", "window-maximize", WindowControlArea::Max, false))
-                        .child(button("g-window-close", "window-close", WindowControlArea::Close, true)),
+                        .child(button(
+                            "g-window-min",
+                            "window-minimize",
+                            WindowControlArea::Min,
+                            false,
+                        ))
+                        .child(button(
+                            "g-window-max",
+                            "window-maximize",
+                            WindowControlArea::Max,
+                            false,
+                        ))
+                        .child(button(
+                            "g-window-close",
+                            "window-close",
+                            WindowControlArea::Close,
+                            true,
+                        )),
                 )
             })
     }
@@ -310,8 +391,18 @@ pub struct GPageBand {
 }
 
 impl GPageBand {
-    pub fn new(icon: &'static str, title: impl Into<SharedString>, summary: impl Into<SharedString>) -> Self {
-        GPageBand { icon, title: title.into(), summary: summary.into(), radius: 0., top: 6. }
+    pub fn new(
+        icon: &'static str,
+        title: impl Into<SharedString>,
+        summary: impl Into<SharedString>,
+    ) -> Self {
+        GPageBand {
+            icon,
+            title: title.into(),
+            summary: summary.into(),
+            radius: 0.,
+            top: 6.,
+        }
     }
 
     /// The margin above (GabaritApple's `top`): 6 under a bar, more alone on a page.
@@ -357,8 +448,18 @@ impl RenderOnce for GPageBand {
                     .flex()
                     .flex_col()
                     .gap(px(3.))
-                    .child(div().g_text(text::TITLE_2).text_color(frame.text).child(self.title))
-                    .child(div().g_text(text::SUBHEADLINE).text_color(frame.text_secondary).child(self.summary)),
+                    .child(
+                        div()
+                            .g_text(text::TITLE_2)
+                            .text_color(frame.text)
+                            .child(self.title),
+                    )
+                    .child(
+                        div()
+                            .g_text(text::SUBHEADLINE)
+                            .text_color(frame.text_secondary)
+                            .child(self.summary),
+                    ),
             )
     }
 }
@@ -377,8 +478,21 @@ pub struct GRailItem {
 }
 
 impl GRailItem {
-    pub fn new(id: impl Into<ElementId>, title: impl Into<SharedString>, icon: &'static str, current: bool) -> Self {
-        GRailItem { id: id.into(), title: title.into(), icon, current, badge: 0, preview: None, on_click: None }
+    pub fn new(
+        id: impl Into<ElementId>,
+        title: impl Into<SharedString>,
+        icon: &'static str,
+        current: bool,
+    ) -> Self {
+        GRailItem {
+            id: id.into(),
+            title: title.into(),
+            icon,
+            current,
+            badge: 0,
+            preview: None,
+            on_click: None,
+        }
     }
 
     pub fn badge(mut self, count: usize) -> Self {
@@ -391,7 +505,10 @@ impl GRailItem {
         self
     }
 
-    pub fn on_click(mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static) -> Self {
+    pub fn on_click(
+        mut self,
+        handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+    ) -> Self {
         self.on_click = Some(Rc::new(handler));
         self
     }
@@ -403,12 +520,28 @@ impl RenderOnce for GRailItem {
         let (frame, accent) = (theme.frame, theme.colors.accent);
         let lit = self.preview.is_some();
         let pressed = self.preview == Some(GPointer::Pressed);
-        let foreground = if self.current { accent } else if lit { frame.text } else { frame.text_discret };
-        let ground = if pressed || self.current { frame.selected } else if lit { frame.hover } else { alpha(frame.hover, 0.0) };
+        let foreground = if self.current {
+            accent
+        } else if lit {
+            frame.text
+        } else {
+            frame.text_discret
+        };
+        let ground = if pressed || self.current {
+            frame.selected
+        } else if lit {
+            frame.hover
+        } else {
+            alpha(frame.hover, 0.0)
+        };
         let follows = self.preview.is_none();
         let (hover_ground, selected, hover_text) = (frame.hover, frame.selected, frame.text);
         let current = self.current;
-        let label = if self.badge > 0 { format!("{}, {}", self.title, badge_text(self.badge)) } else { self.title.to_string() };
+        let label = if self.badge > 0 {
+            format!("{}, {}", self.title, badge_text(self.badge))
+        } else {
+            self.title.to_string()
+        };
         div()
             .id(self.id)
             .relative()
@@ -429,9 +562,17 @@ impl RenderOnce for GRailItem {
                 this.cursor(CursorStyle::PointingHand)
                     .focusable()
                     .tab_stop(true)
-                    .hover(move |style| if current { style } else { style.bg(hover_ground).text_color(hover_text) })
+                    .hover(move |style| {
+                        if current {
+                            style
+                        } else {
+                            style.bg(hover_ground).text_color(hover_text)
+                        }
+                    })
                     .active(move |style| style.bg(selected))
-                    .when_some(self.on_click, |this, handler| this.on_click(move |event, window, cx| handler(event, window, cx)))
+                    .when_some(self.on_click, |this, handler| {
+                        this.on_click(move |event, window, cx| handler(event, window, cx))
+                    })
             })
             .when(self.current, |this| {
                 this.child(
@@ -473,7 +614,11 @@ impl RenderOnce for GRailItem {
             .child(
                 div()
                     .g_text(text::CAPTION_2)
-                    .font_weight(if self.current { gpui::FontWeight::SEMIBOLD } else { gpui::FontWeight::MEDIUM })
+                    .font_weight(if self.current {
+                        gpui::FontWeight::SEMIBOLD
+                    } else {
+                        gpui::FontWeight::MEDIUM
+                    })
                     .whitespace_nowrap()
                     .child(gpui::Text::new_inaccessible(self.title)),
             )
@@ -497,7 +642,12 @@ pub struct GSidebarRow {
 pub const SIDEBAR_ROW_HEIGHT: f32 = 28.0;
 
 impl GSidebarRow {
-    pub fn new(id: impl Into<ElementId>, title: impl Into<SharedString>, icon: &'static str, selected: bool) -> Self {
+    pub fn new(
+        id: impl Into<ElementId>,
+        title: impl Into<SharedString>,
+        icon: &'static str,
+        selected: bool,
+    ) -> Self {
         GSidebarRow {
             id: id.into(),
             title: title.into(),
@@ -525,7 +675,10 @@ impl GSidebarRow {
         self
     }
 
-    pub fn on_click(mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static) -> Self {
+    pub fn on_click(
+        mut self,
+        handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+    ) -> Self {
         self.on_click = Some(Rc::new(handler));
         self
     }
@@ -548,7 +701,11 @@ impl RenderOnce for GSidebarRow {
         } else {
             alpha(colors.row_hover, 0.0)
         };
-        let foreground = if selected { colors.accent_text } else { colors.text_secondary };
+        let foreground = if selected {
+            colors.accent_text
+        } else {
+            colors.text_secondary
+        };
         let follows = self.preview.is_none();
         let (hover, press) = (colors.row_hover, colors.press);
         div()
@@ -561,7 +718,13 @@ impl RenderOnce for GSidebarRow {
             .px(px(10.))
             .rounded(px(radius::MD))
             .bg(ground)
-            .when(selected && !pressed, |this| this.shadow(vec![glow_through(colors.accent, if lit { 6. } else { 4. }, colors.selected_fill)]))
+            .when(selected && !pressed, |this| {
+                this.shadow(vec![glow_through(
+                    colors.accent,
+                    if lit { 6. } else { 4. },
+                    colors.selected_fill,
+                )])
+            })
             .role(Role::Tab)
             .aria_label(self.title.clone())
             .aria_selected(selected)
@@ -571,7 +734,9 @@ impl RenderOnce for GSidebarRow {
                     .tab_stop(true)
                     .when(!selected, |this| this.hover(move |style| style.bg(hover)))
                     .active(move |style| style.bg(press))
-                    .when_some(self.on_click, |this, handler| this.on_click(move |event, window, cx| handler(event, window, cx)))
+                    .when_some(self.on_click, |this, handler| {
+                        this.on_click(move |event, window, cx| handler(event, window, cx))
+                    })
             })
             .child(
                 div()
@@ -579,13 +744,23 @@ impl RenderOnce for GSidebarRow {
                     .items_center()
                     .justify_center()
                     .size(px(20.))
-                    .child(icon(self.icon, px(16.), if selected { colors.accent } else { colors.text_discret })),
+                    .child(icon(
+                        self.icon,
+                        px(16.),
+                        if selected {
+                            colors.accent
+                        } else {
+                            colors.text_discret
+                        },
+                    )),
             )
             .child(
                 div()
                     .flex_1()
                     .g_text(text::BODY)
-                    .when(selected, |this| this.font_weight(gpui::FontWeight::SEMIBOLD))
+                    .when(selected, |this| {
+                        this.font_weight(gpui::FontWeight::SEMIBOLD)
+                    })
                     .text_color(foreground)
                     .whitespace_nowrap()
                     .overflow_hidden()
@@ -596,15 +771,25 @@ impl RenderOnce for GSidebarRow {
                 this.child(
                     div()
                         .g_text(text::CALLOUT)
-                        .text_color(if selected { colors.accent_text } else { colors.text_discret })
+                        .text_color(if selected {
+                            colors.accent_text
+                        } else {
+                            colors.text_discret
+                        })
                         .child(detail),
                 )
             })
-            .when(self.warns, |this| this.child(div().size(px(6.)).rounded_full().bg(colors.warning)))
+            .when(self.warns, |this| {
+                this.child(div().size(px(6.)).rounded_full().bg(colors.warning))
+            })
     }
 }
 
 /// Dimmed when disabled, the same for every control.
 pub fn dimmed<E: Styled>(element: E, disabled: bool) -> E {
-    if disabled { element.opacity(opacity::DISABLED) } else { element }
+    if disabled {
+        element.opacity(opacity::DISABLED)
+    } else {
+        element
+    }
 }

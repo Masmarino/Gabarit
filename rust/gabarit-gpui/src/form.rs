@@ -5,8 +5,8 @@
 use std::rc::Rc;
 
 use gpui::{
-    AnyElement, App, ClickEvent, CursorStyle, ElementId, IntoElement, ParentElement, RenderOnce, Role, SharedString,
-    Styled, Window, div, prelude::*, px,
+    AnyElement, App, ClickEvent, CursorStyle, ElementId, IntoElement, ParentElement, RenderOnce,
+    Role, SharedString, Styled, Window, div, prelude::*, px,
 };
 
 use crate::assets::icon;
@@ -43,7 +43,10 @@ pub struct GPageTitle {
 
 impl GPageTitle {
     pub fn new(title: impl Into<SharedString>, summary: impl Into<SharedString>) -> Self {
-        GPageTitle { title: title.into(), summary: summary.into() }
+        GPageTitle {
+            title: title.into(),
+            summary: summary.into(),
+        }
     }
 }
 
@@ -66,7 +69,12 @@ impl RenderOnce for GPageTitle {
                     .child(gpui::Text::new_inaccessible(self.title)),
             )
             .when(!self.summary.is_empty(), |this| {
-                this.child(div().g_text(text::BODY).text_color(colors.text_discret).child(self.summary))
+                this.child(
+                    div()
+                        .g_text(text::BODY)
+                        .text_color(colors.text_discret)
+                        .child(self.summary),
+                )
             })
     }
 }
@@ -80,7 +88,10 @@ pub struct GLabeledContent {
 
 impl GLabeledContent {
     pub fn new(title: impl Into<SharedString>, value: impl IntoElement) -> Self {
-        GLabeledContent { title: title.into(), value: value.into_any_element() }
+        GLabeledContent {
+            title: title.into(),
+            value: value.into_any_element(),
+        }
     }
 }
 
@@ -93,7 +104,12 @@ impl RenderOnce for GLabeledContent {
             .gap(px(12.))
             .w_full()
             .g_text(text::BODY)
-            .child(div().flex_1().text_color(colors.text_primary).child(self.title))
+            .child(
+                div()
+                    .flex_1()
+                    .text_color(colors.text_primary)
+                    .child(self.title),
+            )
             .child(div().text_color(colors.text_secondary).child(self.value))
     }
 }
@@ -144,7 +160,10 @@ impl GFormRowButton {
         self
     }
 
-    pub fn on_click(mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static) -> Self {
+    pub fn on_click(
+        mut self,
+        handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+    ) -> Self {
         self.on_click = Some(Rc::new(handler));
         self
     }
@@ -153,7 +172,11 @@ impl GFormRowButton {
 impl RenderOnce for GFormRowButton {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
-        let foreground = if self.destructive { colors.error_text } else { colors.accent_text };
+        let foreground = if self.destructive {
+            colors.error_text
+        } else {
+            colors.accent_text
+        };
         let veil = colors.row_hover;
         let follows = !self.disabled && self.preview.is_none();
         // The veil, rounded, centred in the row's cell, inset from the card's edges and its lines.
@@ -181,7 +204,9 @@ impl RenderOnce for GFormRowButton {
                     .rounded(px(radius::MD))
                     .bg(veil)
                     .opacity(if lit { 1. } else { 0. })
-                    .when(follows, |this| this.group_hover("g-row-button", |style| style.opacity(1.))),
+                    .when(follows, |this| {
+                        this.group_hover("g-row-button", |style| style.opacity(1.))
+                    }),
             )
             .child(
                 div()
@@ -192,16 +217,24 @@ impl RenderOnce for GFormRowButton {
                     .gap(px(8.))
                     .g_text(text::BODY)
                     .text_color(foreground)
-                    .when(self.preview == Some(GPointer::Pressed), |this| this.opacity(0.6))
-                    .when(follows, |this| this.group_active("g-row-button", |style| style.opacity(0.6)))
-                    .when_some(self.icon, |this, name| this.child(icon(name, px(15.), foreground)))
+                    .when(self.preview == Some(GPointer::Pressed), |this| {
+                        this.opacity(0.6)
+                    })
+                    .when(follows, |this| {
+                        this.group_active("g-row-button", |style| style.opacity(0.6))
+                    })
+                    .when_some(self.icon, |this, name| {
+                        this.child(icon(name, px(15.), foreground))
+                    })
                     .child(self.title),
             )
             .when(follows, |this| {
                 this.cursor(CursorStyle::PointingHand)
                     .focusable()
                     .tab_stop(true)
-                    .when_some(self.on_click, |this, handler| this.on_click(move |event, window, cx| handler(event, window, cx)))
+                    .when_some(self.on_click, |this, handler| {
+                        this.on_click(move |event, window, cx| handler(event, window, cx))
+                    })
             })
     }
 }
@@ -226,7 +259,12 @@ pub struct GFormSection {
 
 impl GFormSection {
     pub fn new() -> Self {
-        GFormSection { header: None, header_icon: None, footer: None, rows: Vec::new() }
+        GFormSection {
+            header: None,
+            header_icon: None,
+            footer: None,
+            rows: Vec::new(),
+        }
     }
 
     pub fn header(mut self, header: impl Into<SharedString>) -> Self {
@@ -270,7 +308,8 @@ impl Default for GFormSection {
 impl RenderOnce for GFormSection {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
-        let all_bare = !self.rows.is_empty() && self.rows.iter().all(|row| matches!(row, Row::Bare(_)));
+        let all_bare =
+            !self.rows.is_empty() && self.rows.iter().all(|row| matches!(row, Row::Bare(_)));
         let mut section = div().flex().flex_col().gap(px(8.)).w_full();
         if let Some(header) = self.header.clone() {
             section = section.child(
@@ -285,14 +324,18 @@ impl RenderOnce for GFormSection {
                     .pb(px(4.))
                     .g_text(text::HEADLINE)
                     .text_color(colors.text_primary)
-                    .when_some(self.header_icon, |this, name| this.child(icon(name, px(12.), colors.text_discret)))
+                    .when_some(self.header_icon, |this, name| {
+                        this.child(icon(name, px(12.), colors.text_discret))
+                    })
                     .child(gpui::Text::new_inaccessible(header)),
             );
         }
         if all_bare {
-            section = section.child(div().flex().flex_col().gap(px(12.)).children(self.rows.into_iter().map(|row| match row {
-                Row::Bare(element) | Row::Card(element) | Row::Button(element) => element,
-            })));
+            section = section.child(div().flex().flex_col().gap(px(12.)).children(
+                self.rows.into_iter().map(|row| match row {
+                    Row::Bare(element) | Row::Card(element) | Row::Button(element) => element,
+                }),
+            ));
         } else if !self.rows.is_empty() {
             let shape = px(radius::LG);
             let mut card = card(shape, cx).flex().flex_col();
@@ -316,7 +359,13 @@ impl RenderOnce for GFormSection {
             section = section.child(card);
         }
         section.when_some(self.footer, |this, footer| {
-            this.child(div().px(px(2.)).g_text(text::CALLOUT).text_color(colors.text_discret).child(footer))
+            this.child(
+                div()
+                    .px(px(2.))
+                    .g_text(text::CALLOUT)
+                    .text_color(colors.text_discret)
+                    .child(footer),
+            )
         })
     }
 }
@@ -330,7 +379,10 @@ pub struct GFormButtons {
 
 impl GFormButtons {
     pub fn new(buttons: impl IntoIterator<Item = GButton>) -> Self {
-        GFormButtons { buttons: buttons.into_iter().collect(), leading: false }
+        GFormButtons {
+            buttons: buttons.into_iter().collect(),
+            leading: false,
+        }
     }
 
     /// On the left rather than the right (a lone button at the head of a page).
@@ -371,16 +423,31 @@ pub struct GForm {
 
 impl GForm {
     pub fn new(id: impl Into<ElementId>) -> Self {
-        GForm { id: id.into(), title: None, back: None, sections: Vec::new(), scrolls: true, ground: true }
+        GForm {
+            id: id.into(),
+            title: None,
+            back: None,
+            sections: Vec::new(),
+            scrolls: true,
+            ground: true,
+        }
     }
 
-    pub fn title(mut self, title: impl Into<SharedString>, summary: impl Into<SharedString>) -> Self {
+    pub fn title(
+        mut self,
+        title: impl Into<SharedString>,
+        summary: impl Into<SharedString>,
+    ) -> Self {
         self.title = Some(GPageTitle::new(title, summary));
         self
     }
 
     /// A sub-page: "‹ Name" above the title, back to the page one comes from.
-    pub fn back(mut self, name: impl Into<SharedString>, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static) -> Self {
+    pub fn back(
+        mut self,
+        name: impl Into<SharedString>,
+        handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+    ) -> Self {
         self.back = Some((name.into(), Rc::new(handler)));
         self
     }
@@ -407,7 +474,11 @@ impl RenderOnce for GForm {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
         let in_page = self.title.is_some();
-        let margin = if in_page { metrics::PAGE_MARGIN } else { metrics::SHEET_MARGIN };
+        let margin = if in_page {
+            metrics::PAGE_MARGIN
+        } else {
+            metrics::SHEET_MARGIN
+        };
         let back = self.back.map(|(name, handler)| {
             let accent = colors.accent_text;
             div()
@@ -433,8 +504,16 @@ impl RenderOnce for GForm {
             .w_full()
             .max_w(px(metrics::READABLE))
             .children(back)
-            .when_some(self.title, |this, title| this.child(div().pb(px(28.)).child(title)))
-            .child(div().flex().flex_col().gap(px(metrics::SECTION_SPACING)).children(self.sections));
+            .when_some(self.title, |this, title| {
+                this.child(div().pb(px(28.)).child(title))
+            })
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(metrics::SECTION_SPACING))
+                    .children(self.sections),
+            );
         let content = div()
             .w_full()
             .px(px(margin))
@@ -443,7 +522,11 @@ impl RenderOnce for GForm {
             .child(column);
         let base = if self.ground { page_ground(cx) } else { div() };
         let page = base.id(self.id).size_full().text_color(colors.text_primary);
-        if self.scrolls { page.overflow_y_scroll().child(content) } else { page.child(content) }
+        if self.scrolls {
+            page.overflow_y_scroll().child(content)
+        } else {
+            page.child(content)
+        }
     }
 }
 

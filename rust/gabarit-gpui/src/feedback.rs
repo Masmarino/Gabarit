@@ -4,8 +4,9 @@
 use std::time::Duration;
 
 use gpui::{
-    Animation, AnimationExt, App, Context, Entity, Hsla, IntoElement, ParentElement, Render, RenderOnce, Role,
-    SharedString, Styled, Task, Window, div, linear_color_stop, linear_gradient, prelude::*, px, relative,
+    Animation, AnimationExt, App, Context, Entity, Hsla, IntoElement, ParentElement, Render,
+    RenderOnce, Role, SharedString, Styled, Task, Window, div, linear_color_stop, linear_gradient,
+    prelude::*, px, relative,
 };
 
 use crate::assets::icon;
@@ -81,7 +82,11 @@ pub struct GBadge {
 
 impl GBadge {
     pub fn new(title: impl Into<SharedString>) -> Self {
-        GBadge { title: title.into(), icon: None, tone: None }
+        GBadge {
+            title: title.into(),
+            icon: None,
+            tone: None,
+        }
     }
 
     pub fn icon(mut self, name: &'static str) -> Self {
@@ -98,7 +103,9 @@ impl GBadge {
 impl RenderOnce for GBadge {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
-        let foreground = self.tone.map_or(colors.text_secondary, |tone| tone.tint_text(cx));
+        let foreground = self
+            .tone
+            .map_or(colors.text_secondary, |tone| tone.tint_text(cx));
         div()
             .flex()
             .flex_none()
@@ -112,14 +119,20 @@ impl RenderOnce for GBadge {
             .g_text(text::CAPTION_2)
             .font_weight(gpui::FontWeight::SEMIBOLD)
             .whitespace_nowrap()
-            .when_some(self.icon, |this, name| this.child(icon(name, px(11.), foreground)))
+            .when_some(self.icon, |this, name| {
+                this.child(icon(name, px(11.), foreground))
+            })
             .child(self.title)
     }
 }
 
 /// A count on an icon, "99+" beyond 99.
 pub fn badge_text(count: usize) -> String {
-    if count > 99 { "99+".into() } else { count.to_string() }
+    if count > 99 {
+        "99+".into()
+    } else {
+        count.to_string()
+    }
 }
 
 /// The unread count: a rust pill with its number, on an avatar or a row.
@@ -169,7 +182,12 @@ pub struct GBanner {
 
 impl GBanner {
     pub fn new(tone: GTone, title: impl Into<SharedString>) -> Self {
-        GBanner { tone, title: title.into(), message: None, action: None }
+        GBanner {
+            tone,
+            title: title.into(),
+            message: None,
+            action: None,
+        }
     }
 
     pub fn message(mut self, message: impl Into<SharedString>) -> Self {
@@ -207,9 +225,19 @@ impl RenderOnce for GBanner {
                     .flex_col()
                     .flex_1()
                     .gap(px(2.))
-                    .child(div().g_text(text::HEADLINE).text_color(colors.text_primary).child(self.title))
+                    .child(
+                        div()
+                            .g_text(text::HEADLINE)
+                            .text_color(colors.text_primary)
+                            .child(self.title),
+                    )
                     .when_some(self.message, |this, message| {
-                        this.child(div().g_text(text::CALLOUT).text_color(colors.text_secondary).child(message))
+                        this.child(
+                            div()
+                                .g_text(text::CALLOUT)
+                                .text_color(colors.text_secondary)
+                                .child(message),
+                        )
                     }),
             )
             .children(self.action)
@@ -225,7 +253,10 @@ pub struct GToastView {
 
 impl GToastView {
     pub fn new(text: impl Into<SharedString>, icon: &'static str) -> Self {
-        GToastView { text: text.into(), icon }
+        GToastView {
+            text: text.into(),
+            icon,
+        }
     }
 }
 
@@ -262,13 +293,23 @@ pub struct GToastCenter {
 
 impl GToastCenter {
     pub fn new() -> Self {
-        GToastCenter { current: None, dismissal: None }
+        GToastCenter {
+            current: None,
+            dismissal: None,
+        }
     }
 
-    pub fn show(&mut self, text: impl Into<SharedString>, icon: &'static str, cx: &mut Context<Self>) {
+    pub fn show(
+        &mut self,
+        text: impl Into<SharedString>,
+        icon: &'static str,
+        cx: &mut Context<Self>,
+    ) {
         self.current = Some((text.into(), icon));
         self.dismissal = Some(cx.spawn(async move |this, cx| {
-            cx.background_executor().timer(Duration::from_millis(2500)).await;
+            cx.background_executor()
+                .timer(Duration::from_millis(2500))
+                .await;
             this.update(cx, |this, cx| {
                 this.current = None;
                 cx.notify();
@@ -294,18 +335,24 @@ impl Default for GToastCenter {
 impl Render for GToastCenter {
     fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
         // Over the bottom of the window, centred; it rises into place.
-        div().absolute().bottom(px(spacing::XXL)).left_0().right_0().flex().justify_center().children(
-            self.current.clone().map(|(text, icon)| {
+        div()
+            .absolute()
+            .bottom(px(spacing::XXL))
+            .left_0()
+            .right_0()
+            .flex()
+            .justify_center()
+            .children(self.current.clone().map(|(text, icon)| {
                 div()
                     .id(SharedString::from(format!("toast-{text}")))
                     .child(GToastView::new(text, icon))
                     .with_animation(
                         "g-toast-in",
-                        Animation::new(Duration::from_millis(250)).with_easing(gpui::ease_out_quint()),
+                        Animation::new(Duration::from_millis(250))
+                            .with_easing(gpui::ease_out_quint()),
                         |this, delta| this.relative().top(px(24. * (1. - delta))).opacity(delta),
                     )
-            }),
-        )
+            }))
     }
 }
 
@@ -347,7 +394,11 @@ pub struct GSkeleton {
 
 impl GSkeleton {
     pub fn new(id: impl Into<SharedString>, height: f32) -> Self {
-        GSkeleton { id: id.into(), height, radius: radius::SM }
+        GSkeleton {
+            id: id.into(),
+            height,
+            radius: radius::SM,
+        }
     }
 
     pub fn radius(mut self, radius: f32) -> Self {
@@ -372,8 +423,16 @@ impl RenderOnce for GSkeleton {
                 // A band of light, rising then falling, that crosses the shape (in two halves: GPUI's gradients
                 // have two stops).
                 let half = |rising: bool| {
-                    let (from, to) = if rising { (alpha(shimmer, 0.0), shimmer) } else { (shimmer, alpha(shimmer, 0.0)) };
-                    div().h_full().w(relative(0.5)).bg(linear_gradient(90.0, linear_color_stop(from, 0.0), linear_color_stop(to, 1.0)))
+                    let (from, to) = if rising {
+                        (alpha(shimmer, 0.0), shimmer)
+                    } else {
+                        (shimmer, alpha(shimmer, 0.0))
+                    };
+                    div().h_full().w(relative(0.5)).bg(linear_gradient(
+                        90.0,
+                        linear_color_stop(from, 0.0),
+                        linear_color_stop(to, 1.0),
+                    ))
                 };
                 this.child(
                     div()
@@ -402,7 +461,9 @@ pub struct GTypingDots {
 
 impl GTypingDots {
     pub fn new(label: impl Into<SharedString>) -> Self {
-        GTypingDots { label: label.into() }
+        GTypingDots {
+            label: label.into(),
+        }
     }
 }
 
@@ -427,7 +488,9 @@ impl RenderOnce for GTypingDots {
                         ("g-typing-dot", index as usize),
                         Animation::new(Duration::from_millis(1047)).repeat(),
                         move |this, delta| {
-                            let wave = ((delta * std::f32::consts::TAU - index as f32 * 0.9).sin() + 1.0) / 2.0;
+                            let wave = ((delta * std::f32::consts::TAU - index as f32 * 0.9).sin()
+                                + 1.0)
+                                / 2.0;
                             this.opacity(0.35 + 0.65 * wave).top(px(-3. * wave))
                         },
                     )
@@ -447,8 +510,17 @@ pub struct GEmptyState {
 }
 
 impl GEmptyState {
-    pub fn new(icon: &'static str, title: impl Into<SharedString>, message: impl Into<SharedString>) -> Self {
-        GEmptyState { icon, title: title.into(), message: message.into(), action: None }
+    pub fn new(
+        icon: &'static str,
+        title: impl Into<SharedString>,
+        message: impl Into<SharedString>,
+    ) -> Self {
+        GEmptyState {
+            icon,
+            title: title.into(),
+            message: message.into(),
+            action: None,
+        }
     }
 
     pub fn action(mut self, button: GButton) -> Self {

@@ -11,10 +11,11 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use gpui::{
-    App, AvailableSpace, Bounds, ClipboardItem, Context, CursorStyle, Element, ElementId, ElementInputHandler, Entity,
-    EntityInputHandler, EventEmitter, FocusHandle, Focusable, GlobalElementId, Hsla, InspectorElementId, IntoElement,
-    KeyBinding, LayoutId, MouseButton, MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, ParentElement, Pixels,
-    Point, Render, RenderOnce, Role, SharedString, Style, Styled, Task, TextAlign, TextRun, UTF16Selection,
+    App, AvailableSpace, Bounds, ClipboardItem, Context, CursorStyle, Element, ElementId,
+    ElementInputHandler, Entity, EntityInputHandler, EventEmitter, FocusHandle, Focusable,
+    GlobalElementId, Hsla, InspectorElementId, IntoElement, KeyBinding, LayoutId, MouseButton,
+    MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, ParentElement, Pixels, Point, Render,
+    RenderOnce, Role, SharedString, Style, Styled, Task, TextAlign, TextRun, UTF16Selection,
     UnderlineStyle, Window, WrappedLine, actions, div, fill, point, prelude::*, px, relative, size,
 };
 use unicode_segmentation::UnicodeSegmentation;
@@ -62,7 +63,11 @@ const CONTEXT: &str = "GTextInput";
 #[macro_export]
 macro_rules! secondary {
     ($key:literal) => {
-        if cfg!(target_os = "macos") { concat!("cmd-", $key) } else { concat!("ctrl-", $key) }
+        if cfg!(target_os = "macos") {
+            concat!("cmd-", $key)
+        } else {
+            concat!("ctrl-", $key)
+        }
     };
 }
 
@@ -171,11 +176,17 @@ struct TextLayout {
 
 impl TextLayout {
     fn line_index(&self, offset: usize) -> usize {
-        self.lines.iter().rposition(|(start, _)| *start <= offset).unwrap_or(0)
+        self.lines
+            .iter()
+            .rposition(|(start, _)| *start <= offset)
+            .unwrap_or(0)
     }
 
     fn line_top(&self, index: usize) -> Pixels {
-        self.lines[..index].iter().map(|(_, line)| line.size(self.line_height).height).sum()
+        self.lines[..index]
+            .iter()
+            .map(|(_, line)| line.size(self.line_height).height)
+            .sum()
     }
 
     fn height(&self) -> Pixels {
@@ -186,7 +197,9 @@ impl TextLayout {
     fn position(&self, offset: usize) -> Point<Pixels> {
         let index = self.line_index(offset);
         let (start, line) = &self.lines[index];
-        let local = line.position_for_index(offset - start, self.line_height).unwrap_or_default();
+        let local = line
+            .position_for_index(offset - start, self.line_height)
+            .unwrap_or_default();
         point(local.x, local.y + self.line_top(index))
     }
 
@@ -196,7 +209,10 @@ impl TextLayout {
         for (index, (start, line)) in self.lines.iter().enumerate() {
             let height = line.size(self.line_height).height;
             if position.y < top + height || index == self.lines.len() - 1 {
-                let local = point(position.x.max(px(0.)), (position.y - top).clamp(px(0.), height - px(0.5)));
+                let local = point(
+                    position.x.max(px(0.)),
+                    (position.y - top).clamp(px(0.), height - px(0.5)),
+                );
                 let found = match line.closest_index_for_position(local, self.line_height) {
                     Ok(found) | Err(found) => found,
                 };
@@ -293,7 +309,11 @@ impl GTextInput {
     }
 
     fn cursor_offset(&self) -> usize {
-        if self.selection_reversed { self.selected_range.start } else { self.selected_range.end }
+        if self.selection_reversed {
+            self.selected_range.start
+        } else {
+            self.selected_range.end
+        }
     }
 
     fn move_to(&mut self, offset: usize, window: &mut Window, cx: &mut Context<Self>) {
@@ -322,7 +342,11 @@ impl GTextInput {
     }
 
     fn previous_boundary(&self, offset: usize) -> usize {
-        self.content.grapheme_indices(true).rev().find_map(|(index, _)| (index < offset).then_some(index)).unwrap_or(0)
+        self.content
+            .grapheme_indices(true)
+            .rev()
+            .find_map(|(index, _)| (index < offset).then_some(index))
+            .unwrap_or(0)
     }
 
     fn next_boundary(&self, offset: usize) -> usize {
@@ -349,15 +373,21 @@ impl GTextInput {
 
     /// The start and the end of the line holding `offset` (a hard line: up to a return).
     fn line_bounds(&self, offset: usize) -> Range<usize> {
-        let start = self.content[..offset].rfind('\n').map_or(0, |index| index + 1);
-        let end = self.content[offset..].find('\n').map_or(self.content.len(), |index| offset + index);
+        let start = self.content[..offset]
+            .rfind('\n')
+            .map_or(0, |index| index + 1);
+        let end = self.content[offset..]
+            .find('\n')
+            .map_or(self.content.len(), |index| offset + index);
         start..end
     }
 
     /// The offset one row above or below the caret, at the goal's x; at the ends, the start or the end.
     fn vertical(&mut self, rows: f32) -> usize {
         let cursor = self.cursor_offset();
-        let Some(layout) = self.layout.as_ref() else { return cursor };
+        let Some(layout) = self.layout.as_ref() else {
+            return cursor;
+        };
         let position = layout.position(cursor);
         let x = *self.goal_x.get_or_insert(position.x);
         let y = position.y + layout.line_height * rows + layout.line_height / 2.;
@@ -428,11 +458,21 @@ impl GTextInput {
         self.select_to(offset, window, cx);
     }
 
-    fn select_word_left(&mut self, _: &SelectWordLeft, window: &mut Window, cx: &mut Context<Self>) {
+    fn select_word_left(
+        &mut self,
+        _: &SelectWordLeft,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         self.select_to(self.previous_word(self.cursor_offset()), window, cx);
     }
 
-    fn select_word_right(&mut self, _: &SelectWordRight, window: &mut Window, cx: &mut Context<Self>) {
+    fn select_word_right(
+        &mut self,
+        _: &SelectWordRight,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         self.select_to(self.next_word(self.cursor_offset()), window, cx);
     }
 
@@ -491,7 +531,12 @@ impl GTextInput {
         self.replace_text_in_range(None, "", window, cx)
     }
 
-    fn delete_word_left(&mut self, _: &DeleteWordLeft, window: &mut Window, cx: &mut Context<Self>) {
+    fn delete_word_left(
+        &mut self,
+        _: &DeleteWordLeft,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         if self.disabled {
             return;
         }
@@ -521,29 +566,47 @@ impl GTextInput {
         }
         if let Some(text) = cx.read_from_clipboard().and_then(|item| item.text()) {
             // On one line, the returns of a pasted text become spaces.
-            let text = if self.multi_line { text.replace("\r\n", "\n") } else { text.replace(['\r', '\n'], " ") };
+            let text = if self.multi_line {
+                text.replace("\r\n", "\n")
+            } else {
+                text.replace(['\r', '\n'], " ")
+            };
             self.replace_text_in_range(None, &text, window, cx);
         }
     }
 
     fn copy(&mut self, _: &Copy, _: &mut Window, cx: &mut Context<Self>) {
         if !self.selected_range.is_empty() {
-            cx.write_to_clipboard(ClipboardItem::new_string(self.content[self.selected_range.clone()].to_string()));
+            cx.write_to_clipboard(ClipboardItem::new_string(
+                self.content[self.selected_range.clone()].to_string(),
+            ));
         }
     }
 
     fn cut(&mut self, _: &Cut, window: &mut Window, cx: &mut Context<Self>) {
         if !self.selected_range.is_empty() && !self.disabled {
-            cx.write_to_clipboard(ClipboardItem::new_string(self.content[self.selected_range.clone()].to_string()));
+            cx.write_to_clipboard(ClipboardItem::new_string(
+                self.content[self.selected_range.clone()].to_string(),
+            ));
             self.replace_text_in_range(None, "", window, cx)
         }
     }
 
-    fn show_character_palette(&mut self, _: &ShowCharacterPalette, window: &mut Window, _: &mut Context<Self>) {
+    fn show_character_palette(
+        &mut self,
+        _: &ShowCharacterPalette,
+        window: &mut Window,
+        _: &mut Context<Self>,
+    ) {
         window.show_character_palette();
     }
 
-    fn on_mouse_down(&mut self, event: &MouseDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+    fn on_mouse_down(
+        &mut self,
+        event: &MouseDownEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         if self.disabled {
             return;
         }
@@ -572,14 +635,21 @@ impl GTextInput {
         self.is_selecting = false;
     }
 
-    fn on_mouse_move(&mut self, event: &MouseMoveEvent, window: &mut Window, cx: &mut Context<Self>) {
+    fn on_mouse_move(
+        &mut self,
+        event: &MouseMoveEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         if self.is_selecting {
             self.select_to(self.offset_for_point(event.position), window, cx);
         }
     }
 
     fn offset_for_point(&self, position: Point<Pixels>) -> usize {
-        let Some(layout) = self.layout.as_ref() else { return self.content.len() };
+        let Some(layout) = self.layout.as_ref() else {
+            return self.content.len();
+        };
         if layout.text != self.content {
             return self.content.len();
         }
@@ -591,7 +661,9 @@ impl GTextInput {
         self.caret_visible = true;
         self.blink = Some(cx.spawn(async move |this, cx| {
             loop {
-                cx.background_executor().timer(Duration::from_millis(530)).await;
+                cx.background_executor()
+                    .timer(Duration::from_millis(530))
+                    .await;
                 let alive = this.update(cx, |this, cx| {
                     this.caret_visible = !this.caret_visible;
                     cx.notify();
@@ -638,7 +710,11 @@ impl GTextInput {
     }
 
     fn insertion_text(&self, text: &str) -> String {
-        if self.multi_line { text.to_string() } else { text.replace(['\r', '\n'], " ") }
+        if self.multi_line {
+            text.to_string()
+        } else {
+            text.replace(['\r', '\n'], " ")
+        }
     }
 }
 
@@ -663,21 +739,39 @@ impl EntityInputHandler for GTextInput {
         _window: &mut Window,
         _cx: &mut Context<Self>,
     ) -> Option<UTF16Selection> {
-        Some(UTF16Selection { range: self.range_to_utf16(&self.selected_range), reversed: self.selection_reversed })
+        Some(UTF16Selection {
+            range: self.range_to_utf16(&self.selected_range),
+            reversed: self.selection_reversed,
+        })
     }
 
-    fn set_selected_text_range(&mut self, range_utf16: Range<usize>, window: &mut Window, cx: &mut Context<Self>) {
+    fn set_selected_text_range(
+        &mut self,
+        range_utf16: Range<usize>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         self.selected_range = self.range_from_utf16(&range_utf16);
         self.selection_reversed = false;
         self.selection_changed(window, cx);
     }
 
-    fn text_length_utf16(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> Option<usize> {
+    fn text_length_utf16(
+        &mut self,
+        _window: &mut Window,
+        _cx: &mut Context<Self>,
+    ) -> Option<usize> {
         Some(self.content.encode_utf16().count())
     }
 
-    fn marked_text_range(&self, _window: &mut Window, _cx: &mut Context<Self>) -> Option<Range<usize>> {
-        self.marked_range.as_ref().map(|range| self.range_to_utf16(range))
+    fn marked_text_range(
+        &self,
+        _window: &mut Window,
+        _cx: &mut Context<Self>,
+    ) -> Option<Range<usize>> {
+        self.marked_range
+            .as_ref()
+            .map(|range| self.range_to_utf16(range))
     }
 
     fn unmark_text(&mut self, window: &mut Window, cx: &mut Context<Self>) {
@@ -731,7 +825,8 @@ impl EntityInputHandler for GTextInput {
             .or(self.marked_range.clone())
             .unwrap_or(self.selected_range.clone());
         self.content.replace_range(range.clone(), &new_text);
-        self.marked_range = (!new_text.is_empty()).then(|| range.start..range.start + new_text.len());
+        self.marked_range =
+            (!new_text.is_empty()).then(|| range.start..range.start + new_text.len());
         let insertion_start_utf16 = self.offset_to_utf16(range.start);
         let inserted_length_utf16 = new_text.encode_utf16().count();
         self.selected_range = new_selected_range_utf16
@@ -762,7 +857,11 @@ impl EntityInputHandler for GTextInput {
         let range = self.range_from_utf16(&range_utf16);
         let start = layout.position(range.start);
         let end = layout.position(range.end);
-        let end = if end.y > start.y { point(layout.width, start.y) } else { end };
+        let end = if end.y > start.y {
+            point(layout.width, start.y)
+        } else {
+            end
+        };
         Some(Bounds::from_corners(
             layout.origin + start,
             layout.origin + point(end.x.max(start.x), start.y + layout.line_height),
@@ -884,13 +983,23 @@ fn runs_for(input: &GTextInput, text: &str, window: &Window, color: Hsla) -> Vec
     };
     match input.marked_range.as_ref() {
         Some(marked) if !input.content.is_empty() => vec![
-            TextRun { len: marked.start, ..run.clone() },
             TextRun {
-                len: marked.end - marked.start,
-                underline: Some(UnderlineStyle { color: Some(color), thickness: px(1.0), wavy: false }),
+                len: marked.start,
                 ..run.clone()
             },
-            TextRun { len: text.len() - marked.end, ..run },
+            TextRun {
+                len: marked.end - marked.start,
+                underline: Some(UnderlineStyle {
+                    color: Some(color),
+                    thickness: px(1.0),
+                    wavy: false,
+                }),
+                ..run.clone()
+            },
+            TextRun {
+                len: text.len() - marked.end,
+                ..run
+            },
         ]
         .into_iter()
         .filter(|run| run.len > 0)
@@ -900,7 +1009,12 @@ fn runs_for(input: &GTextInput, text: &str, window: &Window, color: Hsla) -> Vec
 }
 
 /// Shapes `text`, hard line by hard line, wrapped at `wrap` (none on one line).
-fn shape(text: &str, runs: &[TextRun], wrap: Option<Pixels>, window: &Window) -> Vec<(usize, WrappedLine)> {
+fn shape(
+    text: &str,
+    runs: &[TextRun],
+    wrap: Option<Pixels>,
+    window: &Window,
+) -> Vec<(usize, WrappedLine)> {
     let style = window.text_style();
     let font_size = style.font_size.to_pixels(window.rem_size());
     let mut lines = Vec::new();
@@ -915,15 +1029,27 @@ fn shape(text: &str, runs: &[TextRun], wrap: Option<Pixels>, window: &Window) ->
             let from = run_start.max(start);
             let to = run_end.min(start + line.len());
             if from < to {
-                line_runs.push(TextRun { len: to - from, ..run.clone() });
+                line_runs.push(TextRun {
+                    len: to - from,
+                    ..run.clone()
+                });
             }
         }
         if line_runs.is_empty() {
-            line_runs.push(TextRun { len: 0, ..runs[0].clone() });
+            line_runs.push(TextRun {
+                len: 0,
+                ..runs[0].clone()
+            });
         }
         let shaped = window
             .text_system()
-            .shape_text(SharedString::from(line.to_string()), font_size, &line_runs, wrap, None)
+            .shape_text(
+                SharedString::from(line.to_string()),
+                font_size,
+                &line_runs,
+                wrap,
+                None,
+            )
             .ok()
             .and_then(|mut shaped| shaped.pop())
             .unwrap_or_default();
@@ -962,18 +1088,26 @@ impl Element for GTextElement {
         }
         // Several lines: as high as the wrapped text, between its least and its most rows.
         let (min_rows, max_rows) = (input.min_rows as f32, input.max_rows as f32);
-        let text = if input.content.is_empty() { input.placeholder.to_string() } else { input.content.clone() };
+        let text = if input.content.is_empty() {
+            input.placeholder.to_string()
+        } else {
+            input.content.clone()
+        };
         let color = window.text_style().color;
         let runs = runs_for(input, &text, window, color);
-        let layout_id = window.request_measured_layout(style, move |known, available, window, _cx| {
-            let width = known.width.unwrap_or(match available.width {
-                AvailableSpace::Definite(width) => width,
-                _ => px(10_000.),
+        let layout_id =
+            window.request_measured_layout(style, move |known, available, window, _cx| {
+                let width = known.width.unwrap_or(match available.width {
+                    AvailableSpace::Definite(width) => width,
+                    _ => px(10_000.),
+                });
+                let lines = shape(&text, &runs, Some(width), window);
+                let rows = lines
+                    .iter()
+                    .map(|(_, line)| line.wrap_boundaries().len() + 1)
+                    .sum::<usize>() as f32;
+                size(width, line_height * rows.clamp(min_rows, max_rows))
             });
-            let lines = shape(&text, &runs, Some(width), window);
-            let rows = lines.iter().map(|(_, line)| line.wrap_boundaries().len() + 1).sum::<usize>() as f32;
-            size(width, line_height * rows.clamp(min_rows, max_rows))
-        });
         (layout_id, ())
     }
 
@@ -1006,9 +1140,20 @@ impl Element for GTextElement {
             text: input.content.clone(),
         };
         // Measured on the real text (the placeholder's positions mean nothing).
-        let layout = TextLayout { lines: if placeholder { Rc::new(vec![(0, WrappedLine::default())]) } else { lines.clone() }, ..layout };
+        let layout = TextLayout {
+            lines: if placeholder {
+                Rc::new(vec![(0, WrappedLine::default())])
+            } else {
+                lines.clone()
+            },
+            ..layout
+        };
         let cursor = input.cursor_offset();
-        let caret_at = if placeholder { point(px(0.), px(0.)) } else { layout.position(cursor) };
+        let caret_at = if placeholder {
+            point(px(0.), px(0.))
+        } else {
+            layout.position(cursor)
+        };
 
         // Scrolled so that the caret shows: sideways on one line, up and down on several.
         let mut scroll = input.scroll;
@@ -1019,7 +1164,10 @@ impl Element for GTextElement {
             } else if caret_at.y + line_height + scroll.y > bounds.size.height {
                 scroll.y = bounds.size.height - caret_at.y - line_height;
             }
-            scroll.y = scroll.y.min(px(0.)).max((bounds.size.height - height).min(px(0.)));
+            scroll.y = scroll
+                .y
+                .min(px(0.))
+                .max((bounds.size.height - height).min(px(0.)));
             scroll.x = px(0.);
         } else {
             let width = lines.first().map_or(px(0.), |(_, line)| line.width());
@@ -1029,7 +1177,10 @@ impl Element for GTextElement {
             } else if caret_at.x + scroll.x > bounds.size.width - margin {
                 scroll.x = bounds.size.width - margin - caret_at.x;
             }
-            scroll.x = scroll.x.min(px(0.)).max((bounds.size.width - margin - width).min(px(0.)));
+            scroll.x = scroll
+                .x
+                .min(px(0.))
+                .max((bounds.size.width - margin - width).min(px(0.)));
             scroll.y = px(0.);
         }
         let origin = bounds.origin + scroll;
@@ -1048,22 +1199,37 @@ impl Element for GTextElement {
                     end.x
                 } else {
                     // To the end of the row: the line's width, or the field's when it wraps.
-                    let index = layout.line_index(layout.offset(point(px(0.), row + line_height / 2.)));
+                    let index =
+                        layout.line_index(layout.offset(point(px(0.), row + line_height / 2.)));
                     let line = &layout.lines[index].1;
-                    if line.wrap_boundaries().is_empty() { line.width() + px(4.) } else { bounds.size.width }
+                    if line.wrap_boundaries().is_empty() {
+                        line.width() + px(4.)
+                    } else {
+                        bounds.size.width
+                    }
                 };
                 if to > from {
                     selections.push(fill(
-                        Bounds::from_corners(origin + point(from, row), origin + point(to, row + line_height)),
+                        Bounds::from_corners(
+                            origin + point(from, row),
+                            origin + point(to, row + line_height),
+                        ),
                         ground,
                     ));
                 }
                 row += line_height;
             }
         }
-        let caret = (focused && selection.is_empty() && input.caret_visible && !input.disabled).then(|| {
-            fill(Bounds::new(origin + caret_at + point(px(0.), px(1.)), size(px(2.), line_height - px(2.))), colors.text_primary)
-        });
+        let caret = (focused && selection.is_empty() && input.caret_visible && !input.disabled)
+            .then(|| {
+                fill(
+                    Bounds::new(
+                        origin + caret_at + point(px(0.), px(1.)),
+                        size(px(2.), line_height - px(2.)),
+                    ),
+                    colors.text_primary,
+                )
+            });
         let a11y = A11yText {
             label: input.label.clone(),
             value: input.content.clone(),
@@ -1076,7 +1242,15 @@ impl Element for GTextElement {
             input.scroll = scroll;
             input.layout = Some(stored);
         });
-        Prepaint { lines, origin, line_height, selections, caret, placeholder, a11y }
+        Prepaint {
+            lines,
+            origin,
+            line_height,
+            selections,
+            caret,
+            placeholder,
+            a11y,
+        }
     }
 
     fn paint(
@@ -1090,15 +1264,26 @@ impl Element for GTextElement {
         cx: &mut App,
     ) {
         let focus_handle = self.input.read(cx).focus_handle.clone();
-        window.handle_input(&focus_handle, ElementInputHandler::new(bounds, self.input.clone()), cx);
+        window.handle_input(
+            &focus_handle,
+            ElementInputHandler::new(bounds, self.input.clone()),
+            cx,
+        );
         window.with_content_mask(Some(gpui::ContentMask { bounds }), |window| {
             for selection in prepaint.selections.drain(..) {
                 window.paint_quad(selection);
             }
             let mut top = px(0.);
             for (_, line) in prepaint.lines.iter() {
-                line.paint(prepaint.origin + point(px(0.), top), prepaint.line_height, TextAlign::Left, None, window, cx)
-                    .ok();
+                line.paint(
+                    prepaint.origin + point(px(0.), top),
+                    prepaint.line_height,
+                    TextAlign::Left,
+                    None,
+                    window,
+                    cx,
+                )
+                .ok();
                 top += line.size(prepaint.line_height).height;
             }
             if let Some(caret) = prepaint.caret.take() {
@@ -1112,17 +1297,30 @@ impl Element for GTextElement {
         Some(Role::TextInput)
     }
 
-    fn a11y_synthetic_children(&mut self, prepaint: &mut Self::PrepaintState, builder: &mut gpui::A11ySubtreeBuilder) {
+    fn a11y_synthetic_children(
+        &mut self,
+        prepaint: &mut Self::PrepaintState,
+        builder: &mut gpui::A11ySubtreeBuilder,
+    ) {
         let text = &prepaint.a11y;
         // The text as one run: its characters' lengths in UTF-8, the caret and the selection in characters.
         let mut run = gpui::accesskit::Node::new(Role::TextRun);
         run.set_value(text.value.clone());
-        run.set_character_lengths(text.value.chars().map(|c| c.len_utf8() as u8).collect::<Vec<_>>());
+        run.set_character_lengths(
+            text.value
+                .chars()
+                .map(|c| c.len_utf8() as u8)
+                .collect::<Vec<_>>(),
+        );
         let run_id = builder.synthetic_node_id(0);
         builder.push_child(run_id, run);
         let characters = |offset: usize| text.value[..offset.min(text.value.len())].chars().count();
         let parent = builder.parent_node();
-        parent.set_role(if text.multi_line { Role::MultilineTextInput } else { Role::TextInput });
+        parent.set_role(if text.multi_line {
+            Role::MultilineTextInput
+        } else {
+            Role::TextInput
+        });
         if !text.label.is_empty() {
             parent.set_label(text.label.to_string());
         }
@@ -1131,8 +1329,14 @@ impl Element for GTextElement {
             parent.set_disabled();
         }
         parent.set_text_selection(gpui::accesskit::TextSelection {
-            anchor: gpui::accesskit::TextPosition { node: run_id, character_index: characters(text.selection.start) },
-            focus: gpui::accesskit::TextPosition { node: run_id, character_index: characters(text.selection.end) },
+            anchor: gpui::accesskit::TextPosition {
+                node: run_id,
+                character_index: characters(text.selection.start),
+            },
+            focus: gpui::accesskit::TextPosition {
+                node: run_id,
+                character_index: characters(text.selection.end),
+            },
         });
     }
 }
@@ -1148,7 +1352,11 @@ pub struct GFieldFrame {
 
 impl GFieldFrame {
     pub fn new(input: Entity<GTextInput>) -> Self {
-        GFieldFrame { input, bare: false, preview_hover: false }
+        GFieldFrame {
+            input,
+            bare: false,
+            preview_hover: false,
+        }
     }
 
     pub fn bare(mut self) -> Self {
@@ -1200,7 +1408,9 @@ impl RenderOnce for GFieldFrame {
             .shadow(vec![hollow(0.06)])
             .border(px(if focused { 1.5 } else { 1. }))
             .border_color(rim)
-            .when(!focused && !disabled, |this| this.hover(move |style| style.border_color(alpha(colors.border, 0.7))))
+            .when(!focused && !disabled, |this| {
+                this.hover(move |style| style.border_color(alpha(colors.border, 0.7)))
+            })
             .when(!disabled, |this| this.cursor(CursorStyle::IBeam))
             // A click on the padding too puts the caret in the field.
             .on_click(move |_, window, cx| window.focus(&focus, cx))
@@ -1219,7 +1429,10 @@ pub struct GTextField {
 
 impl GTextField {
     pub fn new(title: impl Into<SharedString>, input: Entity<GTextInput>) -> Self {
-        GTextField { title: title.into(), input }
+        GTextField {
+            title: title.into(),
+            input,
+        }
     }
 }
 

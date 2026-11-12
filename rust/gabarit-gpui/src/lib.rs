@@ -25,7 +25,9 @@ pub use avatar::GAvatar;
 pub use bars::{GBarTitle, GNavTabs, GPageBand, GRailItem, GSidebarRow, GWindowHeader};
 pub use button::{GButton, GButtonVariant, GCloseButton};
 pub use controls::{GCheckbox, GSlider, GStepper, GToggle};
-pub use feedback::{GBadge, GBanner, GEmptyState, GSkeleton, GToastCenter, GTone, GTypingDots, GUnreadBadge};
+pub use feedback::{
+    GBadge, GBanner, GEmptyState, GSkeleton, GToastCenter, GTone, GTypingDots, GUnreadBadge,
+};
 pub use form::{GForm, GFormButtons, GFormRowButton, GFormSection, GLabeledContent, GPageTitle};
 pub use list::{GLongList, GMessageRow};
 pub use menu::{GContextMenu, GMenu, GMenuItem};

@@ -6,8 +6,9 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use gpui::{
-    AccessibleAction, Animation, AnimationExt, App, Bounds, CursorStyle, ElementId, Empty, IntoElement, KeyDownEvent,
-    ParentElement, Pixels, RenderOnce, Role, SharedString, Styled, Toggled, Window, canvas, div, prelude::*, px, relative,
+    AccessibleAction, Animation, AnimationExt, App, Bounds, CursorStyle, ElementId, Empty,
+    IntoElement, KeyDownEvent, ParentElement, Pixels, RenderOnce, Role, SharedString, Styled,
+    Toggled, Window, canvas, div, prelude::*, px, relative,
 };
 
 use crate::assets::icon;
@@ -19,7 +20,11 @@ use crate::tokens::{opacity, radius, text};
 pub type ChangeHandler<T> = Rc<dyn Fn(T, &mut Window, &mut App)>;
 
 /// The title of a control's row, and the sentence that explains it, more discreet.
-pub(crate) fn row_label(title: SharedString, detail: Option<SharedString>, cx: &App) -> impl IntoElement + use<> {
+pub(crate) fn row_label(
+    title: SharedString,
+    detail: Option<SharedString>,
+    cx: &App,
+) -> impl IntoElement + use<> {
     let colors = cx.theme().colors;
     div()
         .flex()
@@ -27,9 +32,19 @@ pub(crate) fn row_label(title: SharedString, detail: Option<SharedString>, cx: &
         .flex_1()
         .min_w_0()
         .gap(px(2.))
-        .child(div().g_text(text::BODY).text_color(colors.text_primary).child(title))
+        .child(
+            div()
+                .g_text(text::BODY)
+                .text_color(colors.text_primary)
+                .child(title),
+        )
         .when_some(detail, |this, detail| {
-            this.child(div().g_text(text::CAPTION).text_color(colors.text_discret).child(detail))
+            this.child(
+                div()
+                    .g_text(text::CAPTION)
+                    .text_color(colors.text_discret)
+                    .child(detail),
+            )
         })
 }
 
@@ -44,7 +59,11 @@ pub struct GSwitch {
 
 impl GSwitch {
     pub(crate) fn new(id: impl Into<ElementId>, on: bool, live: Live) -> Self {
-        GSwitch { id: id.into(), on, live }
+        GSwitch {
+            id: id.into(),
+            on,
+            live,
+        }
     }
 }
 
@@ -60,7 +79,13 @@ impl RenderOnce for GSwitch {
         let travel = SWITCH_WIDTH - 4.0 - knob_size;
         let group = SharedString::new_static(live.group);
         // Off, a rim stronger than the fine line: the track shows on a white card too.
-        let rim = if on { alpha(colors.border, 0.0) } else if live.hovered() { colors.border } else { alpha(colors.border, 0.35) };
+        let rim = if on {
+            alpha(colors.border, 0.0)
+        } else if live.hovered() {
+            colors.border
+        } else {
+            alpha(colors.border, 0.35)
+        };
         let mut shadows = vec![hollow(0.12)];
         if on {
             shadows.push(glow(colors.accent, if live.hovered() { 7.0 } else { 5.0 }));
@@ -89,7 +114,9 @@ impl RenderOnce for GSwitch {
             .id("g-knob")
             .absolute()
             .top(px(1.))
-            .shadow(vec![gpui::BoxShadow::new(px(0.), px(1.), black(0.18)).blur_radius(px(1.5))]);
+            .shadow(vec![
+                gpui::BoxShadow::new(px(0.), px(1.), black(0.18)).blur_radius(px(1.5)),
+            ]);
         if live.follows() && !reduce_motion {
             thumb = thumb.group_active(group, move |style| style.w(px(knob_size + stretch)));
         } else if live.pressed() && !reduce_motion {
@@ -98,7 +125,11 @@ impl RenderOnce for GSwitch {
         // On, the knob on the right, its stretch towards the left.
         let place = move |thumb: gpui::Stateful<gpui::Div>, t: f32| {
             let left = px(1. + travel * t);
-            if on { thumb.right(px(1.)) } else { thumb.left(left) }
+            if on {
+                thumb.right(px(1.))
+            } else {
+                thumb.left(left)
+            }
         };
         let thumb = if reduce_motion {
             place(thumb, if on { 1. } else { 0. }).into_any_element()
@@ -110,7 +141,11 @@ impl RenderOnce for GSwitch {
                     move |thumb, delta| {
                         let t = if on { delta } else { 1. - delta };
                         // During the slide the knob is placed from the left; at rest, on its side.
-                        if delta < 1. { thumb.left(px(1. + travel * t)) } else { place(thumb, t) }
+                        if delta < 1. {
+                            thumb.left(px(1. + travel * t))
+                        } else {
+                            place(thumb, t)
+                        }
                     },
                 )
                 .into_any_element()
@@ -134,7 +169,15 @@ pub struct GToggle {
 
 impl GToggle {
     pub fn new(id: impl Into<ElementId>, title: impl Into<SharedString>, on: bool) -> Self {
-        GToggle { id: id.into(), title: title.into(), detail: None, on, disabled: false, preview: None, on_change: None }
+        GToggle {
+            id: id.into(),
+            title: title.into(),
+            detail: None,
+            on,
+            disabled: false,
+            preview: None,
+            on_change: None,
+        }
     }
 
     pub fn detail(mut self, detail: impl Into<SharedString>) -> Self {
@@ -153,7 +196,9 @@ impl GToggle {
     }
 
     pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self {
-        self.on_change = Some(Rc::new(move |value, window, cx| handler(&value, window, cx)));
+        self.on_change = Some(Rc::new(move |value, window, cx| {
+            handler(&value, window, cx)
+        }));
         self
     }
 }
@@ -174,7 +219,10 @@ impl RenderOnce for GToggle {
             .aria_toggled(if on { Toggled::True } else { Toggled::False })
             .when(self.disabled, |this| this.opacity(opacity::DISABLED));
         if live.follows() {
-            row = row.cursor(CursorStyle::PointingHand).focusable().tab_stop(true);
+            row = row
+                .cursor(CursorStyle::PointingHand)
+                .focusable()
+                .tab_stop(true);
             if let Some(handler) = self.on_change.clone() {
                 row = row.on_click(move |_, window, cx| handler(!on, window, cx));
             }
@@ -198,7 +246,14 @@ pub struct GCheckbox {
 
 impl GCheckbox {
     pub fn new(id: impl Into<ElementId>, title: impl Into<SharedString>, checked: bool) -> Self {
-        GCheckbox { id: id.into(), title: title.into(), checked, disabled: false, preview: None, on_change: None }
+        GCheckbox {
+            id: id.into(),
+            title: title.into(),
+            checked,
+            disabled: false,
+            preview: None,
+            on_change: None,
+        }
     }
 
     pub fn disabled(mut self, disabled: bool) -> Self {
@@ -212,7 +267,9 @@ impl GCheckbox {
     }
 
     pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self {
-        self.on_change = Some(Rc::new(move |value, window, cx| handler(&value, window, cx)));
+        self.on_change = Some(Rc::new(move |value, window, cx| {
+            handler(&value, window, cx)
+        }));
         self
     }
 }
@@ -223,7 +280,11 @@ impl RenderOnce for GCheckbox {
         let live = Live::new("g-checkbox", self.preview, !self.disabled);
         let checked = self.checked;
         let group = SharedString::new_static(live.group);
-        let rest_rim = if checked { colors.accent } else { alpha(colors.border, 0.6) };
+        let rest_rim = if checked {
+            colors.accent
+        } else {
+            alpha(colors.border, 0.6)
+        };
         let mut box_ = div()
             .id("g-check-box")
             .flex()
@@ -233,10 +294,24 @@ impl RenderOnce for GCheckbox {
             .size(px(16.))
             .rounded(px(radius::XS))
             .border_1()
-            .border_color(if live.hovered() && !checked { colors.border } else { rest_rim })
-            .bg(if checked { colors.accent } else { colors.background })
-            .shadow(if checked { vec![glow(colors.accent, 3.0)] } else { vec![hollow(0.1)] })
-            .when(checked, |this| this.child(icon("check", px(11.), gpui::white())));
+            .border_color(if live.hovered() && !checked {
+                colors.border
+            } else {
+                rest_rim
+            })
+            .bg(if checked {
+                colors.accent
+            } else {
+                colors.background
+            })
+            .shadow(if checked {
+                vec![glow(colors.accent, 3.0)]
+            } else {
+                vec![hollow(0.1)]
+            })
+            .when(checked, |this| {
+                this.child(icon("check", px(11.), gpui::white()))
+            });
         if live.follows() && !checked {
             let border = colors.border;
             box_ = box_.group_hover(group, move |style| style.border_color(border));
@@ -249,15 +324,27 @@ impl RenderOnce for GCheckbox {
             .gap(px(8.))
             .role(Role::CheckBox)
             .aria_label(self.title.clone())
-            .aria_toggled(if checked { Toggled::True } else { Toggled::False })
+            .aria_toggled(if checked {
+                Toggled::True
+            } else {
+                Toggled::False
+            })
             .when(self.disabled, |this| this.opacity(opacity::DISABLED));
         if live.follows() {
-            row = row.cursor(CursorStyle::PointingHand).focusable().tab_stop(true);
+            row = row
+                .cursor(CursorStyle::PointingHand)
+                .focusable()
+                .tab_stop(true);
             if let Some(handler) = self.on_change.clone() {
                 row = row.on_click(move |_, window, cx| handler(!checked, window, cx));
             }
         }
-        row.child(box_).child(div().g_text(text::BODY).text_color(colors.text_primary).child(self.title))
+        row.child(box_).child(
+            div()
+                .g_text(text::BODY)
+                .text_color(colors.text_primary)
+                .child(self.title),
+        )
     }
 }
 
@@ -324,7 +411,9 @@ impl GSlider {
     }
 
     pub fn on_change(mut self, handler: impl Fn(&f64, &mut Window, &mut App) + 'static) -> Self {
-        self.on_change = Some(Rc::new(move |value, window, cx| handler(&value, window, cx)));
+        self.on_change = Some(Rc::new(move |value, window, cx| {
+            handler(&value, window, cx)
+        }));
         self
     }
 }
@@ -341,16 +430,27 @@ fn slider_value(fraction: f64, min: f64, max: f64, step: Option<f64>) -> f64 {
 impl RenderOnce for GSlider {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         // Where the track lies, for a click (GPUI's mouse events do not carry the element's bounds).
-        let track_bounds = window.use_keyed_state(self.id.clone(), cx, |_, _| Bounds::<Pixels>::default());
+        let track_bounds =
+            window.use_keyed_state(self.id.clone(), cx, |_, _| Bounds::<Pixels>::default());
         let colors = cx.theme().colors;
         let reduce_motion = cx.theme().reduce_motion;
         let live = Live::new("g-slider", self.preview, !self.disabled);
         let (min, max, step, value) = (self.min, self.max, self.step, self.value);
-        let fraction = if max > min { ((value - min) / (max - min)).clamp(0., 1.) } else { 0. } as f32;
+        let fraction = if max > min {
+            ((value - min) / (max - min)).clamp(0., 1.)
+        } else {
+            0.
+        } as f32;
         let knob_size = 16.0;
         let held = live.pressed();
         let lit = live.hovered();
-        let knob_rim = if held { colors.accent } else if lit { colors.border } else { alpha(colors.border, 0.5) };
+        let knob_rim = if held {
+            colors.accent
+        } else if lit {
+            colors.border
+        } else {
+            alpha(colors.border, 0.5)
+        };
         let knob_shadow = |held: bool, lit: bool| {
             let (color, blur, y) = if held {
                 (alpha(colors.accent, 0.4), 4., 0.)
@@ -361,7 +461,17 @@ impl RenderOnce for GSlider {
             };
             vec![gpui::BoxShadow::new(px(0.), px(y), color).blur_radius(px(blur))]
         };
-        let scale = |held: bool, lit: bool| if reduce_motion { 1. } else if held { 1.1 } else if lit { 1.06 } else { 1. };
+        let scale = |held: bool, lit: bool| {
+            if reduce_motion {
+                1.
+            } else if held {
+                1.1
+            } else if lit {
+                1.06
+            } else {
+                1.
+            }
+        };
         let knob_px = |held, lit| px(knob_size * scale(held, lit));
         let group = SharedString::new_static(live.group);
         let mut thumb = knob(knob_px(held, lit))
@@ -372,17 +482,41 @@ impl RenderOnce for GSlider {
             .border_color(knob_rim)
             .shadow(knob_shadow(held, lit));
         if live.follows() {
-            let (hover_rim, hover_shadow, hover_size) = (colors.border, knob_shadow(false, true), knob_px(false, true));
-            let (held_rim, held_shadow, held_size) = (colors.accent, knob_shadow(true, false), knob_px(true, false));
+            let (hover_rim, hover_shadow, hover_size) = (
+                colors.border,
+                knob_shadow(false, true),
+                knob_px(false, true),
+            );
+            let (held_rim, held_shadow, held_size) = (
+                colors.accent,
+                knob_shadow(true, false),
+                knob_px(true, false),
+            );
             thumb = thumb
-                .group_hover(group.clone(), move |style| style.border_color(hover_rim).shadow(hover_shadow).size(hover_size))
-                .group_active(group, move |style| style.border_color(held_rim).shadow(held_shadow).size(held_size));
+                .group_hover(group.clone(), move |style| {
+                    style
+                        .border_color(hover_rim)
+                        .shadow(hover_shadow)
+                        .size(hover_size)
+                })
+                .group_active(group, move |style| {
+                    style
+                        .border_color(held_rim)
+                        .shadow(held_shadow)
+                        .size(held_size)
+                });
         }
         // The knob's centre runs from half a knob in from each end.
-        let thumb = thumb.left(gpui::DefiniteLength::Fraction(fraction)).ml(px(-knob_size / 2.)).mt(px(-knob_size / 2.));
+        let thumb = thumb
+            .left(gpui::DefiniteLength::Fraction(fraction))
+            .ml(px(-knob_size / 2.))
+            .mt(px(-knob_size / 2.));
 
         let format = self.format.clone();
-        let spoken = format.map_or_else(|| format!("{:.0} %", fraction * 100.), |format| format(value));
+        let spoken = format.map_or_else(
+            || format!("{:.0} %", fraction * 100.),
+            |format| format(value),
+        );
         let nudge_step = step.unwrap_or((max - min) / 20.);
         let on_change = self.on_change.clone();
         let mut slider = div()
@@ -404,7 +538,10 @@ impl RenderOnce for GSlider {
             .aria_value(SharedString::from(spoken))
             .when(self.disabled, |this| this.opacity(opacity::DISABLED));
         if live.follows() {
-            slider = slider.cursor(CursorStyle::PointingHand).focusable().tab_stop(true);
+            slider = slider
+                .cursor(CursorStyle::PointingHand)
+                .focusable()
+                .tab_stop(true);
             if let Some(handler) = on_change {
                 let nudge = {
                     let handler = handler.clone();
@@ -417,12 +554,18 @@ impl RenderOnce for GSlider {
                 let (press, drag) = (handler.clone(), handler.clone());
                 let inset = knob_size / 2.;
                 slider = slider
-                    .on_a11y_action(AccessibleAction::Increment, move |_, window, cx| up(1., window, cx))
-                    .on_a11y_action(AccessibleAction::Decrement, move |_, window, cx| down(-1., window, cx))
-                    .on_key_down(move |event: &KeyDownEvent, window, cx| match event.keystroke.key.as_str() {
-                        "left" | "down" => keys(-1., window, cx),
-                        "right" | "up" => keys(1., window, cx),
-                        _ => {}
+                    .on_a11y_action(AccessibleAction::Increment, move |_, window, cx| {
+                        up(1., window, cx)
+                    })
+                    .on_a11y_action(AccessibleAction::Decrement, move |_, window, cx| {
+                        down(-1., window, cx)
+                    })
+                    .on_key_down(move |event: &KeyDownEvent, window, cx| {
+                        match event.keystroke.key.as_str() {
+                            "left" | "down" => keys(-1., window, cx),
+                            "right" | "up" => keys(1., window, cx),
+                            _ => {}
+                        }
                     })
                     .on_mouse_down(gpui::MouseButton::Left, {
                         let track_bounds = track_bounds.clone();
@@ -451,9 +594,14 @@ impl RenderOnce for GSlider {
                     .w_full()
                     .child({
                         let track_bounds = track_bounds.clone();
-                        canvas(move |bounds, _, cx| track_bounds.update(cx, |stored, _| *stored = bounds), |_, _, _, _| {})
-                            .absolute()
-                            .size_full()
+                        canvas(
+                            move |bounds, _, cx| {
+                                track_bounds.update(cx, |stored, _| *stored = bounds)
+                            },
+                            |_, _, _, _| {},
+                        )
+                        .absolute()
+                        .size_full()
                     })
                     .h(px(4.))
                     .rounded_full()
@@ -490,12 +638,27 @@ pub struct GStepper {
 }
 
 impl GStepper {
-    pub fn new(id: impl Into<ElementId>, title: impl Into<SharedString>, value: i64, min: i64, max: i64) -> Self {
-        GStepper { id: id.into(), title: title.into(), value, min, max, on_change: None }
+    pub fn new(
+        id: impl Into<ElementId>,
+        title: impl Into<SharedString>,
+        value: i64,
+        min: i64,
+        max: i64,
+    ) -> Self {
+        GStepper {
+            id: id.into(),
+            title: title.into(),
+            value,
+            min,
+            max,
+            on_change: None,
+        }
     }
 
     pub fn on_change(mut self, handler: impl Fn(&i64, &mut Window, &mut App) + 'static) -> Self {
-        self.on_change = Some(Rc::new(move |value, window, cx| handler(&value, window, cx)));
+        self.on_change = Some(Rc::new(move |value, window, cx| {
+            handler(&value, window, cx)
+        }));
         self
     }
 }
@@ -505,7 +668,11 @@ impl RenderOnce for GStepper {
         let colors = cx.theme().colors;
         let (value, min, max) = (self.value, self.min, self.max);
         let shape = px(radius::SM);
-        let step = |id: &'static str, symbol: &'static str, delta: i64, enabled: bool, handler: Option<ChangeHandler<i64>>| {
+        let step = |id: &'static str,
+                    symbol: &'static str,
+                    delta: i64,
+                    enabled: bool,
+                    handler: Option<ChangeHandler<i64>>| {
             let press = colors.press;
             let hover = colors.hover;
             div()
@@ -523,7 +690,9 @@ impl RenderOnce for GStepper {
                         .hover(move |style| style.bg(hover))
                         .active(move |style| style.bg(press))
                         .when_some(handler, |this, handler| {
-                            this.on_click(move |_, window, cx| handler((value + delta).clamp(min, max), window, cx))
+                            this.on_click(move |_, window, cx| {
+                                handler((value + delta).clamp(min, max), window, cx)
+                            })
                         })
                 })
                 .child(icon(symbol, px(12.), colors.text_primary))
@@ -549,7 +718,13 @@ impl RenderOnce for GStepper {
             Live::new("g-stepper", None, false),
             cx,
         )
-        .child(step("minus", "minus", -1, value > min, self.on_change.clone()))
+        .child(step(
+            "minus",
+            "minus",
+            -1,
+            value > min,
+            self.on_change.clone(),
+        ))
         .child(hairline())
         .child(
             div()
@@ -573,13 +748,22 @@ impl RenderOnce for GStepper {
             .aria_min_numeric_value(min as f64)
             .aria_max_numeric_value(max as f64)
             .when_some(increment, |this, handler| {
-                this.on_a11y_action(AccessibleAction::Increment, move |_, window, cx| handler((value + 1).min(max), window, cx))
+                this.on_a11y_action(AccessibleAction::Increment, move |_, window, cx| {
+                    handler((value + 1).min(max), window, cx)
+                })
             })
             .when_some(decrement, |this, handler| {
-                this.on_a11y_action(AccessibleAction::Decrement, move |_, window, cx| handler((value - 1).max(min), window, cx))
+                this.on_a11y_action(AccessibleAction::Decrement, move |_, window, cx| {
+                    handler((value - 1).max(min), window, cx)
+                })
             })
-            .child(div().flex_1().g_text(text::BODY).text_color(colors.text_primary).child(self.title))
+            .child(
+                div()
+                    .flex_1()
+                    .g_text(text::BODY)
+                    .text_color(colors.text_primary)
+                    .child(self.title),
+            )
             .child(field)
     }
 }
-

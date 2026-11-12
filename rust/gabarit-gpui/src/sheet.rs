@@ -6,8 +6,9 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use gpui::{
-    AnyElement, Animation, AnimationExt, App, ClickEvent, CursorStyle, ElementId, FocusHandle, IntoElement,
-    KeyDownEvent, ParentElement, RenderOnce, Role, SharedString, Styled, Window, div, prelude::*, px,
+    Animation, AnimationExt, AnyElement, App, ClickEvent, CursorStyle, ElementId, FocusHandle,
+    IntoElement, KeyDownEvent, ParentElement, RenderOnce, Role, SharedString, Styled, Window, div,
+    prelude::*, px,
 };
 
 use crate::assets::icon;
@@ -30,7 +31,13 @@ pub struct GSheetTitle {
 
 impl GSheetTitle {
     pub fn new(title: impl Into<SharedString>, summary: impl Into<SharedString>) -> Self {
-        GSheetTitle { title: title.into(), summary: summary.into(), close: "Cancel".into(), back: None, on_close: None }
+        GSheetTitle {
+            title: title.into(),
+            summary: summary.into(),
+            close: "Cancel".into(),
+            back: None,
+            on_close: None,
+        }
     }
 
     pub fn close_label(mut self, label: impl Into<SharedString>) -> Self {
@@ -43,7 +50,10 @@ impl GSheetTitle {
         self
     }
 
-    pub fn on_close(mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static) -> Self {
+    pub fn on_close(
+        mut self,
+        handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+    ) -> Self {
         self.on_close = Some(Rc::new(handler));
         self
     }
@@ -53,7 +63,11 @@ impl RenderOnce for GSheetTitle {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
         let back = self.back.map(|handler| {
-            let (rest, hover, press) = (colors.track, alpha(colors.border, 0.3), alpha(colors.border, 0.5));
+            let (rest, hover, press) = (
+                colors.track,
+                alpha(colors.border, 0.3),
+                alpha(colors.border, 0.5),
+            );
             let live = Live::new("g-sheet-back", None, true);
             raised(
                 div()
@@ -112,7 +126,12 @@ impl RenderOnce for GSheetTitle {
                             .line_clamp(2)
                             .child(gpui::Text::new_inaccessible(self.title)),
                     )
-                    .child(div().g_text(text::CALLOUT).text_color(colors.text_discret).child(self.summary)),
+                    .child(
+                        div()
+                            .g_text(text::CALLOUT)
+                            .text_color(colors.text_discret)
+                            .child(self.summary),
+                    ),
             )
             .child(close)
     }
@@ -141,7 +160,8 @@ impl GSheet {
         let close = on_close.clone();
         GSheet {
             id: id.into(),
-            title: GSheetTitle::new(title, summary).on_close(move |event, window, cx| close(event, window, cx)),
+            title: GSheetTitle::new(title, summary)
+                .on_close(move |event, window, cx| close(event, window, cx)),
             content: div().into_any_element(),
             on_close,
             width: 520.,
@@ -228,7 +248,9 @@ impl RenderOnce for GSheet {
             .pt(px(40.))
             .pb(px(40.))
             .bg(black(if cx.theme().is_dark() { 0.45 } else { 0.25 }))
-            .on_mouse_down(gpui::MouseButton::Left, move |_, window, cx| outside(&ClickEvent::default(), window, cx))
+            .on_mouse_down(gpui::MouseButton::Left, move |_, window, cx| {
+                outside(&ClickEvent::default(), window, cx)
+            })
             .child(panel)
     }
 }

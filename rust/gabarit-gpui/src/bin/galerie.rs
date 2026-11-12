@@ -13,8 +13,8 @@
 
 use std::cell::RefCell;
 use std::io::Write;
-use std::sync::OnceLock;
 use std::rc::Rc;
+use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 
 use gabarit_gpui::feedback::GToastView;
@@ -22,8 +22,9 @@ use gabarit_gpui::text_field::GFieldFrame;
 use gabarit_gpui::*;
 use gabarit_gpui::{form, relief, theme, tokens};
 use gpui::{
-    AnyElement, App, Bounds, Context, Entity, FocusHandle, KeyBinding, ListState, SharedString, TitlebarOptions,
-    Window, WindowBounds, WindowOptions, actions, canvas, div, point, prelude::*, px, size,
+    AnyElement, App, Bounds, Context, Entity, FocusHandle, KeyBinding, ListState, SharedString,
+    TitlebarOptions, Window, WindowBounds, WindowOptions, actions, canvas, div, point, prelude::*,
+    px, size,
 };
 
 actions!(galerie, [Quit, FocusNext, FocusPrevious]);
@@ -42,8 +43,17 @@ enum Page {
 }
 
 impl Page {
-    const ALL: [Page; 9] =
-        [Page::Controls, Page::States, Page::Forms, Page::Frame, Page::Feedback, Page::Sheet, Page::Menus, Page::Text, Page::List];
+    const ALL: [Page; 9] = [
+        Page::Controls,
+        Page::States,
+        Page::Forms,
+        Page::Frame,
+        Page::Feedback,
+        Page::Sheet,
+        Page::Menus,
+        Page::Text,
+        Page::List,
+    ];
 
     fn name(self) -> &'static str {
         match self {
@@ -96,23 +106,36 @@ struct Message {
     grouped: bool,
 }
 
-const AUTHORS: [&str; 5] = ["Marie Curie", "Paul Langevin", "Irène Joliot", "Florian Simon", "Léa Martin"];
+const AUTHORS: [&str; 5] = [
+    "Marie Curie",
+    "Paul Langevin",
+    "Irène Joliot",
+    "Florian Simon",
+    "Léa Martin",
+];
 const WORDS: [&str; 24] = [
-    "the", "relay", "keeps", "every", "message", "until", "your", "phone", "reads", "it", "and", "nothing", "is",
-    "lost", "when", "the", "network", "drops", "for", "a", "while", "même", "hors", "ligne",
+    "the", "relay", "keeps", "every", "message", "until", "your", "phone", "reads", "it", "and",
+    "nothing", "is", "lost", "when", "the", "network", "drops", "for", "a", "while", "même",
+    "hors", "ligne",
 ];
 
 fn messages(count: usize) -> Vec<Message> {
     // A small linear congruential generator: the same conversation every time.
     let mut seed: u64 = 0x5EED;
     let mut next = move || {
-        seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        seed = seed
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
         (seed >> 33) as usize
     };
     let mut previous = usize::MAX;
     (0..count)
         .map(|index| {
-            let author = if next() % 3 == 0 && previous < AUTHORS.len() { previous } else { next() % AUTHORS.len() };
+            let author = if next() % 3 == 0 && previous < AUTHORS.len() {
+                previous
+            } else {
+                next() % AUTHORS.len()
+            };
             let grouped = author == previous;
             previous = author;
             // From a few words to a paragraph: rows of one to eight lines.
@@ -121,12 +144,20 @@ fn messages(count: usize) -> Vec<Message> {
                 5..=7 => 12 + next() % 20,
                 _ => 40 + next() % 60,
             };
-            let mut body: String = (0..length).map(|_| WORDS[next() % WORDS.len()]).collect::<Vec<_>>().join(" ");
+            let mut body: String = (0..length)
+                .map(|_| WORDS[next() % WORDS.len()])
+                .collect::<Vec<_>>()
+                .join(" ");
             if index % 97 == 0 {
                 body.push_str(" 👨‍👩‍👧‍👦 🇫🇷");
             }
             let minutes = index * 3;
-            Message { author: AUTHORS[author], time: format!("{:02}:{:02}", (minutes / 60) % 24, minutes % 60), body, grouped }
+            Message {
+                author: AUTHORS[author],
+                time: format!("{:02}:{:02}", (minutes / 60) % 24, minutes % 60),
+                body,
+                grouped,
+            }
         })
         .collect()
 }
@@ -168,7 +199,10 @@ struct Gallery {
     measure: Option<Measure>,
 }
 
-fn input(cx: &mut Context<Gallery>, build: impl FnOnce(GTextInput) -> GTextInput) -> Entity<GTextInput> {
+fn input(
+    cx: &mut Context<Gallery>,
+    build: impl FnOnce(GTextInput) -> GTextInput,
+) -> Entity<GTextInput> {
     let entity = cx.new(|cx| build(GTextInput::new(cx)));
     cx.observe(&entity, |_, _, cx| cx.notify()).detach();
     entity
@@ -177,7 +211,9 @@ fn input(cx: &mut Context<Gallery>, build: impl FnOnce(GTextInput) -> GTextInput
 impl Gallery {
     fn new(page: Page, cx: &mut Context<Self>) -> Self {
         let messages = Rc::new(messages(10_000));
-        let state_fields = (0..4).map(|_| input(cx, |field| field.with_text("Florian"))).collect::<Vec<_>>();
+        let state_fields = (0..4)
+            .map(|_| input(cx, |field| field.with_text("Florian")))
+            .collect::<Vec<_>>();
         state_fields[3].update(cx, |field, cx| field.set_disabled(true, cx));
         let disabled_field = input(cx, |field| field.with_text("Read only"));
         disabled_field.update(cx, |field, cx| field.set_disabled(true, cx));
@@ -195,15 +231,23 @@ impl Gallery {
             tab: 0,
             sheet_open: false,
             sheet_name: input(cx, |field| field.placeholder("Name of the space")),
-            name: input(cx, |field| field.with_text("Florian").placeholder("Your name")),
+            name: input(cx, |field| {
+                field.with_text("Florian").placeholder("Your name")
+            }),
             bio: input(cx, |field| {
                 field.multi_line(3, 6).with_text(
                     "Several lines, wrapped at the field's width. Return goes to the line; the field grows up to six lines, then scrolls.",
                 )
             }),
-            arabic: input(cx, |field| field.with_text("مرحبا بالعالم، هذا نص عربي مع SkollN في الوسط")),
-            hebrew: input(cx, |field| field.with_text("שלום עולם, זה טקסט בעברית 2026")),
-            emoji: input(cx, |field| field.with_text("Family 👨‍👩‍👧‍👦 flag 🇫🇷 thumb 👍🏽 e + ◌́: é")),
+            arabic: input(cx, |field| {
+                field.with_text("مرحبا بالعالم، هذا نص عربي مع SkollN في الوسط")
+            }),
+            hebrew: input(cx, |field| {
+                field.with_text("שלום עולם, זה טקסט בעברית 2026")
+            }),
+            emoji: input(cx, |field| {
+                field.with_text("Family 👨‍👩‍👧‍👦 flag 🇫🇷 thumb 👍🏽 e + ◌́: é")
+            }),
             disabled_field,
             state_fields,
             toasts: cx.new(|_| GToastCenter::new()),
@@ -240,15 +284,27 @@ impl Gallery {
             .child(div().flex_1())
             .child(
                 div().px(px(8.)).pb(px(8.)).child(
-                    GPicker::new("appearance", "", ["Light", "Dark"], dark as usize).chips().on_change(|choice, _, cx| {
-                        theme::set_appearance(if *choice == 1 { GAppearance::Dark } else { GAppearance::Light }, cx)
-                    }),
+                    GPicker::new("appearance", "", ["Light", "Dark"], dark as usize)
+                        .chips()
+                        .on_change(|choice, _, cx| {
+                            theme::set_appearance(
+                                if *choice == 1 {
+                                    GAppearance::Dark
+                                } else {
+                                    GAppearance::Light
+                                },
+                                cx,
+                            )
+                        }),
                 ),
             )
     }
 
     fn heading(title: &str, cx: &App) -> impl IntoElement + use<> {
-        div().g_text(tokens::text::TITLE_2).text_color(cx.theme().colors.text_primary).child(SharedString::from(title.to_string()))
+        div()
+            .g_text(tokens::text::TITLE_2)
+            .text_color(cx.theme().colors.text_primary)
+            .child(SharedString::from(title.to_string()))
     }
 
     fn controls(&self, cx: &mut Context<Self>) -> AnyElement {
@@ -280,45 +336,76 @@ impl Gallery {
                         cx.notify();
                     })),
             )
-            .child(GToggle::new("off", "Off", self.previews).on_change(cx.listener(|this, on, _, cx| {
-                this.previews = *on;
-                cx.notify();
-            })))
-            .child(GCheckbox::new("agree", "I agree to the house rules", self.agree).on_change(cx.listener(|this, on, _, cx| {
-                this.agree = *on;
-                cx.notify();
-            })))
+            .child(
+                GToggle::new("off", "Off", self.previews).on_change(cx.listener(
+                    |this, on, _, cx| {
+                        this.previews = *on;
+                        cx.notify();
+                    },
+                )),
+            )
+            .child(
+                GCheckbox::new("agree", "I agree to the house rules", self.agree).on_change(
+                    cx.listener(|this, on, _, cx| {
+                        this.agree = *on;
+                        cx.notify();
+                    }),
+                ),
+            )
             .child(GTextField::new("Name", self.name.clone()))
-            .child(GPicker::new("appearance-menu", "Appearance", ["System", "Light", "Dark"], self.appearance_choice).on_change(
-                cx.listener(|this, choice, _, cx| {
+            .child(
+                GPicker::new(
+                    "appearance-menu",
+                    "Appearance",
+                    ["System", "Light", "Dark"],
+                    self.appearance_choice,
+                )
+                .on_change(cx.listener(|this, choice, _, cx| {
                     this.appearance_choice = *choice;
                     cx.notify();
-                }),
-            ))
-            .child(GPicker::new("size", "Size", ["Small", "Medium", "Large"], self.size_choice).chips().on_change(cx.listener(
-                |this, choice, _, cx| {
+                })),
+            )
+            .child(
+                GPicker::new(
+                    "size",
+                    "Size",
+                    ["Small", "Medium", "Large"],
+                    self.size_choice,
+                )
+                .chips()
+                .on_change(cx.listener(|this, choice, _, cx| {
                     this.size_choice = *choice;
                     cx.notify();
-                },
-            )))
-            .child(GSlider::new("volume", self.volume, 0., 1.).label("Volume").on_change(cx.listener(|this, value, _, cx| {
-                this.volume = *value;
-                cx.notify();
-            })))
-            .child(GStepper::new("reminders", "Reminders", self.reminders, 0, 10).on_change(cx.listener(|this, value, _, cx| {
-                this.reminders = *value;
-                cx.notify();
-            })))
-            .child(div().flex().gap(px(8.)).children([GTone::Success, GTone::Warning, GTone::Error, GTone::Info].map(|tone| {
-                div()
-                    .px(px(6.))
-                    .py(px(6.))
-                    .rounded_full()
-                    .bg(tone.tint(cx))
-                    .text_color(tone.tint_text(cx))
-                    .g_text(tokens::text::CAPTION)
-                    .child("state")
-            })))
+                })),
+            )
+            .child(
+                GSlider::new("volume", self.volume, 0., 1.)
+                    .label("Volume")
+                    .on_change(cx.listener(|this, value, _, cx| {
+                        this.volume = *value;
+                        cx.notify();
+                    })),
+            )
+            .child(
+                GStepper::new("reminders", "Reminders", self.reminders, 0, 10).on_change(
+                    cx.listener(|this, value, _, cx| {
+                        this.reminders = *value;
+                        cx.notify();
+                    }),
+                ),
+            )
+            .child(div().flex().gap(px(8.)).children(
+                [GTone::Success, GTone::Warning, GTone::Error, GTone::Info].map(|tone| {
+                    div()
+                        .px(px(6.))
+                        .py(px(6.))
+                        .rounded_full()
+                        .bg(tone.tint(cx))
+                        .text_color(tone.tint_text(cx))
+                        .g_text(tokens::text::CAPTION)
+                        .child("state")
+                }),
+            ))
             .child(div().h(px(1.)).bg(colors.hairline))
             .child(
                 div()
@@ -337,8 +424,12 @@ impl Gallery {
 
     fn states(&self, cx: &mut Context<Self>) -> AnyElement {
         let colors = cx.theme().colors;
-        let states: [(Option<GPointer>, bool); 4] =
-            [(None, false), (Some(GPointer::Hover), false), (Some(GPointer::Pressed), false), (None, true)];
+        let states: [(Option<GPointer>, bool); 4] = [
+            (None, false),
+            (Some(GPointer::Hover), false),
+            (Some(GPointer::Pressed), false),
+            (None, true),
+        ];
         let fields = self.state_fields.clone();
         let row = |name: &str, build: &dyn Fn(usize, Option<GPointer>, bool) -> AnyElement| {
             div()
@@ -353,58 +444,157 @@ impl Gallery {
                         .text_color(colors.text_discret)
                         .child(SharedString::from(name.to_string())),
                 )
-                .children(states.iter().enumerate().map(|(index, (preview, disabled))| {
-                    div().w(px(150.)).flex().items_center().child(build(index, *preview, *disabled))
-                }))
+                .children(
+                    states
+                        .iter()
+                        .enumerate()
+                        .map(|(index, (preview, disabled))| {
+                            div()
+                                .w(px(150.))
+                                .flex()
+                                .items_center()
+                                .child(build(index, *preview, *disabled))
+                        }),
+                )
         };
         div()
             .flex()
             .flex_col()
             .gap(px(14.))
-            .child(div().flex().gap(px(14.)).pl(px(104.)).children(["Rest", "Hover", "Pressed", "Disabled"].map(|title| {
-                div().w(px(150.)).g_text(tokens::text::HEADLINE).text_color(colors.text_primary).child(title)
-            })))
-            .child(row("Primary", &|i, p, d| GButton::new(("s-primary", i), "Save").primary().preview(p).disabled(d).into_any_element()))
-            .child(row("Secondary", &|i, p, d| GButton::new(("s-secondary", i), "Reset").preview(p).disabled(d).into_any_element()))
-            .child(row("Ghost", &|i, p, d| GButton::new(("s-ghost", i), "Later").ghost().preview(p).disabled(d).into_any_element()))
-            .child(row("Danger", &|i, p, d| GButton::new(("s-danger", i), "Delete").danger().preview(p).disabled(d).into_any_element()))
+            .child(div().flex().gap(px(14.)).pl(px(104.)).children(
+                ["Rest", "Hover", "Pressed", "Disabled"].map(|title| {
+                    div()
+                        .w(px(150.))
+                        .g_text(tokens::text::HEADLINE)
+                        .text_color(colors.text_primary)
+                        .child(title)
+                }),
+            ))
+            .child(row("Primary", &|i, p, d| {
+                GButton::new(("s-primary", i), "Save")
+                    .primary()
+                    .preview(p)
+                    .disabled(d)
+                    .into_any_element()
+            }))
+            .child(row("Secondary", &|i, p, d| {
+                GButton::new(("s-secondary", i), "Reset")
+                    .preview(p)
+                    .disabled(d)
+                    .into_any_element()
+            }))
+            .child(row("Ghost", &|i, p, d| {
+                GButton::new(("s-ghost", i), "Later")
+                    .ghost()
+                    .preview(p)
+                    .disabled(d)
+                    .into_any_element()
+            }))
+            .child(row("Danger", &|i, p, d| {
+                GButton::new(("s-danger", i), "Delete")
+                    .danger()
+                    .preview(p)
+                    .disabled(d)
+                    .into_any_element()
+            }))
             .child(row("Destructive", &|i, p, d| {
-                GButton::new(("s-destructive", i), "Leave").destructive().preview(p).disabled(d).into_any_element()
+                GButton::new(("s-destructive", i), "Leave")
+                    .destructive()
+                    .preview(p)
+                    .disabled(d)
+                    .into_any_element()
             }))
-            .child(row("Close", &|i, p, _| GCloseButton::new(("s-close", i)).preview(p).into_any_element()))
+            .child(row("Close", &|i, p, _| {
+                GCloseButton::new(("s-close", i))
+                    .preview(p)
+                    .into_any_element()
+            }))
             .child(row("Chips", &|i, p, d| {
-                GPicker::new(("s-chips", i), "", ["On", "Off"], 0).chips().preview(p).disabled(d).into_any_element()
+                GPicker::new(("s-chips", i), "", ["On", "Off"], 0)
+                    .chips()
+                    .preview(p)
+                    .disabled(d)
+                    .into_any_element()
             }))
-            .child(row("Menu", &|i, p, d| GPicker::new(("s-menu", i), "", ["Light", "Dark"], 0).preview(p).disabled(d).into_any_element()))
+            .child(row("Menu", &|i, p, d| {
+                GPicker::new(("s-menu", i), "", ["Light", "Dark"], 0)
+                    .preview(p)
+                    .disabled(d)
+                    .into_any_element()
+            }))
             .child(row("Switch", &|i, p, d| {
-                div().w(px(60.)).child(GToggle::new(("s-switch", i), "", true).preview(p).disabled(d)).into_any_element()
+                div()
+                    .w(px(60.))
+                    .child(
+                        GToggle::new(("s-switch", i), "", true)
+                            .preview(p)
+                            .disabled(d),
+                    )
+                    .into_any_element()
             }))
-            .child(row("Checkbox", &|i, p, d| GCheckbox::new(("s-check", i), "Agree", i % 2 == 0).preview(p).disabled(d).into_any_element()))
+            .child(row("Checkbox", &|i, p, d| {
+                GCheckbox::new(("s-check", i), "Agree", i % 2 == 0)
+                    .preview(p)
+                    .disabled(d)
+                    .into_any_element()
+            }))
             .child(row("Slider", &|i, p, d| {
-                div().w(px(110.)).child(GSlider::new(("s-slider", i), 0.5, 0., 1.).preview(p).disabled(d)).into_any_element()
+                div()
+                    .w(px(110.))
+                    .child(
+                        GSlider::new(("s-slider", i), 0.5, 0., 1.)
+                            .preview(p)
+                            .disabled(d),
+                    )
+                    .into_any_element()
             }))
             .child(row("Stepper", &|i, _, _| {
-                div().w(px(150.)).child(GStepper::new(("s-stepper", i), "", 3, 0, 9)).into_any_element()
+                div()
+                    .w(px(150.))
+                    .child(GStepper::new(("s-stepper", i), "", 3, 0, 9))
+                    .into_any_element()
             }))
             .child(row("Field", &|i, p, _| {
                 let frame = GFieldFrame::new(fields[i].clone());
-                let frame = if p.is_some() { frame.preview_hover() } else { frame };
+                let frame = if p.is_some() {
+                    frame.preview_hover()
+                } else {
+                    frame
+                };
                 div().w(px(110.)).child(frame).into_any_element()
             }))
             .child(row("Sidebar", &|i, p, _| {
-                div().w(px(130.)).child(GSidebarRow::new(("s-side", i), "Privacy", "lock", false).preview(p)).into_any_element()
+                div()
+                    .w(px(130.))
+                    .child(GSidebarRow::new(("s-side", i), "Privacy", "lock", false).preview(p))
+                    .into_any_element()
             }))
             .child(row("Selected", &|i, p, _| {
-                div().w(px(130.)).child(GSidebarRow::new(("s-selected", i), "Profile", "user", true).preview(p)).into_any_element()
+                div()
+                    .w(px(130.))
+                    .child(GSidebarRow::new(("s-selected", i), "Profile", "user", true).preview(p))
+                    .into_any_element()
             }))
             .child(row("Menu line", &|i, p, d| {
                 div()
                     .w(px(140.))
-                    .child(GMenuItem::new(("s-line", i), "Reply").icon("arrow-bend-up-left").preview(p).disabled(d))
+                    .child(
+                        GMenuItem::new(("s-line", i), "Reply")
+                            .icon("arrow-bend-up-left")
+                            .preview(p)
+                            .disabled(d),
+                    )
                     .into_any_element()
             }))
             .child(row("Row button", &|i, p, d| {
-                div().w(px(150.)).child(GFormRowButton::new(("s-row", i), "Invite").preview(p).disabled(d)).into_any_element()
+                div()
+                    .w(px(150.))
+                    .child(
+                        GFormRowButton::new(("s-row", i), "Invite")
+                            .preview(p)
+                            .disabled(d),
+                    )
+                    .into_any_element()
             }))
             .into_any_element()
     }
@@ -433,13 +623,23 @@ impl Gallery {
                                             cx.notify();
                                         })),
                                 )
-                                .row(GToggle::new("sounds", "Sounds", self.sounds).on_change(cx.listener(|this, on, _, cx| {
-                                    this.sounds = *on;
-                                    cx.notify();
-                                })))
+                                .row(GToggle::new("sounds", "Sounds", self.sounds).on_change(
+                                    cx.listener(|this, on, _, cx| {
+                                        this.sounds = *on;
+                                        cx.notify();
+                                    }),
+                                ))
                                 .row(GLabeledContent::new("Devices", "3"))
-                                .row(GPicker::new("form-menu", "Ring", ["Always", "Mentions", "Never"], 1))
-                                .row(GFormButtons::new([GButton::new("reset", "Reset"), GButton::new("save", "Save").primary()])),
+                                .row(GPicker::new(
+                                    "form-menu",
+                                    "Ring",
+                                    ["Always", "Mentions", "Never"],
+                                    1,
+                                ))
+                                .row(GFormButtons::new([
+                                    GButton::new("reset", "Reset"),
+                                    GButton::new("save", "Save").primary(),
+                                ])),
                         )
                         .section(
                             GFormSection::new()
@@ -447,7 +647,9 @@ impl Gallery {
                                 .header_icon("user")
                                 .footer("They can leave at any time.")
                                 .button(GFormRowButton::new("invite", "Invite people").icon("plus"))
-                                .button(GFormRowButton::new("leave", "Leave the space").destructive()),
+                                .button(
+                                    GFormRowButton::new("leave", "Leave the space").destructive(),
+                                ),
                         )
                         .section(GFormSection::new().bare(form::sheet_button("create", "Create"))),
                 ),
@@ -475,7 +677,11 @@ impl Gallery {
             .flex_col()
             .gap(px(18.))
             .max_w(px(640.))
-            .child(GPageBand::new("bell", "Notifications", "What reaches you, and when.").rounded(tokens::radius::LG).top_padding(18.))
+            .child(
+                GPageBand::new("bell", "Notifications", "What reaches you, and when.")
+                    .rounded(tokens::radius::LG)
+                    .top_padding(18.),
+            )
             .child(
                 div()
                     .flex()
@@ -491,7 +697,10 @@ impl Gallery {
                             .rounded(px(tokens::radius::LG))
                             .bg(frame.ground)
                             .child(GRailItem::new("today", "Today", "sun", false))
-                            .child(GRailItem::new("messages", "Messages", "chats-circle", true).badge(4))
+                            .child(
+                                GRailItem::new("messages", "Messages", "chats-circle", true)
+                                    .badge(4),
+                            )
                             .child(GRailItem::new("spaces", "Spaces", "squares-four", false)),
                     )
                     .child(
@@ -500,17 +709,29 @@ impl Gallery {
                             .flex_col()
                             .flex_1()
                             .gap(px(18.))
-                            .child(GNavTabs::new("tabs", ["Overview", "Members", "Roles"], self.tab).on_change(cx.listener(
-                                |this, tab, _, cx| {
-                                    this.tab = *tab;
-                                    cx.notify();
-                                },
-                            )))
+                            .child(
+                                GNavTabs::new("tabs", ["Overview", "Members", "Roles"], self.tab)
+                                    .on_change(cx.listener(|this, tab, _, cx| {
+                                        this.tab = *tab;
+                                        cx.notify();
+                                    })),
+                            )
                             .child(
                                 GMenu::new()
-                                    .item(GMenuItem::new("read", "Mark as read").icon("envelope-open"))
-                                    .item(GMenuItem::new("mute", "Mute").icon("bell-slash").checked(true))
-                                    .item(GMenuItem::new("leave", "Leave").icon("sign-out").destructive()),
+                                    .item(
+                                        GMenuItem::new("read", "Mark as read")
+                                            .icon("envelope-open"),
+                                    )
+                                    .item(
+                                        GMenuItem::new("mute", "Mute")
+                                            .icon("bell-slash")
+                                            .checked(true),
+                                    )
+                                    .item(
+                                        GMenuItem::new("leave", "Leave")
+                                            .icon("sign-out")
+                                            .destructive(),
+                                    ),
                             ),
                     ),
             )
@@ -554,10 +775,15 @@ impl Gallery {
             )
             .child(
                 GBanner::new(GTone::Warning, "You are offline")
-                    .message("Messages wait on this computer and leave as soon as the network is back.")
+                    .message(
+                        "Messages wait on this computer and leave as soon as the network is back.",
+                    )
                     .action(GButton::new("retry", "Retry")),
             )
-            .child(GBanner::new(GTone::Info, "A new version is ready").message("It installs when you quit SkollN."))
+            .child(
+                GBanner::new(GTone::Info, "A new version is ready")
+                    .message("It installs when you quit SkollN."),
+            )
             .child(
                 div()
                     .flex()
@@ -568,14 +794,30 @@ impl Gallery {
                     .child(GSkeleton::new("sk3", 60.).radius(tokens::radius::MD)),
             )
             .child(GTypingDots::new("Writing"))
-            .child(div().flex().items_center().gap(px(16.)).child(GToastView::new("Link copied", "link")).child(
-                GButton::new("show-toast", "Show a toast")
-                    .on_click(move |_, _, cx| toasts.update(cx, |toasts, cx| toasts.show("Link copied", "link", cx))),
-            ))
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(16.))
+                    .child(GToastView::new("Link copied", "link"))
+                    .child(
+                        GButton::new("show-toast", "Show a toast").on_click(move |_, _, cx| {
+                            toasts.update(cx, |toasts, cx| toasts.show("Link copied", "link", cx))
+                        }),
+                    ),
+            )
             .child(
                 div().h(px(260.)).child(
-                    GEmptyState::new("tray", "No messages yet", "Start a conversation with a contact.")
-                        .action(GButton::new("new-conversation", "New conversation").primary().icon("note-pencil")),
+                    GEmptyState::new(
+                        "tray",
+                        "No messages yet",
+                        "Start a conversation with a contact.",
+                    )
+                    .action(
+                        GButton::new("new-conversation", "New conversation")
+                            .primary()
+                            .icon("note-pencil"),
+                    ),
                 ),
             )
             .into_any_element()
@@ -593,21 +835,36 @@ impl Gallery {
                     .border_1()
                     .border_color(cx.theme().colors.hairline)
                     .overflow_hidden()
-                    .child(GSheetTitle::new("New space", "A place to share with a few people.").back(|_, _, _| {}))
                     .child(
-                        GForm::new("sheet-preview").static_layout().without_ground().section(
-                            GFormSection::new()
-                                .header("Members")
-                                .footer("They can leave at any time.")
-                                .button(GFormRowButton::new("invite-2", "Invite people"))
-                                .button(GFormRowButton::new("leave-2", "Leave the space").destructive()),
-                        ),
+                        GSheetTitle::new("New space", "A place to share with a few people.")
+                            .back(|_, _, _| {}),
+                    )
+                    .child(
+                        GForm::new("sheet-preview")
+                            .static_layout()
+                            .without_ground()
+                            .section(
+                                GFormSection::new()
+                                    .header("Members")
+                                    .footer("They can leave at any time.")
+                                    .button(GFormRowButton::new("invite-2", "Invite people"))
+                                    .button(
+                                        GFormRowButton::new("leave-2", "Leave the space")
+                                            .destructive(),
+                                    ),
+                            ),
                     ),
             )
-            .child(div().child(GButton::new("open-sheet", "Open the sheet").primary().on_click(cx.listener(|this, _, _, cx| {
-                this.sheet_open = true;
-                cx.notify();
-            }))))
+            .child(
+                div().child(
+                    GButton::new("open-sheet", "Open the sheet")
+                        .primary()
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.sheet_open = true;
+                            cx.notify();
+                        })),
+                ),
+            )
             .into_any_element()
     }
 
@@ -621,9 +878,21 @@ impl Gallery {
                     GMenu::new()
                         .item(GMenuItem::new("m-reply", "Reply").icon("arrow-bend-up-left"))
                         .item(GMenuItem::new("m-copy", "Copy the text").icon("copy"))
-                        .item(GMenuItem::new("m-pin", "Notify me").icon("bell").checked(false))
-                        .item(GMenuItem::new("m-mute", "Mute").icon("bell-slash").checked(true))
-                        .item(GMenuItem::new("m-delete", "Delete").icon("trash").destructive()),
+                        .item(
+                            GMenuItem::new("m-pin", "Notify me")
+                                .icon("bell")
+                                .checked(false),
+                        )
+                        .item(
+                            GMenuItem::new("m-mute", "Mute")
+                                .icon("bell-slash")
+                                .checked(true),
+                        )
+                        .item(
+                            GMenuItem::new("m-delete", "Delete")
+                                .icon("trash")
+                                .destructive(),
+                        ),
                 ),
             )
             .child(GContextMenu::new(
@@ -640,9 +909,22 @@ impl Gallery {
                 |close, _, _| {
                     let (reply, copy, delete) = (close.clone(), close.clone(), close);
                     GMenu::new()
-                        .item(GMenuItem::new("c-reply", "Reply").icon("arrow-bend-up-left").on_click(move |_, w, cx| reply(w, cx)))
-                        .item(GMenuItem::new("c-copy", "Copy").icon("copy").on_click(move |_, w, cx| copy(w, cx)))
-                        .item(GMenuItem::new("c-delete", "Delete").icon("trash").destructive().on_click(move |_, w, cx| delete(w, cx)))
+                        .item(
+                            GMenuItem::new("c-reply", "Reply")
+                                .icon("arrow-bend-up-left")
+                                .on_click(move |_, w, cx| reply(w, cx)),
+                        )
+                        .item(
+                            GMenuItem::new("c-copy", "Copy")
+                                .icon("copy")
+                                .on_click(move |_, w, cx| copy(w, cx)),
+                        )
+                        .item(
+                            GMenuItem::new("c-delete", "Delete")
+                                .icon("trash")
+                                .destructive()
+                                .on_click(move |_, w, cx| delete(w, cx)),
+                        )
                 },
             ))
             .into_any_element()
@@ -653,9 +935,19 @@ impl Gallery {
         let selection = |field: &Entity<GTextInput>, cx: &App| {
             let field = field.read(cx);
             let range = field.selection();
-            SharedString::from(format!("selection: bytes {}..{} of {}", range.start, range.end, field.text().len()))
+            SharedString::from(format!(
+                "selection: bytes {}..{} of {}",
+                range.start,
+                range.end,
+                field.text().len()
+            ))
         };
-        let caption = |text: SharedString| div().g_text(tokens::text::CAPTION).text_color(colors.text_discret).child(text);
+        let caption = |text: SharedString| {
+            div()
+                .g_text(tokens::text::CAPTION)
+                .text_color(colors.text_discret)
+                .child(text)
+        };
         relief::card(px(tokens::radius::LG), cx)
             .flex()
             .flex_col()
@@ -669,7 +961,10 @@ impl Gallery {
             .child(GTextField::new("Arabic", self.arabic.clone()))
             .child(caption(selection(&self.arabic, cx)))
             .child(GTextField::new("Hebrew", self.hebrew.clone()))
-            .child(GTextField::new("Emoji and combining marks", self.emoji.clone()))
+            .child(GTextField::new(
+                "Emoji and combining marks",
+                self.emoji.clone(),
+            ))
             .child(caption(selection(&self.emoji, cx)))
             .child(GTextField::new("Disabled", self.disabled_field.clone()))
             .into_any_element()
@@ -693,16 +988,26 @@ impl Gallery {
                     .border_b_1()
                     .border_color(colors.hairline)
                     .child(GAvatar::new("Marie Curie").size(28.).online(true))
-                    .child(div().g_text(tokens::text::HEADLINE).text_color(colors.text_primary).child("Marie Curie"))
+                    .child(
+                        div()
+                            .g_text(tokens::text::HEADLINE)
+                            .text_color(colors.text_primary)
+                            .child("Marie Curie"),
+                    )
                     .child(GBadge::new(format!("{} messages", messages.len()))),
             )
             .child(
                 div().flex_1().min_h_0().child(
                     GLongList::new("messages", self.list.clone(), move |index, _, _| {
                         let message = &messages[index];
-                        GMessageRow::new(index, message.author, message.time.clone(), message.body.clone())
-                            .grouped(message.grouped)
-                            .into_any_element()
+                        GMessageRow::new(
+                            index,
+                            message.author,
+                            message.time.clone(),
+                            message.body.clone(),
+                        )
+                        .grouped(message.grouped)
+                        .into_any_element()
                     })
                     .label("Messages"),
                 ),
@@ -712,13 +1017,16 @@ impl Gallery {
 
     /// One frame of the measure: the list scrolls up at its speed; after ten seconds, the figures.
     fn measure_frame(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(measure) = self.measure.as_mut() else { return };
+        let Some(measure) = self.measure.as_mut() else {
+            return;
+        };
         let now = Instant::now();
         *measure.render_start.borrow_mut() = Some(now);
         if let Some(last) = measure.last {
             let interval = (now - last).as_secs_f64() * 1000.;
             measure.intervals.push(interval);
-            self.list.scroll_by(px(-(measure.speed * interval as f32 / 1000.)));
+            self.list
+                .scroll_by(px(-(measure.speed * interval as f32 / 1000.)));
         }
         measure.last = Some(now);
         if now - measure.started > Duration::from_secs(10) {
@@ -733,13 +1041,19 @@ impl Gallery {
 fn percentile(values: &[f64], fraction: f64) -> f64 {
     let mut sorted = values.to_vec();
     sorted.sort_by(|a, b| a.total_cmp(b));
-    sorted.get(((sorted.len() as f64 - 1.) * fraction).round() as usize).copied().unwrap_or(0.)
+    sorted
+        .get(((sorted.len() as f64 - 1.) * fraction).round() as usize)
+        .copied()
+        .unwrap_or(0.)
 }
 
 fn report(intervals: &[f64], cpu: &[f64]) -> String {
     let mean = intervals.iter().sum::<f64>() / intervals.len().max(1) as f64;
     let median = percentile(intervals, 0.5);
-    let late = intervals.iter().filter(|interval| **interval > 1.5 * median).count();
+    let late = intervals
+        .iter()
+        .filter(|interval| **interval > 1.5 * median)
+        .count();
     format!(
         "frames: {}\nframe interval, ms: mean {:.2} (≈ {:.1} frames/s), p50 {:.2}, p95 {:.2}, p99 {:.2}, max {:.2}\n\
          frames late (over 1.5 × the median): {}\nCPU per frame (render to paint), ms: p50 {:.2}, p95 {:.2}, p99 {:.2}, max {:.2}",
@@ -776,7 +1090,11 @@ impl Render for Gallery {
         let content = if self.page == Page::List {
             div().id("page").size_full().child(page)
         } else {
-            div().id("page").size_full().overflow_y_scroll().child(div().p(px(24.)).child(page))
+            div()
+                .id("page")
+                .size_full()
+                .overflow_y_scroll()
+                .child(div().p(px(24.)).child(page))
         };
         let sheet = self.sheet_open.then(|| {
             GSheet::new(
@@ -792,19 +1110,44 @@ impl Render for Gallery {
                 GForm::new("sheet-form")
                     .static_layout()
                     .without_ground()
-                    .section(GFormSection::new().header("Name").row(GFieldFrame::new(self.sheet_name.clone()).bare()))
+                    .section(
+                        GFormSection::new()
+                            .header("Name")
+                            .row(GFieldFrame::new(self.sheet_name.clone()).bare()),
+                    )
                     .section(
                         GFormSection::new()
                             .header("Who can join")
                             .footer("You can change it later.")
-                            .row(GToggle::new("invite-only", "Invitation only", true).detail("Members invite the others."))
-                            .row(GPicker::new("sheet-kind", "Kind", ["Friends", "Family", "Club"], 0)),
+                            .row(
+                                GToggle::new("invite-only", "Invitation only", true)
+                                    .detail("Members invite the others."),
+                            )
+                            .row(GPicker::new(
+                                "sheet-kind",
+                                "Kind",
+                                ["Friends", "Family", "Club"],
+                                0,
+                            )),
                     )
-                    .section(GFormSection::new().bare(form::sheet_button("sheet-create", "Create"))),
+                    .section(
+                        GFormSection::new().bare(form::sheet_button("sheet-create", "Create")),
+                    ),
             )
         });
-        let cpu = self.measure.as_ref().map(|measure| (measure.render_start.clone(), measure.cpu.clone()));
-        let label = format!("{} · {}", self.page.title(), if cx.theme().is_dark() { "dark" } else { "light" });
+        let cpu = self
+            .measure
+            .as_ref()
+            .map(|measure| (measure.render_start.clone(), measure.cpu.clone()));
+        let label = format!(
+            "{} · {}",
+            self.page.title(),
+            if cx.theme().is_dark() {
+                "dark"
+            } else {
+                "light"
+            }
+        );
         div()
             .id("gallery")
             .track_focus(&self.focus)
@@ -824,10 +1167,10 @@ impl Render for Gallery {
                     Ok("gris") => "Gabarit — lissage en gris",
                     _ => "Gabarit",
                 })
-                    .subtitle("GPUI gallery")
-                    .leading(if cfg!(target_os = "macos") { 84. } else { 16. })
-                    .window_title_bar()
-                    .trailing(GBadge::new(label)),
+                .subtitle("GPUI gallery")
+                .leading(if cfg!(target_os = "macos") { 84. } else { 16. })
+                .window_title_bar()
+                .trailing(GBadge::new(label)),
             )
             .child(
                 div()
@@ -835,7 +1178,13 @@ impl Render for Gallery {
                     .flex_1()
                     .min_h_0()
                     .child(self.sidebar(cx))
-                    .child(relief::page_ground(cx).flex_1().min_w_0().h_full().child(content)),
+                    .child(
+                        relief::page_ground(cx)
+                            .flex_1()
+                            .min_w_0()
+                            .h_full()
+                            .child(content),
+                    ),
             )
             .child(self.toasts.clone())
             .children(sheet)
@@ -874,21 +1223,37 @@ fn say(line: &str) {
 fn main() {
     let launched = Instant::now();
     let args: Vec<String> = std::env::args().collect();
-    let journal = args.iter().position(|arg| arg == "--journal").and_then(|index| args.get(index + 1)).cloned();
-    let mut logger = env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn"));
+    let journal = args
+        .iter()
+        .position(|arg| arg == "--journal")
+        .and_then(|index| args.get(index + 1))
+        .cloned();
+    let mut logger =
+        env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn"));
     if let Some(path) = journal {
         let file = std::fs::File::create(&path).expect("the journal file");
-        logger.target(env_logger::Target::Pipe(Box::new(file.try_clone().expect("the journal file"))));
+        logger.target(env_logger::Target::Pipe(Box::new(
+            file.try_clone().expect("the journal file"),
+        )));
         let _ = JOURNAL.set(std::sync::Mutex::new(file));
     }
     logger.init();
     let flag = |name: &str| args.iter().any(|arg| arg == name);
-    let value = |name: &str| args.iter().position(|arg| arg == name).and_then(|index| args.get(index + 1)).cloned();
+    let value = |name: &str| {
+        args.iter()
+            .position(|arg| arg == name)
+            .and_then(|index| args.get(index + 1))
+            .cloned()
+    };
     let measure_list = flag("--measure-list");
     let measure_start = flag("--measure-start");
     let page = value("--page")
         .and_then(|name| Page::ALL.iter().copied().find(|page| page.name() == name))
-        .unwrap_or(if measure_list { Page::List } else { Page::Controls });
+        .unwrap_or(if measure_list {
+            Page::List
+        } else {
+            Page::Controls
+        });
     let appearance = if flag("--dark") {
         Some(GAppearance::Dark)
     } else if flag("--light") {
@@ -900,7 +1265,10 @@ fn main() {
 
     let stage = move |name: &str| {
         if measure_start || JOURNAL.get().is_some() {
-            say(&format!("  {name}: {:.1} ms", launched.elapsed().as_secs_f64() * 1000.));
+            say(&format!(
+                "  {name}: {:.1} ms",
+                launched.elapsed().as_secs_f64() * 1000.
+            ));
         }
     };
     let application = gpui_platform::application().with_assets(GAssets);
@@ -965,14 +1333,19 @@ fn main() {
         window
             .update(cx, move |_, window, _| {
                 window.on_next_frame(move |_, cx| {
-                    say(&format!("first frame: {:.1} ms after the start of main", launched.elapsed().as_secs_f64() * 1000.));
+                    say(&format!(
+                        "first frame: {:.1} ms after the start of main",
+                        launched.elapsed().as_secs_f64() * 1000.
+                    ));
                     if measure_start {
                         cx.quit();
                     }
                 });
             })
             .ok();
-        window.update(cx, |gallery, window, cx| window.focus(&gallery.focus, cx)).ok();
+        window
+            .update(cx, |gallery, window, cx| window.focus(&gallery.focus, cx))
+            .ok();
         cx.activate(true);
     });
 }

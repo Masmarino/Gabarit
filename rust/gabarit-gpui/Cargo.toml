@@ -38,3 +38,8 @@ opt-level = 1
 strip = true
 lto = "thin"
 codegen-units = 4
+
+# Les rappels de GPUI (`Rc<dyn Fn(&mut Window, &mut App)>`…) dépassent le seuil de complexité de Clippy ; Zed le désactive
+# aussi.
+[lints.clippy]
+type_complexity = "allow"

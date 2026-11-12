@@ -13,12 +13,15 @@ fn repository() -> PathBuf {
 }
 
 fn swift() -> String {
-    std::fs::read_to_string(repository().join("swift/GabaritCommon/GTokens.swift")).expect("GTokens.swift")
+    std::fs::read_to_string(repository().join("swift/GabaritCommon/GTokens.swift"))
+        .expect("GTokens.swift")
 }
 
 /// The body of `public enum <name> { … }`.
 fn block(source: &str, name: &str) -> String {
-    let start = source.find(&format!("public enum {name} {{")).unwrap_or_else(|| panic!("enum {name}"));
+    let start = source
+        .find(&format!("public enum {name} {{"))
+        .unwrap_or_else(|| panic!("enum {name}"));
     let rest = &source[start..];
     rest[..rest.find("\n}").unwrap()].to_string()
 }
@@ -28,8 +31,16 @@ fn lets(block: &str) -> Vec<(String, String)> {
     block
         .lines()
         .filter_map(|line| line.trim().strip_prefix("public static let "))
-        .filter_map(|line| line.split_once(" = ").or_else(|| line.split_once(": Double = ")))
-        .map(|(name, value)| (name.split(':').next().unwrap().trim().to_string(), value.trim().to_string()))
+        .filter_map(|line| {
+            line.split_once(" = ")
+                .or_else(|| line.split_once(": Double = "))
+        })
+        .map(|(name, value)| {
+            (
+                name.split(':').next().unwrap().trim().to_string(),
+                value.trim().to_string(),
+            )
+        })
         .collect()
 }
 
@@ -37,10 +48,11 @@ fn snake(name: &str) -> String {
     let mut out = String::new();
     let mut previous: Option<char> = None;
     for c in name.chars() {
-        if let Some(p) = previous {
-            if (c.is_ascii_uppercase() && p.is_ascii_lowercase()) || (c.is_ascii_digit() && p.is_ascii_lowercase()) {
-                out.push('_');
-            }
+        if let Some(p) = previous
+            && p.is_ascii_lowercase()
+            && (c.is_ascii_uppercase() || c.is_ascii_digit())
+        {
+            out.push('_');
         }
         out.push(c.to_ascii_lowercase());
         previous = Some(c);
@@ -61,7 +73,9 @@ fn color(text: &str, palette: &HashMap<String, GRgba>) -> GRgba {
             None => GRgba::hex(hex(inner)),
         };
     }
-    let rest = text.strip_prefix("GPaletteValues.").unwrap_or_else(|| panic!("colour {text}"));
+    let rest = text
+        .strip_prefix("GPaletteValues.")
+        .unwrap_or_else(|| panic!("colour {text}"));
     match rest.split_once(".opacity(") {
         Some((name, a)) => palette[name].opacity(a.trim_end_matches(')').parse().unwrap()),
         None => palette[rest],
@@ -69,14 +83,23 @@ fn color(text: &str, palette: &HashMap<String, GRgba>) -> GRgba {
 }
 
 fn close(a: GRgba, b: GRgba) -> bool {
-    [(a.red, b.red), (a.green, b.green), (a.blue, b.blue), (a.alpha, b.alpha)].iter().all(|(x, y)| (x - y).abs() < 1e-6)
+    [
+        (a.red, b.red),
+        (a.green, b.green),
+        (a.blue, b.blue),
+        (a.alpha, b.alpha),
+    ]
+    .iter()
+    .all(|(x, y)| (x - y).abs() < 1e-6)
 }
 
 #[test]
 fn colours_match_swift() {
     let source = swift();
-    let palette: HashMap<String, GRgba> =
-        lets(&block(&source, "GPaletteValues")).into_iter().map(|(name, value)| (name, color(&value, &HashMap::new()))).collect();
+    let palette: HashMap<String, GRgba> = lets(&block(&source, "GPaletteValues"))
+        .into_iter()
+        .map(|(name, value)| (name, color(&value, &HashMap::new())))
+        .collect();
     assert_eq!(palette.len(), 47, "the palette's size");
 
     let light = tokens::LIGHT.map(|c| c);
@@ -91,9 +114,25 @@ fn colours_match_swift() {
                 .trim_end_matches(" }")
                 .trim_end_matches('}')
                 .split(", ")
-                .map(|field| field.split_once(": ").unwrap().1.trim_end_matches([' ', '}']).parse().unwrap())
+                .map(|field| {
+                    field
+                        .split_once(": ")
+                        .unwrap()
+                        .1
+                        .trim_end_matches([' ', '}'])
+                        .parse()
+                        .unwrap()
+                })
                 .collect();
-            out.insert(name.trim().to_string(), GRgba { red: numbers[0], green: numbers[1], blue: numbers[2], alpha: numbers[3] });
+            out.insert(
+                name.trim().to_string(),
+                GRgba {
+                    red: numbers[0],
+                    green: numbers[1],
+                    blue: numbers[2],
+                    alpha: numbers[3],
+                },
+            );
         }
         out
     };
@@ -101,7 +140,11 @@ fn colours_match_swift() {
     let swift_roles = lets(&block(&source, "GColorValues"));
     assert_eq!(swift_roles.len(), light.len(), "the same roles");
     for (name, value) in swift_roles {
-        let pair = value.strip_prefix("GColorPair(light: ").unwrap().strip_suffix(')').unwrap();
+        let pair = value
+            .strip_prefix("GColorPair(light: ")
+            .unwrap()
+            .strip_suffix(')')
+            .unwrap();
         let (l, d) = pair.split_once(", dark: ").unwrap();
         let rust = snake(&name);
         assert!(close(light[&rust], color(l, &palette)), "{name}, light");
@@ -126,14 +169,23 @@ fn geometry_matches_swift() {
     assert_eq!(number(&opacity["disabled"]), tokens::opacity::DISABLED);
 
     let shadows: HashMap<_, _> = lets(&block(&source, "GShadowValues")).into_iter().collect();
-    for (name, rust) in [("card", tokens::shadows::CARD), ("bar", tokens::shadows::BAR), ("raised", tokens::shadows::RAISED), ("floating", tokens::shadows::FLOATING)] {
+    for (name, rust) in [
+        ("card", tokens::shadows::CARD),
+        ("bar", tokens::shadows::BAR),
+        ("raised", tokens::shadows::RAISED),
+        ("floating", tokens::shadows::FLOATING),
+    ] {
         let value = &shadows[name];
         let field = |key: &str| {
             let start = value.find(&format!(", {key}: ")).unwrap() + key.len() + 4;
             number(value[start..].split([',', ')']).next().unwrap())
         };
         assert_eq!(field("radius"), rust.radius, "{name}'s radius");
-        assert_eq!((field("x"), field("y")), (rust.x, rust.y), "{name}'s offset");
+        assert_eq!(
+            (field("x"), field("y")),
+            (rust.x, rust.y),
+            "{name}'s offset"
+        );
     }
 }
 
@@ -174,7 +226,8 @@ fn text_styles_match_swift() {
 fn fonts_are_apples() {
     let apple = repository().join("swift/GabaritApple/Resources/Fonts");
     for (file, bytes) in tokens::FONT_FILES {
-        let original = std::fs::read(apple.join(file)).unwrap_or_else(|_| panic!("{file} in GabaritApple"));
+        let original =
+            std::fs::read(apple.join(file)).unwrap_or_else(|_| panic!("{file} in GabaritApple"));
         assert!(original == *bytes, "{file} differs from GabaritApple's");
     }
 }

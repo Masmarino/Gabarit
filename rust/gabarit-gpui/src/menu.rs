@@ -5,8 +5,9 @@
 use std::rc::Rc;
 
 use gpui::{
-    AnyElement, App, ClickEvent, CursorStyle, ElementId, Entity, IntoElement, MouseButton, ParentElement, Pixels,
-    Point, RenderOnce, Role, SharedString, Styled, Window, anchored, deferred, div, prelude::*, px,
+    AnyElement, App, ClickEvent, CursorStyle, ElementId, Entity, IntoElement, MouseButton,
+    ParentElement, Pixels, Point, RenderOnce, Role, SharedString, Styled, Window, anchored,
+    deferred, div, prelude::*, px,
 };
 
 use crate::assets::icon;
@@ -67,7 +68,10 @@ impl GMenuItem {
         self
     }
 
-    pub fn on_click(mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static) -> Self {
+    pub fn on_click(
+        mut self,
+        handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+    ) -> Self {
         self.on_click = Some(Rc::new(handler));
         self
     }
@@ -76,7 +80,11 @@ impl GMenuItem {
 impl RenderOnce for GMenuItem {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
-        let foreground = if self.destructive { colors.error_text } else { colors.text_primary };
+        let foreground = if self.destructive {
+            colors.error_text
+        } else {
+            colors.text_primary
+        };
         let (hover, press) = (colors.hover, colors.press);
         let ground = match self.preview {
             Some(GPointer::Pressed) => press,
@@ -97,21 +105,32 @@ impl RenderOnce for GMenuItem {
             .role(Role::MenuItem)
             .aria_label(self.title.clone())
             .when_some(self.checked, |this, checked| this.aria_selected(checked))
-            .when(self.disabled, |this| this.opacity(crate::tokens::opacity::DISABLED))
+            .when(self.disabled, |this| {
+                this.opacity(crate::tokens::opacity::DISABLED)
+            })
             .when(!self.disabled && self.preview.is_none(), |this| {
                 this.cursor(CursorStyle::PointingHand)
                     .hover(move |style| style.bg(hover))
                     .active(move |style| style.bg(press))
-                    .when_some(self.on_click, |this, handler| this.on_click(move |event, window, cx| handler(event, window, cx)))
+                    .when_some(self.on_click, |this, handler| {
+                        this.on_click(move |event, window, cx| handler(event, window, cx))
+                    })
             })
             .when_some(self.icon, |this, name| {
-                this.child(div().w(px(20.)).flex().justify_center().child(icon(name, px(15.), foreground)))
+                this.child(div().w(px(20.)).flex().justify_center().child(icon(
+                    name,
+                    px(15.),
+                    foreground,
+                )))
             })
             .child(div().flex_1().child(self.title))
             .when_some(self.checked, |this, checked| {
                 // Always there, hidden when unticked: the lines keep the same width.
                 this.child(
-                    div().w(px(16.)).opacity(if checked { 1. } else { 0. }).child(icon("check", px(14.), colors.accent)),
+                    div()
+                        .w(px(16.))
+                        .opacity(if checked { 1. } else { 0. })
+                        .child(icon("check", px(14.), colors.accent)),
                 )
             })
     }
@@ -126,7 +145,10 @@ pub struct GMenu {
 
 impl GMenu {
     pub fn new() -> Self {
-        GMenu { items: Vec::new(), min_width: px(240.) }
+        GMenu {
+            items: Vec::new(),
+            min_width: px(240.),
+        }
     }
 
     pub fn item(mut self, item: impl IntoElement) -> Self {
@@ -162,10 +184,21 @@ impl RenderOnce for GMenu {
             .border_1()
             .border_color(colors.hairline)
             .shadow(floating_shadow())
-            .children(self.items.into_iter().enumerate().flat_map(move |(index, item)| {
-                let line = (index > 0 && index < count).then(|| div().h(px(1.)).w_full().bg(colors.hairline).into_any_element());
-                line.into_iter().chain([item])
-            }))
+            .children(
+                self.items
+                    .into_iter()
+                    .enumerate()
+                    .flat_map(move |(index, item)| {
+                        let line = (index > 0 && index < count).then(|| {
+                            div()
+                                .h(px(1.))
+                                .w_full()
+                                .bg(colors.hairline)
+                                .into_any_element()
+                        });
+                        line.into_iter().chain([item])
+                    }),
+            )
     }
 }
 
@@ -191,20 +224,27 @@ impl GContextMenu {
         child: impl IntoElement,
         menu: impl Fn(Rc<dyn Fn(&mut Window, &mut App)>, &mut Window, &mut App) -> GMenu + 'static,
     ) -> Self {
-        GContextMenu { id: id.into(), child: child.into_any_element(), menu: Rc::new(menu) }
+        GContextMenu {
+            id: id.into(),
+            child: child.into_any_element(),
+            menu: Rc::new(menu),
+        }
     }
 }
 
 impl RenderOnce for GContextMenu {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let state: Entity<GContextMenuState> = window.use_keyed_state(self.id.clone(), cx, |_, _| GContextMenuState::default());
+        let state: Entity<GContextMenuState> =
+            window.use_keyed_state(self.id.clone(), cx, |_, _| GContextMenuState::default());
         let position = state.read(cx).position;
         let close: Rc<dyn Fn(&mut Window, &mut App)> = {
             let state = state.clone();
-            Rc::new(move |_, cx| state.update(cx, |state, cx| {
-                state.position = None;
-                cx.notify();
-            }))
+            Rc::new(move |_, cx| {
+                state.update(cx, |state, cx| {
+                    state.position = None;
+                    cx.notify();
+                })
+            })
         };
         let open = state.clone();
         div()
@@ -222,18 +262,21 @@ impl RenderOnce for GContextMenu {
                 let dismiss = close.clone();
                 let escape = close.clone();
                 this.child(deferred(
-                    anchored().position(position).snap_to_window_with_margin(px(8.)).child(
-                        div()
-                            .id("g-context-menu")
-                            .occlude()
-                            .on_mouse_down_out(move |_, window, cx| dismiss(window, cx))
-                            .on_key_down(move |event, window, cx| {
-                                if event.keystroke.key == "escape" {
-                                    escape(window, cx)
-                                }
-                            })
-                            .child(menu),
-                    ),
+                    anchored()
+                        .position(position)
+                        .snap_to_window_with_margin(px(8.))
+                        .child(
+                            div()
+                                .id("g-context-menu")
+                                .occlude()
+                                .on_mouse_down_out(move |_, window, cx| dismiss(window, cx))
+                                .on_key_down(move |event, window, cx| {
+                                    if event.keystroke.key == "escape" {
+                                        escape(window, cx)
+                                    }
+                                })
+                                .child(menu),
+                        ),
                 ))
             })
     }

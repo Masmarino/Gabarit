@@ -13,7 +13,13 @@ pub type GColors = GColorRoles<Hsla>;
 
 /// A token's colour as GPUI's.
 pub fn hsla(color: GRgba) -> Hsla {
-    Rgba { r: color.red, g: color.green, b: color.blue, a: color.alpha }.into()
+    Rgba {
+        r: color.red,
+        g: color.green,
+        b: color.blue,
+        a: color.alpha,
+    }
+    .into()
 }
 
 /// The light or the dark appearance.
@@ -86,7 +92,12 @@ impl GTheme {
             GAppearance::Light => tokens::LIGHT,
             GAppearance::Dark => tokens::DARK,
         };
-        GTheme { appearance, colors: values.map(hsla), frame: GFrameColors::new(), reduce_motion: false }
+        GTheme {
+            appearance,
+            colors: values.map(hsla),
+            frame: GFrameColors::new(),
+            reduce_motion: false,
+        }
     }
 
     pub fn is_dark(&self) -> bool {
@@ -116,14 +127,21 @@ impl ActiveTheme for App {
 
 /// Registers IBM Plex and sets the light theme: call once, before opening a window.
 pub fn init(cx: &mut App) {
-    let fonts = tokens::FONT_FILES.iter().map(|(_, bytes)| Cow::Borrowed(*bytes)).collect();
-    cx.text_system().add_fonts(fonts).expect("IBM Plex is embedded in the crate");
+    let fonts = tokens::FONT_FILES
+        .iter()
+        .map(|(_, bytes)| Cow::Borrowed(*bytes))
+        .collect();
+    cx.text_system()
+        .add_fonts(fonts)
+        .expect("IBM Plex is embedded in the crate");
     cx.set_global(GTheme::new(GAppearance::Light));
 }
 
 /// Sets the appearance (redraws every window).
 pub fn set_appearance(appearance: GAppearance, cx: &mut App) {
-    let reduce_motion = cx.try_global::<GTheme>().is_some_and(|theme| theme.reduce_motion);
+    let reduce_motion = cx
+        .try_global::<GTheme>()
+        .is_some_and(|theme| theme.reduce_motion);
     let mut theme = GTheme::new(appearance);
     theme.reduce_motion = reduce_motion;
     cx.set_global(theme);
@@ -154,15 +172,28 @@ pub fn mix(color: Hsla, other: Hsla, amount: f32) -> Hsla {
 
 /// A colour with its alpha multiplied by `opacity` (SwiftUI's `.opacity`).
 pub fn alpha(color: Hsla, opacity: f32) -> Hsla {
-    Hsla { a: color.a * opacity, ..color }
+    Hsla {
+        a: color.a * opacity,
+        ..color
+    }
 }
 
 pub fn white(opacity: f32) -> Hsla {
-    Hsla { h: 0.0, s: 0.0, l: 1.0, a: opacity }
+    Hsla {
+        h: 0.0,
+        s: 0.0,
+        l: 1.0,
+        a: opacity,
+    }
 }
 
 pub fn black(opacity: f32) -> Hsla {
-    Hsla { h: 0.0, s: 0.0, l: 0.0, a: opacity }
+    Hsla {
+        h: 0.0,
+        s: 0.0,
+        l: 0.0,
+        a: opacity,
+    }
 }
 
 /// The text styles, at the computer's sizes (as the Mac): `.g_text(text::BODY)`.

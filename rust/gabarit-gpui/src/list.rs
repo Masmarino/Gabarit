@@ -5,8 +5,9 @@
 use std::rc::Rc;
 
 use gpui::{
-    AnyElement, App, Bounds, ElementId, Empty, IntoElement, ListAlignment, ListState, ParentElement, Pixels,
-    RenderOnce, Role, SharedString, Styled, Window, canvas, div, list, point, prelude::*, px,
+    AnyElement, App, Bounds, ElementId, Empty, IntoElement, ListAlignment, ListState,
+    ParentElement, Pixels, RenderOnce, Role, SharedString, Styled, Window, canvas, div, list,
+    point, prelude::*, px,
 };
 
 use crate::avatar::GAvatar;
@@ -34,7 +35,11 @@ pub struct GLongList {
 impl GLongList {
     /// A list's state: `count` rows; `from_end`: it starts at the bottom and follows what arrives (a conversation).
     pub fn state(count: usize, from_end: bool) -> ListState {
-        let alignment = if from_end { ListAlignment::Bottom } else { ListAlignment::Top };
+        let alignment = if from_end {
+            ListAlignment::Bottom
+        } else {
+            ListAlignment::Top
+        };
         ListState::new(count, alignment, px(600.))
     }
 
@@ -43,7 +48,12 @@ impl GLongList {
         state: ListState,
         render_row: impl Fn(usize, &mut Window, &mut App) -> AnyElement + 'static,
     ) -> Self {
-        GLongList { id: id.into(), state, render_row: Rc::new(render_row), label: SharedString::default() }
+        GLongList {
+            id: id.into(),
+            state,
+            render_row: Rc::new(render_row),
+            label: SharedString::default(),
+        }
     }
 
     /// What a screen reader calls it.
@@ -87,9 +97,12 @@ impl RenderOnce for GLongList {
                 .w(px(12.))
                 .child({
                     let track = track.clone();
-                    canvas(move |bounds, _, cx| track.update(cx, |stored, _| *stored = bounds), |_, _, _, _| {})
-                        .absolute()
-                        .size_full()
+                    canvas(
+                        move |bounds, _, cx| track.update(cx, |stored, _| *stored = bounds),
+                        |_, _, _, _| {},
+                    )
+                    .absolute()
+                    .size_full()
                 })
                 .child(
                     div()
@@ -113,11 +126,17 @@ impl RenderOnce for GLongList {
                             let bounds = *track.read(cx);
                             let grab = event.drag(cx).grab;
                             let span = (bounds.size.height - height).max(px(1.));
-                            let fraction = ((event.event.position.y - bounds.top() - grab - height / 2.) / span).clamp(0., 1.);
-                            drag_state.set_offset_from_scrollbar(point(px(0.), -(max_offset * fraction)));
+                            let fraction =
+                                ((event.event.position.y - bounds.top() - grab - height / 2.)
+                                    / span)
+                                    .clamp(0., 1.);
+                            drag_state
+                                .set_offset_from_scrollbar(point(px(0.), -(max_offset * fraction)));
                             window.refresh();
                         })
-                        .on_mouse_up_out(gpui::MouseButton::Left, move |_, _, _| end_state.scrollbar_drag_ended())
+                        .on_mouse_up_out(gpui::MouseButton::Left, move |_, _, _| {
+                            end_state.scrollbar_drag_ended()
+                        })
                         .on_mouse_up(gpui::MouseButton::Left, {
                             let state = state.clone();
                             move |_, _, _| state.scrollbar_drag_ended()
@@ -131,7 +150,12 @@ impl RenderOnce for GLongList {
             .aria_label(self.label)
             .relative()
             .size_full()
-            .child(list(self.state, move |index, window, cx| render_row(index, window, cx)).size_full())
+            .child(
+                list(self.state, move |index, window, cx| {
+                    render_row(index, window, cx)
+                })
+                .size_full(),
+            )
             .children(scrollbar)
     }
 }
@@ -154,7 +178,13 @@ impl GMessageRow {
         time: impl Into<SharedString>,
         body: impl Into<SharedString>,
     ) -> Self {
-        GMessageRow { index, author: author.into(), time: time.into(), body: body.into(), grouped: false }
+        GMessageRow {
+            index,
+            author: author.into(),
+            time: time.into(),
+            body: body.into(),
+            grouped: false,
+        }
     }
 
     pub fn grouped(mut self, grouped: bool) -> Self {
@@ -180,7 +210,9 @@ impl RenderOnce for GMessageRow {
             .pb(px(2.))
             .rounded(px(radius::MD))
             .hover(move |style| style.bg(hover))
-            .child(div().w(px(36.)).flex_none().when(!self.grouped, |this| this.child(GAvatar::new(self.author.clone()).size(36.))))
+            .child(div().w(px(36.)).flex_none().when(!self.grouped, |this| {
+                this.child(GAvatar::new(self.author.clone()).size(36.))
+            }))
             .child(
                 div()
                     .flex()
@@ -194,11 +226,26 @@ impl RenderOnce for GMessageRow {
                                 .flex()
                                 .items_baseline()
                                 .gap(px(8.))
-                                .child(div().g_text(text::HEADLINE).text_color(colors.text_primary).child(self.author.clone()))
-                                .child(div().g_text(text::CAPTION).text_color(colors.text_discret).child(self.time.clone())),
+                                .child(
+                                    div()
+                                        .g_text(text::HEADLINE)
+                                        .text_color(colors.text_primary)
+                                        .child(self.author.clone()),
+                                )
+                                .child(
+                                    div()
+                                        .g_text(text::CAPTION)
+                                        .text_color(colors.text_discret)
+                                        .child(self.time.clone()),
+                                ),
                         )
                     })
-                    .child(div().g_text(text::BODY).text_color(colors.text_primary).child(self.body)),
+                    .child(
+                        div()
+                            .g_text(text::BODY)
+                            .text_color(colors.text_primary)
+                            .child(self.body),
+                    ),
             )
     }
 }

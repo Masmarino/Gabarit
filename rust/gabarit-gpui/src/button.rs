@@ -4,8 +4,8 @@
 use std::rc::Rc;
 
 use gpui::{
-    App, ClickEvent, CursorStyle, ElementId, Hsla, IntoElement, ParentElement, RenderOnce, Role, SharedString, Styled,
-    Window, div, prelude::*, px,
+    App, ClickEvent, CursorStyle, ElementId, Hsla, IntoElement, ParentElement, RenderOnce, Role,
+    SharedString, Styled, Window, div, prelude::*, px,
 };
 
 use crate::assets::icon;
@@ -114,7 +114,10 @@ impl GButton {
         self
     }
 
-    pub fn on_click(mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static) -> Self {
+    pub fn on_click(
+        mut self,
+        handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+    ) -> Self {
         self.on_click = Some(Rc::new(handler));
         self
     }
@@ -122,7 +125,12 @@ impl GButton {
     fn foreground(&self, cx: &App) -> Hsla {
         let colors = &cx.theme().colors;
         // The text's red: 4.5:1 on the hover's and the press's grounds too.
-        if self.destructive && matches!(self.variant, GButtonVariant::Secondary | GButtonVariant::Ghost) {
+        if self.destructive
+            && matches!(
+                self.variant,
+                GButtonVariant::Secondary | GButtonVariant::Ghost
+            )
+        {
             return colors.error_text;
         }
         match self.variant {
@@ -136,16 +144,22 @@ impl GButton {
     fn grounds(&self, cx: &App) -> [Hsla; 3] {
         let colors = &cx.theme().colors;
         match self.variant {
-            GButtonVariant::Primary => {
-                [colors.primary, mix(colors.primary, colors.primary_hover, 0.55), colors.primary_hover]
-            }
-            GButtonVariant::Secondary => {
-                [colors.surface, over(colors.surface, colors.hover), over(colors.surface, colors.press)]
-            }
+            GButtonVariant::Primary => [
+                colors.primary,
+                mix(colors.primary, colors.primary_hover, 0.55),
+                colors.primary_hover,
+            ],
+            GButtonVariant::Secondary => [
+                colors.surface,
+                over(colors.surface, colors.hover),
+                over(colors.surface, colors.press),
+            ],
             GButtonVariant::Ghost => [alpha(colors.hover, 0.0), colors.hover, colors.press],
-            GButtonVariant::Danger => {
-                [colors.error, mix(colors.error, white(1.0), 0.1), mix(colors.error, black(1.0), 0.18)]
-            }
+            GButtonVariant::Danger => [
+                colors.error,
+                mix(colors.error, white(1.0), 0.1),
+                mix(colors.error, black(1.0), 0.18),
+            ],
         }
     }
 }
@@ -156,10 +170,20 @@ impl RenderOnce for GButton {
         let shape = px(radius::SM);
         let live = Live::new("g-button", self.preview, !self.disabled);
         let [rest, hover, pressed] = self.grounds(cx);
-        let ground = if live.pressed() { pressed } else if live.hovered() { hover } else { rest };
+        let ground = if live.pressed() {
+            pressed
+        } else if live.hovered() {
+            hover
+        } else {
+            rest
+        };
         let secondary = self.variant == GButtonVariant::Secondary;
         let rim = |opacity| alpha(colors.border, opacity);
-        let height = if self.compact { metrics::BUTTON } else { metrics::REGULAR };
+        let height = if self.compact {
+            metrics::BUTTON
+        } else {
+            metrics::REGULAR
+        };
         let foreground = self.foreground(cx);
 
         let mut button = div()
@@ -183,7 +207,8 @@ impl RenderOnce for GButton {
             .aria_label(self.label.clone())
             .when(self.full_width, |this| this.w_full())
             .when(secondary, |this| {
-                this.border_1().border_color(rim(if live.hovered() { 0.8 } else { 0.6 }))
+                this.border_1()
+                    .border_color(rim(if live.hovered() { 0.8 } else { 0.6 }))
             });
 
         let ghost = self.variant == GButtonVariant::Ghost;
@@ -197,14 +222,24 @@ impl RenderOnce for GButton {
                 .tab_stop(true)
                 .hover(move |style| {
                     let style = style.bg(hover);
-                    let style = if ghost { style } else { style.shadow(hover_shadow) };
-                    if secondary { style.border_color(rim(0.8)) } else { style }
+                    let style = if ghost {
+                        style
+                    } else {
+                        style.shadow(hover_shadow)
+                    };
+                    if secondary {
+                        style.border_color(rim(0.8))
+                    } else {
+                        style
+                    }
                 })
                 .active(move |style| {
                     let style = style.bg(pressed).shadow(vec![]);
                     if sink { style.top(px(0.5)) } else { style }
                 })
-                .focus_visible(move |style| style.border_2().border_color(alpha(colors.accent, 0.8)));
+                .focus_visible(move |style| {
+                    style.border_2().border_color(alpha(colors.accent, 0.8))
+                });
             if let Some(handler) = self.on_click.clone() {
                 button = button.on_click(move |event, window, cx| handler(event, window, cx));
             }
@@ -216,13 +251,18 @@ impl RenderOnce for GButton {
         let button = if ghost {
             button
         } else {
-            let on_ink = matches!(self.variant, GButtonVariant::Primary | GButtonVariant::Danger);
+            let on_ink = matches!(
+                self.variant,
+                GButtonVariant::Primary | GButtonVariant::Danger
+            );
             raised(button, shape, on_ink, live, cx)
         };
 
         button
             .when(sink && live.pressed(), |this| this.top(px(0.5)))
-            .when_some(self.icon, |this, name| this.child(icon(name, px(14.), foreground)))
+            .when_some(self.icon, |this, name| {
+                this.child(icon(name, px(14.), foreground))
+            })
             .child(div().relative().child(self.label))
     }
 }
@@ -240,7 +280,13 @@ pub struct GCloseButton {
 
 impl GCloseButton {
     pub fn new(id: impl Into<ElementId>) -> Self {
-        GCloseButton { id: id.into(), label: "Close".into(), on_frame: false, preview: None, on_click: None }
+        GCloseButton {
+            id: id.into(),
+            label: "Close".into(),
+            on_frame: false,
+            preview: None,
+            on_click: None,
+        }
     }
 
     /// On the dark frame (a window's header).
@@ -259,7 +305,10 @@ impl GCloseButton {
         self
     }
 
-    pub fn on_click(mut self, handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static) -> Self {
+    pub fn on_click(
+        mut self,
+        handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+    ) -> Self {
         self.on_click = Some(Rc::new(handler));
         self
     }
@@ -271,15 +320,29 @@ impl RenderOnce for GCloseButton {
         let colors = theme.colors;
         let frame = theme.frame;
         let live = Live::new("g-close", self.preview, true);
-        let (hover, pressed) = if self.on_frame { (frame.close_hover, frame.selected) } else { (colors.hover, colors.press) };
+        let (hover, pressed) = if self.on_frame {
+            (frame.close_hover, frame.selected)
+        } else {
+            (colors.hover, colors.press)
+        };
         let circle = px(28.);
         // On the page, an opaque ground: GPUI draws a box's shadow under a clear ground too.
         let (rest, hover, pressed) = if self.on_frame {
             (alpha(hover, 0.0), hover, pressed)
         } else {
-            (colors.background, over(colors.background, hover), over(colors.background, pressed))
+            (
+                colors.background,
+                over(colors.background, hover),
+                over(colors.background, pressed),
+            )
         };
-        let ground = if live.pressed() { pressed } else if live.hovered() { hover } else { rest };
+        let ground = if live.pressed() {
+            pressed
+        } else if live.hovered() {
+            hover
+        } else {
+            rest
+        };
         let mut button = div()
             .id(self.id)
             .group("g-close")
@@ -292,8 +355,16 @@ impl RenderOnce for GCloseButton {
             .rounded_full()
             .bg(ground)
             .border_1()
-            .border_color(if self.on_frame { frame.rim } else { colors.hairline })
-            .text_color(if self.on_frame { frame.text } else { colors.text_secondary })
+            .border_color(if self.on_frame {
+                frame.rim
+            } else {
+                colors.hairline
+            })
+            .text_color(if self.on_frame {
+                frame.text
+            } else {
+                colors.text_secondary
+            })
             .role(Role::Button)
             .aria_label(self.label.clone())
             .tooltip_text(format!("{} (Esc)", self.label));
@@ -305,15 +376,29 @@ impl RenderOnce for GCloseButton {
                 .hover({
                     let shadow = raised_shadow(true, cx);
                     let on_frame = self.on_frame;
-                    move |style| if on_frame { style.bg(hover) } else { style.bg(hover).shadow(shadow) }
+                    move |style| {
+                        if on_frame {
+                            style.bg(hover)
+                        } else {
+                            style.bg(hover).shadow(shadow)
+                        }
+                    }
                 })
                 .active(move |style| style.bg(pressed).shadow(vec![]));
             if let Some(handler) = self.on_click {
                 button = button.on_click(move |event, window, cx| handler(event, window, cx));
             }
         }
-        let button = if self.on_frame { button } else { raised(button, px(14.), false, live, cx) };
-        let cross = if self.on_frame { frame.text } else { colors.text_secondary };
+        let button = if self.on_frame {
+            button
+        } else {
+            raised(button, px(14.), false, live, cx)
+        };
+        let cross = if self.on_frame {
+            frame.text
+        } else {
+            colors.text_secondary
+        };
         button.child(icon("x-bold", px(11.), cross))
     }
 }
@@ -322,7 +407,10 @@ impl RenderOnce for GCloseButton {
 pub(crate) trait TooltipText: StatefulInteractiveElement + Sized {
     fn tooltip_text(self, text: impl Into<SharedString>) -> Self {
         let text: SharedString = text.into();
-        self.tooltip(move |_window, cx| cx.new(|_| crate::feedback::GTooltip::new(text.clone())).into())
+        self.tooltip(move |_window, cx| {
+            cx.new(|_| crate::feedback::GTooltip::new(text.clone()))
+                .into()
+        })
     }
 }
 
