@@ -1,0 +1,51 @@
+[package]
+name = "gabarit-gpui"
+version = "0.1.0"
+edition = "2024"
+description = "Gabarit's components for GPUI (Zed's UI framework), from SkollN's design"
+license = "MIT"
+publish = false
+
+# GPUI, pinned to one revision of Zed (d2a4fb6ded7c, 8 November 2026). Zed's own crate on crates.io (`gpui` 0.2.2)
+# has not moved since October 2025; `gpui-pre` is the same source, published every week from Zed's repository at a
+# named commit (its Cargo.toml says which: `package.metadata.gpui-pre.zed-rev`). An exact version: an update is a
+# decision, never a side effect of `cargo update`. See LISEZMOI.md.
+[dependencies]
+gpui = { package = "gpui-pre", version = "=0.3.12" }
+gpui_platform = { package = "gpui-pre-platform", version = "=0.3.12", features = ["font-kit"] }
+unicode-segmentation = "1.12"
+env_logger = { version = "0.11", default-features = false, features = ["auto-color"] }
+
+[target.'cfg(any(target_os = "linux", target_os = "freebsd"))'.dependencies]
+gpui_platform = { package = "gpui-pre-platform", version = "=0.3.12", features = ["font-kit", "x11", "wayland"] }
+
+# Les émojis en couleur sous Linux : `gpui-pre-wgpu` (le texte de GPUI sous Linux, par cosmic-text), corrigé dans
+# `correctifs/gpui-pre-wgpu` (voir LISEZMOI.md, « Les correctifs de GPUI »). Une app qui dépend de gabarit-gpui reprend
+# ce `[patch]` dans son propre Cargo.toml : il ne passe pas d'une crate à celles qui en dépendent.
+[patch.crates-io]
+gpui-pre-wgpu = { path = "correctifs/gpui-pre-wgpu" }
+
+[dev-dependencies]
+gpui = { package = "gpui-pre", version = "=0.3.12", features = ["test-support"] }
+
+[[bin]]
+name = "galerie"
+path = "src/bin/galerie.rs"
+
+# The disk is short: no debug information in day-to-day builds (backtraces keep their line numbers).
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
+opt-level = 1
+
+[profile.release]
+strip = true
+lto = "thin"
+codegen-units = 4
+
+# Les rappels de GPUI (`Rc<dyn Fn(&mut Window, &mut App)>`…) dépassent le seuil de complexité de Clippy ; Zed le désactive
+# aussi.
+[lints.clippy]
+type_complexity = "allow"
