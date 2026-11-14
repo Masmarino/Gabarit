@@ -617,7 +617,7 @@ JitPack builds it from the tags (`jitpack.yml`):
 
 ```kotlin
 // settings.gradle.kts: maven("https://jitpack.io") { content { includeGroup("com.github.Masmarino") } }
-implementation("com.github.Masmarino:Gabarit:3.0.0-beta.22")
+implementation("com.github.Masmarino:Gabarit:3.1.0")
 ```
 
 Its gallery draws the Mac gallery's sections, light and dark, on the JVM (Robolectric) to `android/gabarit/build/galerie`:

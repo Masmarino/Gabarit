@@ -1,6 +1,6 @@
 {
   "name": "gabarit-workspace",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "private": true,
   "packageManager": "npm@12.2.0",
   "engines": {
