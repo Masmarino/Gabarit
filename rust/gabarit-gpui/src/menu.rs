@@ -1,10 +1,12 @@
-//! Gabarit's menus, from SkollN's iPhone context menu brought to a computer: a card with large rounded corners, lit at
-//! its top edge, on a soft wide shadow; rows of 34 points from edge to edge, the text (14 points) on the left, the
-//! outlined icon in the text's colour on the right (a shortcut in grey before it, an arrow for a submenu), a fine line
-//! across the card between rows and a narrow grey band between groups, small grey section titles; the row under the
-//! pointer or the keyboard is lit across the card, softly (faded in, and out when the light moves on), only once the
-//! pointer moves (a menu opened under it does not light the row it lands on); a destructive row in red, its icon too;
-//! a tick on the left of a choice; a disabled row greyed.
+//! Gabarit's menus, as a computer draws them (macOS 27, Windows 11): a card with rounded corners (`radius::LG`) on a
+//! soft shadow (`shadows::FLOATING`), its rows inset from its edges; compact rows (30 points), the outlined icon on the
+//! left in a fixed column, in the discreet text's colour, so that every title starts at the same place; on the right,
+//! aligned, the shortcut in grey or the arrow to a submenu. No line between rows: a fine line only between groups, inset
+//! from the card's edges, with a little air around it; a group's title in small grey text, no line under it. The row
+//! under the pointer or the keyboard is lit by a rounded ground inside the card's margin (faded in, and out when the
+//! light moves on), only once the pointer moves (a menu opened under it does not light the row it lands on). A choice
+//! has its tick in a column of its own before the icon (kept on every row when one is ticked, so nothing shifts); a
+//! destructive row is in Gabarit's red, its icon too, lit in a pale red; a disabled row greyed.
 //!
 //! The menus open faded in and dropping slightly into place (GPUI has no transform for a box: no scale), and close
 //! faded out. The keyboard: the arrows move (right opens a submenu, left closes it), Return or Space chooses, Escape
@@ -35,7 +37,7 @@ use crate::assets::icon;
 use crate::button::ClickHandler;
 use crate::relief::GPointer;
 use crate::theme::{ActiveTheme, GTextExt, alpha, black, mix, white};
-use crate::tokens::{opacity, text};
+use crate::tokens::{opacity, shadows, text};
 
 /// Closes a menu (and its submenus): what a host hands to the builder of its menu.
 pub type GMenuClose = Rc<dyn Fn(&mut Window, &mut App)>;
@@ -45,22 +47,32 @@ pub type GMenuBuilder = Rc<dyn Fn(GMenuClose, &mut Window, &mut App) -> GMenu>;
 
 /// The menus' measures, in points.
 pub mod metrics {
-    /// A row's height (48 on the iPhone, under a finger; 22 in a Mac's own menus).
-    pub const ROW: f32 = 34.;
-    /// The card's corners (22 on the iPhone).
-    pub const RADIUS: f32 = 16.;
-    /// The rows run from edge to edge, as on the iPhone: the lit one too, its outer corners following the card's.
-    pub const INSET: f32 = 0.;
-    pub const ROW_RADIUS: f32 = RADIUS - 1.;
-    /// The row's text and its icon from the card's edges.
-    pub const ROW_PADDING: f32 = 14.;
-    /// The row's text (17 on the iPhone), its icon, its shortcut.
-    pub const TEXT: f32 = 14.;
-    pub const ICON: f32 = 17.;
+    use crate::tokens::radius;
+
+    /// A row's height: a computer's menu (22 on the Mac, 32 under Windows 11), not a finger's (48 on the iPhone).
+    pub const ROW: f32 = 30.;
+    /// The card's corners (`radius::LG`).
+    pub const RADIUS: f32 = radius::LG;
+    /// The rows inside the card's edges: the lit one is a rounded ground in this margin, not a band from edge to edge.
+    pub const INSET: f32 = 5.;
+    /// The lit row's corners, within the card's (`radius::SM`).
+    pub const ROW_RADIUS: f32 = radius::SM;
+    /// The row's content from the lit ground's edges.
+    pub const ROW_PADDING: f32 = 9.;
+    /// The row's text (Gabarit's body on a computer), its icon, its shortcut.
+    pub const TEXT: f32 = 13.;
+    pub const ICON: f32 = 15.;
     pub const SHORTCUT: f32 = 12.;
-    /// The band between two groups (8 on the iPhone).
-    pub const GROUP_GAP: f32 = 6.;
-    pub const MIN_WIDTH: f32 = 232.;
+    /// The columns on the left: the tick of a choice, then the icon; the gap between them and the title.
+    pub const TICK_COLUMN: f32 = 14.;
+    pub const ICON_COLUMN: f32 = 16.;
+    pub const GAP: f32 = 8.;
+    /// The line between two groups: its air above and below, and its inset from the rows' edges.
+    pub const SEPARATOR_AIR: f32 = 4.;
+    pub const SEPARATOR_INSET: f32 = 6.;
+    /// A group's title, from its small text's top to the first row.
+    pub const SECTION: f32 = 24.;
+    pub const MIN_WIDTH: f32 = 200.;
     pub const MAX_WIDTH: f32 = 380.;
     /// Taller lists scroll.
     pub const MAX_HEIGHT: f32 = 600.;
@@ -76,8 +88,8 @@ pub mod metrics {
     pub const LIGHT_OUT: u64 = 160;
 }
 
-/// A line of a menu: its name, its icon on the right; a tick on the left for a choice, a shortcut in grey, an arrow
-/// to a submenu.
+/// A line of a menu: its icon on the left, its name; a tick before them for a choice; on the right, a shortcut in
+/// grey or an arrow to a submenu.
 #[derive(IntoElement)]
 pub struct GMenuItem {
     id: ElementId,
@@ -108,7 +120,7 @@ impl GMenuItem {
         }
     }
 
-    /// An outlined icon, on the right (as on the iPhone).
+    /// An outlined icon, on the left, in the discreet text's colour (a menu keeps its column on every row).
     pub fn icon(mut self, name: &'static str) -> Self {
         self.icon = Some(name);
         self
@@ -126,7 +138,7 @@ impl GMenuItem {
         self
     }
 
-    /// A choice: a tick on the left when on (the menu keeps the room for it on every row).
+    /// A choice: a tick before the icon when on (the menu keeps the room for it on every row).
     pub fn checked(mut self, checked: bool) -> Self {
         self.checked = Some(checked);
         self
@@ -173,23 +185,27 @@ struct RowLook {
     pressed: bool,
     /// Room on the left for the ticks of a menu's choices.
     tick_column: bool,
-    /// The first or the last row of the card: its outer corners follow the card's.
-    top: bool,
-    bottom: bool,
+    /// Room for the icons, when a row of the menu has one: the titles start at the same place.
+    icon_column: bool,
 }
 
-/// What a lit row is grounded on (pressed, a little stronger; a destructive row, in its red).
+/// What a lit row is grounded on: the pointer's soft grey (pressed, a little stronger); a destructive row, a pale red.
 fn row_ground(item: &GMenuItem, pressed: bool, cx: &App) -> Hsla {
     let colors = cx.theme().colors;
     let dark = cx.theme().is_dark();
     if item.destructive {
-        alpha(colors.error, if pressed { 0.2 } else { 0.11 })
+        alpha(
+            colors.error,
+            match (pressed, dark) {
+                (true, _) => 0.2,
+                (false, true) => 0.16,
+                (false, false) => 0.1,
+            },
+        )
     } else if pressed {
-        if dark { white(0.13) } else { black(0.10) }
-    } else if dark {
-        white(0.075)
+        colors.press
     } else {
-        black(0.052)
+        colors.hover
     }
 }
 
@@ -209,24 +225,36 @@ fn row_element(
     } else {
         colors.text_primary
     };
+    // The icon is quieter than the title, except a destructive row's, all red.
+    let icon_color = if item.destructive && !disabled {
+        colors.error
+    } else {
+        colors.text_discret
+    };
     let lit = look.lit && !disabled;
     let plain_ground = if lit && ground.is_none() {
         row_ground(item, look.pressed, cx)
     } else {
         alpha(colors.hover, 0.0)
     };
-    let radius = px(metrics::ROW_RADIUS);
+    let column = |width: f32| {
+        div()
+            .w(px(width))
+            .flex()
+            .flex_none()
+            .items_center()
+            .justify_center()
+    };
     div()
         .id(item.id.clone())
         .relative()
         .flex()
         .flex_none()
         .items_center()
-        .gap(px(10.))
+        .gap(px(metrics::GAP))
         .h(px(metrics::ROW))
         .px(px(metrics::ROW_PADDING))
-        .when(look.top, |this| this.rounded_t(radius))
-        .when(look.bottom, |this| this.rounded_b(radius))
+        .rounded(px(metrics::ROW_RADIUS))
         .bg(plain_ground)
         .children(ground)
         .text_color(foreground)
@@ -246,35 +274,33 @@ fn row_element(
         })
         .when(item.submenu.is_some(), |this| this.aria_expanded(false))
         .when(disabled, |this| this.opacity(0.75))
+        // The tick, in a column of its own: the other rows keep its room, nothing shifts.
         .when(look.tick_column, |this| {
             let on = item.checked == Some(true);
             this.child(
-                div()
-                    .w(px(16.))
-                    .flex()
-                    .flex_none()
-                    .justify_center()
+                column(metrics::TICK_COLUMN)
                     .opacity(if on { 1. } else { 0. })
-                    .child(icon(
-                        "check",
-                        px(14.),
-                        if disabled {
-                            colors.text_discret
-                        } else {
-                            colors.accent
-                        },
-                    )),
+                    .child(icon("check", px(13.), foreground)),
+            )
+        })
+        .when(look.icon_column || item.icon.is_some(), |this| {
+            this.child(
+                column(metrics::ICON_COLUMN).children(
+                    item.icon
+                        .map(|name| icon(name, px(metrics::ICON), icon_color)),
+                ),
             )
         })
         .child(
             // The whole title: the card grows to it (up to its widest).
             div().flex_1().child(item.title.clone()),
         )
+        // On the right, aligned: the shortcut, or the arrow to a submenu.
         .when_some(item.shortcut, |this, keys| {
             this.child(
                 div()
                     .flex_none()
-                    .pl(px(14.))
+                    .pl(px(16.))
                     .g_text(text::CALLOUT)
                     .text_size(px(metrics::SHORTCUT))
                     .text_color(colors.text_discret)
@@ -282,30 +308,14 @@ fn row_element(
                     .child(shortcut_label(keys)),
             )
         })
-        .when_some(
-            item.icon.filter(|_| item.submenu.is_none()),
-            |this, name| {
-                // The icon in the text's colour, as on the iPhone, its right edge on the text's margin.
-                this.child(
-                    div()
-                        .w(px(20.))
-                        .ml(px(4.))
-                        .flex()
-                        .flex_none()
-                        .justify_end()
-                        .child(icon(name, px(metrics::ICON), foreground)),
-                )
-            },
-        )
         .when(item.submenu.is_some(), |this| {
             this.child(
                 div()
-                    .w(px(20.))
-                    .ml(px(4.))
-                    .flex()
                     .flex_none()
-                    .justify_end()
-                    .child(icon("caret-right", px(13.), colors.text_discret)),
+                    .pl(px(16.))
+                    .flex()
+                    .items_center()
+                    .child(icon("caret-right", px(12.), colors.text_discret)),
             )
         })
 }
@@ -317,14 +327,13 @@ impl RenderOnce for GMenuItem {
             lit: self.preview.is_some(),
             pressed: self.preview == Some(GPointer::Pressed),
             tick_column: self.checked.is_some(),
-            ..RowLook::default()
+            icon_column: self.icon.is_some(),
         };
         let interactive = !self.disabled && self.preview.is_none();
         let handler = self.on_click.clone();
-        let (hover, press) = (cx.theme().colors.hover, cx.theme().colors.press);
+        let (hover, press) = (row_ground(&self, false, cx), row_ground(&self, true, cx));
         row_element(&self, look, None, cx).when(interactive, |this| {
-            this.cursor(CursorStyle::PointingHand)
-                .hover(move |style| style.bg(hover))
+            this.hover(move |style| style.bg(hover))
                 .active(move |style| style.bg(press))
                 .when_some(handler, |this, handler| {
                     this.on_click(move |event, window, cx| handler(event, window, cx))
@@ -490,31 +499,23 @@ impl Default for GMenu {
     }
 }
 
-/// The band between two groups of rows.
-fn group_band(cx: &App) -> gpui::Div {
-    let dark = cx.theme().is_dark();
-    div()
-        .flex_none()
-        .h(px(metrics::GROUP_GAP))
-        .bg(if dark { black(0.22) } else { black(0.035) })
-        .border_t_1()
-        .border_b_1()
-        .border_color(row_line(cx))
-}
-
-/// The fine line between two rows.
-fn row_line(cx: &App) -> Hsla {
+/// The fine line between two groups of rows, inset from the card's edges, with a little air above and below.
+fn separator(cx: &App) -> gpui::Div {
     let colors = cx.theme().colors;
-    if cx.theme().is_dark() {
+    let line = if cx.theme().is_dark() {
         colors.hairline
     } else {
-        alpha(colors.hairline, 0.7)
-    }
+        alpha(colors.hairline, 0.8)
+    };
+    div()
+        .flex_none()
+        .py(px(metrics::SEPARATOR_AIR))
+        .px(px(metrics::SEPARATOR_INSET))
+        .child(div().h(px(1.)).bg(line))
 }
 
-/// A lit row's ground, faded in (or out, the light gone elsewhere), its outer corners the card's.
-fn light(item: &GMenuItem, look: RowLook, on: bool, count: usize, cx: &App) -> AnyElement {
-    let radius = px(metrics::ROW_RADIUS);
+/// A lit row's ground, faded in (or out, the light gone elsewhere), rounded inside the card's margin.
+fn light(item: &GMenuItem, on: bool, count: usize, cx: &App) -> AnyElement {
     let (name, duration) = if on {
         ("g-menu-light", metrics::LIGHT_IN)
     } else {
@@ -525,8 +526,7 @@ fn light(item: &GMenuItem, look: RowLook, on: bool, count: usize, cx: &App) -> A
         .top(px(0.))
         .left(px(0.))
         .size_full()
-        .when(look.top, |this| this.rounded_t(radius))
-        .when(look.bottom, |this| this.rounded_b(radius))
+        .rounded(px(metrics::ROW_RADIUS))
         .bg(row_ground(item, false, cx))
         .with_animation(
             ElementId::NamedInteger(name.into(), count as u64),
@@ -540,7 +540,7 @@ fn light(item: &GMenuItem, look: RowLook, on: bool, count: usize, cx: &App) -> A
 pub(crate) fn card_material(base: gpui::Div, radius: Pixels, cx: &App) -> gpui::Div {
     let colors = cx.theme().colors;
     let dark = cx.theme().is_dark();
-    // No blur behind in GPUI: a little translucent, lifted a touch from the surface in dark.
+    // No blur behind in GPUI: the surface, lifted a touch in dark.
     let ground = if dark {
         alpha(mix(colors.surface, white(1.0), 0.035), 1.0)
     } else {
@@ -571,15 +571,19 @@ pub(crate) fn card_material(base: gpui::Div, radius: Pixels, cx: &App) -> gpui::
         )
 }
 
-/// A tight contact shadow, a middle one and a wide soft one: the card floats above the page, as on the iPhone.
+/// A menu's shadow, from Gabarit's tokens: a fine contact shadow (`shadows::RAISED`) and a soft wide one
+/// (`shadows::FLOATING`; SwiftUI's radius is about half a blur), darker on a dark page.
 pub fn menu_shadow(dark: bool) -> Vec<gpui::BoxShadow> {
+    let (contact, floating) = (shadows::RAISED, shadows::FLOATING);
+    let shade = |spec: crate::tokens::GShadowSpec, on_dark: f32| {
+        let color = crate::theme::hsla(spec.color);
+        if dark { alpha(color, on_dark) } else { color }
+    };
     vec![
-        gpui::BoxShadow::new(px(0.), px(1.), black(if dark { 0.45 } else { 0.07 }))
-            .blur_radius(px(2.)),
-        gpui::BoxShadow::new(px(0.), px(4.), black(if dark { 0.30 } else { 0.06 }))
-            .blur_radius(px(10.)),
-        gpui::BoxShadow::new(px(0.), px(16.), black(if dark { 0.45 } else { 0.13 }))
-            .blur_radius(px(40.)),
+        gpui::BoxShadow::new(px(contact.x), px(contact.y), shade(contact, 0.45))
+            .blur_radius(px(contact.radius * 2.)),
+        gpui::BoxShadow::new(px(floating.x), px(floating.y), shade(floating, 0.45))
+            .blur_radius(px(floating.radius * 2.)),
     ]
 }
 
@@ -639,6 +643,11 @@ impl RenderOnce for GMenu {
             .entries
             .iter()
             .any(|e| matches!(e, Entry::Item(item) if item.checked == Some(true)));
+        // The icons' room, when a row has one: every title starts at the same place.
+        let icon_column = self
+            .entries
+            .iter()
+            .any(|e| matches!(e, Entry::Item(item) if item.icon.is_some()));
         // The separators: none at the ends, never twice in a row, nor right before a section's own line.
         let mut entries: Vec<Entry> = Vec::with_capacity(self.entries.len());
         for entry in self.entries {
@@ -676,73 +685,56 @@ impl RenderOnce for GMenu {
         let submenu = submenu.filter(|i| *i < count);
 
         let mut children: Vec<AnyElement> = Vec::with_capacity(count);
-        let mut previous_row = false;
         for (index, entry) in entries.into_iter().enumerate() {
             match entry {
-                Entry::Separator => {
-                    previous_row = false;
-                    children.push(group_band(cx).into_any_element());
-                }
+                Entry::Separator => children.push(separator(cx).into_any_element()),
                 Entry::Section(title) => {
+                    // A small grey title, its line above it after other rows (none under it).
                     let first = index == 0;
-                    previous_row = false;
                     children.push(
                         div()
                             .flex_none()
                             .flex()
                             .flex_col()
-                            .when(!first, |this| this.child(group_band(cx)))
+                            .when(!first, |this| this.child(separator(cx)))
                             .child(
                                 div()
-                                    .px(px(metrics::ROW_PADDING))
-                                    .pt(px(8.))
+                                    .h(px(metrics::SECTION))
+                                    .flex()
+                                    .items_end()
                                     .pb(px(4.))
+                                    .px(px(metrics::ROW_PADDING))
                                     .g_text(text::SUBHEADLINE)
                                     .font_weight(gpui::FontWeight::SEMIBOLD)
                                     .text_color(colors.text_discret)
+                                    .whitespace_nowrap()
                                     .child(title),
                             )
                             .into_any_element(),
                     );
                 }
                 Entry::Element(element) => {
-                    previous_row = false;
                     children.push(div().flex_none().child(element).into_any_element());
                 }
                 Entry::Item(item) => {
                     let this_lit = lit == Some(index) || submenu == Some(index);
-                    let line = previous_row;
-                    previous_row = true;
                     let look = RowLook {
                         lit: this_lit || item.preview.is_some(),
                         pressed: item.preview == Some(GPointer::Pressed),
                         tick_column,
-                        top: index == 0,
-                        bottom: index + 1 == count,
+                        icon_column,
                     };
                     // Lit by the pointer or the keyboard: its ground fades in; the row the light left fades out.
                     let ground = if item.preview.is_some() || item.disabled {
                         None
                     } else if this_lit {
-                        Some(light(&item, look, true, light_count, cx))
+                        Some(light(&item, true, light_count, cx))
                     } else if let Some((_, count)) = faded.filter(|(i, _)| *i == index) {
-                        Some(light(&item, look, false, count, cx))
+                        Some(light(&item, false, count, cx))
                     } else {
                         None
                     };
                     let mut row = row_element(&item, look, ground, cx);
-                    // The fine line between two rows, from edge to edge, as on the iPhone.
-                    if line {
-                        row = row.child(
-                            div()
-                                .absolute()
-                                .top(px(0.))
-                                .left(px(0.))
-                                .right(px(0.))
-                                .h(px(1.))
-                                .bg(row_line(cx)),
-                        );
-                    }
                     // Its bounds, for its submenu.
                     let bounds = rows_bounds.clone();
                     row = row.child(
@@ -789,6 +781,8 @@ impl RenderOnce for GMenu {
                     .relative()
                     .flex()
                     .flex_col()
+                    // The rows inside the card's margin: the lit one is a rounded ground, not a band.
+                    .p(px(metrics::INSET))
                     .max_h(self.max_height)
                     .overflow_y_scroll()
                     .track_scroll(&scroll)
@@ -902,8 +896,9 @@ fn interactive_row(
     let hover_state = state.clone();
     let click_state = state;
     let close = hosted.as_ref().map(|h| h.close.clone());
-    // Lit by the pointer only once it moves: a menu opened under it does not light the row it lands on.
-    row.cursor(CursorStyle::PointingHand)
+    // Lit by the pointer only once it moves: a menu opened under it does not light the row it lands on. The arrow
+    // stays an arrow, as in the system's menus.
+    row.cursor(CursorStyle::Arrow)
         .on_mouse_move(move |_, _, cx| {
             let already = {
                 let state = hover_state.read(cx);
@@ -1022,7 +1017,8 @@ fn open_submenu(
         anchored()
             .attach(row, Anchor::TopRight)
             .anchor(Anchor::TopLeft)
-            .offset(point(px(5.), px(-1.)))
+            // Its first row level with the row that opens it, its card just past the parent's edge.
+            .offset(point(px(metrics::INSET + 3.), px(-(metrics::INSET + 1.))))
             .snap_to_window_with_margin(px(metrics::WINDOW_MARGIN))
             .child(fade_in(
                 ElementId::NamedInteger("g-submenu-in".into(), generation as u64),
@@ -1806,11 +1802,11 @@ fn estimated_height(menu: &GMenu) -> f32 {
         .iter()
         .map(|entry| match entry {
             Entry::Item(_) | Entry::Element(_) => metrics::ROW,
-            Entry::Separator => metrics::GROUP_GAP,
-            Entry::Section(_) => 30. + metrics::GROUP_GAP,
+            Entry::Separator => 1. + 2. * metrics::SEPARATOR_AIR,
+            Entry::Section(_) => metrics::SECTION + 1. + 2. * metrics::SEPARATOR_AIR,
         })
         .sum();
-    rows + 2.
+    rows + 2. * metrics::INSET + 2.
 }
 
 /// The veil over the window: a frosted wash of the page's colour, then a shade (`ultraThinMaterial` and a black of

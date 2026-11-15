@@ -874,26 +874,69 @@ impl Gallery {
             .flex_col()
             .gap(px(18.))
             .child(
-                div().w(px(260.)).child(
-                    GMenu::new()
-                        .item(GMenuItem::new("m-reply", "Reply").icon("arrow-bend-up-left"))
-                        .item(GMenuItem::new("m-copy", "Copy the text").icon("copy"))
-                        .item(
-                            GMenuItem::new("m-pin", "Notify me")
-                                .icon("bell")
-                                .checked(false),
-                        )
-                        .item(
-                            GMenuItem::new("m-mute", "Mute")
-                                .icon("bell-slash")
-                                .checked(true),
-                        )
-                        .item(
-                            GMenuItem::new("m-delete", "Delete")
-                                .icon("trash")
-                                .destructive(),
+                div()
+                    .flex()
+                    .items_start()
+                    .gap(px(18.))
+                    .child(
+                        // Shortcuts, a lit row, a separator, a destructive row.
+                        div().w(px(240.)).child(
+                            GMenu::new()
+                                .item(
+                                    GMenuItem::new("m-reply", "Reply")
+                                        .icon("arrow-bend-up-left")
+                                        .shortcut("secondary-r")
+                                        .preview(Some(GPointer::Hover)),
+                                )
+                                .item(
+                                    GMenuItem::new("m-copy", "Copy the text")
+                                        .icon("copy")
+                                        .shortcut("secondary-c"),
+                                )
+                                .item(
+                                    GMenuItem::new("m-pin", "Pin")
+                                        .icon("paperclip")
+                                        .disabled(true),
+                                )
+                                .separator()
+                                .item(
+                                    GMenuItem::new("m-delete", "Delete")
+                                        .icon("trash")
+                                        .shortcut("secondary-backspace")
+                                        .destructive(),
+                                ),
                         ),
-                ),
+                    )
+                    .child(
+                        // A section title, choices ticked, a submenu's arrow.
+                        div().w(px(240.)).child(
+                            GMenu::new()
+                                .section("My status")
+                                .item(
+                                    GMenuItem::new("m-online", "Online")
+                                        .icon("check-circle")
+                                        .checked(true),
+                                )
+                                .item(GMenuItem::new("m-away", "Away").icon("sun").checked(false))
+                                .item(
+                                    GMenuItem::new("m-busy", "Do not disturb")
+                                        .icon("bell-slash")
+                                        .checked(false),
+                                )
+                                .separator()
+                                .item(
+                                    GMenuItem::new("m-roles", "Roles")
+                                        .icon("user")
+                                        .submenu(|_, _, _| GMenu::new()),
+                                )
+                                .item(
+                                    GMenuItem::new("m-ban", "Ban")
+                                        .icon("x-circle")
+                                        .destructive()
+                                        .preview(Some(GPointer::Hover)),
+                                ),
+                        ),
+                    ),
             )
             .child(GContextMenu::new(
                 "context",
