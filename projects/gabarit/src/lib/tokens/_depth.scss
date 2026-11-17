@@ -1,6 +1,6 @@
 // Gabarit's depth, a little of it, as on the apps: one light from above. What can be pressed has some volume, rises towards
 // the pointer and sinks when held; what holds a value is slightly hollow. The recipes are tokens (`_themes.scss`), so
-// they follow the frame's and the themes' colours.
+// they follow the themes' colours.
 
 // The sink is a movement: none when the system asks for less of it, the shade stays.
 @mixin sink {

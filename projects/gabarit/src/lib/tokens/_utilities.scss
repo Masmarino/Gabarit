@@ -129,7 +129,7 @@
     @include a11y.focus-ring(-2px);
   }
 
-  // The current page is liquid glass on the ground, its icon in the accent (4.0). An app can tone it otherwise
+  // The current page is liquid glass on the ground, its icon in the accent. An app can tone it otherwise
   // (--gbt-nav-active-bg, --gbt-nav-active-text, --gbt-nav-active-mark: a mark on its edge).
   &[aria-current] {
     @include glass.liquid-glass;
@@ -148,24 +148,6 @@
       background:
         linear-gradient(var(--bg-hover), var(--bg-hover)),
         var(--gbt-nav-active-bg, var(--gbt-glass-liquid));
-    }
-  }
-}
-
-// The graphite frame of 3.x (`<gbt-app-shell framed>`): the current page a tint with a mark on its edge, glowing.
-.gbt-app-shell--framed .gbt-app-shell__link {
-  border-radius: var(--site-border-radius-sm);
-
-  &[aria-current] {
-    background: var(--gbt-nav-active-bg, color-mix(in srgb, var(--text-primary) 9%, transparent));
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    box-shadow:
-      inset 2px 0 0 var(--gbt-nav-active-mark, var(--accent)),
-      var(--gbt-glow-soft);
-
-    > gbt-icon {
-      color: inherit;
     }
   }
 }

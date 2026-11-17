@@ -14,7 +14,7 @@
   padding: 0;
 }
 
-// No line under the row (4.0): the open tab's own mark is enough. `separated` brings the line back.
+// No line under the row: the open tab's own mark is enough.
 @mixin row {
   .gbt-nav-tabs__list {
     flex-direction: row;
@@ -49,14 +49,6 @@
 
 .gbt-nav-tabs[data-orientation='horizontal'] {
   @include row;
-}
-
-.gbt-nav-tabs[data-separated] .gbt-nav-tabs__list {
-  box-shadow: inset 0 -1px 0 var(--gbt-hairline);
-}
-
-.gbt-nav-tabs[data-orientation='vertical'][data-separated] .gbt-nav-tabs__list {
-  box-shadow: none;
 }
 
 @container gbt-page-layout (max-width: 768px) {

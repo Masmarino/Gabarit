@@ -2,17 +2,12 @@
   <nav
     class="gbt-nav-tabs"
     [attr.data-orientation]="orientation()"
-    [attr.data-separated]="separated() ? '' : null"
     [attr.aria-label]="ariaLabel() || null"
   >
     <ng-container [ngTemplateOutlet]="links" />
   </nav>
 } @else {
-  <div
-    class="gbt-nav-tabs"
-    [attr.data-orientation]="orientation()"
-    [attr.data-separated]="separated() ? '' : null"
-  >
+  <div class="gbt-nav-tabs" [attr.data-orientation]="orientation()">
     <ng-container [ngTemplateOutlet]="links" />
   </div>
 }

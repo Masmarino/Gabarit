@@ -81,7 +81,7 @@ describe('Card', () => {
   standalone: true,
   imports: [Card, CardHeader],
   template: `
-    <gbt-card [heading]="heading()" variant="outlined">
+    <gbt-card [heading]="heading()">
       <div card-header class="custom">Chemin/du/fichier.ts</div>
       <button card-header-actions type="button" class="act">Ouvrir</button>
       <p class="body">Corps</p>
@@ -96,7 +96,7 @@ class CustomHeaderHost {
   standalone: true,
   imports: [Card, CardHeader, CardLink],
   template: `
-    <gbt-card variant="outlined">
+    <gbt-card>
       <h3 card-header><a gbtCardLink href="/release/1">Release 1.2.0</a></h3>
       <button card-header-actions type="button" class="act">Télécharger</button>
       <p>Corps</p>
@@ -168,18 +168,17 @@ describe('Card — defaults keep the pre-1.2.0 rendering', () => {
 })
 
 describe('Card — variant, flush, tone', () => {
-  it('marks outlined and flush on the box, and the tone on the header, only when asked', () => {
+  it('marks flush on the box, and the tone on the header, only when asked', () => {
     const fixture = mount({ heading: 'X' })
     const root = cardRoot(fixture)
     for (const attr of ['data-variant', 'data-flush', 'data-tone']) {
       expect(root.hasAttribute(attr), attr).toBe(false)
     }
     expect(cardHeader(fixture)!.hasAttribute('data-tone')).toBe(false)
-    fixture.componentRef.setInput('variant', 'outlined')
     fixture.componentRef.setInput('flush', true)
     fixture.componentRef.setInput('tone', 'error')
     fixture.detectChanges()
-    expect(root.getAttribute('data-variant')).toBe('outlined')
+    expect(root.hasAttribute('data-variant')).toBe(false)
     expect(root.hasAttribute('data-flush')).toBe(true)
     expect(cardHeader(fixture)!.getAttribute('data-tone')).toBe('error')
     // The tone is the header's: the box is never tinted.
@@ -204,13 +203,12 @@ describe('Card — variant, flush, tone', () => {
         'selected',
         'selectedLabel',
         'tone',
-        'variant',
       ].sort(),
     )
   })
 
   it('renders no header-style attribute anywhere', () => {
-    const fixture = mount({ heading: 'X', icon: 'check', variant: 'outlined', flush: true })
+    const fixture = mount({ heading: 'X', icon: 'check', flush: true })
     expect(fixture.nativeElement.querySelector('[data-header-style]')).toBeNull()
     expect(fixture.nativeElement.querySelector('.gbt-card__tile')).toBeNull()
   })
@@ -275,12 +273,10 @@ describe('Card — the box always has its full radius', () => {
     )
   })
 
-  it('draws the outlined edge on the box itself, in the shared card border token', () => {
+  it('draws no edge on the box: light is its edge', () => {
     const flat = CARD_SCSS.replace(/\s+/g, ' ')
-    expect(flat).toMatch(
-      /\.gbt-card\[data-variant='outlined'\] \{[^}]*border: 1px solid var\(--gbt-card-edge\);/,
-    )
-    expect(ruleBody(CARD_SCSS, '.gbt-card')).toContain('--gbt-card-edge: var(--gbt-card-border);')
+    expect(flat).not.toContain('data-variant')
+    expect(flat).not.toMatch(/(^|[;{ ])border: 1px/)
     expect(flat).not.toMatch(/> \.gbt-card__body \{ border/)
   })
 
@@ -438,9 +434,6 @@ describe('Card — link mode', () => {
     // The box's radius and the selected focus offset are mirrored on the host for a header link.
     const card = CARD_SCSS.replace(/\s+/g, ' ')
     expect(card).toMatch(/:host \{ --gbt-card-radius: var\(--gbt-radius-glass\);/)
-    expect(card).toContain(
-      ":host:has(> .gbt-card:is([data-variant='elevated'], [data-variant='outlined'])) { --gbt-card-radius: var(--site-border-radius-lg); }",
-    )
     expect(card).toMatch(
       /:host:has\(> \.gbt-card\[data-selected\]\) \{ --gbt-card-focus-offset: -5px; \}/,
     )
@@ -500,7 +493,6 @@ describe('Card — a11y of the 1.2.0 additions', () => {
       icon: 'check',
       description: 'Injectées dans chaque job.',
       count: 3,
-      variant: 'outlined',
       tone: 'success',
       selected: true,
       flush: true,
@@ -695,7 +687,7 @@ describe('Card — count pill', () => {
   standalone: true,
   imports: [Card, CardHeader],
   template: `
-    <gbt-card tone="warning" variant="outlined">
+    <gbt-card tone="warning">
       <div card-header class="custom">Quota</div>
       <p>Corps</p>
     </gbt-card>
@@ -765,39 +757,19 @@ describe("Card — a form card is its fields' frame", () => {
 })
 
 describe('Card — the selection ring follows the inner corners of the box', () => {
-  it('rounds the ring with the inner radius (radius minus the 1px edge on an outlined box)', () => {
+  it('rounds the ring with the inner radius', () => {
     expect(ruleBody(CARD_SCSS, '.gbt-card[data-selected]::before')).toContain(
       'border-radius: var(--gbt-card-inner-radius);',
-    )
-    const flat = CARD_SCSS.replace(/\s+/g, ' ')
-    expect(flat).toMatch(
-      /\.gbt-card\[data-variant='outlined'\] \{[^}]*--gbt-card-inner-radius: calc\(var\(--site-border-radius-lg\) - 1px\);/,
     )
   })
 })
 
-describe('Card — 4.0 looks', () => {
-  it('draws bordered as outlined, and marks elevated on the box (the glass is the box’s own)', () => {
-    const fixture = mount({ heading: 'X' })
-    const root = cardRoot(fixture)
-    fixture.componentRef.setInput('variant', 'bordered')
-    fixture.detectChanges()
-    expect(root.getAttribute('data-variant')).toBe('outlined')
-    fixture.componentRef.setInput('variant', 'elevated')
-    fixture.detectChanges()
-    expect(root.getAttribute('data-variant')).toBe('elevated')
-    fixture.componentRef.setInput('variant', 'glass')
-    fixture.detectChanges()
-    expect(root.hasAttribute('data-variant')).toBe(false)
-  })
-
-  it('is glass by default: the content glass, its rim of light and its shadow, no border', () => {
+describe('Card — the glass', () => {
+  it('has no variant: the content glass, its rim of light and its shadow, no border', () => {
+    expect(reflectComponentType(Card)!.inputs.map((i) => i.templateName)).not.toContain('variant')
     const box = ruleBody(CARD_SCSS, '.gbt-card') ?? ''
     expect(box).toContain('@include glass.glass;')
+    expect(box).toContain('--gbt-card-radius: var(--gbt-radius-glass);')
     expect(box).not.toMatch(/(^|[; ])border\s*:/)
-    const elevated = ruleBody(CARD_SCSS, ".gbt-card[data-variant='elevated']") ?? ''
-    expect(elevated).toContain('background: var(--bg-principal);')
-    expect(elevated).toContain('box-shadow: var(--site-shadow-sm);')
-    expect(elevated).toContain('backdrop-filter: none;')
   })
 })

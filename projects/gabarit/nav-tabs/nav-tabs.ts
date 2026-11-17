@@ -30,8 +30,6 @@ export class NavTabs {
   ariaLabel = input<string>('')
   orientation = input<NavTabsOrientation>('horizontal')
   landmark = input(true, { transform: booleanAttribute })
-  /** The line under a row of tabs, as before the ground (4.0 draws none). */
-  separated = input(false, { transform: booleanAttribute })
 
   private readonly list = viewChild<ElementRef<HTMLElement>>('list')
   private readonly tabs = contentChildren(NavTab, { descendants: true })

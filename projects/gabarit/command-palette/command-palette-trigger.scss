@@ -1,4 +1,5 @@
 @use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/glass';
 
 :host {
   display: block;
@@ -12,11 +13,11 @@
   gap: 8px;
   width: 100%;
   height: 40px;
-  padding: 0 8px 0 12px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--gbt-radius-search, var(--site-border-radius-sm));
-  background: var(--bg-principal);
-  box-shadow: var(--gbt-depth-hollow);
+  padding: 0 8px 0 14px;
+  // A capsule of liquid glass, as the search bar: it commands.
+  border: none;
+  border-radius: var(--gbt-radius-search, 20px);
+  @include glass.liquid-glass;
   color: var(--text-secondary);
   font: inherit;
   font-size: 14px;
@@ -25,7 +26,6 @@
   transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    border-color: var(--text-secondary);
     background-image: linear-gradient(var(--bg-hover), var(--bg-hover));
   }
 

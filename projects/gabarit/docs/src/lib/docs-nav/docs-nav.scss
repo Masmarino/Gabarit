@@ -66,7 +66,6 @@
 @container gbt-page-layout (max-width: 768px) {
   .gbt-docs-nav {
     padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--gbt-hairline, var(--border-color));
   }
 
   // The toggle already says what it shows; the heading is for screen readers.

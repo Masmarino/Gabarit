@@ -1,3 +1,5 @@
+@use '../../src/lib/tokens/glass';
+
 :host {
   display: block;
 }
@@ -18,8 +20,8 @@
   align-items: center;
   justify-content: center;
   margin-inline: auto;
+  // White under the code, for the camera; no edge.
   padding: 0.5rem;
-  border: 1px solid var(--gbt-card-border);
   border-radius: var(--gbt-radius-tile, var(--site-border-radius));
   background: #fff;
 
@@ -32,7 +34,7 @@
 }
 
 .gbt-totp-qr__frame[aria-busy='true'] {
-  background: var(--bg-panel);
+  @include glass.glass(thin, $shadow: false);
 }
 
 .gbt-totp-qr__fallback {

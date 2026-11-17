@@ -1,6 +1,6 @@
 # GitField
 
-The family's animated commit graph, drawn on the graphite frame: lanes that drift slowly
+The family's animated commit graph, drawn on the page's ground: lanes that drift slowly
 sideways, commits that blink in turn, pushes running along some lanes, over two soft fields of
 colour (the rust accent and the indigo). It sits behind the sign-in panel or a dark band.
 
@@ -28,7 +28,7 @@ lift the content above it.
   events.
 - The drawing comes from a seeded generator, so it is the same on the server and in the browser.
 - Two identical tiles scroll by one width and start again, so the loop has no seam.
-- It reads the frame's colours (`frame-tokens`) in both themes, since it is drawn on the graphite.
+- It reads the page's colours, since it is drawn on the ground.
 - The graph fades out towards the middle, where a centred panel sits, and stands further back
   (half opacity) below 48rem, where the panel takes the whole width.
 - Still under `prefers-reduced-motion: reduce`: the graph stays drawn, nothing moves.

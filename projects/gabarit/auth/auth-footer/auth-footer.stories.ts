@@ -8,7 +8,7 @@ import { STORY_LOGO, atPhoneWidth, expectPanelLayout } from '../testing/auth-sto
 import { AuthFooter, AuthFooterLink } from './auth-footer'
 
 /**
- * Under the form of a sign-in page: a hairline, the sentence, and the link (44px high to tap) to the
+ * Under the form of a sign-in page: the sentence, and the link (44px high to tap) to the
  * sibling page. The link is drawn from `href` and `linkText`, or projected by the application (an
  * `a[gbtButton][gbtAuthFooterLink]` carrying its `routerLink`). The stories' links point at `#`.
  */

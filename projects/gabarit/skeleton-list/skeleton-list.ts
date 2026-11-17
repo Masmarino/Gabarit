@@ -26,7 +26,6 @@ export class SkeletonList {
   leadingSize = input('1rem')
   lines = input<1 | 2 | 3>(2)
   loadingLabel = input('Loading…')
-  divided = input(true, { transform: booleanAttribute })
   padded = input(true, { transform: booleanAttribute })
 
   protected readonly items = computed(() =>

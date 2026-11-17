@@ -23,7 +23,6 @@ import { NavTab, NavTabs } from '@masmarino/gabarit'
 | `ariaLabel`   | `string`                     | `''`           | Accessible name of the `<nav>` landmark. Give one (it is what a screen-reader user hears in the landmark list); ignored when `landmark` is `false`.       |
 | `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | `horizontal`: underline tabs above a section. `vertical`: a list of pill links for a side column.                                                         |
 | `landmark`    | `boolean`                    | `true`         | Render the links in a `<nav>` of their own. Pass `false` inside a navigation that already exists (a `gbt-page-layout` `[page-nav]`): no nested landmarks. |
-| `separated`   | `boolean`                    | `false`        | The hairline under a row of tabs, as before the ground (4.0 draws none). |
 
 ## `a[gbtNavTab]` inputs
 
@@ -37,7 +36,7 @@ The label is the projected content.
 
 ## Behaviour
 
-- **Horizontal** is a row of underline tabs, with no line under the row (`separated` brings it back). When the tabs overflow, the row scrolls to
+- **Horizontal** is a row of underline tabs, with no line under the row. When the tabs overflow, the row scrolls to
   the active one (keeping a glimpse of the previous tab) — the list scrolls, never the page — and fades at the edge
   that hides tabs. A tab keeps the width of its bold state, so nothing shifts when the active tab changes.
 - **Vertical** is a list of pills, the active one in liquid glass, in bold (not a tint alone), as the current page in

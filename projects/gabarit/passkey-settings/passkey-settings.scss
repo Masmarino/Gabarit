@@ -42,10 +42,6 @@
     padding-bottom: 0;
   }
 
-  & + & {
-    border-top: 1px solid var(--gbt-hairline);
-  }
-
   &:focus {
     outline: none;
   }
@@ -119,7 +115,6 @@
 
 .gbt-passkey-settings__actions--divided {
   padding-top: 1.25rem;
-  border-top: 1px solid var(--gbt-hairline);
 }
 
 .gbt-passkey-settings__actions--centered {

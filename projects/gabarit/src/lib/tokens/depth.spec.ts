@@ -88,7 +88,7 @@ describe('depth', () => {
     )
   })
 
-  it('the recipes are generated, in both themes and on the frame', () => {
+  it('the recipes are generated, in both themes', () => {
     const themes = readFileSync(join(TOKENS, '_themes.scss'), 'utf8')
     for (const mixin of ['light-tokens', 'dark-tokens']) {
       const body = new RegExp(`@mixin ${mixin} \\{([\\s\\S]*?)\\n\\}`).exec(themes)![1]
@@ -98,10 +98,8 @@ describe('depth', () => {
         '--gbt-depth-raised',
         '--gbt-depth-ink',
         '--gbt-depth-hollow',
-        '--gbt-depth-bar',
         '--gbt-sheen',
         '--gbt-sunk',
-        '--gbt-page-ground',
         '--gbt-glow',
       ]) {
         expect(body, `${mixin} ${token}`).toContain(`${token}:`)
@@ -113,7 +111,7 @@ describe('depth', () => {
     const themes = readFileSync(join(TOKENS, '_themes.scss'), 'utf8')
     for (const file of STYLESHEETS) {
       for (const [, token] of source(file).matchAll(
-        /var\(\s*(--gbt-(?:depth|sheen|sunk|glow|knob|page-ground|page-light|frame-sheen|bar-shade|relief)[\w-]*)/g,
+        /var\(\s*(--gbt-(?:depth|sheen|sunk|glow|knob|relief)[\w-]*)/g,
       )) {
         expect(themes, `${relative(LIB, file)} ${token}`).toContain(`${token}:`)
       }

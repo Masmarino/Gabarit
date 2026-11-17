@@ -1,6 +1,6 @@
 # AuthFooter
 
-The last line of a sign-in panel: a hairline, then the way to the sibling page ("No account yet?
+The last line of a sign-in panel: the way to the sibling page ("No account yet?
 Create an account", "Already have an account? Sign in"). It is **router-agnostic**: the link is
 either projected by the application (with its own `routerLink`) or drawn from a plain `href`.
 

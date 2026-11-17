@@ -223,26 +223,14 @@ def web_palette() -> str:
     return "\n".join(lines + ["}", ""])
 
 
-THEMES_HEAD = """// The themes as mixins, with no output of their own: _semantic puts them on :root, and the parts drawn
-// on the graphite frame (the shell's rail and bar, the sign-in page) take the frame's.
+THEMES_HEAD = """// The themes as mixins, with no output of their own: _semantic puts them on :root.
 //
 // Every text token reaches 7:1 on the page and on a panel (contrast.spec.ts), which is why a few of
 // them sit a shade darker (or lighter, in the dark) than the marks of the same colour. The status
 // tints are translucent, so they take the colour of the ground they sit on.
 """
 
-THEMES_TAIL = """
-// The graphite frame, the same in both themes: the dark tokens on a ground a little deeper than the
-// dark theme's own. The rail's links are a step brighter, since light thin text on graphite reads
-// paler than its ratio says.
-@mixin frame-tokens {
-  @include dark-tokens;
-  --bg-panel: var(--graphite-950);
-  --text-secondary: var(--graphite-200);
-  color-scheme: dark;
-  color: var(--text-primary);
-}
-"""
+THEMES_TAIL = ""
 
 
 def css_rgba(value: str) -> str:

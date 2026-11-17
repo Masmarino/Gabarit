@@ -161,11 +161,10 @@ describe('ListRow', () => {
     )
   })
 
-  it('draws the separators with the shared hairline, between rows only', () => {
+  it('draws no line between the rows: a rounded row, lit under the pointer', () => {
     const scss = readFileSync(join(SCSS_DIR, 'list-row.scss'), 'utf8')
-    expect(scss).toContain('li + li > gbt-list-row')
-    expect(scss).toContain('gbt-list-row + gbt-list-row')
-    expect(scss).toContain('var(--gbt-hairline)')
+    expect(scss).not.toContain('var(--gbt-hairline)')
+    expect(scss).toContain('border-radius: var(--gbt-radius-row);')
   })
 
   it('has no a11y violations, full and bare rows, every tone', async () => {

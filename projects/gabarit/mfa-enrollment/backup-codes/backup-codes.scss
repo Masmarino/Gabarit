@@ -1,3 +1,5 @@
+@use '../../src/lib/tokens/glass';
+
 :host {
   display: block;
 }
@@ -26,9 +28,8 @@
   box-sizing: border-box;
   min-width: 0;
   padding: 0.5rem 0.25rem;
-  border: 1px solid var(--gbt-card-border);
-  border-radius: var(--site-border-radius-sm);
-  background: var(--bg-panel);
+  border-radius: var(--site-border-radius);
+  @include glass.glass(thin, $shadow: false);
   color: var(--text-primary);
   font-family: var(--gbt-font-mono);
   font-size: 0.75rem;
@@ -68,7 +69,6 @@
 
 .gbt-backup-codes__ack {
   padding-top: 0.25rem;
-  border-top: 1px solid var(--gbt-hairline);
 
   ::ng-deep .gbt-checkbox {
     display: flex;

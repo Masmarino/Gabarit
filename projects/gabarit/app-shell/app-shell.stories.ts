@@ -229,29 +229,6 @@ export const OnTheGroundDark: Story = {
   decorators: [darkTheme],
 }
 
-/** The graphite frame of 3.x, kept as an option: `framed`. */
-export const Framed: Story = {
-  render: () => ({
-    props: { categories: CATEGORIES, displayFn: (item: Repo) => item.label },
-    template: `
-      <gbt-app-shell ${labels} framed>
-        ${brand}
-        ${groundLinks}
-        ${searchAndAccount}
-        ${groundPage}
-      </gbt-app-shell>
-    `,
-    moduleMetadata: {
-      imports: [AppShell, Card, GaugeBar, Icon, ListRow, Menu, PageHeader, SearchBar],
-    },
-  }),
-}
-
-export const FramedDark: Story = {
-  ...Framed,
-  decorators: [darkTheme],
-}
-
 export const LongNavigation: Story = {
   render: () => ({
     props: {},

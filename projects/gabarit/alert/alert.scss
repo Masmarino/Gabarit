@@ -1,3 +1,5 @@
+@use '../src/lib/tokens/glass';
+
 .gbt-alert {
   --gbt-alert-icon: 1.5rem;
   --gbt-alert-font: 0.875rem;
@@ -10,8 +12,8 @@
   gap: 0.625rem;
   width: 100%;
   padding: 0.75rem 1rem;
-  border-radius: var(--site-border-radius-sm);
-  border: 1.5px solid currentColor;
+  // No edge: the tint says the status, the icon and the words say it again.
+  border-radius: var(--site-border-radius-lg);
 
   &[data-variant='success'] {
     --gbt-alert-bg: var(--color-success-bg);
@@ -38,9 +40,8 @@
   }
 
   &[data-variant='neutral'] {
-    --gbt-alert-bg: var(--bg-panel);
-    background: var(--bg-panel);
-    border-color: var(--border-color);
+    --gbt-alert-bg: var(--gbt-glass-thin);
+    @include glass.glass(thin, $shadow: false);
     color: var(--text-primary);
   }
 
@@ -53,13 +54,7 @@
   }
 
   &[data-appearance='subtle'] {
-    border-width: 1px;
-    border-color: color-mix(in srgb, currentColor 30%, transparent);
     background: color-mix(in srgb, var(--gbt-alert-bg) 55%, var(--bg-principal));
-
-    &[data-variant='neutral'] {
-      border-color: color-mix(in srgb, var(--border-color) 60%, transparent);
-    }
 
     .gbt-alert__icon {
       border-width: 1px;

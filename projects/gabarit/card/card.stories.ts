@@ -54,22 +54,22 @@ const ROWS = `
     <li style="display:flex;justify-content:space-between;gap:1rem;padding:0.75rem 1.25rem">
       <span>CI_REGISTRY</span><span>Masqué</span>
     </li>
-    <li style="display:flex;justify-content:space-between;gap:1rem;padding:0.75rem 1.25rem;border-top:1px solid var(--border-color)">
+    <li style="display:flex;justify-content:space-between;gap:1rem;padding:0.75rem 1.25rem">
       <span>DEPLOY_ENV</span><span>production</span>
     </li>
-    <li style="display:flex;justify-content:space-between;gap:1rem;padding:0.75rem 1.25rem;border-top:1px solid var(--border-color)">
+    <li style="display:flex;justify-content:space-between;gap:1rem;padding:0.75rem 1.25rem">
       <span>SENTRY_DSN</span><span>Masqué</span>
     </li>
   </ul>`
 
 const GRID = 'display:grid;gap:1rem;max-width:36rem'
 
-export const Outlined: Story = {
+export const Default: Story = {
   render: () => ({
     template: `
       <div style="${GRID}">
-        <gbt-card variant="outlined" heading="Serveur mail" icon="check">Contenu de la carte.</gbt-card>
-        <gbt-card variant="outlined">Sans titre.</gbt-card>
+        <gbt-card heading="Serveur mail" icon="check">Contenu de la carte.</gbt-card>
+        <gbt-card>Sans titre.</gbt-card>
       </div>
     `,
     moduleMetadata: { imports: [Card] },
@@ -81,11 +81,11 @@ export const DescriptionAndCount: Story = {
   render: () => ({
     template: `
       <div style="${GRID}">
-        <gbt-card variant="outlined" heading="Variables CI" icon="file"
+        <gbt-card heading="Variables CI" icon="file"
           description="Injectées dans chaque job de pipeline." [count]="3">
           <p style="margin:0">Un formulaire ou n'importe quel contenu, dans le padding de la carte.</p>
         </gbt-card>
-        <gbt-card heading="Elevated" icon="file" description="Le titre reste au-dessus de l'ombre." [count]="12">
+        <gbt-card heading="Journal" icon="file" description="Le titre reste au-dessus du verre." [count]="12">
           <p style="margin:0">Contenu de la carte.</p>
         </gbt-card>
       </div>
@@ -99,12 +99,12 @@ export const HeaderActions: Story = {
   render: () => ({
     template: `
       <div style="${GRID}">
-        <gbt-card variant="outlined" heading="Collaborateurs" icon="folder" [count]="0"
+        <gbt-card heading="Collaborateurs" icon="folder" [count]="0"
           description="Qui peut accéder à ce dépôt.">
           <gbt-button card-header-actions size="small" text="Inviter" />
           <p style="margin:0">Personne pour l'instant.</p>
         </gbt-card>
-        <gbt-card variant="outlined" heading="Un titre bien plus long que la place qui lui reste à côté de l'action"
+        <gbt-card heading="Un titre bien plus long que la place qui lui reste à côté de l'action"
           icon="folder">
           <gbt-button card-header-actions size="small" variant="secondary" text="Modifier" />
           <p style="margin:0">Le titre passe à la ligne, l'action garde sa taille.</p>
@@ -118,19 +118,8 @@ export const HeaderActions: Story = {
 export const Flush: Story = {
   render: () => ({
     template: `
-      <gbt-card style="max-width:36rem" variant="outlined" heading="Variables"
+      <gbt-card style="max-width:36rem" heading="Variables"
         icon="file" description="Injectées dans chaque job." [count]="3" [flush]="true">
-        ${ROWS}
-      </gbt-card>
-    `,
-    moduleMetadata: { imports: [Card] },
-  }),
-}
-
-export const FlushElevated: Story = {
-  render: () => ({
-    template: `
-      <gbt-card style="max-width:36rem" heading="Variables" [flush]="true">
         ${ROWS}
       </gbt-card>
     `,
@@ -142,14 +131,14 @@ export const Tones: Story = {
   render: () => ({
     template: `
       <div style="${GRID}">
-        <gbt-card variant="outlined" tone="error" heading="Registre"
+        <gbt-card tone="error" heading="Registre"
           description="Le sous-système ne répond plus.">Dernier signe de vie il y a 12 minutes.</gbt-card>
-        <gbt-card variant="outlined" tone="success" heading="Jeton généré" icon="check"
+        <gbt-card tone="success" heading="Jeton généré" icon="check"
           description="Copiez-le maintenant, il ne sera plus affiché.">ghp_xxxxxxxxxxxxxxxxxxxx</gbt-card>
-        <gbt-card variant="outlined" tone="warning" heading="Quota" [count]="3">
+        <gbt-card tone="warning" heading="Quota" [count]="3">
           Sans icône donnée : celle du ton. 92 % utilisés.
         </gbt-card>
-        <gbt-card tone="error" heading="Elevated + tone">Seuls l'icône et le titre prennent le ton, pas la boîte.</gbt-card>
+        <gbt-card tone="error" heading="Avec un ton">Seuls l'icône et le titre prennent le ton, pas la boîte.</gbt-card>
       </div>
     `,
     moduleMetadata: { imports: [Card] },
@@ -160,11 +149,11 @@ export const Selected: Story = {
   render: () => ({
     template: `
       <div style="${GRID}">
-        <gbt-card variant="outlined" [selected]="true" selectedLabel="Recommandé, sélectionné" heading="Application d'authentification">
+        <gbt-card [selected]="true" selectedLabel="Recommandé, sélectionné" heading="Application d'authentification">
           Code à 6 chiffres renouvelé toutes les 30 secondes.
         </gbt-card>
-        <gbt-card variant="outlined" heading="Clé de sécurité">Une clé physique ou biométrique.</gbt-card>
-        <gbt-card [selected]="true" heading="Elevated, sélectionné">Anneau plus épais, pas seulement une couleur.</gbt-card>
+        <gbt-card heading="Clé de sécurité">Une clé physique ou biométrique.</gbt-card>
+        <gbt-card [selected]="true" heading="Sélectionnée">Anneau plus épais, pas seulement une couleur.</gbt-card>
       </div>
     `,
     moduleMetadata: { imports: [Card] },
@@ -174,7 +163,7 @@ export const Selected: Story = {
 export const CustomHeader: Story = {
   render: () => ({
     template: `
-      <gbt-card style="max-width:36rem" variant="outlined" heading="Ignoré">
+      <gbt-card style="max-width:36rem" heading="Ignoré">
         <div card-header style="display:flex;align-items:center;gap:0.5rem;min-width:0">
           <gbt-icon name="file" />
           <strong style="font-size:0.9375rem;overflow-wrap:anywhere">src/app/components/button/button.component.ts</strong>
@@ -193,13 +182,13 @@ export const LinkHref: Story = {
   render: () => ({
     template: `
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:1rem;max-width:44rem">
-        <gbt-card variant="outlined" heading="Guide de démarrage" href="#/demarrage" description="Installer et configurer le projet.">
+        <gbt-card heading="Guide de démarrage" href="#/demarrage" description="Installer et configurer le projet.">
           Mis à jour il y a 2 jours
         </gbt-card>
-        <gbt-card variant="outlined" heading="Architecture" href="#/architecture" description="Les grandes briques.">
+        <gbt-card heading="Architecture" href="#/architecture" description="Les grandes briques.">
           Mis à jour il y a 3 semaines
         </gbt-card>
-        <gbt-card heading="Elevated" href="#/elevated">La carte entière est cliquable.</gbt-card>
+        <gbt-card heading="Tableau" href="#/tableau">La carte entière est cliquable.</gbt-card>
       </div>
     `,
     moduleMetadata: { imports: [Card] },
@@ -211,7 +200,7 @@ export const LinkProjected: Story = {
   render: () => ({
     template: `
       <div style="max-width:24rem">
-        <gbt-card variant="outlined">
+        <gbt-card>
           <h3 card-header style="margin:0;font-size:0.9375rem"><a gbtCardLink href="#/releases/1.2.0">Release 1.2.0</a></h3>
           <gbt-button card-header-actions size="small" variant="secondary" text="Télécharger" />
           <p style="margin:0 0 0.75rem">Cliquer n'importe où sur la carte ouvre la release ; « Télécharger » reste un bouton à part.</p>
@@ -251,7 +240,7 @@ export const LinkWithSwitchAndCheckbox: Story = {
   render: () => ({
     template: `
       <div style="max-width:24rem">
-        <gbt-card variant="outlined" heading="Notifications" href="#/settings/notifications">
+        <gbt-card heading="Notifications" href="#/settings/notifications">
           <gbt-switch label="Courriel" hint="Un message par événement." />
           <gbt-checkbox label="Résumé hebdomadaire" />
         </gbt-card>
@@ -269,7 +258,7 @@ export const FlexColumnWithGap: Story = {
         .flex-card ::ng-deep .gbt-card { display: flex; flex-direction: column; gap: 0.5rem; padding: 1rem; }
       </style>
       <div class="flex-card" style="max-width:24rem">
-        <gbt-card variant="outlined">
+        <gbt-card>
           <p style="margin:0">Le texte et le bouton restent des enfants directs de la carte : le gap s'applique.</p>
           <gbt-button text="Continuer" size="small" />
         </gbt-card>
@@ -280,18 +269,18 @@ export const FlexColumnWithGap: Story = {
 }
 
 export const DarkNew: Story = {
-  name: 'Dark (outlined, header, tone, selected, link)',
+  name: 'Dark (header, tone, selected, link)',
   render: () => ({
     template: `
       <div style="${GRID}">
-        <gbt-card variant="outlined" heading="Variables" icon="file"
+        <gbt-card heading="Variables" icon="file"
           description="Injectées dans chaque job." [count]="3" [flush]="true">${ROWS}</gbt-card>
-        <gbt-card variant="outlined" tone="error" heading="Registre"
+        <gbt-card tone="error" heading="Registre"
           description="Le sous-système ne répond plus.">Dernier signe de vie il y a 12 minutes.</gbt-card>
-        <gbt-card variant="outlined" tone="success" heading="Jeton généré" icon="check">ghp_xxxxxxxx</gbt-card>
-        <gbt-card variant="outlined" [selected]="true" heading="Application d'authentification">Code à 6 chiffres.</gbt-card>
-        <gbt-card variant="outlined" heading="Guide de démarrage" href="#/demarrage">Mis à jour il y a 2 jours</gbt-card>
-        <gbt-card tone="warning" heading="Elevated + tone">Quota à 92 %.</gbt-card>
+        <gbt-card tone="success" heading="Jeton généré" icon="check">ghp_xxxxxxxx</gbt-card>
+        <gbt-card [selected]="true" heading="Application d'authentification">Code à 6 chiffres.</gbt-card>
+        <gbt-card heading="Guide de démarrage" href="#/demarrage">Mis à jour il y a 2 jours</gbt-card>
+        <gbt-card tone="warning" heading="Avec un ton">Quota à 92 %.</gbt-card>
       </div>
     `,
     moduleMetadata: { imports: [Card] },
@@ -299,32 +288,21 @@ export const DarkNew: Story = {
   decorators: [darkTheme],
 }
 
-// ---- The ground: the content glass by default, elevated and bordered (outlined's new name) as options -----
-// The page (Storybook's body) is the ground, as an application's is with `document-base`.
-
-export const Bordered: Story = {
-  render: () => ({
-    template: `<gbt-card variant="bordered" heading="Serveur mail" icon="check">Contenu de la carte.</gbt-card>`,
-    moduleMetadata: { imports: [Card] },
-  }),
-}
+// ---- On the ground: the page (Storybook's body) is the ground, as an application's is with `document-base` ----
 
 export const Glass: Story = {
-  name: 'Glass, elevated and bordered, on the ground',
+  name: 'Glass on the ground',
   render: () => ({
     template: `
       <div style="${GRID}">
-        <gbt-card heading="Agenda" icon="calendar" description="Le verre de contenu, par défaut">
+        <gbt-card heading="Agenda" icon="calendar" description="Le verre de contenu">
           Réunion à 10 h, déjeuner à 12 h 30. Sans bordure : la lumière en est le bord.
         </gbt-card>
         <gbt-card heading="Courses" [count]="4" href="#" description="Une carte qui mène ailleurs">
           Pain, lait, café, pommes.
         </gbt-card>
-        <gbt-card variant="elevated" heading="Ancienne carte" description="elevated : la feuille opaque">
-          La feuille de papier du thème, une ombre dessous.
-        </gbt-card>
-        <gbt-card variant="bordered" heading="Carte bordée" description="bordered : la feuille et son trait">
-          Pour une page qui garde ses traits.
+        <gbt-card heading="Application d'authentification" [selected]="true" selectedLabel="Choisie">
+          Un code à six chiffres.
         </gbt-card>
       </div>
     `,
@@ -334,6 +312,6 @@ export const Glass: Story = {
 
 export const GlassDark: Story = {
   ...Glass,
-  name: 'Glass, elevated and bordered, on the ground (dark)',
+  name: 'Glass on the ground (dark)',
   decorators: [darkTheme],
 }

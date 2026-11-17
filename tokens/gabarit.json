@@ -754,7 +754,6 @@
           "gbt-relief-highlight": "reliefHighlight",
           "gbt-relief-shadow": "reliefShadow",
           "gbt-relief-shade": "reliefShade",
-          "gbt-page-light": "pageLight",
           "gbt-card-shadow": "cardShadow"
         },
         "recipes": {
@@ -770,19 +769,15 @@
           "gbt-depth-hollow": "inset 0 1px 3px rgb(0 0 0 / 0.12)",
           "gbt-depth-knob": "0 1px 3px rgb(0 0 0 / 0.18)",
           "gbt-depth-knob-hover": "0 1px 4px rgb(0 0 0 / 0.26)",
-          "gbt-depth-bar": "{bar} {barColor}",
           "gbt-sheen": "linear-gradient(rgb(255 255 255 / 0.07), transparent 50%, rgb(0 0 0 / 0.04))",
           "gbt-sheen-hover": "linear-gradient(rgb(255 255 255 / 0.12), transparent 50%, rgb(0 0 0 / 0.04))",
           "gbt-sunk": "linear-gradient(rgb(0 0 0 / 0.13), transparent 45%)",
           "gbt-sunk-ink": "linear-gradient(rgb(0 0 0 / 0.28), transparent 45%)",
-          "gbt-frame-sheen": "linear-gradient(rgb(255 255 255 / 0.07), transparent 70%)",
-          "gbt-page-ground": "linear-gradient(var(--gbt-page-light), transparent)",
           "gbt-knob": "linear-gradient(#ffffff, #ededed)",
           "gbt-glow": "0 0 10px color-mix(in srgb, var(--accent) 45%, transparent)",
           "gbt-glow-hover": "0 0 14px color-mix(in srgb, var(--accent) 45%, transparent)",
           "gbt-glow-soft": "0 0 16px color-mix(in srgb, var(--accent) 18%, transparent)",
-          "gbt-glow-line": "0 6px 6px -6px color-mix(in srgb, var(--accent) 60%, transparent)",
-          "gbt-bar-shade": "{barSoft}"
+          "gbt-glow-line": "0 6px 6px -6px color-mix(in srgb, var(--accent) 60%, transparent)"
         }
       }
     }

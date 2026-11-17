@@ -48,7 +48,7 @@ export const OneTimeTokenCard: Story = {
   render: (args) => ({
     props: args,
     template: `
-      <section style="border:1px solid var(--gbt-card-border);border-radius:var(--site-border-radius);background:var(--bg-principal);overflow:hidden">
+      <section style="border-radius:var(--gbt-radius-glass);background:var(--gbt-glass-regular);backdrop-filter:var(--gbt-glass-blur);box-shadow:var(--gbt-glass-rim-light), var(--gbt-depth-glass);overflow:hidden">
         <header style="padding:0.75rem 1rem;background:var(--color-warning-bg);color:var(--color-warning-bg-text);font-size:0.875rem;font-weight:600">
           Copy it now: it will never be shown again.
         </header>

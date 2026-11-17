@@ -13,7 +13,7 @@ group, no index, an `open` model you can bind.
 | `label`        | `string`                        | —            | Required. The text of the toggle.                                                                       |
 | `open`         | `boolean` (model)               | `false`      | Whether the panel is shown. Two-way: `[(open)]`.                                                        |
 | `icon`         | `string \| null`                | `null`       | Registered icon name before the label.                                                                  |
-| `appearance`   | `'bordered' \| 'plain'`         | `'bordered'` | `bordered`: a framed box with a tinted panel. `plain`: only the toggle and the panel.                   |
+| `appearance`   | `'glass' \| 'plain'`            | `'glass'`    | `glass`: a box of thin glass, no edge. `plain`: only the toggle and the panel.                          |
 | `headingLevel` | `2 \| 3 \| 4 \| 5 \| 6 \| null` | `null`       | Wraps the toggle in a heading of that level (when the disclosure titles a section). `null`: no heading. |
 
 `openChange` is emitted by the model each time the user toggles.

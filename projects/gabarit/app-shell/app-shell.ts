@@ -1,5 +1,4 @@
 import {
-  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -32,8 +31,6 @@ export class AppShell {
   versionLabel = input<string | null>(null)
   collapsed = input<boolean>(false)
   collapsible = input<boolean>(true)
-  /** The graphite frame of 3.x around the page, instead of the ground (4.0). */
-  framed = input(false, { transform: booleanAttribute })
   collapsedChange = output<boolean>()
 
   private readonly id = ++nextId

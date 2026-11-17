@@ -6,13 +6,8 @@ $title-line: 1.5rem;
   display: block;
 }
 
-// No line between the rows (4.0): light is the edge of things, a row is set apart by its own space and lit under the
-// pointer. A list that wants its lines back is `.gbt-separated` (or `<gbt-list-card separated>`).
-::ng-deep .gbt-separated li + li > gbt-list-row,
-::ng-deep .gbt-separated gbt-list-row + gbt-list-row {
-  border-top: 1px solid var(--gbt-hairline);
-}
-
+// No line between the rows: light is the edge of things, a row is set apart by its own space and lit under the
+// pointer.
 .gbt-list-row {
   display: flex;
   flex-wrap: wrap;
@@ -21,10 +16,6 @@ $title-line: 1.5rem;
   padding: 0.75rem 1rem;
   border-radius: var(--gbt-radius-row);
   transition: background-color var(--site-transition-fast);
-
-  :host-context(.gbt-separated) & {
-    border-radius: 0;
-  }
 
   &:hover,
   &:focus-within {

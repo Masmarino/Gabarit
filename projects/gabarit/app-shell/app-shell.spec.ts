@@ -98,7 +98,7 @@ describe('AppShell', () => {
       join(process.cwd(), 'projects/gabarit/app-shell/app-shell.scss'),
       'utf8',
     )
-    const shell = componentScss.slice(0, componentScss.indexOf('.gbt-app-shell--framed {'))
+    const shell = componentScss
     const block = (start: string, end: string) =>
       shell.slice(shell.indexOf(start), shell.indexOf(end, shell.indexOf(start)))
     expect(block('.gbt-app-shell {', '&__skip')).toContain('@include glass.ground')
@@ -109,38 +109,8 @@ describe('AppShell', () => {
     // What holds still over a scrolling page shows the same ground, held to the window.
     expect(block('&__header {', '\n  }')).toContain('var(--gbt-shell-header-bg, var(--gbt-ground))')
     expect(block('&__bottom {', '\n  }')).toContain('background-attachment: fixed')
-    // No frame, so no shadow of the bar or the rail on the page.
-    expect(shell).not.toContain('--gbt-bar-shade')
-  })
-
-  it('brings back the graphite frame with framed, the page a sheet with a rounded corner', async () => {
-    const componentScss = readFileSync(
-      join(process.cwd(), 'projects/gabarit/app-shell/app-shell.scss'),
-      'utf8',
-    )
-    const framed = componentScss.slice(componentScss.indexOf('.gbt-app-shell--framed {'))
-    expect(framed).toContain('background: var(--frame)')
-    expect(framed.match(/@include themes\.frame-tokens;/g)).toHaveLength(2)
-    const content = framed.slice(framed.indexOf('.gbt-app-shell__content {'))
-    expect(content).toContain('background: var(--bg-panel)')
-    expect(content).toContain('border-top-left-radius: $corner')
-
-    TestBed.configureTestingModule({ imports: [AppShell] })
-    const fixture = TestBed.createComponent(AppShell)
-    for (const [name, value] of Object.entries({
-      navLabel: 'Navigation',
-      skipLabel: 'Aller au contenu',
-      openMenuLabel: 'Ouvrir',
-      closeMenuLabel: 'Fermer',
-    })) {
-      fixture.componentRef.setInput(name, value)
-    }
-    fixture.detectChanges()
-    const root = fixture.nativeElement.querySelector('.gbt-app-shell') as HTMLElement
-    expect(root.classList.contains('gbt-app-shell--framed')).toBe(false)
-    fixture.componentRef.setInput('framed', true)
-    fixture.detectChanges()
-    expect(root.classList.contains('gbt-app-shell--framed')).toBe(true)
+    // No graphite frame, no sheet, no shadow of the bar or the rail on the page.
+    expect(shell).not.toMatch(/--frame|frame-tokens|frame-sheen|--gbt-bar-shade|\$corner/)
   })
 
   it('lets the nav blur with the page behind the search backdrop, except when the mobile drawer is open', () => {
@@ -197,19 +167,17 @@ describe('AppShell', () => {
     expect(header).toContain('var(--gbt-shell-header-bg, var(--gbt-ground))')
   })
 
-  it('draws the rail and the bar as one strip: the same sheen, and no shadow of the bar on the rail', () => {
+  it('draws the rail and the bar on the ground, with no sheen and no shadow of the bar', () => {
     const scss = readFileSync(
       join(process.cwd(), 'projects/gabarit/app-shell/app-shell.scss'),
       'utf8',
     )
-    expect(scss).toMatch(/@mixin frame-sheen \{[^}]*background-size: 100% \$bar;/)
-    expect(scss.match(/@include frame-sheen;/g)).toHaveLength(2)
-    expect(scss.match(/background-image: var\(--gbt-frame-sheen\);/g)).toHaveLength(1)
     const header = scss.slice(scss.indexOf('&__header {'), scss.indexOf('&__toggle {'))
     expect(header).not.toContain('box-shadow')
+    expect(header).not.toContain('::after')
   })
 
-  it('on a wide screen, holds the frame still and lets the sheet scroll its own content, under its corner', () => {
+  it('on a wide screen, holds the rail and the bar still and lets the page scroll its own content', () => {
     const componentScss = readFileSync(
       join(process.cwd(), 'projects/gabarit/app-shell/app-shell.scss'),
       'utf8',
@@ -221,9 +189,6 @@ describe('AppShell', () => {
       /@media \(min-width: \$drawer-breakpoint \+ 1\) \{\s*height: 100vh;\s*height: 100dvh;\s*min-height: 0;\s*overflow: hidden;/,
     )
     const content = block('&__content {', '@media (max-width: $drawer-breakpoint)')
-    expect(componentScss.slice(componentScss.indexOf('.gbt-app-shell--framed {'))).toContain(
-      'border-top-left-radius: $corner',
-    )
     expect(content).toMatch(
       /@media \(min-width: \$drawer-breakpoint \+ 1\) \{\s*min-height: 0;\s*overflow-y: auto;/,
     )

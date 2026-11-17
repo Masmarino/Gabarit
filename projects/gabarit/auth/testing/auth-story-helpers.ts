@@ -227,7 +227,7 @@ export function expectPanelLayout() {
 
 export const inSettingsColumn = componentWrapperDecorator(
   (story) =>
-    `<div style="box-sizing: border-box; min-height: 100vh; padding: 1rem; background: var(--bg-panel);"><div style="max-width: 920px;">${story}</div></div>`,
+    `<div style="box-sizing: border-box; min-height: 100vh; padding: 1rem;"><div style="max-width: 920px;">${story}</div></div>`,
 )
 
 export const atPhoneWidth = componentWrapperDecorator(

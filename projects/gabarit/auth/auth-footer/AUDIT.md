@@ -17,7 +17,7 @@ and name and run `expectPanelLayout`) and by code review (`auth-footer.ts`, `aut
 | 10.11     | Reflow                       | A long sentence wraps under the link's row inside the panel (`LongText`, `Phone` at a 375 px column: `expectPanelLayout` checks no overflow and nothing out of the panel).                                                    | Compliant        |
 | —         | Target size (WCAG 2.2 2.5.8) | The link is 44 px high, drawn or projected: the rule targets `.gbt-auth-footer__link` (set by `AuthFooterLink`, spec) and `a.gbt-button--link` (spec reads the rule); `expectPanelLayout` measures the height in every story. | Compliant        |
 | 3.2       | Text contrast                | Theme tokens only (`--text-secondary`, the link variant's colour); the `Dark` story renders the dark theme. Not measured by the specs (axe's `color-contrast` rule is off in jsdom).                                          | Visually checked |
-| 3.3       | Component contrast           | The hairline above is decorative (`--gbt-hairline`); nothing depends on it.                                                                                                                                                   | Compliant        |
+| 3.3       | Component contrast           | No line above it: it is set apart by space.                                                                                                                                                   | Compliant        |
 
 axe-core (WCAG 2.0/2.1/2.2 A and AA rules, contrast excepted) reports no violation on the drawn and
 the projected forms.

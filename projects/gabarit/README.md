@@ -380,20 +380,6 @@ the glass is dense and unblurred; where it asks for more contrast, it has an edg
 }
 ```
 
-### The graphite frame
-
-The graphite frame of 3.x stays an option: `<gbt-app-shell framed>` draws its rail and its bar as one
-graphite frame, the same in both themes, with the page set into it as a sheet whose corner is rounded;
-`<gbt-auth-panel framed>` opens on the same graphite. An application can lay its own parts on the
-frame with the `frame-tokens` mixin, which sets the dark tokens on a deeper ground:
-
-```scss
-.public-header {
-  @include tokens.frame-tokens;
-  background: var(--bg-panel);
-}
-```
-
 ### Color tokens
 
 Every component reads only the custom properties below, set on `:root` from the `light-tokens` and
@@ -410,9 +396,8 @@ component (enforced by `token-usage.spec.ts`).
 |             | `--bg-panel`                                                             | The page's ground                                                 |
 |             | `--bg-hover`                                                             | Hover state of an interactive element on a neutral background     |
 |             | `--bg-track`                                                             | Track of a segmented control, visible on the page and on a panel  |
-|             | `--frame`                                                                | The graphite of the shell and the auth pages, in both themes      |
 | Border      | `--border-color`                                                         | The edge of a field or a control (3:1)                            |
-|             | `--gbt-hairline` / `--gbt-card-border`                                   | Quiet separators and card edges                                   |
+|             | `--gbt-hairline` / `--gbt-card-border`                                   | The few lines left: a table's, a chip's                           |
 | Text        | `--text-primary` / `--text-secondary` / `--text-discret`                 | From most to least emphasized                                     |
 |             | `--text-on-primary` / `--text-on-error` / `--text-on-color`              | Text set on a `--primary` fill, an error fill, or a solid colour  |
 | Success     | `--color-success-base` / `-hover` / `-text` / `-bg` / `-bg-text`         | Fill, hover, text, light background, text on that background      |
@@ -429,16 +414,14 @@ the type stacks (`--font-family`, `--font-display`, `--gbt-font-mono`).
 ### Volume and light
 
 As on the apps, a little depth and one light from above, in both themes, from `tokens/gabarit.json`
-(`semantic.web.depth`: the apps' roles and the common shadows, composed for CSS). The page is lit at its
-top (`--gbt-page-ground`, in `document-base` and the shell's sheet). A card rests on it (`--site-shadow-sm`,
-now `--gbt-depth-card`). What can be pressed has some volume and sinks when held (`--gbt-depth-raised`,
+(`semantic.web.depth`: the apps' roles and the common shadows, composed for CSS). The page is the ground, and
+its panels are glass laid on it (above). What can be pressed has some volume and sinks when held (`--gbt-depth-raised`,
 `--gbt-depth-ink`, `--gbt-sheen`, `--gbt-sunk`, with the `depth` mixins: `raised`, `ink`, `surface-hover`,
-`surface-sunk`, `sunk`, `sink`). What holds a value is slightly hollow (`--gbt-depth-hollow`). The frame has
-a sheen and casts a shadow on the page (`--gbt-frame-sheen`, `--gbt-depth-bar`). What is on glows, in the
+`surface-sunk`, `sunk`, `sink`). What holds a value is slightly hollow (`--gbt-depth-hollow`). What is on glows, in the
 accent (`--gbt-glow`): a switch, a slider's filled part, the current tab or page. Under the pointer and held
 down, everywhere: `--bg-hover`, then the stronger `--bg-press`; the sink is off when the system asks for
-reduced motion (`depth.spec.ts` holds both). A sheet's header (`gbt-modal`, `gbt-drawer`) is on the panel's
-grey, the graphite is for the frame. In `<gbt-card form>` the card is the fields' frame: `gbt-input`,
+reduced motion (`depth.spec.ts` holds both). A sheet (`gbt-modal`, `gbt-drawer`) is one thick glass, its header
+and its footer included. In `<gbt-card form>` the card is the fields' frame: `gbt-input`,
 `gbt-textarea` and `gbt-tag-input` lose theirs, a focused field keeps its ring; it is opt-in, a field with no
 edge of its own does not meet WCAG 1.4.11 by itself, so check it with the row's label and line.
 
@@ -457,13 +440,13 @@ so an app that leaves them alone gets the family's look. Set one to take that pa
 | `--gbt-radius-tile`                             | Icon marker tiles, job graph nodes, avatar group overflow, TOTP QR code   | `8px`                                |
 | `--gbt-radius-search`                           | The search bar field                                                      | `6px`                                |
 | `--gbt-nav-active-bg` / `--gbt-nav-active-text` | The current page in the app shell navigation                              | a 9% ink tint / `--text-primary`     |
-| `--gbt-nav-active-mark`                         | A 2px rule on the start edge of the current page link                     | `var(--accent)`                      |
+| `--gbt-nav-active-mark`                         | A 2px rule on the start edge of the current page link                     | none                                 |
 | `--gbt-shell-bar`                               | The height of the app shell's bar and of the logo's corner                | `4rem`                               |
 | `--gbt-shell-border`                            | The app shell's navigation and header edges                               | `transparent`                        |
-| `--gbt-shell-header-bg`                         | The app shell's header                                                    | the frame                            |
+| `--gbt-shell-header-bg`                         | The app shell's header                                                    | the ground (`var(--gbt-ground)`)    |
 | `--gbt-shell-content-padding`                   | The app shell's bar and main content area                                 | `clamp(1rem, 0.25rem + 2vw, 2rem)`   |
-| `--gbt-auth-panel-backdrop`                     | The page behind the auth panels (login, register…)                        | `var(--frame)`                       |
-| `--gbt-auth-panel-radius`                       | The auth panel card                                                       | `var(--site-border-radius-lg)`       |
+| `--gbt-auth-panel-backdrop`                     | The page behind the auth panels (login, register…)                        | the ground (`var(--gbt-ground)`)    |
+| `--gbt-auth-panel-radius`                       | The auth panel card                                                       | `var(--gbt-radius-glass)`           |
 
 Overriding a token after the import:
 

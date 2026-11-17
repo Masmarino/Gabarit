@@ -4,8 +4,6 @@
   color-scheme: light;
   @include themes.light-tokens;
 
-  --frame: var(--graphite-950);
-
   @include themes.shape-tokens;
 
   --gbt-control-height-sm: 2rem;

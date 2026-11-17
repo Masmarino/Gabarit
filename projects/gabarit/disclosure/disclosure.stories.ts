@@ -19,14 +19,14 @@ const meta: Meta<Disclosure> = {
     inColumn,
   ],
   argTypes: {
-    appearance: { control: 'inline-radio', options: ['bordered', 'plain'] },
+    appearance: { control: 'inline-radio', options: ['glass', 'plain'] },
     headingLevel: { control: 'inline-radio', options: [null, 2, 3, 4, 5, 6] },
   },
   args: {
     label: 'Advanced options',
     open: false,
     icon: null,
-    appearance: 'bordered',
+    appearance: 'glass',
     headingLevel: null,
   },
 }

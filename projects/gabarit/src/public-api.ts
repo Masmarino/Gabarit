@@ -35,7 +35,7 @@ export {
   type EmptyStateTone,
 } from '@masmarino/gabarit/empty-state'
 export { ListToolbar, type ListToolbarSortOption } from '@masmarino/gabarit/list-toolbar'
-export { Card, CardHeader, type CardTone, type CardVariant } from '@masmarino/gabarit/card'
+export { Card, CardHeader, type CardTone } from '@masmarino/gabarit/card'
 export { CardLink } from '@masmarino/gabarit/card'
 export { GbtInput } from '@masmarino/gabarit/input'
 export type { InputCombobox } from '@masmarino/gabarit/input'

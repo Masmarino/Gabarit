@@ -136,13 +136,11 @@ function forceStates(root: HTMLElement): void {
       </div>
     </section>
     <section class="columns">
-      <gbt-card heading="A card rests on the page">
-        <p>A soft shadow, the light on its top edge.</p>
+      <gbt-card heading="A card rests on the ground">
+        <p>The content glass: a rim of light at its top, a soft shadow.</p>
         <div class="row"><gbt-button text="Action" variant="secondary" /></div>
       </gbt-card>
-      <gbt-card heading="Outlined" variant="outlined"
-        ><p>A hairline, and the same depth.</p></gbt-card
-      >
+      <gbt-card heading="Glass"><p>No hairline: the light is its edge.</p></gbt-card>
       <gbt-card heading="Pressable" [hoverable]="true"
         ><p>It rises under the pointer, sinks when held.</p></gbt-card
       >

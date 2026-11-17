@@ -54,7 +54,7 @@ export const WithActions: Story = {
   }),
 }
 
-/** Three consecutive panels, as in a repository aside: hairline separators between them. */
+/** Three consecutive panels, as in a repository aside: set apart by space, no line. */
 export const ThreeStacked: Story = {
   render: () => ({
     template: `

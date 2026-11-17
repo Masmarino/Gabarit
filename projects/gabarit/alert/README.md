@@ -17,7 +17,7 @@ app renders it.
 | `live`        | `AlertLive`       | `'auto'`    | `'auto' \| 'assertive' \| 'polite' \| 'off'` — how the alert is announced (see _Role_).                                                                                                                            |
 | `heading`     | `string`          | `''`        | A short bold title above the message.                                                                                                                                                                              |
 | `size`        | `AlertSize`       | `'md'`      | `'md' \| 'sm'` — `sm` is the tighter alert for side panels, hints and dense cards.                                                                                                                                 |
-| `appearance`  | `AlertAppearance` | `'default'` | `'default' \| 'subtle'` — subtle: lighter wash, hairline edge and icon ring.                                                                                                                                       |
+| `appearance`  | `AlertAppearance` | `'default'` | `'default' \| 'subtle'` — subtle: lighter wash and icon ring. No edge in either: the tint and the icon say the status.                                                                                                                                       |
 | `iconAlign`   | `AlertIconAlign`  | `'auto'`    | `'auto' \| 'center' \| 'start'` — `auto` centres the icon on a single block and moves it to the first line once there is a `heading` or `[alert-actions]`; `start` forces the top, `center` opts out.             |
 
 ## Outputs

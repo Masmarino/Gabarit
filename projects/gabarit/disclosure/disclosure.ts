@@ -2,7 +2,7 @@ import { NgTemplateOutlet } from '@angular/common'
 import { ChangeDetectionStrategy, Component, input, model } from '@angular/core'
 import { Icon } from '@masmarino/gabarit/icon'
 
-export type DisclosureAppearance = 'bordered' | 'plain'
+export type DisclosureAppearance = 'glass' | 'plain'
 export type DisclosureHeadingLevel = 2 | 3 | 4 | 5 | 6
 
 let nextDisclosureId = 0
@@ -19,7 +19,7 @@ export class Disclosure {
   label = input.required<string>()
   open = model(false)
   icon = input<string | null>(null)
-  appearance = input<DisclosureAppearance>('bordered')
+  appearance = input<DisclosureAppearance>('glass')
   headingLevel = input<DisclosureHeadingLevel | null>(null)
 
   protected readonly buttonId = `gbt-disclosure-${++nextDisclosureId}`

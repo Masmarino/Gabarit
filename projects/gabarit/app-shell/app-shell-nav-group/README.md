@@ -66,8 +66,8 @@ It is router-agnostic (no `@angular/router` in the library): the sub-links are y
   current section.
 - **In the collapsed 64 px rail** the group behaves like a top-level icon: only the icon shows (the label appears in
   the shell's hover/focus flyout), a small chevron sits beside the icon instead of being clipped by the 40 px link box,
-  and the sub-links have no indent, so their icons line up under the top-level ones. An expanded group is outlined by a
-  hairline so its icons read as a group. **Give every sub-link an icon** (`<gbt-icon /><span>Label</span>`): text alone
+  and the sub-links have no indent, so their icons line up under the top-level ones. An expanded group is gathered on a
+  thin glass so its icons read as a group. **Give every sub-link an icon** (`<gbt-icon /><span>Label</span>`): text alone
   would disappear in the rail.
 - In the mobile drawer (below 768 px) it works as in the full-width navigation, and the drawer's focus trap ignores the
   links of a collapsed group.

@@ -278,7 +278,7 @@ export const Resizable: Story = {
   ],
 }
 
-/** Phone: 343px of layout, one column, nav then main then the aside under a hairline. */
+/** Phone: 343px of layout, one column, nav then main then the aside. */
 export const PhoneWidth: Story = {
   args: { width: 'full', navLabel: 'Repository files' },
   render: layout(`${NAV}${MAIN}${ASIDE}`),

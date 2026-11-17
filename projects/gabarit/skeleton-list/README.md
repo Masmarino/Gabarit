@@ -4,7 +4,7 @@ The placeholder of a list while it loads: `rows` rows of an optional leading blo
 avatar) and one to three text lines, at the rhythm of a real list row.
 
 **Selector**: `gbt-skeleton-list`. Built on [`gbt-skeleton`](../skeleton/README.md). `gbt-list-card`
-draws its own loading state; use this one in a settings section, a panel, a table body or any bordered box.
+draws its own loading state; use this one in a settings section, a panel, a table body or any glass.
 
 ## Inputs
 
@@ -15,7 +15,6 @@ draws its own loading state; use this one in a settings section, a panel, a tabl
 | `leadingSize`  | `string`                         | `'1rem'`     | Its size (`1rem` a status dot, `2.25rem` an avatar).                            |
 | `lines`        | `1 \| 2 \| 3`                    | `2`          | Text lines per row. The first is the longest; its width varies from row to row. |
 | `loadingLabel` | `string`                         | `'Loading…'` | Read out (visually hidden, polite) while loading.                               |
-| `divided`      | `boolean`                        | `true`       | A hairline between rows.                                                        |
 | `padded`       | `boolean`                        | `true`       | 1 rem of side padding (a row inside a card). Turn it off in a bare list.        |
 
 ## Behaviour and accessibility

@@ -1,8 +1,4 @@
-<div
-  class="gbt-skeleton-list"
-  [attr.data-divided]="divided() ? '' : null"
-  [attr.data-padded]="padded() ? '' : null"
->
+<div class="gbt-skeleton-list" [attr.data-padded]="padded() ? '' : null">
   <span class="sr-only" role="status">{{ loadingLabel() }}</span>
   <div aria-hidden="true">
     @for (item of items(); track item.row) {

@@ -3,10 +3,10 @@ import { componentWrapperDecorator } from '@storybook/angular-vite'
 import { darkTheme } from '../.storybook/preview'
 import { SkeletonList } from './skeleton-list'
 
-// The rows sit in a bordered card, as in a list page.
+// The rows sit in a card of glass, as in a list page.
 const inCard = componentWrapperDecorator(
   (story) =>
-    `<div style="box-sizing:border-box;max-width:36rem;margin:1rem;border:1px solid var(--gbt-card-border);border-radius:var(--site-border-radius);background:var(--bg-principal);overflow:hidden">${story}</div>`,
+    `<div style="box-sizing:border-box;max-width:36rem;margin:1rem;border-radius:var(--gbt-radius-glass);background:var(--gbt-glass-regular);backdrop-filter:var(--gbt-glass-blur);box-shadow:var(--gbt-glass-rim-light), var(--gbt-depth-glass);overflow:hidden">${story}</div>`,
 )
 
 const meta: Meta<SkeletonList> = {
@@ -23,7 +23,6 @@ const meta: Meta<SkeletonList> = {
     leadingSize: '1rem',
     lines: 2,
     loadingLabel: 'Loading…',
-    divided: true,
     padded: true,
   },
 }
@@ -45,7 +44,7 @@ export const SingleLine: Story = { args: { leading: 'none', lines: 1, rows: 5 } 
 
 export const ThreeLines: Story = { args: { lines: 3, leadingSize: '2rem', rows: 3 } }
 
-/** Bare: no side padding and no hairlines, for a list that has its own frame. */
-export const Bare: Story = { args: { padded: false, divided: false } }
+/** Bare: no side padding, for a list that has its own frame. */
+export const Bare: Story = { args: { padded: false } }
 
 export const Dark: Story = { decorators: [darkTheme] }

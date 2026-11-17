@@ -1,10 +1,8 @@
 # Card
 
-Titled container: an optional heading over a box. Three looks for the box —
-`glass` (the default: the apps' content glass, laid on the ground), `elevated`
-(an opaque sheet with a shadow, the default before the web took the ground) and
-`bordered` (the opaque sheet with a quiet 1px edge; `outlined` in 3.x, still
-accepted) —, an optional
+Titled container: an optional heading over a box of content glass — the apps'
+regular glass, laid on the ground: translucent, blurred, a rim of light at the
+top, a soft shadow, no edge —, an optional
 description and counter under / after the heading, a flush body for rows, a
 tone and a selected state, and a link mode that makes the whole box
 clickable.
@@ -20,7 +18,6 @@ component, see below)
 | `heading`       | `string`                                         | `''`         | Header title. Empty by default: no header is rendered without it (or a `[card-header]` slot).                                                                                         |
 | `icon`          | `string`                                         | `''`         | Icon shown beside the title, in the header. A toned header without one shows the tone's icon.                                                                                         |
 | `headingLevel`  | `1 \| 2 \| 3 \| 4 \| 5 \| 6`                     | `2`          | Level of the rendered heading — choose it based on the block's place in the page hierarchy (RGAA 9.1).                                                                                |
-| `variant`       | `'glass' \| 'elevated' \| 'bordered' \| 'outlined'` | `'glass'` | `glass`: the apps' regular content glass (translucent, blurred, rim of light at the top, soft shadow, no edge; thicker under the pointer; dense where the system reduces transparency, edged where it asks for more contrast). `elevated`: the opaque sheet of `--bg-principal` with a shadow. `bordered` (or `outlined`, its 3.x name): the opaque sheet with a 1px edge. The `data-variant` attribute is set for `elevated` and `outlined` only. |
 | `description`   | `string`                                         | `''`         | One-line help text under the heading (built-in header only).                                                                                                                          |
 | `count`         | `number \| null`                                 | `null`       | Counter pill after the heading, `0` included.                                                                                                                                          |
 | `flush`         | `boolean`                                        | `false`      | No padding inside the box: rows and tables reach its edges (clipped to its rounded corners).                                                                                          |
@@ -46,16 +43,16 @@ The component renders two siblings:
    the icon, the title (with its count), the description under it, and the
    `[card-header-actions]` on the right. `0.5rem` separates it from the box
    (the heading-to-content gap of `gbt-panel`).
-2. **The box** (`.gbt-card`): the card itself — glass (radius
-   `--gbt-radius-glass`, 22px), or the opaque sheet with a shadow (`elevated`)
-   or a 1px edge (`outlined`), radius 12px —, padding, and a full radius on all four
-   corners. It holds the body only. `selected` and the link target are the
+2. **The box** (`.gbt-card`): the card itself — the glass (thicker under the
+   pointer; dense where the system reduces transparency, with an edge where it
+   asks for more contrast), padding, and a full radius (`--gbt-radius-glass`,
+   22px) on all four corners. It holds the body only. `selected` and the link target are the
    box's; the header is a label over it.
 
 ```
 <gbt-card>                       display: grid, position: relative
   div.gbt-card__header           heading, count, description, actions
-  div.gbt-card                   the box: data-variant, data-flush, data-selected, data-link
+  div.gbt-card                   the box: data-flush, data-selected, data-link
     div.gbt-card__body           your content
 ```
 
@@ -107,9 +104,8 @@ inner corners. The header is not in the box, so it is not affected.
   <gbt-gauge-bar ... />
 </gbt-card>
 
-<!-- A settings card: outlined, a heading above it, rows to the edges -->
+<!-- A settings card: a heading above it, rows to the edges -->
 <gbt-card
-  variant="outlined"
   heading="Variables"
   icon="key"
   description="Injectées dans chaque job."
@@ -123,7 +119,7 @@ inner corners. The header is not in the box, so it is not affected.
 </gbt-card>
 
 <!-- Your own header -->
-<gbt-card variant="outlined">
+<gbt-card>
   <div card-header><strong>src/app/app.ts</strong> <gbt-badge>+12 −3</gbt-badge></div>
 </gbt-card>
 ```
@@ -151,14 +147,13 @@ body's controls are (see below).
 ```html
 <!-- 1. href: the heading becomes the link -->
 <gbt-card
-  variant="outlined"
   heading="Guide de démarrage"
   href="/guide"
   description="Installer le projet"
 />
 
 <!-- 2. a projected anchor — router-agnostic, works with routerLink -->
-<gbt-card variant="outlined">
+<gbt-card>
   <h3 card-header><a gbtCardLink [routerLink]="['/releases', id]">Release {{ version }}</a></h3>
   <gbt-button card-header-actions size="small" variant="secondary" text="Télécharger" />
   <p>Notes de version…</p>

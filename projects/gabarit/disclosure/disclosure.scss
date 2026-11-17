@@ -1,4 +1,5 @@
 @use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/glass';
 
 $easing: cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -6,10 +7,10 @@ $easing: cubic-bezier(0.4, 0, 0.2, 1);
   display: block;
 }
 
-.gbt-disclosure[data-appearance='bordered'] {
-  border: 1px solid var(--gbt-card-border);
-  border-radius: var(--site-border-radius-sm);
-  background: var(--bg-principal);
+// A thin glass, no edge: lit at its top, set apart from what holds it by its own light.
+.gbt-disclosure[data-appearance='glass'] {
+  border-radius: var(--site-border-radius-lg);
+  @include glass.glass(thin, $shadow: false);
 }
 
 .gbt-disclosure__heading {
@@ -100,10 +101,8 @@ $easing: cubic-bezier(0.4, 0, 0.2, 1);
 .gbt-disclosure__content {
   padding: 0.875rem;
 
-  .gbt-disclosure[data-appearance='bordered'] & {
-    border-top: 1px solid var(--gbt-hairline);
-    border-radius: 0 0 var(--site-border-radius-sm) var(--site-border-radius-sm);
-    background: var(--bg-hover);
+  .gbt-disclosure[data-appearance='glass'] & {
+    padding-top: 0.25rem;
   }
 }
 

@@ -11,6 +11,4 @@ export class AuthPanel {
   heading = input('')
   intro = input('')
   wide = input(false, { transform: booleanAttribute })
-  /** The graphite page of 3.x, in both themes, instead of the ground (4.0). */
-  framed = input(false, { transform: booleanAttribute })
 }

@@ -35,7 +35,7 @@ The layout adds no `<main>`: the application shell already has one.
 
 | Layout width   | Columns                                                                                                                              |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| up to 768 px   | One column: nav, main, aside stacked in DOM order. The stacked aside opens with a hairline.                                          |
+| up to 768 px   | One column: nav, main, aside stacked in DOM order. The stacked aside follows, set apart by space.                                          |
 | 769 to 1100 px | Main + aside, or nav + main (with an aside under main). Aside on the `asidePosition` side when there is no nav.                      |
 | from 1101 px   | Nav + main + aside side by side. The aside sticks (`top: 1rem`) while the main column scrolls, and so does the nav with `stickyNav`. |
 

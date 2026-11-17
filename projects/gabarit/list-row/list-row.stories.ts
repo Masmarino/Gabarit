@@ -16,7 +16,7 @@ import { ListRow, ListRowTone } from './list-row'
 
 const cardWrap = 'max-width: 960px; margin-inline: auto;'
 const card =
-  'border: 1px solid var(--gbt-card-border); border-radius: var(--site-border-radius); background: var(--bg-principal); overflow: hidden;'
+  'border-radius: var(--gbt-radius-glass); background: var(--gbt-glass-regular); backdrop-filter: var(--gbt-glass-blur); box-shadow: var(--gbt-glass-rim-light), var(--gbt-depth-glass); overflow: hidden;'
 const cardHeader =
   'display: flex; align-items: center; gap: 0.5rem; min-height: 38px; color: var(--text-primary); font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.5rem;'
 const list = 'margin: 0; padding: 0; list-style: none;'
@@ -228,7 +228,7 @@ const rowsTemplate = (items: string, heading: string) => `
 /**
  * Layout invariants jsdom cannot check, run on every story with rows: the leading icon, the title and
  * the trailing items share the title's first line; a long title stays inside its column; nothing
- * overflows horizontally; consecutive rows are separated by a hairline; empty slots take no room.
+ * overflows horizontally; consecutive rows are set apart by their space, no line; empty slots take no room.
  * Retried by `waitFor` until the story's styles have settled.
  */
 function assertRowLayout(canvasElement: HTMLElement): number {
@@ -277,10 +277,9 @@ function assertRowLayout(canvasElement: HTMLElement): number {
       }
     }
     if (row.parentElement?.tagName === 'LI') {
-      const expected = index > 0 && row.parentElement.previousElementSibling ? '1px' : '0px'
       check(
-        getComputedStyle(row).borderTopWidth === expected,
-        `row ${index}: border-top ${expected} (hairline between rows only)`,
+        getComputedStyle(row).borderTopWidth === '0px',
+        `row ${index}: no line between the rows`,
       )
     }
   }

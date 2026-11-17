@@ -119,7 +119,7 @@ describe('Disclosure', () => {
     fixture.componentRef.setInput('label', 'More')
     fixture.detectChanges()
     const root = fixture.nativeElement.querySelector('.gbt-disclosure') as HTMLElement
-    expect(root.getAttribute('data-appearance')).toBe('bordered')
+    expect(root.getAttribute('data-appearance')).toBe('glass')
 
     fixture.componentRef.setInput('appearance', 'plain')
     fixture.detectChanges()

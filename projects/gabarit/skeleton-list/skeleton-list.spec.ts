@@ -90,13 +90,12 @@ describe('SkeletonList', () => {
     )
   })
 
-  it('separates rows and pads them by default, and can do without', () => {
+  it('pads the rows by default, and can do without; no line between them', () => {
     const on = setup()
-    expect(on.list().hasAttribute('data-divided')).toBe(true)
+    expect(on.list().hasAttribute('data-divided')).toBe(false)
     expect(on.list().hasAttribute('data-padded')).toBe(true)
 
-    const off = setup({ divided: false, padded: false })
-    expect(off.list().hasAttribute('data-divided')).toBe(false)
+    const off = setup({ padded: false })
     expect(off.list().hasAttribute('data-padded')).toBe(false)
   })
 

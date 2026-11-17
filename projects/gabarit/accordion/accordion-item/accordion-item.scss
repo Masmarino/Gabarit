@@ -4,10 +4,6 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
 
 :host {
   display: block;
-
-  &:not(:last-child) {
-    border-bottom: 1px solid var(--border-color);
-  }
 }
 
 .gbt-accordion-item__header {
@@ -17,8 +13,9 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   gap: 0.75rem;
   width: 100%;
   padding: 0.875rem 1rem;
-  background: var(--bg-principal);
+  background: transparent;
   border: none;
+  border-radius: var(--gbt-radius-row);
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;

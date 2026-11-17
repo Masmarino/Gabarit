@@ -1,6 +1,12 @@
+@use '../src/lib/tokens/glass';
+
+// The items in one content glass, no edge and no line between them: each header is a row lit under the pointer.
 .gbt-accordion {
-  display: block;
-  border: 1px solid var(--border-color);
-  border-radius: var(--site-border-radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.375rem;
+  border-radius: var(--gbt-radius-glass);
+  @include glass.glass;
   overflow: hidden;
 }

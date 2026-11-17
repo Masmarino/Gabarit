@@ -29,17 +29,17 @@ export const withLayoutIcons = applicationConfig({
 
 export const inContentArea = componentWrapperDecorator(
   (story) =>
-    `<div style="box-sizing: border-box; min-height: 100vh; padding: 1rem; background: var(--bg-panel);">${story}</div>`,
+    `<div style="box-sizing: border-box; min-height: 100vh; padding: 1rem;">${story}</div>`,
 )
 
 const cardStyle =
-  'border: 1px solid var(--gbt-card-border); border-radius: var(--site-border-radius); background: var(--bg-principal); overflow: hidden;'
+  'border-radius: var(--gbt-radius-glass); background: var(--gbt-glass-regular); backdrop-filter: var(--gbt-glass-blur); box-shadow: var(--gbt-glass-rim-light), var(--gbt-depth-glass); overflow: hidden;'
 const cardHeaderStyle =
   'display: flex; align-items: center; gap: 0.5rem; min-height: 38px; color: var(--text-primary); font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.5rem;'
 const cardBodyStyle =
   'padding: 1rem; color: var(--text-primary); font-size: 0.875rem; line-height: 1.6;'
 
-/** A plain heading above a bordered box, as gbt-card and gbt-list-card render theirs: placeholder
+/** A plain heading above a box of glass, as gbt-card and gbt-list-card render theirs: placeholder
  * content for the layout stories. */
 export function demoCard(title: string, body: string): string {
   return `<div><div style="${cardHeaderStyle}">${title}</div><section style="${cardStyle}"><div style="${cardBodyStyle}">${body}</div></section></div>`
@@ -49,7 +49,7 @@ export const muted = (text: string) =>
   `<p style="margin: 0; color: var(--text-secondary);">${text}</p>`
 
 const fileRow = (marker: string, name: string, message: string, date: string) =>
-  `<li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 1rem; border-top: 1px solid var(--gbt-hairline); font-size: 0.875rem;">
+  `<li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 1rem; font-size: 0.875rem;">
      <span style="width: 1rem; color: var(--text-secondary);" aria-hidden="true">${marker}</span>
      <span style="flex: 0 0 8rem; min-width: 0; color: var(--text-primary); font-weight: 500;">${name}</span>
      <span style="flex: 1 1 auto; min-width: 0; overflow: hidden; color: var(--text-secondary); white-space: nowrap; text-overflow: ellipsis;">${message}</span>

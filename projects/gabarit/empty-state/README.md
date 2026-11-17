@@ -50,7 +50,7 @@ The 96 px artwork suits a whole page or an empty list. Inside a card, use the
 compact block with an icon:
 
 ```html
-<gbt-card variant="outlined" heading="Variables" flush>
+<gbt-card heading="Variables" flush>
   <gbt-empty-state
     size="compact"
     icon="key"

@@ -360,10 +360,8 @@ describe('ListCard', () => {
       expect(box).toContain('border-radius: var(--gbt-radius-glass);')
       expect(box).toContain('@include glass.glass;')
       expect(box).not.toContain('border:')
-      // The lines between the rows only when asked (`separated`).
-      expect(scss.replace(/\s+/g, ' ')).toContain(
-        '.gbt-separated & + & { border-top: 1px solid var(--gbt-hairline); }',
-      )
+      // No line between the rows.
+      expect(scss).not.toContain('var(--gbt-hairline)')
       // Only the box clips: the header above it is never cut.
       expect(code.match(/overflow:/g)?.length).toBe(1)
     })

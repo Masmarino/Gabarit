@@ -35,7 +35,8 @@
     right: 0;
     bottom: calc(100% + 6px);
     z-index: 1;
-    box-shadow: var(--site-shadow-sm);
+    // It floats: the shadow of what floats, its own tint kept (it says the status).
+    box-shadow: var(--gbt-depth-glass);
     pointer-events: none;
   }
 

@@ -25,7 +25,7 @@
       </gbt-breadcrumb>
 
       <article class="gbt-docs-page__article">
-        <gbt-card variant="outlined" [flush]="true">
+        <gbt-card [flush]="true">
           <div class="gbt-docs-page__body">
             <gbt-markdown-view
               class="gbt-docs-page__content"
@@ -40,7 +40,7 @@
       @if (page.location.previous || page.location.next) {
         <nav class="gbt-docs-page__pager" [attr.aria-label]="labels().neighbours">
           @if (page.location.previous; as previous) {
-            <gbt-card class="gbt-docs-page__neighbour" variant="outlined" hoverable>
+            <gbt-card class="gbt-docs-page__neighbour" hoverable>
               <span class="gbt-docs-page__neighbour-label"
                 >{{ labels().previous }} · {{ previous.sectionTitle }}</span
               >
@@ -53,11 +53,7 @@
             </gbt-card>
           }
           @if (page.location.next; as next) {
-            <gbt-card
-              class="gbt-docs-page__neighbour gbt-docs-page__neighbour--next"
-              variant="outlined"
-              hoverable
-            >
+            <gbt-card class="gbt-docs-page__neighbour gbt-docs-page__neighbour--next" hoverable>
               <span class="gbt-docs-page__neighbour-label"
                 >{{ labels().next }} · {{ next.sectionTitle }}</span
               >
@@ -69,7 +65,7 @@
         </nav>
       }
     } @else if (notFound(); as notFound) {
-      <gbt-card class="gbt-docs-page__not-found" variant="outlined">
+      <gbt-card class="gbt-docs-page__not-found">
         <gbt-empty-state
           illustration="book"
           [headingLevel]="1"
@@ -96,7 +92,7 @@
     } @else {
       <div class="gbt-docs-page__loading" aria-busy="true">
         <span class="gbt-docs-page__status" role="status">{{ labels().loading }}</span>
-        <gbt-card variant="outlined" [flush]="true" aria-hidden="true">
+        <gbt-card [flush]="true" aria-hidden="true">
           <div class="gbt-docs-page__loading-card">
             @for (width of skeletonRows; track $index) {
               <gbt-skeleton [width]="width" [height]="$first ? '1.75rem' : '0.875rem'" />

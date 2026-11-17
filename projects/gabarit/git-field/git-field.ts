@@ -95,7 +95,7 @@ function draw(): { lines: Line[]; commits: Commit[]; pulses: Pulse[] } {
 const DRAWING = draw()
 
 /**
- * An animated commit graph on the graphite frame, behind a centred panel (the `[auth-backdrop]` slot of the sign-in
+ * An animated commit graph on the page's ground, behind a centred panel (the `[auth-backdrop]` slot of the sign-in
  * pages) or a dark band: lanes that drift slowly sideways, their commits blinking in turn and pushes running along
  * some of them, over two soft fields of colour. Decoration only: hidden from assistive technology, under the content,
  * and still when reduced motion is asked for. It fills its nearest positioned ancestor.

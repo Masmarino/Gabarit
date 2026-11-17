@@ -23,7 +23,6 @@ navigation, under its bottom (version and toggle), which stays put.
 | `collapseLabel`  | `string`  | Required if `collapsible` is `true`. Accessible name of the collapse-toggle button, nav expanded.                                                                                                                                  |
 | `expandLabel`    | `string`  | Required if `collapsible` is `true`. Accessible name of the collapse-toggle button, nav collapsed.                                                                                                                                 |
 | `collapsed`      | `boolean` | Optional, defaults to `false`. Fully controlled — `AppShell` never persists it; bind `[(collapsed)]` to a signal you own if you want it remembered across sessions. Only has an effect at/above the 768px breakpoint.              |
-| `framed`         | `boolean` | Optional, defaults to `false`. The graphite frame of 3.x: the rail and the bar in graphite 950 in both themes, the page a sheet of `--bg-panel` with a rounded corner, the current link a tint with an accent mark. Accepts a bare attribute. |
 | `collapsible`    | `boolean` | Optional, defaults to `true`. Set to `false` to omit the built-in collapse-toggle button entirely — e.g. if your app drives `collapsed` from its own control elsewhere. When `false`, `collapseLabel`/`expandLabel` aren't needed. |
 
 ## Outputs
@@ -42,7 +41,7 @@ navigation, under its bottom (version and toggle), which stays put.
 | Default          | The page content, in a focusable `<main>`.                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 **The collapsed rail's flyout.** In the 64 px rail a link shows only its icon; on hover or keyboard focus its
-`<span>` label appears to the right of the rail, in a small bordered bubble (`--text-primary` on `--bg-principal`,
+`<span>` label appears to the right of the rail, in a small bubble of dense liquid glass (`--text-primary`,
 above the header and the page). The bubble sits outside the link and the rail, so the collapsed rail and its links
 do not clip their box (`overflow: visible`); expanded, and in the mobile drawer, they do clip. A link that is not
 the `<gbt-icon /><span>` structure (text only, a badge outside the span) spills over the page in the collapsed
@@ -50,7 +49,7 @@ rail: give every collapsible link that structure. The bubble opens on a real hov
 tap on a touch screen does not leave it painted over the page) and on keyboard focus; a bridge in front of it lets
 the pointer travel from the link onto the label without the flyout closing.
 
-**The ground (4.0).** `.gbt-app-shell` lays the ground (`--gbt-ground`) under
+**The ground.** `.gbt-app-shell` lays the ground (`--gbt-ground`) under
 the whole window: the rail, the bar and the page are one material with nothing
 of their own (no graphite, no sheet, no shadow of the bar). The page's panels
 are glass laid on it (`gbt-card` by default); the current link
@@ -59,7 +58,7 @@ round button of liquid glass. What holds still over a scrolling page (the bar,
 the foot of the rail) shows the same ground, fixed to the window, so the page
 passes under it. On the ground the discreet text, the status texts and the
 edge of a field take shades that keep 7:1 and 3:1 at the ground's worst point
-(`_glass.scss`, `on-ground`). `framed` brings back the graphite frame. `.gbt-container` (in `_utilities.scss`)
+(`_glass.scss`, `on-ground`). `.gbt-container` (in `_utilities.scss`)
 centers content at reading width, to place on the default-projected
 content if needed.
 
