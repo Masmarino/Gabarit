@@ -3,7 +3,6 @@ package com.masmarino.gabarit
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.snap
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -164,7 +163,8 @@ fun GIcon(name: String, contentDescription: String?, modifier: Modifier = Modifi
 
 /**
  * Raised, a little: a soft shadow, some volume and the light on the top edge; `pressed`: sunk, none of it. `onInk`: on a dark ground (a
- * primary button), the light is the same in both appearances. A hairline stays the edge of things: this only adds to it.
+ * primary button), the light is the same in both appearances. Light is the edge of things: a control keeps its line
+ * (a field's 3:1 rim, the focus ring), this only adds to it.
  */
 @Composable
 fun Modifier.gRaised(shape: Shape, pressed: Boolean = false, onInk: Boolean = false): Modifier {
@@ -199,12 +199,12 @@ fun Modifier.gRaised(shape: Shape, pressed: Boolean = false, onInk: Boolean = fa
 }
 
 /**
- * What rests on the page casts a soft shadow. Under a colour theme the surfaces are veils, and the system's shadow shows
- * through them as a grey frame: the shadow is then painted around the shape, never under it.
+ * What rests on the page casts a soft shadow. On the ground (4.0) and under a colour theme, what rests may be a veil,
+ * and the system's shadow would show through it as a grey frame: the shadow is then painted around the shape, never under it.
  */
 @Composable
 internal fun Modifier.gResting(elevation: Dp, shape: Shape): Modifier {
-    if (G.colors.surface.alpha >= 1f) return this.shadow(elevation, shape, clip = false)
+    if (G.grounds != null && G.colors.surface.alpha >= 1f) return this.shadow(elevation, shape, clip = false)
     val shade = Color.Black.copy(alpha = if (G.isDark) 0.09f else 0.035f)
     return this.drawBehind {
         val outline = Path().apply { addOutline(shape.createOutline(size, layoutDirection, this@drawBehind)) }
@@ -245,7 +245,7 @@ fun Modifier.gHollow(fill: Color, shape: Shape, strength: Float = 0.12f): Modifi
 
 // MARK: Buttons
 
-/** Gabarit's buttons: ink (primary), fine frame (secondary), no ground (ghost), red (danger). */
+/** Gabarit's buttons: ink (primary), a light ground and a fine frame (secondary), no ground (ghost), red (danger). */
 enum class GButtonVariant { Primary, Secondary, Ghost, Danger }
 
 /**
@@ -269,7 +269,9 @@ fun GButton(
     // Held down it never fades: towards the hover's colour on ink, a stronger veil elsewhere, darker on red.
     val ground = when (variant) {
         GButtonVariant.Primary -> if (pressed) colors.primaryHover else colors.primary
-        GButtonVariant.Secondary -> if (pressed) colors.press.compositeOverSafe(colors.surface) else colors.surface
+        // On the ground's glass, the field's light ground (4.0); 3.x's grounds keep their surface.
+        GButtonVariant.Secondary -> (if (G.grounds == null) G.ground.fieldFill else colors.surface)
+            .let { if (pressed) colors.press.compositeOver(it) else it }
         GButtonVariant.Ghost -> if (pressed) colors.press else Color.Transparent
         GButtonVariant.Danger -> if (pressed) lerp(colors.error, Color.Black, 0.18f) else colors.error
     }
@@ -289,7 +291,7 @@ fun GButton(
             else Modifier.gRaised(shape, pressed, onInk = variant == GButtonVariant.Primary || variant == GButtonVariant.Danger))
             .clip(shape)
             .background(ground, shape)
-            .then(if (variant == GButtonVariant.Secondary) Modifier.border(1.dp, colors.border.copy(alpha = 0.6f), shape) else Modifier)
+            .then(if (variant == GButtonVariant.Secondary) Modifier.border(1.dp, colors.ink3, shape) else Modifier)
             .clickable(interaction, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(horizontal = if (compact) 12.dp else 16.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
@@ -372,8 +374,8 @@ fun GCloseButton(title: String, onFrame: Boolean = false, onClick: () -> Unit) {
 fun GSwitch(isOn: Boolean, modifier: Modifier = Modifier, pressed: Boolean = false) {
     val colors = G.colors
     val still = gReduceMotion()
-    val track by animateColorAsState(if (isOn) colors.accent else colors.track, if (still) snap() else tween(180), label = "switch")
-    val knob by animateDpAsState(if (isOn) 20.dp else 2.dp, if (still) snap() else tween(180), label = "switch")
+    val track by animateColorAsState(if (isOn) colors.accent else colors.track, if (still) snap() else GMotion.quick(), label = "switch")
+    val knob by animateDpAsState(if (isOn) 20.dp else 2.dp, if (still) snap() else GMotion.bouncy(), label = "switch")
     val shape = RoundedCornerShape(14.dp)
     Box(
         modifier.size(width = 46.dp, height = 28.dp)
@@ -419,9 +421,9 @@ fun GToggleRow(title: String, isOn: Boolean, onChange: (Boolean) -> Unit, modifi
 // MARK: Text
 
 /**
- * A field's frame: the ground, a fine rim, rust and thicker when it has the focus, red if `isError`. In a form's card
- * (`LocalGFormCard`), no rim at rest: the card is its frame, not a frame in a frame. `icon`: discreet
- * before the text (a search's magnifying glass); `keyboardActions`: in place of `onSubmit` (on Done, Go, Send, Search).
+ * A field's frame: a light ground on the glass, a rim of the discreet ink at rest (3:1 on the glass, in a card too:
+ * a control keeps its line), rust and thicker when it has the focus, red if `isError`. `icon`: discreet before the text
+ * (a search's magnifying glass); `keyboardActions`: in place of `onSubmit` (on Done, Go, Send, Search).
  */
 @Composable
 fun GFieldFrame(
@@ -446,7 +448,7 @@ fun GFieldFrame(
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     val submit = { onSubmit?.invoke(); Unit }
-    val inCard = LocalGFormCard.current
+    val fill = G.ground.fieldFill
     BasicTextField(
         value, onValueChange, modifier.fillMaxWidth().alpha(if (enabled) 1f else GOpacity.disabled),
         enabled = enabled, singleLine = singleLine, minLines = minLines, maxLines = maxLines,
@@ -457,11 +459,9 @@ fun GFieldFrame(
             val rim = when {
                 isError -> colors.error
                 focused -> colors.accent
-                // In a form's card, no rim at rest: the card is the frame, the ground marks the field.
-                inCard -> Color.Transparent
-                else -> colors.hairline
+                else -> colors.ink3
             }
-            Row(Modifier.fillMaxWidth().heightIn(min = GControlMetrics.height).gHollow(colors.background, shape, 0.06f)
+            Row(Modifier.fillMaxWidth().heightIn(min = GControlMetrics.height).gHollow(fill, shape, 0.06f)
                 .border(if (focused || isError) 1.5.dp else 1.dp, rim, shape)
                 .padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -477,11 +477,38 @@ fun GFieldFrame(
     )
 }
 
-/** A search field: the magnifying glass before the text, `prompt` as the placeholder; "Search" on the keyboard. */
+/**
+ * A search field: the magnifying glass before the text, `prompt` as the placeholder; "Search" on the keyboard. 4.0:
+ * on the ground, a pill of liquid glass (it floats over the page); in a form's card (or `glass` false), a field.
+ */
 @Composable
-fun GSearchField(value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier, prompt: String = "", onSubmit: (() -> Unit)? = null) =
-    GFieldFrame(value, onValueChange, modifier.semantics { if (prompt.isNotEmpty()) contentDescription = prompt }, prompt,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search), onSubmit = onSubmit, icon = "magnifyingglass")
+fun GSearchField(value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier, prompt: String = "", onSubmit: (() -> Unit)? = null,
+                 glass: Boolean = !LocalGFormCard.current) {
+    val described = modifier.semantics { if (prompt.isNotEmpty()) contentDescription = prompt }
+    if (!glass) {
+        GFieldFrame(value, onValueChange, described, prompt, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            onSubmit = onSubmit, icon = "magnifyingglass")
+        return
+    }
+    val colors = G.colors
+    val interaction = remember { MutableInteractionSource() }
+    val focused by interaction.collectIsFocusedAsState()
+    val shape = RoundedCornerShape(GRadius.pill)
+    BasicTextField(value, onValueChange, described.fillMaxWidth(), singleLine = true, interactionSource = interaction,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search), keyboardActions = KeyboardActions(onSearch = { onSubmit?.invoke() }),
+        textStyle = G.type.body.copy(color = colors.ink), cursorBrush = SolidColor(colors.accent),
+        decorationBox = { field ->
+            Row(Modifier.fillMaxWidth().heightIn(min = GControlMetrics.height).gLiquidGlass(shape)
+                .then(if (focused) Modifier.border(1.5.dp, colors.accent, shape) else Modifier)
+                .padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                GIcon("magnifyingglass", size = 15f, color = colors.ink2)
+                Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                    if (value.isEmpty() && prompt.isNotEmpty()) Text(prompt, style = G.type.body, color = colors.ink2, maxLines = 1)
+                    field()
+                }
+            }
+        })
+}
 
 /**
  * A text field with its title: the title above (small, discreet), the field below, full width, `prompt` as the
@@ -535,7 +562,7 @@ fun GMenuFace(text: String, modifier: Modifier = Modifier, open: Boolean = false
     val shape = RoundedCornerShape(GRadius.sm)
     Row(
         modifier.widthIn(max = 260.dp).heightIn(min = GControlMetrics.compact).then(if (open) Modifier else Modifier.gRaised(shape, pressed)).clip(shape)
-            .background(if (open) colors.hover.compositeOverSafe(colors.background) else colors.background, shape)
+            .background(if (open) colors.hover.compositeOverSafe(G.ground.fieldFill) else G.ground.fieldFill, shape)
             .background(if (pressed) colors.press else Color.Transparent, shape)
             .border(if (open) 1.5.dp else 1.dp, if (open) colors.accent else colors.hairline, shape)
             .padding(start = 10.dp, end = 8.dp),
@@ -578,11 +605,9 @@ fun <T> GMenuField(options: List<T>, selection: T, title: (T) -> String, onSelec
                     if (label != null) contentDescription = label
                     stateDescription = title(selection)
                 })
-        DropdownMenu(open, { open = false }, offset = DpOffset(0.dp, 4.dp), containerColor = G.surfaceOpaque,
-            shape = RoundedCornerShape(GRadius.md)) {
+        GDropdownMenu(open, { open = false }) {
             Column(Modifier.widthIn(min = 220.dp)) {
-                options.forEachIndexed { index, option ->
-                    if (index > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(colors.hairline))
+                options.forEach { option ->
                     GMenuRow(title(option), checked = option == selection) { open = false; onSelect(option) }
                 }
             }
@@ -600,7 +625,7 @@ fun GChip(title: String, selected: Boolean, onClick: () -> Unit) {
     Box(
         Modifier.heightIn(min = GControlMetrics.compact)
             .then(if (selected && !pressed) Modifier.gGlow(colors.accent, shape, 3.dp) else Modifier.gRaised(shape, pressed)).clip(shape)
-            .background(if (selected) colors.selectedFill.compositeOverSafe(colors.background) else colors.background, shape)
+            .background(if (selected) colors.selectedFill.compositeOverSafe(G.ground.fieldFill) else G.ground.fieldFill, shape)
             .background(if (pressed) colors.press else Color.Transparent, shape)
             .border(1.dp, if (selected) colors.accent.copy(alpha = 0.7f) else colors.hairline, shape)
             .semantics { this.selected = selected }
@@ -725,7 +750,7 @@ fun GStepper(title: String, value: Int, onValueChange: (Int) -> Unit, range: Int
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(title, style = G.type.body, color = colors.textPrimary, modifier = Modifier.weight(1f))
-        Row(Modifier.height(GControlMetrics.compact).gRaised(shape).clip(shape).background(colors.background, shape).border(1.dp, colors.hairline, shape),
+        Row(Modifier.height(GControlMetrics.compact).gRaised(shape).clip(shape).background(G.ground.fieldFill, shape).border(1.dp, colors.hairline, shape),
             verticalAlignment = Alignment.CenterVertically) {
             StepperButton("minus", decrease, value > range.first) { onValueChange((value - 1).coerceIn(range)) }
             Box(Modifier.width(1.dp).fillMaxHeight().background(colors.hairline))

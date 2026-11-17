@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The glass's demonstration on a device (the live blur, the refracting edge), outside the library:
+     ./gradlew :gabarit:installDebugAndroidTest
+     adb shell am start -n com.masmarino.gabarit.test/com.masmarino.gabarit.demo.GlassDemoActivity -e ground aurore -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <activity android:name="com.masmarino.gabarit.demo.GlassDemoActivity" android:exported="true"
+            android:theme="@android:style/Theme.Material.NoActionBar" />
+    </application>
+</manifest>

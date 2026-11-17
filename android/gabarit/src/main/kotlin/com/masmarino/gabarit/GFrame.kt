@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.zIndex
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -101,8 +100,16 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlin.math.roundToInt
 
-// Gabarit's frame for Compose, as on the iPhone and the iPad: the dark frame (a band, the rail), the bottom tab bar,
-// sheets, bubble menus, the side drawer and the quick search.
+// Gabarit's frame for Compose, as on the iPhone and the iPad: the bars (a band, the rail), the bottom tab bar, sheets,
+// bubble menus, the side drawer and the quick search. 4.0: the bars lie on the ground, transparent, in the ink; what
+// floats on it (the tab bar, a floating header, its round buttons) is liquid glass. 3.x's graphite frame stays, asked
+// for: `GFrameStyle.Graphite` (a bar's `style`, or `LocalGFrameStyle` for a whole screen).
+
+/** How the bars are drawn: on the ground (4.0's default), or in 3.x's graphite frame (graphite 950, the same in both appearances). */
+enum class GFrameStyle { Ground, Graphite }
+
+/** The bars' style for what is below (`GFrameStyle.Ground` by default). */
+val LocalGFrameStyle = compositionLocalOf { GFrameStyle.Ground }
 
 /** A count on an icon (a tab, a rail item): "99+" beyond 99. */
 fun gBadgeText(count: Int): String = if (count > 99) "99+" else count.toString()
@@ -118,9 +125,18 @@ private val gFrameSheen get() = Brush.verticalGradient(listOf(GPalette.graphite9
 /** A tab of the bottom bar: its title, its icon (the Mac's name) or the app's own image (`image`, drawn in the tab's colour), a count. */
 data class GTab(val id: String, val title: String, val icon: String = "", val badge: Int = 0, @param:DrawableRes val image: Int? = null)
 
-/** Gabarit's bottom bar: flat on the surface, a fine line above, the current tab in rust and underlined from the top. */
+/**
+ * Gabarit's bottom bar. 4.0 (`GFrameStyle.Ground`): a pill of liquid glass floating over the page, above the system's
+ * navigation bar, the current tab on a lighter pill, in rust; `backdrop`: what scrolls under it, blurred with the
+ * ground. `GFrameStyle.Graphite`: 3.x's bar, flat on the surface, a fine line above, the current tab underlined from the top.
+ */
 @Composable
-fun GTabBar(tabs: List<GTab>, selection: String, onSelect: (String) -> Unit, modifier: Modifier = Modifier) {
+fun GTabBar(tabs: List<GTab>, selection: String, onSelect: (String) -> Unit, modifier: Modifier = Modifier,
+            style: GFrameStyle = LocalGFrameStyle.current, backdrop: GBackdrop? = null) {
+    if (style == GFrameStyle.Ground) {
+        GroundTabBar(tabs, selection, onSelect, modifier, backdrop)
+        return
+    }
     val colors = G.colors
     // It casts a shadow on the page above it.
     Row(modifier.fillMaxWidth().zIndex(1f).shadow(6.dp).background(colors.surface).drawBehind {
@@ -165,9 +181,11 @@ fun GTabBar(tabs: List<GTab>, selection: String, onSelect: (String) -> Unit, mod
 }
 
 /**
- * The dark band on top of a screen (the frame; on the page's grey in a sheet, `LocalGInSheet`), under the status bar (`statusBar` false: the room is someone else's):
- * the back arrow if `back`, `leading` (a logo, a conversation's face), the title (`subtitle` discreet below) or
- * `center` in the middle, then `trailing`; the same in both appearances.
+ * The band on top of a screen, under the status bar (`statusBar` false: the room is someone else's): the back arrow if
+ * `back`, `leading` (a logo, a conversation's face), the title (`subtitle` discreet below) or `center` in the middle,
+ * then `trailing`. 4.0 (`GFrameStyle.Ground`): transparent on the ground, in the ink, its buttons round liquid glass;
+ * `floating`: the whole band a pill of liquid glass (a conversation's header). `GFrameStyle.Graphite`: 3.x's dark band,
+ * the same in both appearances. In a sheet (`LocalGInSheet`): on the sheet, as it is.
  */
 @Composable
 fun GTopBar(
@@ -180,11 +198,17 @@ fun GTopBar(
     leading: @Composable RowScope.() -> Unit = {},
     center: (@Composable () -> Unit)? = null,
     trailing: @Composable RowScope.() -> Unit = {},
+    style: GFrameStyle = LocalGFrameStyle.current,
+    floating: Boolean = false,
 ) {
     val inSheet = LocalGInSheet.current
+    if (!inSheet && style == GFrameStyle.Ground) {
+        GroundTopBar(title, modifier, subtitle, back, backTitle, statusBar, leading, center, trailing, floating)
+        return
+    }
     val bar = @Composable {
         val text = if (inSheet) G.colors.textPrimary else GFrameColor.text
-        CompositionLocalProvider(LocalContentColor provides text) {
+        CompositionLocalProvider(LocalContentColor provides text, LocalGFrameStyle provides GFrameStyle.Graphite) {
             Box(modifier.fillMaxWidth().then(if (inSheet) Modifier else Modifier.zIndex(1f).shadow(6.dp).background(gFrameSheen))
                 .then(if (statusBar) Modifier.windowInsetsPadding(WindowInsets.statusBars) else Modifier)
                 .heightIn(min = 56.dp).padding(horizontal = 4.dp), contentAlignment = Alignment.CenterStart) {
@@ -208,10 +232,17 @@ fun GTopBar(
     if (inSheet) bar() else GScheme(dark = true) { bar() }
 }
 
-/** A round icon button on the dark frame (a band's action; on the page's grey in a sheet): `title` is what screen readers say. */
+/**
+ * A round icon button of a bar (a band's action): `title` is what screen readers say. 4.0, on the ground: a circle of
+ * liquid glass (plain inside liquid glass, `LocalGOnLiquid`), in the ink; on 3.x's graphite frame or in a sheet, as before.
+ */
 @Composable
 fun GFrameButton(icon: String, title: String, isOn: Boolean = false, onClick: () -> Unit) {
     val inSheet = LocalGInSheet.current
+    if (!inSheet && LocalGFrameStyle.current == GFrameStyle.Ground) {
+        GroundFrameButton(icon, title, isOn, onClick)
+        return
+    }
     val selected = if (inSheet) G.colors.selectedFill else GFrameColor.selected
     val tint = when {
         isOn -> if (inSheet) G.colors.accentText else GFrameColor.accent
@@ -225,11 +256,16 @@ fun GFrameButton(icon: String, title: String, isOn: Boolean = false, onClick: ()
 }
 
 /**
- * A page of the dark rail (a large screen, a tablet): the icon and its name; the current page in rust, on a slight
- * ground, with a line on the left; `badge`: a count on the icon.
+ * A page of the rail (a large screen, a tablet): the icon and its name; `badge`: a count on the icon. 4.0, on the
+ * ground: the current page on liquid glass, its icon in rust; 3.x's graphite rail: in rust, on a slight ground, with a
+ * line on the left.
  */
 @Composable
 fun GRailItem(title: String, icon: String, current: Boolean, onClick: () -> Unit, badge: Int = 0) {
+    if (LocalGFrameStyle.current == GFrameStyle.Ground) {
+        GroundRailItem(title, icon, current, onClick, badge)
+        return
+    }
     val tint = if (current) GFrameColor.accent else GFrameColor.textDiscret
     Column(
         Modifier.fillMaxWidth().heightIn(min = 52.dp).clip(RoundedCornerShape(GRadius.sm))
@@ -255,22 +291,51 @@ fun GRailItem(title: String, icon: String, current: Boolean, onClick: () -> Unit
     }
 }
 
-/** The dark rail on the leading side (a large screen): its pages, from the top. */
+/**
+ * The rail on the leading side (a large screen): its pages, from the top. 4.0: on the ground, without a ground of its
+ * own; `GFrameStyle.Graphite`: 3.x's dark rail.
+ */
 @Composable
-fun GRail(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+fun GRail(modifier: Modifier = Modifier, style: GFrameStyle = LocalGFrameStyle.current, content: @Composable ColumnScope.() -> Unit) {
+    if (style == GFrameStyle.Ground) {
+        CompositionLocalProvider(LocalGFrameStyle provides GFrameStyle.Ground) {
+            Column(modifier.width(84.dp).fillMaxHeight().padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp), content = content)
+        }
+        return
+    }
     GScheme(dark = true) {
-        Column(modifier.width(92.dp).fillMaxHeight().zIndex(1f).shadow(6.dp).background(gFrameSheen).padding(horizontal = 6.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp), content = content)
+        CompositionLocalProvider(LocalGFrameStyle provides GFrameStyle.Graphite) {
+            Column(modifier.width(92.dp).fillMaxHeight().zIndex(1f).shadow(6.dp).background(gFrameSheen).padding(horizontal = 6.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp), content = content)
+        }
     }
 }
 
 /**
- * The dark band under a settings page's bar (on the page's grey in a sheet): the icon ringed by a fine line, the title and the sentence that says what
- * the page is for. `accessory`: on the right.
+ * The band under a settings page's bar: the icon, the title and the sentence that says what the page is for.
+ * `accessory`: on the right. 4.0: on the ground, the icon on thin glass, in the ink; `GFrameStyle.Graphite`: 3.x's dark
+ * band, the icon ringed by a fine line (on the page's grey in a sheet).
  */
 @Composable
-fun GPageBand(icon: String, title: String, summary: String, accessory: @Composable () -> Unit = {}) {
+fun GPageBand(icon: String, title: String, summary: String, accessory: @Composable () -> Unit = {},
+              style: GFrameStyle = LocalGFrameStyle.current) {
     val inSheet = LocalGInSheet.current
+    if (!inSheet && style == GFrameStyle.Ground) {
+        val colors = G.colors
+        Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 18.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            Box(Modifier.size(48.dp).gGlass(GGlassDensity.Thin, RoundedCornerShape(GRadius.xxl), GGlassShadow.Near), contentAlignment = Alignment.Center) {
+                GIcon(icon, size = 22f, color = colors.ink)
+            }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(title, style = G.type.title2, color = colors.ink, modifier = Modifier.semantics { heading() })
+                Text(summary, style = G.type.subheadline, color = colors.ink2)
+            }
+            accessory()
+        }
+        return
+    }
     val text = if (inSheet) G.colors.textPrimary else GFrameColor.text
     Row(Modifier.fillMaxWidth().then(if (inSheet) Modifier else Modifier.zIndex(1f).shadow(6.dp).background(gFrameSheen))
         .padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 18.dp),
@@ -305,22 +370,33 @@ fun GMenuItem(title: String, icon: String, onClick: () -> Unit, destructive: Boo
     }
 }
 
-/** A bubble menu: opaque on the surface, a fine rim, the medium radius; its lines below the place it opens from. */
+/**
+ * A bubble menu: liquid glass made dense (a menu is another window: nothing of the page can be blurred under it), its
+ * edge of light, a short shadow, a large radius; its lines below the place it opens from.
+ */
 @Composable
 fun GDropdownMenu(expanded: Boolean, onDismiss: () -> Unit, modifier: Modifier = Modifier, offset: DpOffset = DpOffset(0.dp, 4.dp),
                   content: @Composable ColumnScope.() -> Unit) {
-    DropdownMenu(expanded, onDismiss, modifier, offset = offset, shape = RoundedCornerShape(GRadius.md), containerColor = G.surfaceOpaque,
-        tonalElevation = 0.dp, shadowElevation = 8.dp, border = BorderStroke(1.dp, G.colors.hairline), content = content)
+    DropdownMenu(expanded, onDismiss, modifier, offset = offset, shape = RoundedCornerShape(GRadius.xxl), containerColor = G.surfaceOpaque,
+        tonalElevation = 0.dp, shadowElevation = 8.dp, border = gLiquidBorder(), content = content)
 }
 
-/** A bubble menu's lines, split by a fine line, on the surface: put it in a `GDropdownMenu`. */
+/** The edge of light of what floats in a window of its own (a menu, a dialog): brighter at the top left; a true rim with high contrast. */
+@Composable
+internal fun gLiquidBorder(): BorderStroke {
+    val colors = G.colors
+    if (G.highContrast) return BorderStroke(1.dp, colors.border)
+    // Light on light shows nothing: a light ground's menu keeps a hint of the discreet ink at its edge.
+    val soft = if (G.isDark) colors.liquidRimSoft else colors.ink.copy(alpha = 0.08f)
+    return BorderStroke(1.2.dp, Brush.linearGradient(0f to colors.liquidRim, 0.3f to soft, 0.55f to soft.copy(alpha = soft.alpha / 2),
+        0.85f to soft, 1f to colors.liquidRim))
+}
+
+/** A bubble menu's lines (4.0: no line between them), on the menu's ground: put it in a `GDropdownMenu`. */
 @Composable
 fun GMenu(items: List<@Composable () -> Unit>) {
-    Column(Modifier.widthIn(min = 240.dp).background(G.surfaceOpaque)) {
-        items.forEachIndexed { index, item ->
-            if (index > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(G.colors.hairline))
-            item()
-        }
+    Column(Modifier.widthIn(min = 240.dp).background(G.surfaceOpaque).padding(vertical = 4.dp)) {
+        items.forEach { item -> item() }
     }
 }
 
@@ -356,21 +432,27 @@ fun GSheetTitle(title: String, summary: String? = null, closeTitle: String = "Cl
 }
 
 /**
- * A sheet from the bottom with what it holds as it is: on `ground` (the page's, opaque), the large radius on top;
- * `handle`: the small bar to pull it by; `halfway`: it may stop half open. The system's back gesture and a swipe down
- * close it; `dismissible` false: neither a swipe nor a touch beside it does (while something is being edited).
+ * A sheet from the bottom with what it holds as it is. 4.0: thick content glass (a sheet carries a form: it is content)
+ * on the ground, the glass's radius on top; `ground`: an opaque colour of its own instead (3.x: `G.backgroundOpaque`,
+ * the large radius). `handle`: the small bar to pull it by; `halfway`: it may stop half open. The system's back gesture
+ * and a swipe down close it; `dismissible` false: neither a swipe nor a touch beside it does (while something is being edited).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier, ground: Color = G.backgroundOpaque, handle: Boolean = false,
+fun GBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier, ground: Color = Color.Unspecified, handle: Boolean = false,
                  halfway: Boolean = false, dismissible: Boolean = true,
                  contentWindowInsets: @Composable () -> WindowInsets = { BottomSheetDefaults.windowInsets },
                  content: @Composable ColumnScope.() -> Unit) {
     val stays by rememberUpdatedState(!dismissible)
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = !halfway, confirmValueChange = { !stays || it != SheetValue.Hidden })
-    val rim = if (ground.luminance() < 0.2f) GFrameColor.rim else G.colors.border
-    ModalBottomSheet(onDismissRequest = onDismiss, modifier = modifier, sheetState = state, containerColor = ground,
-        contentColor = G.colors.textPrimary, tonalElevation = 0.dp, shape = RoundedCornerShape(topStart = GRadius.xl, topEnd = GRadius.xl),
+    val glass = ground == Color.Unspecified
+    val radius = if (glass) GRadius.glass else GRadius.xl
+    val shape = RoundedCornerShape(topStart = radius, topEnd = radius)
+    val rim = if (glass) G.colors.ink3 else if (ground.luminance() < 0.2f) GFrameColor.rim else G.colors.border
+    ModalBottomSheet(onDismissRequest = onDismiss,
+        modifier = if (glass) modifier.gGlass(GGlassDensity.Thick, shape, GGlassShadow.None) else modifier, sheetState = state,
+        containerColor = if (glass) Color.Transparent else ground,
+        contentColor = G.colors.textPrimary, tonalElevation = 0.dp, shape = shape,
         contentWindowInsets = contentWindowInsets, sheetGesturesEnabled = dismissible,
         dragHandle = if (!handle) null else ({
             Box(Modifier.padding(top = 10.dp, bottom = 6.dp).size(width = 36.dp, height = 5.dp).background(rim, RoundedCornerShape(3.dp)))
@@ -400,14 +482,13 @@ fun GSheet(title: String, onDismiss: () -> Unit, summary: String? = null, closeT
 @Composable
 fun GSideDrawer(open: Boolean, onOpenChange: (Boolean) -> Unit, modifier: Modifier = Modifier, closeTitle: String = "Close",
                 drawer: @Composable ColumnScope.() -> Unit, content: @Composable () -> Unit) {
-    val colors = G.colors
     val still = gReduceMotion()
     var dragged by remember { mutableStateOf<Float?>(null) }
     BoxWithConstraints(modifier.fillMaxSize()) {
         val width = minOf(maxWidth * 0.85f, 340.dp)
         val widthPx = with(LocalDensity.current) { width.toPx() }
         val target = if (open) 0f else -widthPx
-        val animated by animateFloatAsState(target, if (still) snap() else tween(260), label = "drawer")
+        val animated by animateFloatAsState(target, if (still) snap() else GMotion.pane(), label = "drawer")
         val offset = dragged ?: animated
         val progress = ((offset + widthPx) / widthPx).coerceIn(0f, 1f)
         content()
@@ -416,8 +497,8 @@ fun GSideDrawer(open: Boolean, onOpenChange: (Boolean) -> Unit, modifier: Modifi
             Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.35f * progress))
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onOpenChange(false) }
                 .clearAndSetSemantics {})
-            Column(Modifier.width(width).fillMaxHeight().offset { IntOffset(offset.roundToInt(), 0) }.background(colors.surface)
-                .drawBehind { drawLine(colors.hairline, Offset(size.width - 0.5f, 0f), Offset(size.width - 0.5f, size.height), 1.dp.toPx()) }
+            Column(Modifier.width(width).fillMaxHeight().offset { IntOffset(offset.roundToInt(), 0) }
+                .gGlass(GGlassDensity.Thick, RoundedCornerShape(topEnd = GRadius.glass, bottomEnd = GRadius.glass))
                 .pointerInput(widthPx) {
                     detectHorizontalDragGestures(
                         onDragEnd = {
@@ -485,8 +566,8 @@ fun GCommandPalette(groups: List<GCommandGroup>, onDismiss: () -> Unit, prompt: 
         Box(Modifier.fillMaxSize().clickable(remember { MutableInteractionSource() }, indication = null, onClick = onDismiss),
             contentAlignment = Alignment.TopCenter) {
             Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 72.dp).widthIn(max = 620.dp).fillMaxWidth()
-                .shadow(24.dp, RoundedCornerShape(GRadius.lg)).background(colors.surface, RoundedCornerShape(GRadius.lg))
-                .border(1.dp, colors.border.copy(alpha = 0.6f), RoundedCornerShape(GRadius.lg)).clip(RoundedCornerShape(GRadius.lg))
+                .shadow(24.dp, RoundedCornerShape(GRadius.glass)).background(G.surfaceOpaque, RoundedCornerShape(GRadius.glass))
+                .border(gLiquidBorder(), RoundedCornerShape(GRadius.glass)).clip(RoundedCornerShape(GRadius.glass))
                 .clickable(remember { MutableInteractionSource() }, indication = null) {}
                 .semantics { paneTitle = name }
                 .onPreviewKeyEvent { event ->
@@ -511,7 +592,6 @@ fun GCommandPalette(groups: List<GCommandGroup>, onDismiss: () -> Unit, prompt: 
                             }
                         })
                 }
-                Box(Modifier.fillMaxWidth().height(1.dp).background(colors.hairline))
                 if (ordered.isEmpty()) {
                     Text(nothing, style = G.type.subheadline, color = colors.textSecondary, modifier = Modifier.fillMaxWidth().padding(24.dp),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center)
@@ -584,5 +664,121 @@ object GCommandSearch {
             (listOf(item.label) + listOfNotNull(item.detail) + item.keywords).any { fold(it).contains(folded) }
         }
         return matches.sortedBy { if (fold(it.label).startsWith(folded)) 0 else 1 }.take(limit)
+    }
+}
+
+// MARK: On the ground (4.0)
+
+/** The selection's lighter pill on liquid glass (the current tab, the current page of the rail). */
+@Composable
+private fun gLiquidSelection(): Color = if (G.ground.mode == GGroundMode.LIGHT) Color.White.copy(alpha = 0.62f) else Color.White.copy(alpha = 0.14f)
+
+/** A count's mark on the ground: rust, its number in white. */
+@Composable
+private fun GroundBadge(count: Int, modifier: Modifier) {
+    Text(gBadgeText(count), style = G.type.caption2.copy(fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
+        color = Color.White, modifier = modifier.background(G.colors.accent, RoundedCornerShape(GRadius.pill)).padding(horizontal = 5.dp, vertical = 1.dp))
+}
+
+@Composable
+private fun GroundTabBar(tabs: List<GTab>, selection: String, onSelect: (String) -> Unit, modifier: Modifier, backdrop: GBackdrop?) {
+    val colors = G.colors
+    val selected = gLiquidSelection()
+    Box(modifier.fillMaxWidth().zIndex(1f).windowInsetsPadding(WindowInsets.navigationBars)
+        .padding(horizontal = GSpacing.page, vertical = 8.dp)) {
+        GLiquidGlass(Modifier.fillMaxWidth(), backdrop = backdrop) {
+            Row(Modifier.fillMaxWidth().padding(5.dp), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                tabs.forEach { tab ->
+                    val current = tab.id == selection
+                    val tint = if (current) colors.accentText else colors.ink2
+                    Column(
+                        Modifier.weight(1f).heightIn(min = 52.dp).clip(RoundedCornerShape(GRadius.pill))
+                            .background(if (current) selected else Color.Transparent)
+                            .clickable(role = Role.Tab) { onSelect(tab.id) }
+                            .clearAndSetSemantics {
+                                contentDescription = tab.title
+                                this.selected = current
+                                if (tab.badge > 0) stateDescription = gBadgeText(tab.badge)
+                            },
+                        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
+                    ) {
+                        Box {
+                            if (tab.image != null) Image(painterResource(tab.image), null, Modifier.size(22.dp), colorFilter = ColorFilter.tint(tint))
+                            else GIcon(tab.icon, size = 19f, weight = if (current) FontWeight.SemiBold else FontWeight.Normal, color = tint)
+                            if (tab.badge > 0) GroundBadge(tab.badge, Modifier.align(Alignment.TopEnd).offset(14.dp, (-5).dp))
+                        }
+                        Text(tab.title, style = G.type.caption2.copy(fontWeight = if (current) FontWeight.SemiBold else FontWeight.Medium),
+                            color = if (current) colors.ink else colors.ink2, maxLines = 1)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GroundTopBar(
+    title: String?, modifier: Modifier, subtitle: String?, back: (() -> Unit)?, backTitle: String, statusBar: Boolean,
+    leading: @Composable RowScope.() -> Unit, center: (@Composable () -> Unit)?, trailing: @Composable RowScope.() -> Unit, floating: Boolean,
+) {
+    val colors = G.colors
+    val row = @Composable {
+        Box(Modifier.fillMaxWidth().heightIn(min = if (floating) 52.dp else 56.dp).padding(horizontal = 4.dp), contentAlignment = Alignment.CenterStart) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                if (back != null) GFrameButton("chevron.left", backTitle, onClick = back) else Spacer(Modifier.width(8.dp))
+                leading()
+                if (title != null && center == null) {
+                    Column(Modifier.weight(1f).padding(horizontal = 8.dp).semantics(mergeDescendants = true) { heading() }) {
+                        Text(title, style = G.type.headline, color = colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        if (!subtitle.isNullOrEmpty()) Text(subtitle, style = G.type.caption, color = colors.ink2, maxLines = 1)
+                    }
+                } else Spacer(Modifier.weight(1f))
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(if (floating) 0.dp else 6.dp)) { trailing() }
+            }
+            if (center != null) Box(Modifier.align(Alignment.Center)) { center() }
+        }
+    }
+    CompositionLocalProvider(LocalContentColor provides colors.ink, LocalGFrameStyle provides GFrameStyle.Ground) {
+        Box(modifier.fillMaxWidth().zIndex(1f).then(if (statusBar) Modifier.windowInsetsPadding(WindowInsets.statusBars) else Modifier)
+            .then(if (floating) Modifier.padding(horizontal = GSpacing.page, vertical = 6.dp) else Modifier.padding(end = 8.dp))) {
+            if (floating) GLiquidGlass(Modifier.fillMaxWidth()) { row() } else row()
+        }
+    }
+}
+
+@Composable
+private fun GroundFrameButton(icon: String, title: String, isOn: Boolean, onClick: () -> Unit) {
+    val colors = G.colors
+    val onLiquid = LocalGOnLiquid.current
+    val tint = if (isOn) colors.accentText else if (onLiquid) colors.ink2 else colors.ink
+    Box(Modifier.size(GControlMetrics.touchTarget).clip(CircleShape).clickable(role = Role.Button, onClick = onClick)
+        .semantics { contentDescription = title }, contentAlignment = Alignment.Center) {
+        if (onLiquid) GIcon(icon, size = 17f, color = tint)
+        else Box(Modifier.size(38.dp).gLiquidGlass(CircleShape), contentAlignment = Alignment.Center) {
+            GIcon(icon, size = 16f, color = tint)
+        }
+    }
+}
+
+@Composable
+private fun GroundRailItem(title: String, icon: String, current: Boolean, onClick: () -> Unit, badge: Int) {
+    val colors = G.colors
+    val shape = RoundedCornerShape(GRadius.xl)
+    Column(
+        Modifier.fillMaxWidth().heightIn(min = 56.dp).then(if (current) Modifier.gLiquidGlass(shape) else Modifier).clip(shape)
+            .clickable(role = Role.Tab, onClick = onClick)
+            .clearAndSetSemantics {
+                contentDescription = title
+                selected = current
+                if (badge > 0) stateDescription = gBadgeText(badge)
+            },
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
+    ) {
+        Box {
+            GIcon(icon, size = 18f, weight = if (current) FontWeight.SemiBold else FontWeight.Normal, color = if (current) colors.accent else colors.ink2)
+            if (badge > 0) GroundBadge(badge, Modifier.align(Alignment.TopEnd).offset(14.dp, (-6).dp))
+        }
+        Text(title, style = G.type.caption2.copy(fontWeight = if (current) FontWeight.SemiBold else FontWeight.Medium),
+            color = if (current) colors.ink else colors.ink2, maxLines = 1)
     }
 }

@@ -66,8 +66,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
-// Gabarit's forms, as on the iPhone: a page's title, sections as cards with rows of a constant height split by fine
-// lines, the sentence under a section, the side column's sections, underlined tabs.
+// Gabarit's forms, as on the iPhone: a page's title, sections as content glass with rows of a constant height (4.0: no
+// lines between them, unless a section asks for them), the sentence under a section, the side column's sections,
+// underlined tabs.
 
 /** A form's margins and spacing. */
 object GFormMetrics {
@@ -78,8 +79,14 @@ object GFormMetrics {
     val rowPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
 }
 
-/** Inside a form's card: its fields lose their rim at rest (the card is their frame). Set by the cards of Gabarit's forms. */
+/** Inside a form's card. Set by the cards of Gabarit's forms. */
 val LocalGFormCard = compositionLocalOf { false }
+
+/**
+ * Whether rows draw their fine line (`gRowDivider`, `GFormRow(divider = true)`…). 4.0: no, light is the edge of
+ * things; set by `GFormSection(separated = true)`, or provide it to keep 3.x's lines.
+ */
+val LocalGRowDividers = compositionLocalOf { false }
 
 /**
  * Rests on the page, like a card: a soft shadow, the light on the top edge, shade on the bottom one. Before the ground it
@@ -104,17 +111,30 @@ fun Modifier.gCardDepth(shape: Shape): Modifier {
     }
 }
 
-/** A form's card: the surface, a fine rim, the large radius; what it holds is cut to its corners. */
+/**
+ * A form's card (4.0): a regular content glass, the glass's radius, no rim; what it holds is cut to its corners. 3.x's
+ * card (the surface, a fine rim, the large radius): `gSurfaceCard()`.
+ */
 @Composable
 fun Modifier.gCard(): Modifier {
+    val shape = RoundedCornerShape(GRadius.glass)
+    return this.gGlass(GGlassDensity.Regular, shape).clip(shape)
+}
+
+/** 3.x's card: the opaque surface, a fine rim, the large radius, resting on the page. */
+@Composable
+fun Modifier.gSurfaceCard(): Modifier {
     val shape = RoundedCornerShape(GRadius.lg)
     return this.gCardDepth(shape).gSurface(shape, G.colors.surface, G.colors.hairline).clip(shape)
 }
 
-/** The fine line under a card's row, inset 16 from the leading edge (`show` false: nothing). */
+/**
+ * The fine line under a card's row, inset 16 from the leading edge (`show` false: nothing). 4.0: drawn only where
+ * lines are asked for (`LocalGRowDividers`, `GFormSection(separated = true)`).
+ */
 @Composable
 fun Modifier.gRowDivider(show: Boolean = true): Modifier {
-    if (!show) return this
+    if (!show || !LocalGRowDividers.current) return this
     val color = G.colors.hairline
     return drawBehind {
         val line = 1.dp.toPx()
@@ -134,18 +154,20 @@ fun GPageTitle(title: String, summary: String? = null, modifier: Modifier = Modi
 }
 
 /**
- * A form's section: its title, its rows in a card split by fine lines (inset 16 from the leading edge), its sentence
- * discreet below. Each row is laid by `GRow` or given as it is.
+ * A form's section: its title, its rows in a card (4.0: apart by 2, no line between them; `separated`: split by fine
+ * lines inset 16 from the leading edge, as 3.x), its sentence discreet below. Each row is laid by `GRow` or given as it is.
  */
 @Composable
-fun GFormSection(title: String? = null, footer: String? = null, modifier: Modifier = Modifier, rows: List<@Composable () -> Unit>) {
+fun GFormSection(title: String? = null, footer: String? = null, modifier: Modifier = Modifier, separated: Boolean = false,
+                 rows: List<@Composable () -> Unit>) {
     val colors = G.colors
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (title != null) GFormSectionTitle(title)
-        Column(Modifier.fillMaxWidth().gCard()) {
-            CompositionLocalProvider(LocalGFormCard provides true) {
+        Column(Modifier.fillMaxWidth().gCard().padding(vertical = if (separated) 0.dp else 4.dp),
+            verticalArrangement = Arrangement.spacedBy(if (separated) 0.dp else 2.dp)) {
+            CompositionLocalProvider(LocalGFormCard provides true, LocalGRowDividers provides separated) {
                 rows.forEachIndexed { index, row ->
-                    if (index > 0) Box(Modifier.padding(start = 16.dp).fillMaxWidth().height(1.dp).background(colors.hairline))
+                    if (index > 0 && separated) Box(Modifier.padding(start = 16.dp).fillMaxWidth().height(1.dp).background(colors.hairline))
                     row()
                 }
             }
@@ -155,14 +177,17 @@ fun GFormSection(title: String? = null, footer: String? = null, modifier: Modifi
 }
 
 /**
- * A form's section whose rows are laid as they come (`GFormRow`, `GToggleRow`…): each row draws its own line
- * (`divider`), the last one none.
+ * A form's section whose rows are laid as they come (`GFormRow`, `GToggleRow`…). 4.0: no line between them;
+ * `separated`: each row draws its own line (`divider`), the last one none, as 3.x.
  */
 @Composable
-fun GFormSection(title: String? = null, footer: String? = null, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+fun GFormSection(title: String? = null, footer: String? = null, modifier: Modifier = Modifier, separated: Boolean = false,
+                 content: @Composable ColumnScope.() -> Unit) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (title != null) GFormSectionTitle(title)
-        Column(Modifier.fillMaxWidth().gCard()) { CompositionLocalProvider(LocalGFormCard provides true) { content() } }
+        Column(Modifier.fillMaxWidth().gCard().padding(vertical = if (separated) 0.dp else 4.dp)) {
+            CompositionLocalProvider(LocalGFormCard provides true, LocalGRowDividers provides separated) { content() }
+        }
         if (footer != null) Text(footer, style = G.type.footnote, color = G.colors.textDiscret, modifier = Modifier.padding(horizontal = 4.dp))
     }
 }
@@ -240,8 +265,9 @@ fun GIconTile(icon: String, color: Color, size: Dp = 30.dp) {
 // MARK: Long forms
 
 /** A form's section as one item of a lazy list. */
-fun LazyListScope.gFormSection(title: String? = null, footer: String? = null, key: Any? = title, content: @Composable ColumnScope.() -> Unit) {
-    item(key = key) { GFormSection(title, footer, content = content) }
+fun LazyListScope.gFormSection(title: String? = null, footer: String? = null, key: Any? = title, separated: Boolean = false,
+                               content: @Composable ColumnScope.() -> Unit) {
+    item(key = key) { GFormSection(title, footer, separated = separated, content = content) }
 }
 
 /**
@@ -264,27 +290,18 @@ fun LazyListScope.gFormSectionRows(
 }
 
 /**
- * A card's slice, for a card laid row by row: the surface and its fine rim (the sides; the top on the first, the bottom
- * on the last), as `gCard`.
+ * A card's slice, for a card laid row by row: its part of the content glass, as `gCard` (the light on top of the first,
+ * the shadow under the last, the half-point rim of the whole card).
  */
 @Composable
 fun GFormCardSlice(first: Boolean, last: Boolean, content: @Composable ColumnScope.() -> Unit) {
-    val colors = G.colors
-    val r = GRadius.lg
+    val r = GRadius.glass
     val shape = RoundedCornerShape(topStart = if (first) r else 0.dp, topEnd = if (first) r else 0.dp,
         bottomStart = if (last) r else 0.dp, bottomEnd = if (last) r else 0.dp)
-    Column(Modifier.fillMaxWidth().clip(shape).background(colors.surface, shape).drawWithContent {
-        drawContent()
-        // The whole card's rim, drawn beyond the slice and cut to it: only the sides stay between two rows.
-        val line = 1.dp.toPx()
-        val radius = r.toPx()
-        val top = if (first) 0f else -radius * 2
-        val bottom = if (last) size.height else size.height + radius * 2
-        clipRect {
-            drawRoundRect(colors.hairline, topLeft = Offset(line / 2, top + line / 2), size = Size(size.width - line, bottom - top - line),
-                cornerRadius = CornerRadius(radius), style = Stroke(line))
-        }
-    }) { CompositionLocalProvider(LocalGFormCard provides true) { content() } }
+    Column(Modifier.fillMaxWidth().gGlassSlice(first, last).clip(shape)
+        .padding(top = if (first) 4.dp else 0.dp, bottom = if (last) 4.dp else 0.dp)) {
+        CompositionLocalProvider(LocalGFormCard provides true) { content() }
+    }
 }
 
 /**

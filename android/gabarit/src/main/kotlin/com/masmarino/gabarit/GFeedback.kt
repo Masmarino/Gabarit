@@ -57,10 +57,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.IntOffset
 import kotlinx.coroutines.delay
 
 // What Gabarit says back, as on the iPhone: badges, an empty page, placeholders while loading, the typing dots, passing
-// messages, an error's alert.
+// messages (liquid glass: they float), an error's alert (a dialog: dense glass, its edge of light).
 
 /** The states (success, warning, error, information), rather than the system's colours. */
 enum class GTone {
@@ -97,7 +98,7 @@ enum class GTone {
         }
 }
 
-/** A Gabarit surface: flat, a fine rim. */
+/** A Gabarit surface: flat, a fine rim (3.x's card and empty state; 4.0's panels are glass, `gGlass`). */
 fun Modifier.gSurface(shape: RoundedCornerShape = RoundedCornerShape(GRadius.md), ground: Color, rim: Color): Modifier =
     background(ground, shape).border(1.dp, rim, shape)
 
@@ -119,7 +120,7 @@ fun GEmptyState(icon: String, title: String, message: String, modifier: Modifier
     val colors = G.colors
     Column(modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(Modifier.size(80.dp).gSurface(RoundedCornerShape(GRadius.lg), colors.surface, colors.hairline), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(80.dp).gGlass(GGlassDensity.Thin, RoundedCornerShape(GRadius.glass)), contentAlignment = Alignment.Center) {
             GIcon(icon, size = 32f, weight = FontWeight.Light, color = colors.textSecondary)
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -189,8 +190,8 @@ class GToastState {
 fun rememberGToastState(): GToastState = remember { GToastState() }
 
 /**
- * The state's passing message at the bottom of `content`: the ink of a primary button, a floating shadow, said by
- * screen readers as it shows; it slides in (fades only with reduced motion).
+ * The state's passing message at the bottom of `content`: a pill of liquid glass (it floats), in the ink, said by
+ * screen readers as it shows; it slides in (fades only with reduced motion), at Gabarit's pace (`GMotion.smooth()`).
  */
 @Composable
 fun GToastHost(state: GToastState, modifier: Modifier = Modifier, durationMillis: Long = 2500, content: @Composable BoxScope.() -> Unit) {
@@ -206,14 +207,14 @@ fun GToastHost(state: GToastState, modifier: Modifier = Modifier, durationMillis
     Box(modifier) {
         content()
         AnimatedVisibility(toast != null, Modifier.align(Alignment.BottomCenter).padding(bottom = 32.dp),
-            enter = if (still) fadeIn() else fadeIn() + slideInVertically { it },
-            exit = if (still) fadeOut() else fadeOut() + slideOutVertically { it }) {
+            enter = if (still) fadeIn(GMotion.smooth<Float>()) else fadeIn(GMotion.smooth<Float>()) + slideInVertically(GMotion.pane<IntOffset>()) { it },
+            exit = if (still) fadeOut(GMotion.quick<Float>()) else fadeOut(GMotion.quick<Float>()) + slideOutVertically(GMotion.smooth<IntOffset>()) { it }) {
             val shown = toast ?: return@AnimatedVisibility
-            Row(Modifier.shadow(16.dp, RoundedCornerShape(GRadius.md)).background(colors.primary, RoundedCornerShape(GRadius.md))
+            Row(Modifier.gLiquidGlass(RoundedCornerShape(GRadius.pill))
                 .padding(horizontal = 20.dp, vertical = 12.dp).semantics { liveRegion = LiveRegionMode.Polite },
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                GIcon(shown.icon, size = 15f, color = colors.onPrimary)
-                Text(shown.text, style = G.type.subheadline.copy(fontWeight = FontWeight.Medium), color = colors.onPrimary)
+                GIcon(shown.icon, size = 15f, color = colors.ink)
+                Text(shown.text, style = G.type.subheadline.copy(fontWeight = FontWeight.Medium), color = colors.ink)
             }
         }
     }
@@ -224,7 +225,8 @@ fun GToastHost(state: GToastState, modifier: Modifier = Modifier, durationMillis
 fun GErrorAlert(title: String, message: String?, onDismiss: () -> Unit, ok: String = "OK") {
     if (message == null) return
     val colors = G.colors
-    AlertDialog(onDismissRequest = onDismiss, containerColor = G.surfaceOpaque, shape = RoundedCornerShape(GRadius.lg),
+    AlertDialog(onDismissRequest = onDismiss, containerColor = G.surfaceOpaque, shape = RoundedCornerShape(GRadius.glass),
+        modifier = Modifier.border(gLiquidBorder(), RoundedCornerShape(GRadius.glass)),
         title = { Text(title, style = G.type.title3, color = colors.textPrimary) },
         text = { Text(message, style = G.type.body, color = colors.textSecondary) },
         confirmButton = { TextButton(onDismiss) { Text(ok, style = G.type.body.copy(fontWeight = FontWeight.SemiBold), color = colors.accentText) } })
@@ -238,8 +240,9 @@ fun GErrorAlert(title: String, message: String?, onDismiss: () -> Unit, ok: Stri
 fun GAlert(title: String?, onDismiss: () -> Unit, confirm: @Composable () -> Unit, modifier: Modifier = Modifier, message: String? = null,
            dismiss: (@Composable () -> Unit)? = null, content: (@Composable ColumnScope.() -> Unit)? = null) {
     val colors = G.colors
-    AlertDialog(onDismissRequest = onDismiss, confirmButton = confirm, modifier = modifier, dismissButton = dismiss,
-        containerColor = G.surfaceOpaque, shape = RoundedCornerShape(GRadius.lg), tonalElevation = 0.dp,
+    AlertDialog(onDismissRequest = onDismiss, confirmButton = confirm, modifier = modifier.border(gLiquidBorder(), RoundedCornerShape(GRadius.glass)),
+        dismissButton = dismiss,
+        containerColor = G.surfaceOpaque, shape = RoundedCornerShape(GRadius.glass), tonalElevation = 0.dp,
         title = if (title.isNullOrEmpty()) null else ({ Text(title, style = G.type.title3, color = colors.textPrimary) }),
         text = if (message == null && content == null) null else ({
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {

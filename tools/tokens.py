@@ -823,7 +823,7 @@ def kotlin_motion() -> str:
     curves = {"easeInOut": "CubicBezierEasing(0.42f, 0f, 0.58f, 1f)", "easeOut": "CubicBezierEasing(0f, 0f, 0.58f, 1f)",
               "linear": "LinearEasing"}
     lines = [f"// {HEADER}", "package com.masmarino.gabarit", "",
-             "import androidx.compose.animation.core.AnimationSpec",
+             "import androidx.compose.animation.core.FiniteAnimationSpec",
              "import androidx.compose.animation.core.CubicBezierEasing",
              "import androidx.compose.animation.core.LinearEasing",
              "import androidx.compose.animation.core.spring",
@@ -836,7 +836,7 @@ def kotlin_motion() -> str:
             body = f"spring(dampingRatio = {kotlin_float(a['damping'])}, stiffness = {stiffness:.1f}f)"
         else:
             body = f"tween(durationMillis = {round(a['duration'] * 1000)}, easing = {curves[a['curve']]})"
-        lines.append(f"    fun <T> {name}(): AnimationSpec<T> = {body}")
+        lines.append(f"    fun <T> {name}(): FiniteAnimationSpec<T> = {body}")
     lines += [f"", f"    /** How far a page rises as it comes in, in dp. */",
               f"    const val pageRise = {kotlin_float(ANIMATIONS['page']['rise'])}",
               f"", f"    /** A tween's length in milliseconds (a spring's response, for a spring). */"]

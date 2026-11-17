@@ -1,7 +1,6 @@
 package com.masmarino.gabarit
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.IndicationNodeFactory
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
@@ -29,7 +28,7 @@ fun InteractionSource.gPressed(): Boolean {
     return pressed || LocalGPressedPreview.current
 }
 
-/** The press veil: quick to come, a little slower to go. */
+/** The press veil: quick to come (`GMotion.linear()`), a little slower to go (`GMotion.quick()`). */
 @Immutable
 internal data class GVeilIndication(val color: Color) : IndicationNodeFactory {
     override fun create(interactionSource: InteractionSource): DelegatableNode = GVeilNode(interactionSource, color)
@@ -42,8 +41,8 @@ private class GVeilNode(private val source: InteractionSource, private val color
         coroutineScope.launch {
             source.interactions.collect { interaction ->
                 when (interaction) {
-                    is PressInteraction.Press -> launch { strength.animateTo(1f, tween(70)) }
-                    is PressInteraction.Release, is PressInteraction.Cancel -> launch { strength.animateTo(0f, tween(160)) }
+                    is PressInteraction.Press -> launch { strength.animateTo(1f, GMotion.linear()) }
+                    is PressInteraction.Release, is PressInteraction.Cancel -> launch { strength.animateTo(0f, GMotion.quick()) }
                 }
             }
         }
