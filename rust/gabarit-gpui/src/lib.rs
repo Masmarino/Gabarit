@@ -1,8 +1,9 @@
-//! Gabarit's components for GPUI, from SkollN's design (GabaritApple is the reference): the tokens, the relief, the
-//! controls, the forms, the sheets, the frame's bars and menus, the feedback, the long list.
+//! Gabarit's components for GPUI, from SkollN's design (GabaritApple is the reference): the tokens, the ground and the
+//! glass (4.0), the relief, the controls, the forms, the sheets, the bars and menus, the feedback, the long list.
 //!
 //! At start-up: `theme::init(cx)` (IBM Plex, the theme), `text_field::bind_keys(cx)`, and the application's assets
-//! from `GAssets` (the icons).
+//! from `GAssets` (the icons). Then lay a `GGround` under the whole window and the rest on it: the panels in `GGlass`,
+//! what commands and floats in `GLiquidGlass`.
 
 pub mod assets;
 pub mod avatar;
@@ -11,6 +12,8 @@ pub mod button;
 pub mod controls;
 pub mod feedback;
 pub mod form;
+pub mod glass;
+pub mod ground;
 pub mod list;
 pub mod menu;
 pub mod motion;
@@ -20,6 +23,7 @@ pub mod sheet;
 pub mod text_field;
 pub mod theme;
 pub mod tokens;
+pub mod tone;
 
 pub use assets::{GAssets, icon};
 pub use avatar::GAvatar;
@@ -30,7 +34,9 @@ pub use feedback::{
     GBadge, GBanner, GEmptyState, GSkeleton, GToastCenter, GTone, GTypingDots, GUnreadBadge,
 };
 pub use form::{GForm, GFormButtons, GFormRowButton, GFormSection, GLabeledContent, GPageTitle};
-pub use list::{GLongList, GMessageRow};
+pub use glass::{GGlass, GGlassButton, GGlassDensity, GGlassTabs, GLiquidGlass, GMaterial};
+pub use ground::{GBackdrop, GGround, GGroundPaint};
+pub use list::{GInsetList, GLongList, GMessageRow};
 pub use menu::{
     GContextMenu, GMenu, GMenuBuilder, GMenuButton, GMenuClose, GMenuItem, GMenuPlacement,
     GSpotlight, shortcut_label,

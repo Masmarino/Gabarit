@@ -5,8 +5,10 @@
 //!     cargo run --release --bin galerie -- --measure-list     scrolls the 10,000 messages and prints the frames
 //!     cargo run --release --bin galerie -- --measure-start    prints the time to the first frame, then quits
 //!
-//! Pages: controls, states, forms, frame, feedback, sheet, menus, text, list. `--journal <file>`: what it says goes
-//! to that file (under Windows, a release build has no console).
+//!     cargo run --bin galerie -- --page glass --ground aurore     on one of the ambiances of `tokens::grounds`
+//!
+//! Pages: glass, controls, states, forms, frame, feedback, sheet, menus, text, list. `--journal <file>`: what it says
+//! goes to that file (under Windows, a release build has no console). Every page lies on the ground (4.0).
 
 // Under Windows, a window of its own, without a console beside it.
 #![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
@@ -31,6 +33,7 @@ actions!(galerie, [Quit, FocusNext, FocusPrevious]);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Page {
+    Glass,
     Controls,
     States,
     Forms,
@@ -43,7 +46,8 @@ enum Page {
 }
 
 impl Page {
-    const ALL: [Page; 9] = [
+    const ALL: [Page; 10] = [
+        Page::Glass,
         Page::Controls,
         Page::States,
         Page::Forms,
@@ -57,6 +61,7 @@ impl Page {
 
     fn name(self) -> &'static str {
         match self {
+            Page::Glass => "glass",
             Page::Controls => "controls",
             Page::States => "states",
             Page::Forms => "forms",
@@ -71,6 +76,7 @@ impl Page {
 
     fn title(self) -> &'static str {
         match self {
+            Page::Glass => "Ground and glass",
             Page::Controls => "Controls",
             Page::States => "States",
             Page::Forms => "Forms",
@@ -85,6 +91,7 @@ impl Page {
 
     fn icon(self) -> &'static str {
         match self {
+            Page::Glass => "sparkle",
             Page::Controls => "squares-four",
             Page::States => "sparkle",
             Page::Forms => "gear-six",
@@ -184,6 +191,8 @@ struct Gallery {
     volume: f64,
     reminders: i64,
     tab: usize,
+    glass_tab: usize,
+    chosen_row: usize,
     sheet_open: bool,
     sheet_name: Entity<GTextInput>,
     name: Entity<GTextInput>,
@@ -229,6 +238,8 @@ impl Gallery {
             volume: 0.6,
             reminders: 3,
             tab: 0,
+            glass_tab: 0,
+            chosen_row: 0,
             sheet_open: false,
             sheet_name: input(cx, |field| field.placeholder("Name of the space")),
             name: input(cx, |field| {
@@ -263,7 +274,6 @@ impl Gallery {
     }
 
     fn sidebar(&self, cx: &mut Context<Self>) -> impl IntoElement + use<> {
-        let colors = cx.theme().colors;
         let dark = cx.theme().is_dark();
         div()
             .flex()
@@ -273,9 +283,6 @@ impl Gallery {
             .h_full()
             .p(px(8.))
             .gap(px(2.))
-            .bg(colors.sidebar)
-            .border_r_1()
-            .border_color(colors.hairline)
             .children(Page::ALL.iter().map(|page| {
                 let page = *page;
                 GSidebarRow::new(page.name(), page.title(), page.icon(), self.page == page)
@@ -305,6 +312,232 @@ impl Gallery {
             .g_text(tokens::text::TITLE_2)
             .text_color(cx.theme().colors.text_primary)
             .child(SharedString::from(title.to_string()))
+    }
+
+    /// The ground, the content glass in its three densities, the liquid glass (a search, tabs, round buttons, a menu,
+    /// a tooltip) and a list without lines with its chosen row.
+    fn glass(&self, cx: &mut Context<Self>) -> AnyElement {
+        let colors = cx.theme().colors;
+        let ground = cx.theme().ground.name;
+        let panel = |density: &str, sentence: &str, glass: GGlass| {
+            glass
+                .flex()
+                .flex_col()
+                .flex_1()
+                .gap(px(6.))
+                .p(px(18.))
+                .h(px(132.))
+                .child(
+                    div()
+                        .g_text(tokens::text::HEADLINE)
+                        .text_color(colors.ink)
+                        .child(SharedString::from(density.to_string())),
+                )
+                .child(
+                    div()
+                        .g_text(tokens::text::SUBHEADLINE)
+                        .text_color(colors.ink_2)
+                        .child(SharedString::from(sentence.to_string())),
+                )
+        };
+        let people = [
+            ("Marie Curie", "You: with pleasure", "08:26"),
+            ("Paul Langevin", "The relay keeps every message", "08:28"),
+            ("Irène Joliot", "Writing…", "08:27"),
+            ("Léa Martin", "Tuesday or Thursday, as you like", "Sunday"),
+        ];
+        let rows = people.iter().map(|(name, line, time)| {
+            div()
+                .flex()
+                .items_center()
+                .gap(px(12.))
+                .w_full()
+                .child(GAvatar::new(*name).size(36.))
+                .child(
+                    div()
+                        .flex()
+                        .flex_col()
+                        .flex_1()
+                        .min_w_0()
+                        .child(
+                            div()
+                                .g_text(tokens::text::HEADLINE)
+                                .text_color(colors.ink)
+                                .child(*name),
+                        )
+                        .child(
+                            div()
+                                .g_text(tokens::text::SUBHEADLINE)
+                                .text_color(colors.ink_2)
+                                .whitespace_nowrap()
+                                .overflow_hidden()
+                                .text_ellipsis()
+                                .child(*line),
+                        ),
+                )
+                .child(
+                    div()
+                        .g_text(tokens::text::CAPTION)
+                        .text_color(colors.ink_3)
+                        .child(*time),
+                )
+        });
+        div()
+            .flex()
+            .flex_col()
+            .gap(px(tokens::spacing::GAP))
+            .max_w(px(860.))
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .gap(px(2.))
+                    .child(
+                        div()
+                            .g_text(tokens::text::DISPLAY)
+                            .text_color(colors.ink)
+                            .child("Ground and glass"),
+                    )
+                    .child(
+                        div()
+                            .g_text(tokens::text::SUBHEADLINE)
+                            .text_color(colors.ink_2)
+                            .child(SharedString::from(format!(
+                                "The ground « {ground} » runs under the whole window; the panels are content glass, \
+                                 what commands and floats is liquid glass."
+                            ))),
+                    ),
+            )
+            // The liquid glass: a search, tabs, round buttons.
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(12.))
+                    .child(
+                        GLiquidGlass::new()
+                            .flex()
+                            .items_center()
+                            .gap(px(8.))
+                            .w(px(250.))
+                            .h(px(34.))
+                            .px(px(14.))
+                            .child(icon("magnifying-glass", px(14.), colors.ink_3))
+                            .child(
+                                div()
+                                    .g_text(tokens::text::CALLOUT)
+                                    .text_color(colors.ink_3)
+                                    .child("Search in Messages"),
+                            ),
+                    )
+                    .child(
+                        GGlassTabs::new("glass-tabs", ["Messages", "Spaces", "Music"], self.glass_tab)
+                            .on_change(cx.listener(|this, tab, _, cx| {
+                                this.glass_tab = *tab;
+                                cx.notify();
+                            })),
+                    )
+                    .child(div().flex_1())
+                    .child(GGlassButton::new("glass-call", "bell", "Notifications"))
+                    .child(
+                        GGlassButton::new("glass-pin", "paperclip", "Attach")
+                            .preview(Some(GPointer::Hover)),
+                    )
+                    .child(GGlassButton::new("glass-settings", "gear-six", "Settings")),
+            )
+            // The content glass, in its three densities.
+            .child(
+                div()
+                    .flex()
+                    .gap(px(tokens::spacing::GAP))
+                    .child(panel(
+                        "Thin",
+                        "The most of the ground: a band, a column laid on it.",
+                        GGlass::thin(),
+                    ))
+                    .child(panel(
+                        "Regular",
+                        "A panel, a card: the default glass of content.",
+                        GGlass::regular(),
+                    ))
+                    .child(panel(
+                        "Thick",
+                        "What must read first: a sheet, a chosen row.",
+                        GGlass::thick(),
+                    )),
+            )
+            // A list without lines, its chosen row on thick glass; a menu and a tooltip in liquid glass.
+            .child(
+                div()
+                    .flex()
+                    .items_start()
+                    .gap(px(tokens::spacing::GAP))
+                    .child(
+                        GGlass::regular()
+                            .flex()
+                            .flex_col()
+                            .gap(px(8.))
+                            .w(px(380.))
+                            .p(px(10.))
+                            .child(
+                                div()
+                                    .px(px(8.))
+                                    .pt(px(6.))
+                                    .g_text(tokens::text::TITLE_3)
+                                    .text_color(colors.ink)
+                                    .child("Conversations"),
+                            )
+                            .child(
+                                GInsetList::new("glass-list")
+                                    .rows(rows)
+                                    .selected(Some(self.chosen_row))
+                                    .on_select(cx.listener(|this, row, _, cx| {
+                                        this.chosen_row = *row;
+                                        cx.notify();
+                                    })),
+                            ),
+                    )
+                    .child(
+                        div()
+                            .flex()
+                            .flex_col()
+                            .gap(px(14.))
+                            .w(px(240.))
+                            .child(
+                                GMenu::new()
+                                    .item(
+                                        GMenuItem::new("g-reply", "Reply")
+                                            .icon("arrow-bend-up-left")
+                                            .shortcut("secondary-r")
+                                            .preview(Some(GPointer::Hover)),
+                                    )
+                                    .item(GMenuItem::new("g-copy", "Copy the text").icon("copy"))
+                                    .item(
+                                        GMenuItem::new("g-mute", "Mute")
+                                            .icon("bell-slash")
+                                            .checked(true),
+                                    )
+                                    .separator()
+                                    .item(
+                                        GMenuItem::new("g-delete", "Delete")
+                                            .icon("trash")
+                                            .destructive(),
+                                    ),
+                            )
+                            .child(
+                                div().flex().child(
+                                    GLiquidGlass::new()
+                                        .radius(tokens::radius::MD)
+                                        .px(px(9.))
+                                        .py(px(4.))
+                                        .g_text(tokens::text::CAPTION)
+                                        .text_color(colors.ink)
+                                        .child(div().relative().child("A tooltip: liquid glass")),
+                                ),
+                            ),
+                    ),
+            )
+            .into_any_element()
     }
 
     fn controls(&self, cx: &mut Context<Self>) -> AnyElement {
@@ -662,7 +895,6 @@ impl Gallery {
                     .w(px(240.))
                     .p(px(8.))
                     .rounded(px(tokens::radius::LG))
-                    .bg(cx.theme().colors.sidebar)
                     .child(GSidebarRow::new("profile", "Profile", "user-circle", true))
                     .child(GSidebarRow::new("notif", "Notifications", "bell", false).detail("12"))
                     .child(GSidebarRow::new("privacy", "Privacy", "lock", false).warns()),
@@ -672,6 +904,7 @@ impl Gallery {
 
     fn frame(&self, cx: &mut Context<Self>) -> AnyElement {
         let frame = cx.theme().frame;
+        let colors = cx.theme().colors;
         div()
             .flex()
             .flex_col()
@@ -694,8 +927,6 @@ impl Gallery {
                             .gap(px(6.))
                             .w(px(84.))
                             .p(px(8.))
-                            .rounded(px(tokens::radius::LG))
-                            .bg(frame.ground)
                             .child(GRailItem::new("today", "Today", "sun", false))
                             .child(
                                 GRailItem::new("messages", "Messages", "chats-circle", true)
@@ -749,9 +980,35 @@ impl Gallery {
                     .gap(px(12.))
                     .h(px(52.))
                     .px(px(16.))
+                    .child(GBarTitle::new("Messages").subtitle("2 unread")),
+            )
+            .child(
+                div()
+                    .g_text(tokens::text::CAPTION)
+                    .text_color(colors.ink_3)
+                    .child("framed(): the dark frame of 3.x, an option"),
+            )
+            .child(
+                GWindowHeader::new("Settings")
+                    .subtitle("SkollN")
+                    .icon("gear-six")
+                    .framed()
+                    .rounded(tokens::radius::LG)
+                    .trailing(GCloseButton::new("header-close-framed").framed()),
+            )
+            .child(
+                div()
+                    .flex()
+                    .gap(px(6.))
+                    .w(px(84.))
+                    .p(px(8.))
                     .rounded(px(tokens::radius::LG))
                     .bg(frame.ground)
-                    .child(GBarTitle::new("Messages").subtitle("2 unread")),
+                    .child(
+                        GRailItem::new("messages-framed", "Messages", "chats-circle", true)
+                            .framed()
+                            .badge(4),
+                    ),
             )
             .into_any_element()
     }
@@ -830,10 +1087,7 @@ impl Gallery {
             .gap(px(18.))
             .max_w(px(640.))
             .child(
-                relief::page_ground(cx)
-                    .rounded(px(tokens::radius::LG))
-                    .border_1()
-                    .border_color(cx.theme().colors.hairline)
+                GGlass::thick()
                     .overflow_hidden()
                     .child(
                         GSheetTitle::new("New space", "A place to share with a few people.")
@@ -842,7 +1096,7 @@ impl Gallery {
                     .child(
                         GForm::new("sheet-preview")
                             .static_layout()
-                            .without_ground()
+                            .on_glass()
                             .section(
                                 GFormSection::new()
                                     .header("Members")
@@ -1016,10 +1270,11 @@ impl Gallery {
     fn list(&self, cx: &mut Context<Self>) -> AnyElement {
         let messages = self.messages.clone();
         let colors = cx.theme().colors;
-        div()
+        GGlass::regular()
             .flex()
             .flex_col()
             .size_full()
+            .overflow_hidden()
             .child(
                 div()
                     .flex()
@@ -1028,8 +1283,6 @@ impl Gallery {
                     .px(px(16.))
                     .h(px(52.))
                     .flex_none()
-                    .border_b_1()
-                    .border_color(colors.hairline)
                     .child(GAvatar::new("Marie Curie").size(28.).online(true))
                     .child(
                         div()
@@ -1120,6 +1373,7 @@ impl Render for Gallery {
         self.measure_frame(window, cx);
         let colors = cx.theme().colors;
         let page = match self.page {
+            Page::Glass => self.glass(cx),
             Page::Controls => self.controls(cx),
             Page::States => self.states(cx),
             Page::Forms => self.forms(cx),
@@ -1131,7 +1385,12 @@ impl Render for Gallery {
             Page::List => self.list(cx),
         };
         let content = if self.page == Page::List {
-            div().id("page").size_full().child(page)
+            div()
+                .id("page")
+                .size_full()
+                .pr(px(tokens::spacing::PAGE))
+                .pb(px(tokens::spacing::PAGE))
+                .child(page)
         } else {
             div()
                 .id("page")
@@ -1152,7 +1411,7 @@ impl Render for Gallery {
             .child(
                 GForm::new("sheet-form")
                     .static_layout()
-                    .without_ground()
+                    .on_glass()
                     .section(
                         GFormSection::new()
                             .header("Name")
@@ -1182,15 +1441,7 @@ impl Render for Gallery {
             .measure
             .as_ref()
             .map(|measure| (measure.render_start.clone(), measure.cpu.clone()));
-        let label = format!(
-            "{} · {}",
-            self.page.title(),
-            if cx.theme().is_dark() {
-                "dark"
-            } else {
-                "light"
-            }
-        );
+        let label = format!("{} · {}", self.page.title(), cx.theme().ground.name);
         div()
             .id("gallery")
             .track_focus(&self.focus)
@@ -1201,9 +1452,10 @@ impl Render for Gallery {
             .flex()
             .flex_col()
             .size_full()
-            .bg(colors.background)
             .font_family("IBM Plex Sans")
             .text_color(colors.text_primary)
+            // The ground under the whole window, header and column included.
+            .child(GGround::new().absolute().top_0().left_0().size_full())
             .child(
                 GWindowHeader::new(match std::env::var("GABARIT_TEXTE").as_deref() {
                     Ok("cleartype") => "Gabarit — ClearType",
@@ -1221,13 +1473,11 @@ impl Render for Gallery {
                     .flex_1()
                     .min_h_0()
                     .child(self.sidebar(cx))
-                    .child(
-                        relief::page_ground(cx)
-                            .flex_1()
-                            .min_w_0()
-                            .h_full()
-                            .child(content),
-                    ),
+                    .child(div().flex_1().min_w_0().h_full().child(content.g_enter(
+                        SharedString::from(format!("page-{}", self.page.name())),
+                        GMotion::page(),
+                        cx,
+                    ))),
             )
             .child(self.toasts.clone())
             .children(sheet)
@@ -1305,6 +1555,12 @@ fn main() {
         None
     };
     let open_sheet = flag("--sheet");
+    let ground = value("--ground").map(|name| {
+        *tokens::grounds::ALL
+            .iter()
+            .find(|ground| ground.name.eq_ignore_ascii_case(&name))
+            .unwrap_or_else(|| panic!("no ground named {name}"))
+    });
 
     let stage = move |name: &str| {
         if measure_start || JOURNAL.get().is_some() {
@@ -1352,6 +1608,9 @@ fn main() {
                     match appearance {
                         Some(appearance) => theme::set_appearance(appearance, cx),
                         None => theme::follow_system_appearance(window, cx),
+                    }
+                    if ground.is_some() {
+                        theme::set_ground(ground, GAppearance::Light, cx);
                     }
                     cx.new(|cx| {
                         let mut gallery = Gallery::new(page, cx);

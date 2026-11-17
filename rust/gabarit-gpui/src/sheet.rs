@@ -1,6 +1,7 @@
 //! Gabarit's sheet (GabaritApple's `GSheet.swift`): always the title large in the sheet and the cross on the right, on
-//! the page's grey, never the dark frame: what tells a sheet from a page (SkollN's rule). What it does ("Create",
-//! "Start") is a button in the sheet. Escape closes it.
+//! thick glass (4.0: a sheet holds content, a form: never liquid glass), no outline, never the dark frame: what tells a
+//! sheet from a page (SkollN's rule). What it does ("Create", "Start") is a button in the sheet. Escape closes it. A
+//! form in a sheet: `GForm::on_glass()`.
 
 use std::rc::Rc;
 use std::sync::Arc;
@@ -13,8 +14,9 @@ use gpui::{
 use crate::assets::icon;
 use crate::button::{ClickHandler, GCloseButton};
 use crate::form::metrics;
+use crate::glass::{GGlassDensity, GMaterial, glass_on};
 use crate::motion::{self, GMotion, GMotionExt};
-use crate::relief::{Live, floating_shadow, page_ground, raised};
+use crate::relief::{Live, raised};
 use crate::theme::{ActiveTheme, GTextExt, alpha, black};
 use crate::tokens::{radius, text};
 
@@ -209,30 +211,31 @@ impl RenderOnce for GSheet {
         });
         let focus = focus.read(cx).clone();
         let (escape, outside) = (self.on_close.clone(), self.on_close.clone());
-        let panel = page_ground(cx)
-            .id("g-sheet")
-            .track_focus(&focus)
-            .role(Role::Dialog)
-            .aria_label(SharedString::from("Sheet"))
-            .occlude()
-            .flex()
-            .flex_col()
-            .w(px(self.width))
-            .max_h_full()
-            .overflow_hidden()
-            .rounded(px(radius::XXXL))
-            .border_1()
-            .border_color(colors.hairline)
-            .shadow(floating_shadow())
-            .text_color(colors.text_primary)
-            .on_key_down(move |event: &KeyDownEvent, window, cx| {
-                if event.keystroke.key == "escape" {
-                    escape(&ClickEvent::default(), window, cx);
-                    cx.stop_propagation();
-                }
-            })
-            .child(self.title)
-            .child(div().flex_1().min_h_0().child(self.content));
+        let panel = glass_on(
+            div(),
+            GMaterial::content(GGlassDensity::Thick),
+            px(radius::GLASS),
+            cx,
+        )
+        .id("g-sheet")
+        .track_focus(&focus)
+        .role(Role::Dialog)
+        .aria_label(SharedString::from("Sheet"))
+        .occlude()
+        .flex()
+        .flex_col()
+        .w(px(self.width))
+        .max_h_full()
+        .overflow_hidden()
+        .text_color(colors.text_primary)
+        .on_key_down(move |event: &KeyDownEvent, window, cx| {
+            if event.keystroke.key == "escape" {
+                escape(&ClickEvent::default(), window, cx);
+                cx.stop_propagation();
+            }
+        })
+        .child(self.title)
+        .child(div().flex_1().min_h_0().child(self.content));
         // It opens on the panes' spring, rising a little as a slight zoom would, its veil fading in; it leaves
         // quicker, sinking. Less motion: plain fades (`GMotionExt`).
         let named =

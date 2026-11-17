@@ -536,39 +536,10 @@ fn light(item: &GMenuItem, on: bool, count: usize, cx: &App) -> AnyElement {
         .into_any_element()
 }
 
-/// The card's material, for the menu and the pill above it.
+/// The card's material, for the menu and the pill above it: liquid glass (4.0), the ground blurred short under it,
+/// its light brighter at the top left, its short shadow; no outline.
 pub(crate) fn card_material(base: gpui::Div, radius: Pixels, cx: &App) -> gpui::Div {
-    let colors = cx.theme().colors;
-    let dark = cx.theme().is_dark();
-    // No blur behind in GPUI: the surface, lifted a touch in dark.
-    let ground = if dark {
-        alpha(mix(colors.surface, white(1.0), 0.035), 1.0)
-    } else {
-        alpha(colors.surface, 1.0)
-    };
-    let rim = if dark {
-        white(0.10)
-    } else {
-        alpha(colors.hairline, 0.6)
-    };
-    base.relative()
-        .rounded(radius)
-        .bg(ground)
-        .border_1()
-        .border_color(rim)
-        .shadow(menu_shadow(dark))
-        // The light on the top edge, just inside the rim.
-        .child(
-            div()
-                .absolute()
-                .top(px(0.))
-                .left(px(0.))
-                .right(px(0.))
-                .bottom(px(0.))
-                .rounded(radius - px(1.))
-                .border_t_1()
-                .border_color(if dark { white(0.07) } else { white(0.9) }),
-        )
+    crate::glass::glass_on(base, crate::glass::GMaterial::liquid(), radius, cx)
 }
 
 /// A menu's shadow, from Gabarit's tokens: a fine contact shadow (`shadows::RAISED`) and a soft wide one

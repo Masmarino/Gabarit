@@ -1,9 +1,10 @@
-//! Gabarit's depth, a little of it (GabaritApple's `GRelief.swift`). Three levels: the page; what rests on it (a card:
-//! a soft shadow and the light on its top edge); what can be pressed (a button, a chip: a little volume, a tighter
-//! shadow, and it sinks when pressed). What holds a value (a switch's track, a slider's, a field) is slightly hollow,
-//! and what is on (a switch, the current tab, a selection) glows a little. One light, from above: top edges catch it,
-//! bottom edges fall into shade, the page is lit at its top. A hairline stays the edge of things: all this only adds
-//! to it.
+//! Gabarit's depth, a little of it (GabaritApple's `GRelief.swift`). Three levels: the ground under the window; what
+//! rests on it (a card: since 4.0, a panel of glass, its light on its edge and a wide soft shadow, `glass.rs`); what can
+//! be pressed (a button, a chip: a little volume, a tighter shadow, and it sinks when pressed). What holds a value (a
+//! switch's track, a slider's, a field) is slightly hollow, and what is on (a switch, the current tab, a selection)
+//! glows a little. One light, from above: top edges catch it, bottom edges fall into shade. Light is the edge of
+//! things: a hairline stays only on the controls (a field's outline at 3:1, the focus ring), never around a card nor
+//! between rows.
 //!
 //! GPUI has what it takes: shadows (outer and inset), two-stop linear gradients, borders per side. A gradient border
 //! is not one of them: the light on a top edge is a top border alone, which GPUI draws thinning along the rounded
@@ -14,6 +15,7 @@ use gpui::{
     Stateful, Styled, div, linear_color_stop, linear_gradient, prelude::*, px,
 };
 
+use crate::glass::{GGlassDensity, GMaterial, glass_on};
 use crate::theme::{ActiveTheme, alpha, black, mix, white};
 use crate::tokens::shadows;
 
@@ -196,9 +198,40 @@ pub(crate) fn raised<E: Styled + ParentElement>(
     }
 }
 
-/// The light on a card that rests on the page (`gCardDepth`): light on the top edge, shade on the bottom one, just
-/// inside its hairline.
-pub(crate) fn card_layers(radius: Pixels, cx: &App) -> [AnyElement; 2] {
+/// The soft shadow of a 3.x card on the page (`shadows::CARD`). A 4.0 card casts the glass's (`GMaterial::shadows`).
+pub fn card_shadow(cx: &App) -> Vec<BoxShadow> {
+    let card = shadows::CARD;
+    vec![
+        BoxShadow::new(px(card.x), px(card.y), cx.theme().colors.card_shadow)
+            .blur_radius(px(card.radius)),
+    ]
+}
+
+/// A card that rests on the ground (4.0): a panel of regular glass, its light on its edge, no hairline, the glass's
+/// wide soft shadow (`GGlass::regular()` as a `div`; the content goes after). `radius`: `GRadius.lg` for a form's card,
+/// `radius::GLASS` for a panel.
+pub fn card(radius: Pixels, cx: &App) -> Div {
+    glass_on(
+        div(),
+        GMaterial::content(GGlassDensity::Regular),
+        radius,
+        cx,
+    )
+}
+
+/// A card laid on another glass (a form's section in a sheet): regular glass, nested (its tint and its light).
+pub fn nested_card(radius: Pixels, cx: &App) -> Div {
+    glass_on(
+        div(),
+        GMaterial::content(GGlassDensity::Regular).nested(),
+        radius,
+        cx,
+    )
+}
+
+/// The 3.x card: its surface, its hairline, a soft shadow and the light on its top edge (`gSurface`). Kept for an app
+/// that is not on a ground yet.
+pub fn surface_card(radius: Pixels, cx: &App) -> Div {
     let colors = &cx.theme().colors;
     let inner = |element: Div| {
         element
@@ -209,31 +242,6 @@ pub(crate) fn card_layers(radius: Pixels, cx: &App) -> [AnyElement; 2] {
             .bottom(px(1.))
             .rounded(radius - px(1.))
     };
-    [
-        inner(div())
-            .border_t_1()
-            .border_color(colors.relief_highlight)
-            .into_any_element(),
-        inner(div())
-            .border_b_1()
-            .border_color(colors.relief_shade)
-            .into_any_element(),
-    ]
-}
-
-/// The soft shadow of a card on the page.
-pub fn card_shadow(cx: &App) -> Vec<BoxShadow> {
-    let card = shadows::CARD;
-    vec![
-        BoxShadow::new(px(card.x), px(card.y), cx.theme().colors.card_shadow)
-            .blur_radius(px(card.radius)),
-    ]
-}
-
-/// A card that rests on the page: its surface, its hairline, a soft shadow and the light on its top edge
-/// (`gSurface`). `radius`: `GRadius.lg` for a form's card.
-pub fn card(radius: Pixels, cx: &App) -> Div {
-    let colors = &cx.theme().colors;
     div()
         .relative()
         .bg(colors.surface)
@@ -241,7 +249,12 @@ pub fn card(radius: Pixels, cx: &App) -> Div {
         .border_1()
         .border_color(colors.hairline)
         .shadow(card_shadow(cx))
-        .children(card_layers(radius, cx))
+        .child(
+            inner(div())
+                .border_t_1()
+                .border_color(colors.relief_highlight),
+        )
+        .child(inner(div()).border_b_1().border_color(colors.relief_shade))
 }
 
 /// A slight hollow, for what holds a value (a field, a track): an inner shadow from the top edge (`gHollow`).
@@ -288,8 +301,24 @@ pub fn bar_shadow(up: bool) -> Vec<BoxShadow> {
     ]
 }
 
-/// The page's ground: Gabarit's background, lit at its top (`gPageGround`).
+/// The page's ground (4.0): the window's ground (`GGround`'s picture, at its place in the window), for a page that
+/// lays its own. A page laid on a `GGround` needs none (a plain `div` shows it).
 pub fn page_ground(cx: &App) -> Div {
+    div().relative().child(
+        crate::ground::layer(
+            crate::ground::GGroundPaint::of(cx),
+            crate::ground::GBackdrop::Sharp,
+            gpui::Corners::default(),
+        )
+        .absolute()
+        .top_0()
+        .left_0()
+        .size_full(),
+    )
+}
+
+/// The 3.x page's ground: Gabarit's background, lit at its top (`gPageGround`).
+pub fn lit_background(cx: &App) -> Div {
     let colors = &cx.theme().colors;
     let lit = mix(colors.background, white(1.0), colors.page_light.a);
     div().bg(linear_gradient(

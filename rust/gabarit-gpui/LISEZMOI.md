@@ -7,25 +7,48 @@ carte graphique : la base de l'app de bureau SkollN (Windows, Linux, Mac). Le re
 | Dossier, fichier        | Ce qu'il contient                                                                                         |
 | ----------------------- | --------------------------------------------------------------------------------------------------------- |
 | `src/tokens.rs`         | Les jetons, **générés** par `tools/tokens.py` depuis `tokens/gabarit.json` : ne pas modifier à la main.    |
-| `src/theme.rs`          | Le thème clair ou sombre (`cx.theme()`), le cadre sombre, IBM Plex, les styles de texte (`g_text`).        |
-| `src/motion.rs`         | Le mouvement : durées (`QUICK` 0,15 s, `NORMAL` 0,25 s, `SLOW`), ressorts (`SPRING`, `BOUNCY`, `SNAPPY`), entrées et sorties (`GMotion`, `g_enter`, `g_exit`, `g_enter_on_change`, `g_collapse`), couleurs et calques qui fondent au survol ; « Réduire les animations » : de simples fondus courts. |
-| `src/relief.rs`         | Le relief : carte posée, bouton en volume qui s'enfonce, creux, lueur, ombres, sol éclairé.               |
+| `src/theme.rs`          | Le thème clair ou sombre (`cx.theme()`), le sol et son ton (`set_ground`), les couleurs des barres sur le sol et celles du cadre sombre (en option), « Réduire la transparence », « Augmenter le contraste », IBM Plex, les styles de texte (`g_text`). |
+| `src/tone.rs`           | Le ton d'un sol apporté par l'app (voile, encres, blanc du verre liquide), le calcul de `tools/tokens.py`. |
+| `src/ground.rs`         | Le sol (`GGround`) : le dégradé et sa lumière, peints en image une fois (net, et flouté pour le verre), sous toute la fenêtre. |
+| `src/glass.rs`          | Le verre de contenu (`GGlass` : thin, regular, thick) et le verre liquide (`GLiquidGlass`, `GGlassButton`, `GGlassTabs`). |
+| `src/motion.rs`         | Le mouvement : durées (`QUICK` 0,15 s, `NORMAL` 0,25 s, `SLOW`, `GROUND` 0,45 s), ressorts (`SPRING`, `BOUNCY`, `SNAPPY`, `PAGE`, `SHARED`), `GMotion::page` et `GMotion::ground`, entrées et sorties (`GMotion`, `g_enter`, `g_exit`, `g_enter_on_change`, `g_collapse`), couleurs et calques qui fondent au survol ; « Réduire les animations » : de simples fondus courts. |
+| `src/relief.rs`         | Le relief : carte posée (un verre depuis la 4.0), bouton en volume qui s'enfonce, creux, lueur, ombres.   |
 | `src/button.rs`         | `GButton` (primary, secondary, ghost, danger, destructeur), `GCloseButton`.                               |
 | `src/controls.rs`       | `GToggle` (et `GSwitch`), `GCheckbox`, `GSlider`, `GStepper`.                                             |
 | `src/picker.rs`         | `GPicker` : menu (la liste en `GMenu`, la coche sur le choix) ou pastilles.                               |
 | `src/text_field.rs`     | `GTextInput` (l'état), `GTextField` (titre et cadre), `GFieldFrame` : une ligne ou plusieurs.             |
 | `src/form.rs`           | `GForm`, `GFormSection`, `GFormRowButton`, `GLabeledContent`, `GFormButtons`, `GPageTitle`, les mesures. |
-| `src/sheet.rs`          | `GSheet` et `GSheetTitle` : l'en-tête toujours sur le gris de la page.                                    |
+| `src/sheet.rs`          | `GSheet` (verre épais, sans contour) et `GSheetTitle`.                                                    |
 | `src/menu.rs`           | `GMenu` (carte, sections, sous-menus, raccourcis, clavier), `GContextMenu` (clic droit), `GMenuButton`.   |
-| `src/bars.rs`           | `GWindowHeader`, `GBarTitle`, `GNavTabs`, `GPageBand`, `GRailItem`, `GSidebarRow`.                         |
+| `src/bars.rs`           | `GWindowHeader`, `GBarTitle`, `GNavTabs`, `GPageBand`, `GRailItem`, `GSidebarRow` : sur le sol, ou sur le cadre sombre (`framed()`). |
 | `src/feedback.rs`       | `GBadge`, `GBanner`, `GToastCenter`, bulle d'aide, `GSkeleton`, `GTypingDots`, `GEmptyState`, `GUnreadBadge`. |
-| `src/list.rs`           | `GLongList` (la liste virtualisée, sa barre de défilement) et `GMessageRow`.                              |
+| `src/list.rs`           | `GLongList` (la liste virtualisée, sa barre de défilement), `GMessageRow`, `GInsetList` (sans séparateurs). |
 | `src/avatar.rs`         | `GAvatar` : initiales sur la couleur de la personne, non-lus, présence.                                   |
-| `src/bin/galerie.rs`    | La galerie : tous les composants, en clair et en sombre.                                                  |
+| `src/bin/galerie.rs`    | La galerie : tous les composants, en clair et en sombre, sur le sol (`--ground aurore` : une ambiance).   |
 | `fonts/`, `icons/`      | IBM Plex (SIL OFL, copie de celles de GabaritApple) ; les icônes Phosphor utiles (MIT), et quatre dessinées pour Gabarit. |
 | `correctifs/`           | `gpui-pre-wgpu` corrigé : les émojis en couleur sous Linux (voir « Les correctifs de GPUI »).                |
 | `captures/`             | Les captures de la galerie sur le Mac (et une sous Windows, une sous Linux).                              |
-| `tests/`                | Les jetons contre `GTokens.swift` ; la saisie (composition, UTF-16, émojis, arabe, hébreu, presse-papiers). |
+| `tests/`                | Les jetons contre `GTokens.swift` ; le ton et les rôles du sol ; la saisie (composition, UTF-16, émojis, arabe, hébreu, presse-papiers). |
+
+## Le sol et le verre (4.0)
+
+Un seul **sol** court sous toute la fenêtre, rail et en-tête compris : `GGround` (à poser sous toute la fenêtre), le sol
+clair ou sombre de Gabarit selon l'apparence, ou celui de l'app (`theme::set_ground(Some(grounds::AURORE), …)`, son ton
+calculé une fois par `tone::tone`). Dessus, **deux verres** : le verre de contenu (`GGlass`, `relief::card`) pour les
+panneaux, le verre liquide (`GLiquidGlass`, les menus, les bulles d'aide, l'onglet ouvert, `GGlassButton`,
+`GGlassTabs`) pour ce qui commande et flotte, **jamais pour le contenu**. La lumière est le bord des choses : plus de
+trait autour des cartes ni entre les rangées ; le trait reste sur les contrôles (contour d'un champ, anneau du focus).
+
+GPUI ne floute pas ce qui est derrière un élément. Mais sous le verre il n'y a que le sol, fixe : `ground.rs` en
+calcule l'image une fois (640 points de côté, gardée par sol et par proportion de fenêtre), nette pour le sol,
+floutée et saturée pour le verre, et chaque verre en peint la partie qui est sous lui, à sa place dans la fenêtre
+(`Window::paint_image` et ses deux rectangles). La limite : un verre posé sur un autre verre ne floute pas celui de
+dessous ; il se dessine `nested` (sa teinte et sa lumière). Une fenêtre qui flotte sur le bureau peut demander un vrai
+flou au système (`WindowBackgroundAppearance::Blurred`).
+
+Le cadre graphite de la 3.x reste possible : `framed()` sur `GWindowHeader`, `GPageBand`, `GRailItem`, `GBarTitle`,
+`GCloseButton`. « Réduire la transparence » (`theme::set_reduce_transparency`) rend le verre dense ; « Augmenter le
+contraste » (`theme::set_increase_contrast`) change le reflet en contour.
 
 ## GPUI : la version
 
@@ -81,9 +104,11 @@ de texte a son état dans une entité : `cx.new(|cx| GTextInput::new(cx).multi_l
 ```sh
 cd rust/gabarit-gpui
 cargo run --bin galerie                          # la galerie, dans l'apparence du système
-cargo run --bin galerie -- --page states --dark  # une page : controls, states, forms, frame, feedback, sheet, menus, text, list
+cargo run --bin galerie -- --page states --dark  # une page : glass, controls, states, forms, frame, feedback, sheet, menus, text, list
+cargo run --bin galerie -- --page glass --ground aurore   # sur une ambiance de tokens::grounds
 cargo test                                       # jetons et saisie
 ./capture.sh                                     # les captures de chaque page, clair et sombre, dans captures/
+GROUND=aurore ./capture.sh captures glass        # une page sur une ambiance : captures/glass-aurore.png
 cargo build --release --bin galerie              # la galerie optimisée, sans symboles
 ./target/release/galerie --measure-start         # le temps jusqu'à la première image
 ./target/release/galerie --measure-list          # fait défiler les 10 000 messages dix secondes, puis les chiffres
@@ -105,7 +130,7 @@ cargo build --release --bin galerie
 ```
 
 En release, la galerie n'a pas de console (`windows_subsystem = "windows"`) : ce qu'elle dit va dans le fichier donné
-par `--journal`. Elle dessine elle-même les boutons de la fenêtre (réduire, agrandir, fermer), sur l'en-tête sombre.
+par `--journal`. Elle dessine elle-même les boutons de la fenêtre (réduire, agrandir, fermer), sur l'en-tête.
 
 Vérifier depuis le Mac que tout compile pour Windows, sans le PC :
 

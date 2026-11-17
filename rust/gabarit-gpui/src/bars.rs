@@ -1,6 +1,7 @@
-//! Gabarit's frame (GabaritApple's `GBars.swift`, `GFrame.swift`, `GRows.swift`): the header and the left rail are
-//! always dark (graphite 950), whatever the appearance; the content follows light or dark. Bar buttons are flat, the
-//! title in IBM Plex, the selection underlined in rust. And the side column's rows.
+//! Gabarit's bars (GabaritApple's `GBars.swift`, `GFrame.swift`, `GRows.swift`). In 4.0 the header, the bands and the
+//! left rail lie right on the ground, with no ground of their own, in its ink (`GTheme::bars`); the open page of the
+//! rail is liquid glass. The dark frame of 3.x (graphite 950, whatever the appearance) stays an option: `framed()` on
+//! each bar. Bar buttons are flat, the title in IBM Plex, the selection underlined in rust. And the side column's rows.
 
 use std::rc::Rc;
 use std::sync::Arc;
@@ -16,7 +17,7 @@ use crate::button::ClickHandler;
 use crate::controls::ChangeHandler;
 use crate::feedback::badge_text;
 use crate::motion::{self, GMotion, GMotionExt};
-use crate::relief::{GPointer, bar_shadow, glow, glow_through};
+use crate::relief::{GPointer, bar_shadow, glow};
 use crate::theme::{ActiveTheme, GTextExt, alpha, white};
 use crate::tokens::{opacity, radius, text};
 
@@ -30,12 +31,14 @@ pub fn frame_ground(cx: &App) -> Div {
     ))
 }
 
-/// A bar's title (`GBarTitle`): IBM Plex, light on the frame, dark on a sheet's grey.
+/// A bar's title (`GBarTitle`): IBM Plex, in the ground's ink (light on the dark frame, `framed()`; the content's
+/// colours in a sheet).
 #[derive(IntoElement)]
 pub struct GBarTitle {
     title: SharedString,
     subtitle: Option<SharedString>,
     in_sheet: bool,
+    framed: bool,
 }
 
 impl GBarTitle {
@@ -44,7 +47,14 @@ impl GBarTitle {
             title: title.into(),
             subtitle: None,
             in_sheet: false,
+            framed: false,
         }
+    }
+
+    /// On the dark frame (3.x's bars).
+    pub fn framed(mut self) -> Self {
+        self.framed = true;
+        self
     }
 
     pub fn subtitle(mut self, subtitle: impl Into<SharedString>) -> Self {
@@ -64,7 +74,8 @@ impl RenderOnce for GBarTitle {
         let (title, discret) = if self.in_sheet {
             (theme.colors.text_primary, theme.colors.text_discret)
         } else {
-            (theme.frame.text, theme.frame.text_discret)
+            let bar = theme.bar_colors(self.framed);
+            (bar.text, bar.text_discret)
         };
         div()
             .id(SharedString::from(format!("g-bar-title-{}", self.title)))
@@ -101,6 +112,7 @@ pub struct GNavTabs {
     selected: usize,
     preview: Option<(usize, GPointer)>,
     on_change: Option<ChangeHandler<usize>>,
+    separated: bool,
 }
 
 impl GNavTabs {
@@ -115,7 +127,14 @@ impl GNavTabs {
             selected,
             preview: None,
             on_change: None,
+            separated: false,
         }
+    }
+
+    /// A fine line under the whole row of tabs (3.x's default; 4.0 has only the open tab's line).
+    pub fn separated(mut self) -> Self {
+        self.separated = true;
+        self
     }
 
     /// Draws one tab hovered or pressed (a gallery).
@@ -188,8 +207,9 @@ impl RenderOnce for GNavTabs {
             .items_end()
             .gap(px(20.))
             .w_full()
-            .border_b_1()
-            .border_color(colors.hairline)
+            .when(self.separated, |this| {
+                this.border_b_1().border_color(colors.hairline)
+            })
             .children(self.tabs.into_iter().enumerate().map(|(index, title)| {
                 let current = index == self.selected;
                 // The current tab's line is the sliding one, once measured.
@@ -264,8 +284,9 @@ impl RenderOnce for GNavTabs {
     }
 }
 
-/// The header of a window drawn by the app (`GWindowHeader`): the dark frame, an icon, a title and a subtitle, and on
-/// the right what one puts there (the close cross). A fine line borders it at the bottom; it casts a shadow on the page.
+/// The header of a window drawn by the app (`GWindowHeader`): an icon, a title and a subtitle, and on the right what
+/// one puts there (the close cross), right on the ground in its ink (4.0). `framed()`: the dark frame of 3.x, a fine
+/// line at the bottom and a shadow on the page.
 #[derive(IntoElement)]
 pub struct GWindowHeader {
     title: SharedString,
@@ -277,6 +298,7 @@ pub struct GWindowHeader {
     top_radius: f32,
     window_controls: bool,
     window_buttons: bool,
+    framed: bool,
 }
 
 impl GWindowHeader {
@@ -291,7 +313,14 @@ impl GWindowHeader {
             top_radius: 0.,
             window_controls: false,
             window_buttons: true,
+            framed: false,
         }
+    }
+
+    /// On the dark frame (graphite 950, 3.x's header): its ground, a fine line at the bottom, its shadow.
+    pub fn framed(mut self) -> Self {
+        self.framed = true;
+        self
     }
 
     pub fn subtitle(mut self, subtitle: impl Into<SharedString>) -> Self {
@@ -433,10 +462,12 @@ pub fn window_button_click(area: WindowControlArea, window: &mut Window) {
 
 impl RenderOnce for GWindowHeader {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let frame = cx.theme().frame;
+        let framed = self.framed;
+        let frame = cx.theme().bar_colors(framed);
         let buttons = self.window_controls && self.window_buttons && draws_window_buttons(window);
         let drag = self.window_controls;
-        let header = frame_ground(cx)
+        let ground = if framed { frame_ground(cx) } else { div() };
+        let header = ground
             .id("g-window-header")
             .role(Role::Banner)
             .flex()
@@ -451,9 +482,11 @@ impl RenderOnce for GWindowHeader {
             .when(self.top_radius > 0., |this| {
                 this.rounded_t(px(self.top_radius))
             })
-            .border_b_1()
-            .border_color(frame.line)
-            .shadow(bar_shadow(false))
+            .when(framed, |this| {
+                this.border_b_1()
+                    .border_color(frame.line)
+                    .shadow(bar_shadow(false))
+            })
             .when_some(self.icon, |this, name| {
                 this.child(icon(name, px(18.), frame.text))
             })
@@ -562,7 +595,8 @@ impl RenderOnce for GWindowHeader {
     }
 }
 
-/// The dark band at the head of a page (`GPageBand`): an icon in a framed square, the title, the sentence.
+/// The band at the head of a page (`GPageBand`): an icon on a square of liquid glass, the title, the sentence, right on
+/// the ground (4.0). `framed()`: 3.x's dark band, the icon in a framed square.
 #[derive(IntoElement)]
 pub struct GPageBand {
     icon: &'static str,
@@ -570,6 +604,7 @@ pub struct GPageBand {
     summary: SharedString,
     radius: f32,
     top: f32,
+    framed: bool,
 }
 
 impl GPageBand {
@@ -584,7 +619,14 @@ impl GPageBand {
             summary: summary.into(),
             radius: 0.,
             top: 6.,
+            framed: false,
         }
+    }
+
+    /// On the dark frame (3.x's band).
+    pub fn framed(mut self) -> Self {
+        self.framed = true;
+        self
     }
 
     /// The margin above (GabaritApple's `top`): 6 under a bar, more alone on a page.
@@ -602,8 +644,18 @@ impl GPageBand {
 
 impl RenderOnce for GPageBand {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let frame = cx.theme().frame;
-        frame_ground(cx)
+        let framed = self.framed;
+        let frame = cx.theme().bar_colors(framed);
+        let square = if framed {
+            div()
+                .rounded(px(radius::MD))
+                .border_1()
+                .border_color(frame.rim)
+        } else {
+            crate::glass::glass_on(div(), crate::glass::GMaterial::liquid(), px(radius::XL), cx)
+        };
+        let ground = if framed { frame_ground(cx) } else { div() };
+        ground
             .flex()
             .items_center()
             .gap(px(14.))
@@ -612,17 +664,14 @@ impl RenderOnce for GPageBand {
             .pt(px(self.top))
             .pb(px(18.))
             .rounded(px(self.radius))
-            .shadow(bar_shadow(false))
+            .when(framed, |this| this.shadow(bar_shadow(false)))
             .child(
-                div()
+                square
                     .flex()
                     .flex_none()
                     .items_center()
                     .justify_center()
                     .size(px(48.))
-                    .rounded(px(radius::MD))
-                    .border_1()
-                    .border_color(frame.rim)
                     .child(icon(self.icon, px(22.), frame.text)),
             )
             .child(
@@ -646,8 +695,9 @@ impl RenderOnce for GPageBand {
     }
 }
 
-/// A page of the dark rail (`GRailItem`): the icon and its name; the current page in rust, on a slight ground, with a
-/// line on the left.
+/// A page of the rail (`GRailItem`): the icon and its name, on the ground in its ink (4.0); the current page on liquid
+/// glass, its icon in rust. `framed()`: 3.x's dark rail, the current page in rust on a slight ground with a line on
+/// the left.
 #[derive(IntoElement)]
 pub struct GRailItem {
     id: ElementId,
@@ -657,6 +707,7 @@ pub struct GRailItem {
     badge: usize,
     preview: Option<GPointer>,
     on_click: Option<ClickHandler>,
+    framed: bool,
 }
 
 impl GRailItem {
@@ -674,7 +725,14 @@ impl GRailItem {
             badge: 0,
             preview: None,
             on_click: None,
+            framed: false,
         }
+    }
+
+    /// On the dark frame (3.x's rail).
+    pub fn framed(mut self) -> Self {
+        self.framed = true;
+        self
     }
 
     pub fn badge(mut self, count: usize) -> Self {
@@ -701,21 +759,26 @@ impl RenderOnce for GRailItem {
         // The pointer over it, as a state: the hover's ground fades in and out (GPUI's hover style would jump).
         let (hovered, on_hover) = motion::use_hover(self.id.clone(), window, cx);
         let theme = cx.theme();
-        let (frame, accent) = (theme.frame, theme.colors.accent);
+        let framed = self.framed;
+        let (frame, accent) = (theme.bar_colors(framed), theme.colors.accent);
         let lit = self.preview.is_some();
         let pressed = self.preview == Some(GPointer::Pressed);
-        let foreground = if self.current {
+        let foreground = if self.current && framed {
             accent
-        } else if lit {
+        } else if self.current || lit {
             frame.text
-        } else {
+        } else if framed {
             frame.text_discret
+        } else {
+            frame.text_secondary
         };
+        let icon_color = if self.current { accent } else { foreground };
+        let on_accent = theme.colors.on_primary;
         // The grounds are layers that fade: the hover's veil, the current page's ground (on a click, it fades in
         // while the old page's fades out).
         let follows = self.preview.is_none();
         let hover_on = !self.current && (lit || (follows && hovered));
-        let selected_on = pressed || self.current;
+        let selected_on = pressed || (self.current && framed);
         let (selected, hover_text) = (frame.selected, frame.text);
         let current = self.current;
         let label = if self.badge > 0 {
@@ -733,7 +796,7 @@ impl RenderOnce for GRailItem {
             .gap(px(3.))
             .w_full()
             .min_h(px(52.))
-            .rounded(px(radius::SM))
+            .rounded(px(if framed { radius::SM } else { radius::ROW }))
             .text_color(foreground)
             .role(Role::Tab)
             .aria_label(label)
@@ -755,41 +818,51 @@ impl RenderOnce for GRailItem {
                         this.on_click(move |event, window, cx| handler(event, window, cx))
                     })
             })
+            // On the ground, the current page is liquid glass (its light, its short shadow).
+            .when(self.current && !framed, |this| {
+                this.shadow(crate::glass::GMaterial::liquid().shadows(cx))
+                    .child(crate::glass::glass_layer(
+                        crate::glass::GMaterial::liquid(),
+                        px(radius::ROW),
+                    ))
+            })
             .child(motion::fading_layer(
                 "g-rail-hover",
                 hover_on,
                 frame.hover,
-                px(radius::SM),
+                px(if framed { radius::SM } else { radius::ROW }),
             ))
             .child(motion::fading_layer(
                 "g-rail-selected",
                 selected_on,
                 frame.selected,
-                px(radius::SM),
+                px(if framed { radius::SM } else { radius::ROW }),
             ))
-            // The line on the left fades with the ground.
-            .child(motion::spring_to(
-                div()
-                    .absolute()
-                    .left_0()
-                    .top(px(6.))
-                    .bottom(px(6.))
-                    .w(px(2.))
-                    .bg(accent)
-                    .shadow(vec![glow(accent, 5.)]),
-                "g-rail-line",
-                motion::SNAPPY,
-                current,
-                cx,
-                |line, phase: gpui::AnimationPhase| line.opacity(phase.0.clamp(0., 1.)),
-            ))
+            // The line on the left fades with the ground (the dark frame only).
+            .when(framed, |this| {
+                this.child(motion::spring_to(
+                    div()
+                        .absolute()
+                        .left_0()
+                        .top(px(6.))
+                        .bottom(px(6.))
+                        .w(px(2.))
+                        .bg(accent)
+                        .shadow(vec![glow(accent, 5.)]),
+                    "g-rail-line",
+                    motion::SNAPPY,
+                    current,
+                    cx,
+                    |line, phase: gpui::AnimationPhase| line.opacity(phase.0.clamp(0., 1.)),
+                ))
+            })
             .child(
                 div()
                     .relative()
                     .h(px(22.))
                     .flex()
                     .items_center()
-                    .child(icon(self.icon, px(20.), foreground))
+                    .child(icon(self.icon, px(20.), icon_color))
                     .when(self.badge > 0, |this| {
                         // A new count pops in (not when the rail is first drawn).
                         this.child(
@@ -798,8 +871,8 @@ impl RenderOnce for GRailItem {
                                     .px(px(4.))
                                     .py(px(1.))
                                     .rounded(px(radius::XS))
-                                    .bg(frame.rim)
-                                    .text_color(frame.text)
+                                    .when(framed, |this| this.bg(frame.rim).text_color(frame.text))
+                                    .when(!framed, |this| this.bg(accent).text_color(on_accent))
                                     .g_text(text::CAPTION_2)
                                     .font_weight(gpui::FontWeight::SEMIBOLD)
                                     .whitespace_nowrap()
@@ -830,7 +903,7 @@ impl RenderOnce for GRailItem {
 }
 
 /// A section in a column (`GSidebarRow`): a monochrome icon and its name, at a constant height; the chosen section on
-/// a soft ground, in rust; the others, the veil on hover. `warns`: a warning dot on the right.
+/// thick glass with its light (4.0; a soft rust ground that glowed in 3.x), in rust; the others, the veil on hover. `warns`: a warning dot on the right.
 #[derive(IntoElement)]
 pub struct GSidebarRow {
     id: ElementId,
@@ -904,8 +977,9 @@ impl RenderOnce for GSidebarRow {
             alpha(colors.row_hover, 0.0)
         };
         let hover_on = !selected && !pressed && (lit || hovered);
+        // The chosen section in the ink, its icon in rust (4.0): rust text would fade on an ambiance.
         let foreground = if selected {
-            colors.accent_text
+            colors.text_primary
         } else {
             colors.text_secondary
         };
@@ -922,13 +996,6 @@ impl RenderOnce for GSidebarRow {
             .px(px(10.))
             .rounded(px(radius::MD))
             .bg(ground)
-            .when(selected && !pressed, |this| {
-                this.shadow(vec![glow_through(
-                    colors.accent,
-                    if lit { 6. } else { 4. },
-                    colors.selected_fill,
-                )])
-            })
             .role(Role::Tab)
             .aria_label(self.title.clone())
             .aria_selected(selected)
@@ -948,12 +1015,10 @@ impl RenderOnce for GSidebarRow {
                 colors.row_hover,
                 px(radius::MD),
             ))
-            .child(motion::fading_layer(
-                "g-row-selected",
-                selected && !pressed,
-                colors.selected_fill,
-                px(radius::MD),
-            ))
+            // The chosen section on thick glass (4.0), as a `GInsetList`'s chosen row.
+            .when(selected && !pressed, |this| {
+                this.child(crate::glass::selection_layer(px(radius::MD)))
+            })
             .child(
                 div()
                     .flex()
@@ -988,7 +1053,7 @@ impl RenderOnce for GSidebarRow {
                     div()
                         .g_text(text::CALLOUT)
                         .text_color(if selected {
-                            colors.accent_text
+                            colors.text_secondary
                         } else {
                             colors.text_discret
                         })

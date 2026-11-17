@@ -249,3 +249,115 @@ impl RenderOnce for GMessageRow {
             )
     }
 }
+
+/// A list laid in a glass, without lines (`GInsetList`, 4.0): rows two points apart, rounded (`radius::ROW`), the
+/// pointer's row under a veil (`row_hover`), the chosen one on thick glass with its light. Each row is what one puts
+/// in it (an avatar, a name, a sentence); `on_select` says which was clicked.
+#[derive(IntoElement)]
+pub struct GInsetList {
+    id: ElementId,
+    rows: Vec<AnyElement>,
+    selected: Option<usize>,
+    preview: Option<(usize, crate::relief::GPointer)>,
+    on_select: Option<crate::controls::ChangeHandler<usize>>,
+}
+
+impl GInsetList {
+    pub fn new(id: impl Into<ElementId>) -> Self {
+        GInsetList {
+            id: id.into(),
+            rows: Vec::new(),
+            selected: None,
+            preview: None,
+            on_select: None,
+        }
+    }
+
+    pub fn row(mut self, row: impl IntoElement) -> Self {
+        self.rows.push(row.into_any_element());
+        self
+    }
+
+    pub fn rows(mut self, rows: impl IntoIterator<Item = impl IntoElement>) -> Self {
+        self.rows
+            .extend(rows.into_iter().map(IntoElement::into_any_element));
+        self
+    }
+
+    /// The chosen row.
+    pub fn selected(mut self, index: Option<usize>) -> Self {
+        self.selected = index;
+        self
+    }
+
+    /// Draws one row hovered or pressed (a gallery).
+    pub fn preview(mut self, row: usize, pointer: crate::relief::GPointer) -> Self {
+        self.preview = Some((row, pointer));
+        self
+    }
+
+    pub fn on_select(mut self, handler: impl Fn(&usize, &mut Window, &mut App) + 'static) -> Self {
+        self.on_select = Some(Rc::new(move |value, window, cx| {
+            handler(&value, window, cx)
+        }));
+        self
+    }
+}
+
+impl RenderOnce for GInsetList {
+    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+        let colors = cx.theme().colors;
+        let (hover, press) = (colors.row_hover, alpha(colors.ink, 0.08));
+        let shape = px(radius::ROW);
+        let follows = self.preview.is_none();
+        div()
+            .id(self.id)
+            .role(Role::List)
+            .flex()
+            .flex_col()
+            .gap(px(2.))
+            .w_full()
+            .children(self.rows.into_iter().enumerate().map(|(index, row)| {
+                let chosen = self.selected == Some(index);
+                let forced = self
+                    .preview
+                    .filter(|(row, _)| *row == index)
+                    .map(|(_, pointer)| match pointer {
+                        crate::relief::GPointer::Hover => hover,
+                        crate::relief::GPointer::Pressed => press,
+                    });
+                let handler = self.on_select.clone();
+                div()
+                    .id(("g-inset-row", index))
+                    .relative()
+                    .flex()
+                    .items_center()
+                    .gap(px(12.))
+                    .w_full()
+                    .px(px(12.))
+                    .py(px(9.))
+                    .rounded(shape)
+                    .role(Role::ListItem)
+                    .aria_selected(chosen)
+                    .when(chosen, |this| {
+                        this.child(crate::glass::selection_layer(shape))
+                    })
+                    .when(!chosen, |this| {
+                        this.when_some(forced, |this, color| this.bg(color))
+                            .when(follows, |this| {
+                                this.hover(move |style| style.bg(hover))
+                                    .active(move |style| style.bg(press))
+                            })
+                    })
+                    .when(follows, |this| {
+                        this.cursor(gpui::CursorStyle::PointingHand).when_some(
+                            handler,
+                            |this, handler| {
+                                this.on_click(move |_, window, cx| handler(index, window, cx))
+                            },
+                        )
+                    })
+                    .child(row)
+            }))
+    }
+}

@@ -165,6 +165,11 @@ fn geometry_matches_swift() {
     assert_eq!(number(&spacing["xs"]), tokens::spacing::XS);
     assert_eq!(number(&spacing["xxl"]), tokens::spacing::XXL);
     assert_eq!(number(&spacing["xxxxxl"]), tokens::spacing::XXXXXL);
+    // `page` and `gap` are narrower on the phone (`#if os(iOS)`): the computer's value is the `#else` one, read last.
+    assert_eq!(number(&spacing["page"]), tokens::spacing::PAGE);
+    assert_eq!(number(&spacing["gap"]), tokens::spacing::GAP);
+    assert_eq!(number(&radius["glass"]), tokens::radius::GLASS);
+    assert_eq!(number(&radius["row"]), tokens::radius::ROW);
     let opacity: HashMap<_, _> = lets(&block(&source, "GOpacity")).into_iter().collect();
     assert_eq!(number(&opacity["disabled"]), tokens::opacity::DISABLED);
 
@@ -206,6 +211,7 @@ fn text_styles_match_swift() {
         ("caption", tokens::text::CAPTION),
         ("caption2", tokens::text::CAPTION_2),
         ("mono", tokens::text::MONO),
+        ("display", tokens::text::DISPLAY),
     ];
     assert_eq!(styles.len(), rust.len());
     for ((name, value), (rust_name, style)) in styles.iter().zip(rust) {

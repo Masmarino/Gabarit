@@ -2,9 +2,10 @@
 //! the transitions every screen shares, so that a whole app moves the same way (GabaritApple's `.snappy`, `.smooth`,
 //! `.bouncy` and its transitions).
 //!
-//! - [`QUICK`], [`NORMAL`], [`SLOW`]: the durations; [`SPRING`], [`BOUNCY`], [`SNAPPY`]: the springs.
+//! - [`QUICK`], [`NORMAL`], [`SLOW`], [`GROUND`]: the durations; [`SPRING`], [`BOUNCY`], [`SNAPPY`], [`PAGE`],
+//!   [`SHARED`]: the springs.
 //! - [`GMotion`]: an entrance (a fade, a rise, a slide, a pop), played by [`GMotionExt::g_enter`] the first time an
-//!   element is drawn under its id, or by [`GMotionExt::g_enter_on_change`] each time a value changes (not when it is
+//!   element is drawn under its id (4.0: [`GMotion::page`] for a page, [`GMotion::ground`] for a new ground), or by [`GMotionExt::g_enter_on_change`] each time a value changes (not when it is
 //!   first drawn); [`GMotionExt::g_exit`] plays it backwards, for what its owner keeps on screen while it leaves.
 //! - [`GMotionExt::g_collapse`]: an element that folds away (its height to nothing), [`GMotionExt::g_unfold`] the
 //!   other way.
@@ -61,6 +62,22 @@ pub const SPRING: SpringConfig = spring_of(animations::PANE);
 pub const BOUNCY: SpringConfig = spring_of(animations::BOUNCY);
 /// A quick spring without bounce: a knob, a tab's line, a colour.
 pub const SNAPPY: SpringConfig = spring(0.28, 1.0);
+/// A page's spring (`animations::PAGE`, 4.0): quick, settled.
+pub const PAGE: SpringConfig = spring_of(animations::PAGE);
+/// The spring of what moves from one place to another (`animations::SHARED`, 4.0): a selection's glass that slides
+/// to the new row, a tile that grows into a page.
+pub const SHARED: SpringConfig = spring_of(animations::SHARED);
+/// The ground's change (`animations::GROUND`, 4.0): a slow fade, 0.45 s.
+pub const GROUND: Duration = duration_of(animations::GROUND);
+
+const fn duration_of(curve: GAnimationCurve) -> Duration {
+    match curve {
+        GAnimationCurve::EaseInOut { duration }
+        | GAnimationCurve::EaseOut { duration }
+        | GAnimationCurve::Linear { duration } => Duration::from_millis((duration * 1000.0) as u64),
+        GAnimationCurve::Spring { .. } => NORMAL,
+    }
+}
 
 /// Whether the system asks for less motion (Gabarit's theme holds it).
 pub fn reduced(cx: &App) -> bool {
@@ -142,6 +159,23 @@ impl GMotion {
         GMotion {
             offset: (0., 18.),
             spring: Some(SPRING),
+            ..Self::fade()
+        }
+    }
+
+    /// A page that comes in (4.0): a fade and a rise of `animations::PAGE_RISE` (8 points), on the page's spring.
+    pub const fn page() -> Self {
+        GMotion {
+            offset: (0., animations::PAGE_RISE),
+            spring: Some(PAGE),
+            ..Self::fade()
+        }
+    }
+
+    /// A new ground (4.0): a plain fade over the old one, 0.45 s.
+    pub const fn ground() -> Self {
+        GMotion {
+            duration: GROUND,
             ..Self::fade()
         }
     }

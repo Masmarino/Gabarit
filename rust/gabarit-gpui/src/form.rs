@@ -1,6 +1,7 @@
 //! Gabarit's settings pages (GabaritApple's `GForm.swift`), like Discord's or the Mac's System Settings: the page's
-//! title large in the page (no band), its sections as crisp cards on the ground, a reading width aligned left, rows
-//! of a constant height split by a fine line, a section's sentence discreet below.
+//! title large in the page (no band), its sections as panels of glass on the ground (4.0), a reading width aligned
+//! left, rows of a constant height two points apart, without lines (`separated()` for the fine line of 3.x), a
+//! section's sentence discreet below.
 
 use std::rc::Rc;
 
@@ -11,7 +12,7 @@ use gpui::{
 
 use crate::assets::icon;
 use crate::button::{ClickHandler, GButton};
-use crate::relief::{GPointer, card, page_ground};
+use crate::relief::{GPointer, card, nested_card, page_ground};
 use crate::theme::{ActiveTheme, GTextExt, alpha};
 use crate::tokens::{opacity, radius, text};
 
@@ -248,13 +249,15 @@ enum Row {
     Bare(AnyElement),
 }
 
-/// A section: its title, its rows in a card (or right on the ground), its sentence discreet below.
+/// A section: its title, its rows in a card of glass (or right on the ground), its sentence discreet below.
 #[derive(IntoElement)]
 pub struct GFormSection {
     header: Option<SharedString>,
     header_icon: Option<&'static str>,
     footer: Option<SharedString>,
     rows: Vec<Row>,
+    separated: bool,
+    nested: bool,
 }
 
 impl GFormSection {
@@ -264,7 +267,21 @@ impl GFormSection {
             header_icon: None,
             footer: None,
             rows: Vec::new(),
+            separated: false,
+            nested: false,
         }
+    }
+
+    /// A fine line between the rows (3.x's default; 4.0's rows are only spaced).
+    pub fn separated(mut self) -> Self {
+        self.separated = true;
+        self
+    }
+
+    /// Its card laid on another glass (a sheet): `GForm::without_ground` sets it on its sections.
+    pub fn nested(mut self) -> Self {
+        self.nested = true;
+        self
     }
 
     pub fn header(mut self, header: impl Into<SharedString>) -> Self {
@@ -338,9 +355,17 @@ impl RenderOnce for GFormSection {
             ));
         } else if !self.rows.is_empty() {
             let shape = px(radius::LG);
-            let mut card = card(shape, cx).flex().flex_col();
+            let card = if self.nested {
+                nested_card(shape, cx)
+            } else {
+                card(shape, cx)
+            };
+            let mut card = card
+                .flex()
+                .flex_col()
+                .when(!self.separated, |this| this.gap(px(2.)).py(px(2.)));
             for (index, row) in self.rows.into_iter().enumerate() {
-                if index > 0 {
+                if index > 0 && self.separated {
                     card = card.child(div().pl(px(16.)).child(div().h(px(1.)).bg(colors.hairline)));
                 }
                 card = card.child(match row {
@@ -419,6 +444,7 @@ pub struct GForm {
     sections: Vec<GFormSection>,
     scrolls: bool,
     ground: bool,
+    nested: bool,
 }
 
 impl GForm {
@@ -430,6 +456,7 @@ impl GForm {
             sections: Vec::new(),
             scrolls: true,
             ground: true,
+            nested: false,
         }
     }
 
@@ -463,7 +490,14 @@ impl GForm {
         self
     }
 
-    /// On the ground laid by its container (a sheet).
+    /// Laid on a glass (a sheet): no ground of its own, its sections' cards nested on that glass.
+    pub fn on_glass(mut self) -> Self {
+        self.ground = false;
+        self.nested = true;
+        self
+    }
+
+    /// On the ground laid by its container (a page on a `GGround`).
     pub fn without_ground(mut self) -> Self {
         self.ground = false;
         self
@@ -474,6 +508,7 @@ impl RenderOnce for GForm {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
         let in_page = self.title.is_some();
+        let nested = self.nested;
         let margin = if in_page {
             metrics::PAGE_MARGIN
         } else {
@@ -512,7 +547,11 @@ impl RenderOnce for GForm {
                     .flex()
                     .flex_col()
                     .gap(px(metrics::SECTION_SPACING))
-                    .children(self.sections),
+                    .children(
+                        self.sections
+                            .into_iter()
+                            .map(|section| if nested { section.nested() } else { section }),
+                    ),
             );
         let content = div()
             .w_full()
@@ -520,12 +559,20 @@ impl RenderOnce for GForm {
             .pt(px(if in_page { metrics::PAGE_TOP } else { 16. }))
             .pb(px(48.))
             .child(column);
-        let base = if self.ground { page_ground(cx) } else { div() };
-        let page = base.id(self.id).size_full().text_color(colors.text_primary);
-        if self.scrolls {
+        // The ground stays in place while the page scrolls over it.
+        let page = div()
+            .id(self.id)
+            .size_full()
+            .text_color(colors.text_primary);
+        let page = if self.scrolls {
             page.overflow_y_scroll().child(content)
         } else {
             page.child(content)
+        };
+        if self.ground {
+            page_ground(cx).size_full().child(page).into_any_element()
+        } else {
+            page.into_any_element()
         }
     }
 }

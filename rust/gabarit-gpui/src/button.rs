@@ -284,13 +284,14 @@ impl RenderOnce for GButton {
     }
 }
 
-/// Gabarit's close button: a cross in a circle with a fine rim, on the dark frame or on the page. Escape triggers it
-/// where the window binds it.
+/// Gabarit's close button: a cross in a circle, on a bar (4.0: a circle of liquid glass on the ground; with a fine rim on
+/// the dark frame, `framed()`) or on the page. Escape triggers it where the window binds it.
 #[derive(IntoElement)]
 pub struct GCloseButton {
     id: ElementId,
     label: SharedString,
     on_frame: bool,
+    framed: bool,
     preview: Option<GPointer>,
     on_click: Option<ClickHandler>,
 }
@@ -301,14 +302,22 @@ impl GCloseButton {
             id: id.into(),
             label: "Close".into(),
             on_frame: false,
+            framed: false,
             preview: None,
             on_click: None,
         }
     }
 
-    /// On the dark frame (a window's header).
+    /// On a bar (a window's header): on the ground, liquid glass in its ink (4.0).
     pub fn on_frame(mut self) -> Self {
         self.on_frame = true;
+        self
+    }
+
+    /// On the dark frame (a `framed()` header, 3.x's look): implies `on_frame`.
+    pub fn framed(mut self) -> Self {
+        self.on_frame = true;
+        self.framed = true;
         self
     }
 
@@ -335,7 +344,8 @@ impl RenderOnce for GCloseButton {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = cx.theme();
         let colors = theme.colors;
-        let frame = theme.frame;
+        let frame = theme.bar_colors(self.framed);
+        let liquid = self.on_frame && !self.framed;
         let live = Live::new("g-close", self.preview, true);
         let (hover, pressed) = if self.on_frame {
             (frame.close_hover, frame.selected)
@@ -360,7 +370,40 @@ impl RenderOnce for GCloseButton {
         } else {
             rest
         };
-        let mut button = div()
+        let base = if liquid {
+            // GPUI paints a box's ground under its children: on the glass, the hover is a layer over it.
+            let (forced, follows) = (
+                if live.pressed() {
+                    Some(pressed)
+                } else if live.hovered() {
+                    Some(hover)
+                } else {
+                    None
+                },
+                live.follows(),
+            );
+            crate::glass::glass_on(div(), crate::glass::GMaterial::liquid(), px(14.), cx).child(
+                div()
+                    .id("g-close-veil")
+                    .absolute()
+                    .top_0()
+                    .left_0()
+                    .size_full()
+                    .rounded_full()
+                    .when_some(forced, |this, color| this.bg(color))
+                    .when(follows, |this| {
+                        this.group_hover("g-close", move |style| style.bg(hover))
+                            .group_active("g-close", move |style| style.bg(pressed))
+                    }),
+            )
+        } else {
+            div().border_1().border_color(if self.on_frame {
+                frame.rim
+            } else {
+                colors.hairline
+            })
+        };
+        let mut button = base
             .id(self.id)
             .group("g-close")
             .relative()
@@ -371,12 +414,6 @@ impl RenderOnce for GCloseButton {
             .size(circle)
             .rounded_full()
             .bg(ground)
-            .border_1()
-            .border_color(if self.on_frame {
-                frame.rim
-            } else {
-                colors.hairline
-            })
             .text_color(if self.on_frame {
                 frame.text
             } else {

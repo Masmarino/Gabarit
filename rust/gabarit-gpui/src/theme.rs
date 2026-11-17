@@ -1,4 +1,9 @@
-//! The colours by role for the current appearance, the dark frame's colours, IBM Plex and the text styles.
+//! The colours by role for the current appearance, the ground under the window and its tone (4.0), the colours of the
+//! bars laid on that ground (and of the dark frame, now an option), IBM Plex and the text styles.
+//!
+//! The ground (`GTheme::ground`) is Gabarit's light or dark one by default, after the appearance; an app may lay its
+//! own ambiance instead ([`set_ground`]): its tone is then computed once ([`crate::tone::tone`]), and the ink and the
+//! glass come from it.
 
 use std::borrow::Cow;
 
@@ -6,7 +11,10 @@ use gpui::{
     App, FontWeight, Global, Hsla, Rgba, SharedString, Styled, Window, WindowAppearance, px,
 };
 
-use crate::tokens::{self, GColorRoles, GRgba, GTextStyle, GWeight};
+use crate::tokens::{
+    self, GColorRoles, GGroundMode, GGroundSpec, GGroundToneValues, GRgba, GTextStyle, GWeight,
+    grounds, tones,
+};
 
 /// The colours by role, as GPUI's.
 pub type GColors = GColorRoles<Hsla>;
@@ -39,8 +47,9 @@ impl GAppearance {
     }
 }
 
-/// The dark frame's colours (the rail, the bands, a window's header): the same in both appearances, as
-/// GabaritApple's `GFrameColor`.
+/// The colours of the bars (the rail, the bands, a window's header). In 4.0 they lie on the ground, in its ink
+/// ([`GTheme::bars`]); the dark frame of 3.x (graphite 950, the same in both appearances, as GabaritApple's
+/// `GFrameColor`) stays an option ([`GTheme::frame`], the bars' `framed()`).
 #[derive(Clone, Copy, Debug)]
 pub struct GFrameColors {
     pub ground: Hsla,
@@ -58,7 +67,23 @@ pub struct GFrameColors {
 }
 
 impl GFrameColors {
-    fn new() -> Self {
+    /// The bars on the ground: no ground of their own, the ground's ink, veils of that ink.
+    pub fn on_ground(colors: &GColors) -> Self {
+        GFrameColors {
+            ground: alpha(colors.ink, 0.0),
+            text: colors.ink,
+            text_secondary: colors.ink_2,
+            text_discret: colors.ink_3,
+            rim: alpha(colors.ink, 0.14),
+            line: alpha(colors.ink, 0.0),
+            hover: alpha(colors.ink, 0.06),
+            selected: alpha(colors.ink, 0.1),
+            close_hover: alpha(colors.ink, 0.12),
+        }
+    }
+
+    /// The dark frame (graphite 950), as in 3.x.
+    pub fn graphite() -> Self {
         use tokens::palette::*;
         GFrameColors {
             ground: hsla(GRAPHITE_950),
@@ -74,30 +99,93 @@ impl GFrameColors {
     }
 }
 
-/// Gabarit's theme: the appearance, its colours, the frame's. A GPUI global: `cx.theme()`.
+/// Gabarit's theme: the appearance, its colours, the ground and its tone, the bars'. A GPUI global: `cx.theme()`.
 #[derive(Clone, Debug)]
 pub struct GTheme {
     pub appearance: GAppearance,
     pub colors: GColors,
+    /// The dark frame's colours (graphite 950): only for the bars drawn `framed()`.
     pub frame: GFrameColors,
+    /// The bars' colours on the ground (4.0's default).
+    pub bars: GFrameColors,
+    /// The ground under the window: Gabarit's light or dark one, or the app's ([`set_ground`]).
+    pub ground: GGroundSpec,
+    /// Its tone: the veil laid over it, the ink's steps, the liquid glass's white.
+    pub tone: GGroundToneValues,
+    /// The app laid its own ground: it stays when the appearance changes (the ground has its own mode).
+    pub own_ground: bool,
     /// The system asks for less motion: no press scale, no animated knob.
     pub reduce_motion: bool,
+    /// "Reduce transparency": the glass turns dense (`glass::REDUCED`, 0.94 of the ground's glass colour).
+    pub reduce_transparency: bool,
+    /// "Increase contrast": the glass's light on its edge becomes a real outline (`border`).
+    pub increase_contrast: bool,
 }
 
 impl Global for GTheme {}
 
 impl GTheme {
+    /// The appearance's theme, on Gabarit's ground for it (`grounds::LIGHT`, `grounds::DARK`).
     pub fn new(appearance: GAppearance) -> Self {
-        let values = match appearance {
-            GAppearance::Light => tokens::LIGHT,
-            GAppearance::Dark => tokens::DARK,
+        let (values, ground, tone) = match appearance {
+            GAppearance::Light => (tokens::LIGHT, grounds::LIGHT, tones::LIGHT),
+            GAppearance::Dark => (tokens::DARK, grounds::DARK, tones::DARK),
         };
+        let colors = values.map(hsla);
         GTheme {
             appearance,
-            colors: values.map(hsla),
-            frame: GFrameColors::new(),
+            colors,
+            frame: GFrameColors::graphite(),
+            bars: GFrameColors::on_ground(&colors),
+            ground,
+            tone,
+            own_ground: false,
             reduce_motion: false,
+            reduce_transparency: false,
+            increase_contrast: false,
         }
+    }
+
+    /// The theme of an app's ground: the appearance is the ground's mode, the colours its mode's, the ink and the
+    /// glass from its tone (computed here, once). A ground whose ink no veil can save (`tone` finds none) is fully
+    /// veiled: legibility first.
+    pub fn with_ground(spec: GGroundSpec) -> Self {
+        let appearance = match spec.mode {
+            GGroundMode::Light => GAppearance::Light,
+            GGroundMode::Dark => GAppearance::Dark,
+        };
+        let base = GTheme::new(appearance);
+        let tone = crate::tone::tone(&spec).unwrap_or(GGroundToneValues {
+            veil: 1.0,
+            ink: crate::tone::ink(&spec),
+            ink2: tokens::glass::INK_SECONDARY_MAX,
+            ink3: tokens::glass::INK_DISCRET_MAX,
+            liquid: 0.0,
+            shade: crate::tone::shade(&spec),
+        });
+        let mut colors = ground_colors(&spec, &tone, base.colors);
+        // The content's text in the ground's ink: what is written on its glass reads on it.
+        colors.text_primary = colors.ink;
+        colors.text_secondary = colors.ink_2;
+        colors.text_discret = colors.ink_3;
+        GTheme {
+            colors,
+            bars: GFrameColors::on_ground(&colors),
+            ground: spec,
+            tone,
+            own_ground: true,
+            ..base
+        }
+    }
+
+    /// The colour of the ground's glass (its veil's, its panels'), opaque.
+    pub fn glass_color(&self) -> Hsla {
+        hsla(self.ground.glass)
+    }
+
+    /// The bars' colours: on the ground, or the dark frame's (`framed`).
+    pub fn bar_colors(&self, framed: bool) -> GFrameColors {
+        if framed { self.frame } else { self.bars }
     }
 
     pub fn is_dark(&self) -> bool {
@@ -137,15 +225,86 @@ pub fn init(cx: &mut App) {
     cx.set_global(GTheme::new(GAppearance::Light));
 }
 
-/// Sets the appearance (redraws every window).
-pub fn set_appearance(appearance: GAppearance, cx: &mut App) {
-    let reduce_motion = cx
-        .try_global::<GTheme>()
-        .is_some_and(|theme| theme.reduce_motion);
-    let mut theme = GTheme::new(appearance);
-    theme.reduce_motion = reduce_motion;
+/// The glass and ink roles a ground lays, as tools/tokens.py writes them for Gabarit's light and dark grounds: the
+/// ink at its tone's opacities, the veil (the glass colour at the tone's `veil`), the glass at its kind's opacities,
+/// the liquid glass's white at the tone's, the rims in white, the shadows in the ground's shade. Over `base`, the
+/// ground's mode's colours.
+pub fn ground_colors(spec: &GGroundSpec, tone: &GGroundToneValues, base: GColors) -> GColors {
+    let kind = spec.kind.values();
+    let at = |color: GRgba, opacity: f32| {
+        hsla(GRgba {
+            alpha: opacity,
+            ..color
+        })
+    };
+    let white = GRgba::hex(0xFFFFFF);
+    GColors {
+        ink: at(tone.ink, 1.0),
+        ink_2: at(tone.ink, tone.ink2),
+        ink_3: at(tone.ink, tone.ink3),
+        ground_veil: at(spec.glass, tone.veil),
+        glass_thin: at(spec.glass, kind.thin),
+        glass_regular: at(spec.glass, kind.regular),
+        glass_thick: at(spec.glass, kind.thick),
+        glass_liquid: at(white, tone.liquid),
+        glass_rim: at(white, kind.rim),
+        glass_rim_edge: at(white, kind.rim_edge),
+        liquid_rim: at(white, kind.liquid_rim),
+        liquid_rim_soft: at(white, kind.liquid_rim_soft),
+        glass_shadow: at(tone.shade, kind.shadow),
+        glass_shadow_near: at(tone.shade, kind.shadow_near),
+        liquid_shadow: at(tone.shade, kind.liquid_shadow),
+        ..base
+    }
+}
+
+/// Replaces the theme, keeping the accessibility settings, and redraws every window.
+fn replace(mut theme: GTheme, cx: &mut App) {
+    if let Some(current) = cx.try_global::<GTheme>() {
+        theme.reduce_motion = current.reduce_motion;
+        theme.reduce_transparency = current.reduce_transparency;
+        theme.increase_contrast = current.increase_contrast;
+    }
     cx.set_global(theme);
     cx.refresh_windows();
+}
+
+/// Sets the appearance (redraws every window). An app's own ground stays (it has its own mode): see [`set_ground`].
+pub fn set_appearance(appearance: GAppearance, cx: &mut App) {
+    let own = cx
+        .try_global::<GTheme>()
+        .filter(|theme| theme.own_ground)
+        .map(|theme| theme.ground);
+    match own {
+        Some(spec) => replace(GTheme::with_ground(spec), cx),
+        None => replace(GTheme::new(appearance), cx),
+    }
+}
+
+/// Lays the app's own ground under its windows (an ambiance of `tokens::grounds`, or one of its own), its tone
+/// computed once; the appearance becomes the ground's mode. `None`: back to Gabarit's light or dark ground, after
+/// `appearance`.
+pub fn set_ground(ground: Option<GGroundSpec>, appearance: GAppearance, cx: &mut App) {
+    match ground {
+        Some(spec) => replace(GTheme::with_ground(spec), cx),
+        None => replace(GTheme::new(appearance), cx),
+    }
+}
+
+/// "Reduce transparency" (the app reads the system's setting): the glass turns dense. Redraws.
+pub fn set_reduce_transparency(reduce: bool, cx: &mut App) {
+    if cx.theme().reduce_transparency != reduce {
+        cx.global_mut::<GTheme>().reduce_transparency = reduce;
+        cx.refresh_windows();
+    }
+}
+
+/// "Increase contrast" (the app reads the system's setting): the glass's edge becomes an outline. Redraws.
+pub fn set_increase_contrast(increase: bool, cx: &mut App) {
+    if cx.theme().increase_contrast != increase {
+        cx.global_mut::<GTheme>().increase_contrast = increase;
+        cx.refresh_windows();
+    }
 }
 
 /// Follows the system's appearance in this window: now, and whenever it changes.

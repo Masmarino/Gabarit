@@ -379,7 +379,7 @@ impl Render for GToastCenter {
     }
 }
 
-/// A tooltip: a small card in the caption style.
+/// A tooltip: a small liquid glass (4.0), in the caption style, in the ground's ink.
 pub struct GTooltip {
     text: SharedString,
 }
@@ -393,17 +393,12 @@ impl GTooltip {
 impl Render for GTooltip {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let colors = cx.theme().colors;
-        div()
-            .px(px(8.))
+        crate::glass::glass_on(div(), crate::glass::GMaterial::liquid(), px(radius::MD), cx)
+            .px(px(9.))
             .py(px(4.))
-            .rounded(px(radius::SM))
-            .bg(colors.surface)
-            .border_1()
-            .border_color(colors.hairline)
-            .shadow(floating_shadow())
             .g_text(text::CAPTION)
-            .text_color(colors.text_secondary)
-            .child(self.text.clone())
+            .text_color(colors.ink)
+            .child(div().relative().child(self.text.clone()))
     }
 }
 
