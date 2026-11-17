@@ -6,7 +6,9 @@ import { Card } from '../card/card'
 import { GaugeBar } from '../gauge-bar/gauge-bar'
 import { Icon } from '../icon/icon'
 import { Menu } from '../menu/menu'
+import { ListRow } from '../list-row/list-row'
 import { Modal } from '../modal/modal'
+import { PageHeader } from '../page-header/page-header'
 import { SearchBar, SearchResultCategory } from '../search-bar/search-bar'
 
 interface Repo {
@@ -165,6 +167,89 @@ export const WithContent: Story = {
     `,
     moduleMetadata: { imports: [AppShell, Card, GaugeBar, Menu] },
   }),
+}
+
+// ---- The ground (4.0): the rail, the bar and the page are one material, the panels glass laid on it -----
+
+const groundLinks = `
+  <a shell-nav href="#" class="gbt-app-shell__link" aria-current="page"><gbt-icon name="check-circle" /><span>Tableau de bord</span></a>
+  <a shell-nav href="#" class="gbt-app-shell__link"><gbt-icon name="search" /><span>Dépôts</span></a>
+  <a shell-nav href="#" class="gbt-app-shell__link"><gbt-icon name="eye" /><span>Utilisateurs</span></a>
+  <a shell-nav href="#" class="gbt-app-shell__link"><gbt-icon name="info" /><span>Quotas</span></a>
+`
+
+const groundPage = `
+  <gbt-page-header heading="Tableau de bord">
+    <span header-meta>Trois dépôts, deux registres, tout va bien.</span>
+  </gbt-page-header>
+  <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+    <gbt-card heading="Registre Docker" [headingLevel]="2" description="Quota mensuel">
+      <gbt-gauge-bar
+        [value]="257" [max]="500"
+        label="Quota du registre Docker"
+        formattedValue="257 Gio / 500 Gio"
+        warningLabel="Avertissement" criticalLabel="Critique" />
+    </gbt-card>
+    <gbt-card heading="Registre npm" [headingLevel]="2" description="Quota mensuel">
+      <gbt-gauge-bar
+        [value]="481" [max]="500"
+        label="Quota du registre npm"
+        formattedValue="481 Gio / 500 Gio"
+        warningLabel="Avertissement" criticalLabel="Critique" />
+    </gbt-card>
+    <gbt-card heading="Derniers dépôts" [headingLevel]="2" [flush]="true">
+      <ul style="margin:0;padding:0.375rem;list-style:none">
+        <li><gbt-list-row>gabarit<span row-meta>Mis à jour il y a 2 min</span></gbt-list-row></li>
+        <li><gbt-list-row>ferristrace<span row-meta>Mis à jour hier</span></gbt-list-row></li>
+        <li><gbt-list-row>hangar<span row-meta>Mis à jour lundi</span></gbt-list-row></li>
+      </ul>
+    </gbt-card>
+  </div>
+`
+
+export const OnTheGround: Story = {
+  render: () => ({
+    props: { categories: CATEGORIES, displayFn: (item: Repo) => item.label },
+    template: `
+      <gbt-app-shell ${labels}>
+        ${brand}
+        ${groundLinks}
+        ${searchAndAccount}
+        ${groundPage}
+      </gbt-app-shell>
+    `,
+    moduleMetadata: {
+      imports: [AppShell, Card, GaugeBar, Icon, ListRow, Menu, PageHeader, SearchBar],
+    },
+  }),
+}
+
+export const OnTheGroundDark: Story = {
+  ...OnTheGround,
+  decorators: [darkTheme],
+}
+
+/** The graphite frame of 3.x, kept as an option: `framed`. */
+export const Framed: Story = {
+  render: () => ({
+    props: { categories: CATEGORIES, displayFn: (item: Repo) => item.label },
+    template: `
+      <gbt-app-shell ${labels} framed>
+        ${brand}
+        ${groundLinks}
+        ${searchAndAccount}
+        ${groundPage}
+      </gbt-app-shell>
+    `,
+    moduleMetadata: {
+      imports: [AppShell, Card, GaugeBar, Icon, ListRow, Menu, PageHeader, SearchBar],
+    },
+  }),
+}
+
+export const FramedDark: Story = {
+  ...Framed,
+  decorators: [darkTheme],
 }
 
 export const LongNavigation: Story = {

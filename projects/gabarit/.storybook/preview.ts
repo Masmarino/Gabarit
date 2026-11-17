@@ -19,13 +19,8 @@ const preview: Preview = {
         order: ['Atoms', 'Molecules', 'Organisms', 'Templates', 'Pages'],
       },
     },
-    backgrounds: {
-      default: 'light',
-      values: [
-        { name: 'light', value: '#f7f9fb' },
-        { name: 'dark', value: '#0d1b24' },
-      ],
-    },
+    // The page is the ground (`document-base` on the body, as in an application): no plain background over it.
+    backgrounds: { disable: true },
   },
 }
 

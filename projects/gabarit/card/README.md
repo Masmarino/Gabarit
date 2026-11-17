@@ -1,9 +1,10 @@
 # Card
 
 Titled container: an optional heading over a box. Three looks for the box —
-`elevated` (a shadow), `bordered` (a quiet 1px edge; `outlined` in 3.x, still
-accepted) and `glass` (4.0: the apps' content glass, for a page laid on the
-ground) —, an optional
+`glass` (the default: the apps' content glass, laid on the ground), `elevated`
+(an opaque sheet with a shadow, the default before the web took the ground) and
+`bordered` (the opaque sheet with a quiet 1px edge; `outlined` in 3.x, still
+accepted) —, an optional
 description and counter under / after the heading, a flush body for rows, a
 tone and a selected state, and a link mode that makes the whole box
 clickable.
@@ -19,7 +20,7 @@ component, see below)
 | `heading`       | `string`                                         | `''`         | Header title. Empty by default: no header is rendered without it (or a `[card-header]` slot).                                                                                         |
 | `icon`          | `string`                                         | `''`         | Icon shown beside the title, in the header. A toned header without one shows the tone's icon.                                                                                         |
 | `headingLevel`  | `1 \| 2 \| 3 \| 4 \| 5 \| 6`                     | `2`          | Level of the rendered heading — choose it based on the block's place in the page hierarchy (RGAA 9.1).                                                                                |
-| `variant`       | `'elevated' \| 'bordered' \| 'outlined' \| 'glass'` | `'elevated'` | `bordered` (or `outlined`, its 3.x name) swaps the box's shadow for a border; `glass` lays the apps' regular content glass (translucent, blurred, rim of light, soft shadow, no edge) on a ground (`.gbt-ground`). |
+| `variant`       | `'glass' \| 'elevated' \| 'bordered' \| 'outlined'` | `'glass'` | `glass`: the apps' regular content glass (translucent, blurred, rim of light at the top, soft shadow, no edge; thicker under the pointer; dense where the system reduces transparency, edged where it asks for more contrast). `elevated`: the opaque sheet of `--bg-principal` with a shadow. `bordered` (or `outlined`, its 3.x name): the opaque sheet with a 1px edge. The `data-variant` attribute is set for `elevated` and `outlined` only. |
 | `description`   | `string`                                         | `''`         | One-line help text under the heading (built-in header only).                                                                                                                          |
 | `count`         | `number \| null`                                 | `null`       | Counter pill after the heading, `0` included.                                                                                                                                          |
 | `flush`         | `boolean`                                        | `false`      | No padding inside the box: rows and tables reach its edges (clipped to its rounded corners).                                                                                          |
@@ -45,8 +46,9 @@ The component renders two siblings:
    the icon, the title (with its count), the description under it, and the
    `[card-header-actions]` on the right. `0.5rem` separates it from the box
    (the heading-to-content gap of `gbt-panel`).
-2. **The box** (`.gbt-card`): the card itself — shadow (`elevated`) or 1px
-   edge (`outlined`), background, padding, and a full radius on all four
+2. **The box** (`.gbt-card`): the card itself — glass (radius
+   `--gbt-radius-glass`, 22px), or the opaque sheet with a shadow (`elevated`)
+   or a 1px edge (`outlined`), radius 12px —, padding, and a full radius on all four
    corners. It holds the body only. `selected` and the link target are the
    box's; the header is a label over it.
 

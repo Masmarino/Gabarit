@@ -1,8 +1,8 @@
 # AuthPanel
 
 The frame of every public sign-in page of the auth kit (`gbt-auth-login`, `gbt-auth-register`,
-`gbt-auth-activate` draw themselves inside it): the whole viewport on the page background with a
-faint wash of the accent colour, a centred panel holding the application's logo, an optional
+`gbt-auth-activate` draw themselves inside it): the whole viewport on the ground (4.0; `framed`: the
+graphite page of 3.x), a centred panel of thick glass holding the application's logo, an optional
 heading and intro, then the page's own content. Use it directly for a page of your own that must
 look like the sign-in pages (a "check your inbox" page, a maintenance notice).
 
@@ -15,6 +15,7 @@ look like the sign-in pages (a "check your inbox" page, a maintenance notice).
 | `heading` | `string`  | `''`    | The page's `<h1>`, focusable by script (`tabindex="-1"`). Empty: no heading and no intro (the content draws its own, see `.gbt-auth-panel__status`). |
 | `intro`   | `string`  | `''`    | The line under the heading. Without it the heading stands alone, with room under it (`--alone`).                                                     |
 | `wide`    | `boolean` | `false` | A panel of 30rem instead of 25rem, for a QR code or a grid of codes (the MFA enrolment). Accepts a bare attribute.                                   |
+| `framed`  | `boolean` | `false` | The graphite page of 3.x in both themes, the panel an opaque sheet with a 1px edge, instead of the ground and the glass. Accepts a bare attribute. |
 
 ## Outputs
 
@@ -25,7 +26,7 @@ None.
 | Selector      | Role                                                                                                                                                                                             |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `[auth-logo]` | The application's logo, centred above the heading: an `img`, a `picture` (a dark variant through `<source media="(prefers-color-scheme: dark)">`) or an `svg`. Nothing projected: no room taken. |
-| `[auth-backdrop]` | What is drawn on the graphite page, behind the panel: `gbt-git-field`, the family's animated commit graph (`@masmarino/gabarit/git-field`). Optional. |
+| `[auth-backdrop]` | What is drawn on the page, behind the panel (in the page's colours on the ground, in the frame's on a `framed` page): `gbt-git-field`, the family's animated commit graph (`@masmarino/gabarit/git-field`). Optional. |
 | (default)     | The page's content, after the heading and intro.                                                                                                                                                 |
 
 ## Classes for the projected content

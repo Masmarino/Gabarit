@@ -45,7 +45,7 @@ for `minPasswordLength`: both only spare a round trip, the server stays the auth
 | Selector              | Role                                                                                                                                                                   |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `[auth-logo]`         | The application's logo (an `img`, `picture` or `svg`), on top of the panel. Optional.                                                                                  |
-| `[auth-backdrop]` | What is drawn on the graphite page, behind the panel: `gbt-git-field`, the family's animated commit graph (`@masmarino/gabarit/git-field`). Optional. |
+| `[auth-backdrop]` | What is drawn on the page's ground, behind the panel: `gbt-git-field`, the family's animated commit graph (`@masmarino/gabarit/git-field`). Optional. |
 | `[gbtAuthFooterLink]` | The link to the sign-in page, under the form after "Already have an account?". An `a gbtButton variant="link"` carrying `routerLink` or `href`. No footer when absent. |
 
 ## Behaviour

@@ -7,8 +7,9 @@ right. Every column lines up on the title's first line.
 
 The page provides the list semantics and the surface around it
 (`ul > li > gbt-list-row`, inside a [`gbt-list-card`](../list-card/README.md)
-or any bordered box). The row adds hairlines between consecutive rows, a
-hover / focus-within background and title truncation.
+or any glass). The row adds a rounded hover / focus-within background
+(`--gbt-radius-row`) and title truncation; no line between the rows, unless
+the list asks for them (`.gbt-separated`, see below).
 
 **Selector**: `gbt-list-row`
 
@@ -42,9 +43,11 @@ hover / focus-within background and title truncation.
 
 ## Separators
 
-`li + li > gbt-list-row` and `gbt-list-row + gbt-list-row` get a `--gbt-hairline` border on top. Emulated
-view encapsulation cannot express "a row after a row" from inside the component, so this is one rule
-that is not scoped to the component, keyed on the element name.
+None by default (4.0): light is the edge of things, a row is set apart by its own space and lit under the
+pointer. Inside an element with the class `.gbt-separated` (`<gbt-list-card separated>` sets it on its box),
+`li + li > gbt-list-row` and `gbt-list-row + gbt-list-row` get a `--gbt-hairline` border on top, and the
+rows lose their rounded corners. Emulated view encapsulation cannot express "a row after a row" from
+inside the component, so this is one rule that is not scoped to the component, keyed on the element name.
 
 ## Example
 

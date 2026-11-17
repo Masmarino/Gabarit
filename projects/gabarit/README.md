@@ -332,10 +332,10 @@ keep their source order); with `compare`, `desc` reverses the ascending result.
 ## Styles
 
 Gabarit carries the look of the Ferris family: white paper and near-black ink in the light theme, a
-cool graphite in the dark one, IBM Plex throughout, hairlines and the apps' corners. Neutrals carry
+cool graphite in the dark one, IBM Plex throughout, one ground and two glasses, and the apps' corners. Neutrals carry
 the screens; the crab's rust is kept for the marks that are the brand's own (focus, the current page),
-patina green says success. Every text token reaches 7:1 on the page and on a panel, in both themes
-(`contrast.spec.ts`).
+patina green says success. Every text token reaches 7:1 on the page and on a panel, in both themes,
+and at every colour of the ground, bare or under its glasses (`contrast.spec.ts`).
 
 Import the tokens, and the fonts, in the application's `styles.scss`:
 
@@ -343,7 +343,7 @@ Import the tokens, and the fonts, in the application's `styles.scss`:
 @use '@masmarino/gabarit/fonts' with ($path: '/fonts/ibm-plex/');
 @use '@masmarino/gabarit/tokens';
 
-// Optional: body, h1–h3, code and selection in the family's type.
+// Optional: the ground on the body; body, h1–h3, code and selection in the family's type.
 @include tokens.document-base;
 ```
 
@@ -357,11 +357,34 @@ instance with an Angular asset:
 
 Without them the stacks fall back to the system's sans and monospace.
 
+### The ground and the two glasses (4.0)
+
+One ground runs under the whole window (`--gbt-ground`: a gradient and a light from above, held still
+while the page scrolls). The panels are the **content glass** laid on it (`gbt-card` by default,
+`gbt-list-card`, `gbt-stat-tile`, the modal and the drawer in its thick density); what commands and
+floats is the **liquid glass** (the current page in the rail, the search bar, menus, popovers, tooltips,
+the lists of a select, toasts, the command palette). Light is the edge of things: a rim at the top and a
+soft shadow stand where a hairline used to; lists have no line between their rows. The line stays on the
+controls (a field's 3:1 edge, the focus ring) and on `gbt-table`.
+
+The recipes are mixins of `_glass.scss`, for an application's own parts: `ground`, `glass($density)`,
+`liquid-glass`, `floating-glass`, and `on-ground` / `on-liquid`, which give the discreet text, the status
+texts and a field's edge the shades that keep 7:1 and 3:1 there. The same as classes: `.gbt-ground`,
+`.gbt-glass` (`--thin`, `--thick`), `.gbt-liquid-glass`. Where the system asks to reduce transparency
+the glass is dense and unblurred; where it asks for more contrast, it has an edge again.
+
+```scss
+.side-note {
+  border-radius: var(--gbt-radius-glass);
+  @include tokens.glass(thin);
+}
+```
+
 ### The graphite frame
 
-`gbt-app-shell` draws its rail and its bar as one graphite frame, the same in both themes, with the
-page set into it as a sheet whose corner is rounded. The auth pages (`gbt-auth-panel`) open on the
-same graphite, their panel keeping the page's theme. An application can lay its own parts on the
+The graphite frame of 3.x stays an option: `<gbt-app-shell framed>` draws its rail and its bar as one
+graphite frame, the same in both themes, with the page set into it as a sheet whose corner is rounded;
+`<gbt-auth-panel framed>` opens on the same graphite. An application can lay its own parts on the
 frame with the `frame-tokens` mixin, which sets the dark tokens on a deeper ground:
 
 ```scss

@@ -299,7 +299,8 @@ export const DarkNew: Story = {
   decorators: [darkTheme],
 }
 
-// ---- 4.0: bordered (outlined's new name) and the content glass, on the ground --------------------
+// ---- The ground: the content glass by default, elevated and bordered (outlined's new name) as options -----
+// The page (Storybook's body) is the ground, as an application's is with `document-base`.
 
 export const Bordered: Story = {
   render: () => ({
@@ -308,14 +309,23 @@ export const Bordered: Story = {
   }),
 }
 
-const GROUND = 'padding:2rem;border-radius:16px;min-height:16rem;' + GRID
-
 export const Glass: Story = {
+  name: 'Glass, elevated and bordered, on the ground',
   render: () => ({
     template: `
-      <div class="gbt-ground" style="${GROUND}">
-        <gbt-card variant="glass" heading="Agenda" icon="calendar">Réunion à 10 h, déjeuner à 12 h 30.</gbt-card>
-        <gbt-card variant="glass">Une carte de verre, sans bordure : la lumière en est le bord.</gbt-card>
+      <div style="${GRID}">
+        <gbt-card heading="Agenda" icon="calendar" description="Le verre de contenu, par défaut">
+          Réunion à 10 h, déjeuner à 12 h 30. Sans bordure : la lumière en est le bord.
+        </gbt-card>
+        <gbt-card heading="Courses" [count]="4" href="#" description="Une carte qui mène ailleurs">
+          Pain, lait, café, pommes.
+        </gbt-card>
+        <gbt-card variant="elevated" heading="Ancienne carte" description="elevated : la feuille opaque">
+          La feuille de papier du thème, une ombre dessous.
+        </gbt-card>
+        <gbt-card variant="bordered" heading="Carte bordée" description="bordered : la feuille et son trait">
+          Pour une page qui garde ses traits.
+        </gbt-card>
       </div>
     `,
     moduleMetadata: { imports: [Card] },
@@ -324,5 +334,6 @@ export const Glass: Story = {
 
 export const GlassDark: Story = {
   ...Glass,
+  name: 'Glass, elevated and bordered, on the ground (dark)',
   decorators: [darkTheme],
 }

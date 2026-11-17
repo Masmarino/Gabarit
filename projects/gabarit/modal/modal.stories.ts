@@ -66,7 +66,7 @@ export const Dark: Story = {
 })
 class FooterHost {}
 
-/** Actions go in `[modal-footer]`: under a hairline, no extra import. */
+/** Actions go in `[modal-footer]`: in the same thick glass as the body, no line, no extra import. */
 export const WithFooter: Story = {
   render: () => ({
     template: `<gbt-story-modal-footer-host />`,

@@ -24,6 +24,7 @@ In every state but `ready` the projected content is not rendered.
 | ------------------- | --------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------- |
 | `state`             | `'loading' \| 'failed' \| 'empty' \| 'ready'` | `'ready'`                        | Which of the four states shows.                                                             |
 | `ariaLabel`         | `string \| null`                              | `null`                           | Names the card's `<section>` (for example "Issues").                                        |
+| `separated`         | `boolean`                                     | `false`                          | A fine line between the rows, as before the ground; the rows then run to the box's edges.   |
 | `loadingLabel`      | `string`                                      | `'Loading…'`                     | Visually hidden, read out politely while loading.                                           |
 | `skeletonRows`      | `number`                                      | `4`                              | Placeholder rows while loading.                                                             |
 | `skeletonHeader`    | `boolean`                                     | `true`                           | Shows a placeholder of the header while loading (turn off for a card without a header).     |

@@ -123,3 +123,36 @@ export const Dark: Story = {
   }),
   decorators: [darkTheme],
 }
+
+// ---- The ground (4.0): the list floats in the liquid glass, over the page's panels -------------------
+
+const onCards = `
+  <div style="display:grid;gap:1rem;grid-template-columns:repeat(2,minmax(0,16rem));min-height:16rem">
+    <div class="gbt-glass" style="padding:1.25rem">
+      <gbt-menu label="Mon compte">
+        <a role="menuitem" class="gbt-menu__item" href="#">Mon compte</a>
+        <a role="menuitem" class="gbt-menu__item" href="#">Préférences</a>
+        <a role="menuitem" class="gbt-menu__item" href="#">Raccourcis</a>
+        <button role="menuitem" class="gbt-menu__item" type="button">Déconnexion</button>
+      </gbt-menu>
+    </div>
+    <div class="gbt-glass" style="padding:1.25rem;color:var(--text-secondary)">
+      Une carte à côté : le menu passe au-dessus, son verre floute ce qu'il couvre.
+    </div>
+  </div>
+`
+
+export const OpenOnTheGround: Story = {
+  render: () => ({
+    template: onCards,
+    moduleMetadata: { imports: [Menu] },
+  }),
+  play: async ({ canvasElement }) => {
+    canvasElement.querySelector<HTMLButtonElement>('.gbt-menu__trigger')?.click()
+  },
+}
+
+export const OpenOnTheGroundDark: Story = {
+  ...OpenOnTheGround,
+  decorators: [darkTheme],
+}

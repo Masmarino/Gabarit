@@ -2,7 +2,7 @@
 
 A flat side-panel section: a small heading, an optional action on its
 right, then the content. It sits on the page background (no card, no
-shadow); consecutive panels are separated by a hairline. Made for the
+shadow); consecutive panels are set apart by space (no line, unless their container is `.gbt-separated`). Made for the
 `[page-aside]` of [`gbt-page-layout`](../page-layout/README.md)
 (about, metadata, participants, filters…).
 
@@ -24,8 +24,9 @@ shadow); consecutive panels are separated by a hairline. Made for the
 
 ## Separator between panels
 
-A panel that directly follows another gets `margin-top: 1rem`, `padding-top: 1rem` and a
-`--gbt-hairline` border on top. Emulated view encapsulation cannot express "a panel after a panel"
+A panel that directly follows another gets `margin-top: 1.5rem` (4.0: no line). Inside a container with the
+class `.gbt-separated`, it gets `margin-top: 1rem`, `padding-top: 1rem` and a `--gbt-hairline` border on top,
+as before. Emulated view encapsulation cannot express "a panel after a panel"
 from inside the component, so this is one rule that is not scoped to the component
 (`gbt-panel + gbt-panel`), keyed on the element name. Put other content between two panels and the
 separator is gone: it is the panels' business, not a general divider.

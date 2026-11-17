@@ -28,18 +28,108 @@ Depuis `tokens/gabarit.json`, par `tools/tokens.py` :
 ## Web (`@masmarino/gabarit`)
 
 Les projets Angular (Alume, Hangar, FerrisGit, FerrisTrace, le portfolio, le site de SkollN) sont encore sur
-Gabarit 2.x : la 4.0 ne change rien pour eux tant qu'ils ne montent pas de version (ils passeront d'abord par les
+Gabarit 2.x : rien ne change pour eux tant qu'ils ne montent pas de version (ils passeront d'abord par les
 changements de la 3).
 
-- **Rien ne change d'aspect tout seul.** Les nouveaux jetons (`--gbt-ground`, `--gbt-glass-*`, `--gbt-ink*`,
-  `--gbt-depth-glass`…) et les classes `.gbt-ground`, `.gbt-glass`, `.gbt-liquid-glass` sont offerts, pas imposés.
-  `gbt-table` et les formulaires ne changent pas.
+### La 4.0.0 : offert, pas imposé
+
+- Les nouveaux jetons (`--gbt-ground`, `--gbt-glass-*`, `--gbt-ink*`, `--gbt-depth-glass`…) et les classes
+  `.gbt-ground`, `.gbt-glass`, `.gbt-liquid-glass` sont offerts ; rien ne change d'aspect tout seul.
 - `gbt-card` : `variant` accepte `bordered` (le nouveau nom d'`outlined`, qui reste accepté et dessine pareil) et
-  `glass` (le verre de contenu, sans bordure). La valeur par défaut reste `elevated`.
+  `glass`. `CardVariant` gagne ces deux valeurs : un `switch` exhaustif sur ce type ne compile plus tant qu'il ne
+  les traite pas.
 - `index.scss` transmet `_grounds.scss` : un projet qui définit lui-même un mixin `ambiance-…` sous le même espace
   de noms entrerait en conflit (peu probable).
-- `CardVariant` gagne deux valeurs : un `switch` exhaustif sur ce type dans une app ne compile plus tant qu'il ne les
-  traite pas.
+
+### Le thème du sol (branche `web-theme-4`, version à décider : 4.1.0 ou 5.0.0)
+
+Tout le web passe sur le sol et les deux verres, comme GPUI, Apple et Android dans la 4.0.0. **Les rendus par défaut
+changent** ; aucune API n'est retirée.
+
+#### Ce qui s'ajoute (rien ne casse)
+
+- `_glass.scss` (transmis par `index.scss`) : les mixins `ground`, `glass($density, $shadow)`, `liquid-glass($fill)`,
+  `floating-glass`, `on-ground`, `on-liquid`, `dense-when-asked`, `edged-when-asked`. Un projet qui a lui-même des
+  mixins de ces noms sous l'espace `tokens` entrerait en conflit.
+- Trois jetons du web (générés depuis `tokens/gabarit.json`) : `--gbt-ground-text-discret`, `--gbt-ground-border`,
+  `--gbt-liquid-text`.
+- Entrées : `framed` (`gbt-app-shell`, `gbt-auth-panel`), `separated` (`gbt-page-header`, `gbt-list-card`,
+  `gbt-nav-tabs`). La classe `.gbt-separated` (rangées de `gbt-list-row`, `gbt-panel` qui se suivent).
+
+#### Rendus changés, et comment retrouver l'ancien
+
+- **`document-base`** : le `body` porte le sol (`--gbt-ground`, fixé à la fenêtre, `min-height: 100vh`) au lieu de
+  `--bg-panel` éclairé en haut. Ancien : redonner au `body` `background: var(--bg-panel)` et
+  `background-image: var(--gbt-page-ground)` après l'inclusion.
+- **Sur le sol** (le `body` avec `document-base`, `gbt-app-shell`, `gbt-auth-panel`, `.gbt-ground`) et dans les
+  verres, `--text-discret`, `--border-color` et `--color-success|warning|error-text` prennent des teintes plus
+  marquées (`on-ground`), pour tenir 7:1 et 3:1 au pire point du sol : le texte discret prend la teinte du texte
+  secondaire, les textes d'état celle qu'ils ont sur leur teinte, le contour d'un champ est un peu plus foncé en
+  clair (`#78828f`) et plus clair en sombre (`#7a828e`). Sur le verre liquide, `--text-secondary` monte d'un cran.
+  Ancien : redéfinir ces propriétés sous le sol (elles ne tiennent alors plus le contraste au pire point).
+- **`gbt-app-shell`** : sur le sol, rail et barre transparents, sans cadre graphite, sans ombre de la barre ni du rail ;
+  la page n'est plus une feuille à coin arrondi ; le lien courant est en **verre liquide** (rayon 14), son icône en
+  rouille, sans trait rouille à gauche ni lueur ; le bouton du tiroir est un rond de verre liquide ; le tiroir
+  (étroit) est un verre épais. Le fond de la barre lit toujours `--gbt-shell-header-bg` (par défaut le sol).
+  `--gbt-nav-active-mark` n'a plus de valeur par défaut (pas de trait). Ancien : **`<gbt-app-shell framed>`**.
+- **`gbt-auth-panel`** (et les pages du kit d'accès) : le sol au lieu du graphite, le panneau en verre épais (rayon 22)
+  sans bordure ; `gbt-git-field` lit les couleurs de la page. `--gbt-auth-panel-backdrop` remplace toujours le fond.
+  Ancien : **`<gbt-auth-panel framed>`** (les pages `gbt-auth-login`… n'ont pas l'entrée : les envelopper reste
+  possible par `--gbt-auth-panel-backdrop: var(--frame)`).
+- **`gbt-card`** : **`glass` par défaut** (verre régulier, rayon 22, sans bordure, épaissi au survol, sans ombre
+  quand on appuie). Ancien : `variant="elevated"` (ou `bordered`). L'attribut `data-variant` n'est plus posé pour
+  le verre ; il l'est pour `elevated` (nouveau) et `outlined`. `--gbt-card-radius` vaut 22px par défaut.
+- **`gbt-list-card`**, **`gbt-stat-tile`**, la réserve de **`gbt-stat-grid`** : verre régulier, rayon 22, sans bordure.
+  `gbt-list-card` : le cadre a un retrait de 6px, les rangées sont arrondies. Ancien pour les traits :
+  `<gbt-list-card separated>`.
+- **`gbt-list-row`** : plus de trait entre les rangées, fond de survol arrondi (`--gbt-radius-row`). Ancien : la
+  classe `.gbt-separated` sur un parent.
+- **`gbt-panel`** : deux panneaux qui se suivent sont séparés par 1,5rem d'espace, sans trait. Ancien : `.gbt-separated`
+  sur leur parent.
+- **`gbt-page-header`** : plus de trait dessous, titre à 30px. Ancien : `separated`.
+- **`gbt-nav-tabs`** : plus de trait sous la rangée horizontale (`separated` pour le garder) ; l'onglet ouvert vertical
+  est en verre liquide, sans barre rouille. **`gbt-tabs`** : plus de trait sous la rangée.
+- **`gbt-page-layout`** : la colonne d'à côté, empilée, n'a plus de trait au-dessus.
+- **Ce qui flotte** — `gbt-menu`, `gbt-popover`, `gbt-tooltip` et `.gbt-tooltip`, la bulle du rail réduit, les
+  listes de `gbt-select`, `gbt-autocomplete`, `gbt-date-picker`, `gbt-date-range-picker`, le débordement de
+  `gbt-avatar-group`, la bulle des graphiques, le panneau de `gbt-search-bar` : **verre liquide dense**
+  (`floating-glass` : le remplissage épais, le flou et la lumière du liquide), sans bordure ; rayon 12 (8 pour
+  les bulles, 22 pour le panneau de recherche). La bulle d'aide
+  n'est plus inversée (fond d'encre) : texte de la page sur verre.
+- **`gbt-toaster`** : capsule de verre liquide dense, texte de la page (avant : pavé d'encre `--bg-inverse`, texte
+  clair). La croix est en `--text-secondary`, l'anneau du focus est celui de Gabarit.
+- **`gbt-command-palette`** : verre liquide dense, rayon 22, sans bordure ni trait sous le champ ni au-dessus du pied.
+- **`gbt-search-bar`** : le champ est une capsule de verre liquide sans bordure ; ouvert, il s'épaissit et prend
+  l'anneau du focus. Le bouton replié est rond. Plus de trait au-dessus du pied du panneau.
+- **`gbt-modal`**, **`gbt-drawer`** : verre épais (rayon 22 ; le tiroir arrondi du côté de la page), en-tête et pied
+  sans trait ni fond à eux.
+- **`gbt-tree`** : l'élément choisi est sur verre épais avec reflet, texte de la page (avant : teinte d'information).
+- **`gbt-empty-state`** : la pastille de l'icône est un verre fin avec reflet. Les invites de `gbt-mfa-settings` et
+  de `gbt-passkey-settings` sont des verres fins posés dans la carte, sans bordure.
+- **Storybook** : le fond de page est le sol (`backgrounds` désactivé).
+
+#### Ce qui ne change pas
+
+- **`gbt-table`** et **les formulaires** (`gbt-input`, `gbt-textarea`, `gbt-select` fermé, cases, boutons radio,
+  interrupteurs, `<gbt-card form>` et ses traits) gardent leurs traits : contour d'un champ à 3:1, anneau du focus.
+- `gbt-accordion` et `gbt-disclosure bordered` gardent leurs traits.
+
+#### Ce qu'un projet Angular doit faire pour passer au thème du sol
+
+1. Inclure `tokens.document-base` (ou poser `@include tokens.ground` sur sa racine) et retirer ses fonds opaques de
+   page.
+2. Laisser ses cartes en verre ; mettre `variant="elevated"` là où une feuille opaque est voulue (sur une photo, une
+   page imprimée…).
+3. Garder `framed` là où le cadre graphite est voulu ; `separated` là où les traits sont voulus.
+4. Ses propres panneaux : `@include tokens.glass` ; ce qui flotte : `@include tokens.floating-glass`.
+
+#### Limites
+
+- `background-attachment: fixed` (le sol tenu à la fenêtre) n'est pas suivi par Safari sur iPhone : le sol y défile
+  avec la page.
+- Le texte sur verre tient 7:1 au-dessus du sol ; au-dessus d'un contenu quelconque (un menu au-dessus d'une image),
+  seul le remplissage dense le protège.
+- Un texte d'état n'a pas sa place sur le verre liquide clair (`on-liquid`) : il flotte dans le remplissage dense.
 
 ## Les apps natives : les nouveaux rôles
 

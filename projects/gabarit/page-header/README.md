@@ -13,6 +13,7 @@ squeezing it.
 | -------------- | ------------- | ------- | ----------------------------------------------------------------------------------------------------------------- |
 | `heading`      | `string`      | —       | Required. The title. It is `heading`, not `title`: a `title` attribute would stay on the host and show a tooltip. |
 | `headingLevel` | `1 \| 2 \| 3` | `1`     | `1` is the page title (once per page). `2` / `3` for a header repeated inside a page, a tab or a dialog.          |
+| `separated`    | `boolean`     | `false` | The hairline under the header, as before the ground (4.0 draws none). Accepts a bare attribute.                   |
 
 ## Slots
 
@@ -47,8 +48,9 @@ An issue page, with a number after the title:
 
 ## Layout
 
-The host is a block with a `1.5rem` bottom margin; the header has a hairline
-(`--gbt-hairline`) under it. Give the header the same width as the content
+The host is a block with a `1.5rem` bottom margin. The header sits on the
+ground with no line under it (4.0), its title in Plex Condensed at 30px;
+`separated` brings back the hairline (`--gbt-hairline`). Give the header the same width as the content
 below it: put both under the same `gbt-page-layout` or the same max-width.
 
 ## Accessibility
