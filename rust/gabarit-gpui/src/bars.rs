@@ -780,7 +780,7 @@ impl RenderOnce for GRailItem {
             frame.text_secondary
         };
         let icon_color = if self.current { accent } else { foreground };
-        let on_accent = theme.colors.on_primary;
+        let on_accent = theme.on_accent().unwrap_or(theme.colors.on_primary);
         // The grounds are layers that fade: the hover's veil, the current page's ground (on a click, it fades in
         // while the old page's fades out).
         let follows = self.preview.is_none();

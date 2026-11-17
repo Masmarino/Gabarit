@@ -311,7 +311,9 @@ fun GButton(
         destructive && (drawn == GButtonVariant.Secondary || drawn == GButtonVariant.Ghost || drawn == GButtonVariant.Glass) -> colors.errorText
         drawn == GButtonVariant.GlassProminent -> gInkOnTint(tint)
         drawn == GButtonVariant.Glass -> colors.ink
-        drawn == GButtonVariant.Primary || drawn == GButtonVariant.Danger -> colors.onPrimary
+        drawn == GButtonVariant.Primary -> colors.onPrimary
+        // On red, the mode's own ink, whatever the accent (4.2: `onPrimary` is the ink on an ambiance's accent).
+        drawn == GButtonVariant.Danger -> (if (G.isDark) GDarkColors else GLightColors).onPrimary
         drawn == GButtonVariant.Secondary -> colors.textPrimary
         else -> colors.textSecondary
     }

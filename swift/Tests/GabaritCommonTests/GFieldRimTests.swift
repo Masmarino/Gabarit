@@ -45,7 +45,8 @@ struct GFieldRimTests {
     @Test(arguments: GGroundValues.all)
     func rims(_ ground: GGroundSpec) throws {
         let tone = try #require(ground.tone())
-        let accent = ground.mode == .light ? GColorValues.accent.light : GColorValues.accent.dark
+        // The focus ring is the ground's own accent when it brings one (4.2).
+        let accent = ground.accentTone()?.accent ?? (ground.mode == .light ? GColorValues.accent.light : GColorValues.accent.dark)
         for place in Place.allCases {
             for point in ground.worstPoints {
                 let around = place.around(ground, at: point, tone: tone)
@@ -56,7 +57,7 @@ struct GFieldRimTests {
                             "more contrast (ink) against the \(side), \(place), \(ground.name): \(String(format: "%.2f", ink))")
                     let focus = GLuminance.contrast(accent, colour)
                     let message: Comment = "focus (accent) against the \(side), \(place), \(ground.name): \(String(format: "%.2f", focus))"
-                    if ground.kind == .tinted {
+                    if ground.kind == .tinted, ground.accent == nil {
                         withKnownIssue("the accent's rim on an ambiance", isIntermittent: true) {
                             #expect(focus >= GGlassValues.edgeMinimum, message)
                         }

@@ -13,9 +13,10 @@
   border: 0;
 }
 
-// The keyboard focus ring. `--gbt-focus-ring` lets a theme recolour every ring at once.
+// The keyboard focus ring. `--gbt-focus-ring` lets a theme recolour every ring at once; an ambiance's own accent
+// (4.2, `--gbt-ground-accent`) colours them under it.
 @mixin focus-ring($offset: null) {
-  outline: 2px solid var(--gbt-focus-ring, var(--focus-ring));
+  outline: 2px solid var(--gbt-focus-ring, var(--gbt-ground-accent, var(--focus-ring)));
   @if $offset != null {
     outline-offset: $offset;
   }

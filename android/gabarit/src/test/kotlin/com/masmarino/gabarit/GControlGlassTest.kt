@@ -21,6 +21,32 @@ class GControlGlassTest {
     }
 
     /**
+     * 4.2: on each ambiance that brings its own accent, the ink on it holds 4.5:1 on the accent and on the prominent glass
+     * (the ground's tinted points), the accent stands 3:1 against the veiled ground (a rim, the focus ring), and its
+     * text holds 4.5:1 on the veiled ground and every content glass, at every worst point.
+     */
+    @Test fun accentHoldsOnItsGround() {
+        val accented = GGrounds.all.filter { it.accent != null }
+        assertTrue("no ambiance with an accent", accented.isNotEmpty())
+        for (ground in accented) {
+            val tone = gToneOf(ground)
+            val accent = ground.accentTone()!!
+            fun contrast(a: Color, b: Color) = GLuminance.contrast(GLuminance.rgb(a), GLuminance.rgb(b))
+            val veiled = ground.worstPoints.map { GLuminance.byteColor(GLuminance.laid(GLuminance.rgb(ground.glass), tone.veil.toDouble(), it)) }
+            val k = ground.kind.values
+            val surfaces = veiled.flatMap { v -> listOf(v) + listOf(k.thin, k.regular, k.thick).map { ground.glass.copy(alpha = it).compositeOver(v) } }
+            val fills = listOf(accent.accent) + veiled.map { gProminent(accent.accent).compositeOver(it) } +
+                ground.tintPoints(gProminent(accent.accent), tone.liquid)
+            val onAccent = fills.minOf { contrast(accent.onAccent, it) }
+            val edge = veiled.minOf { contrast(accent.accent, it) }
+            val text = surfaces.minOf { contrast(accent.accentText, it) }
+            assertTrue("${ground.name} on the accent: $onAccent", onAccent >= GGlassValues.textMinimum)
+            assertTrue("${ground.name} accent on the ground: $edge", edge >= GGlassValues.edgeMinimum)
+            assertTrue("${ground.name} accent text: $text", text >= GGlassValues.textMinimum - 0.02)
+        }
+    }
+
+    /**
      * 4.1.1, the glass's edge: in a light surface, the dark half does the work and stands out, 1.3:1 at least at the
      * worst point, against the surface: a chip's bottom edge (the ink at `floatBottom` over its thin lens) and a field's
      * shade under its top edge (the ink at `hollowShade` over its hollow). Each ground stop (under its light or not,

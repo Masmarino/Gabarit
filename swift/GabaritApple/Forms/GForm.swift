@@ -202,7 +202,7 @@ public struct GFormLayout<Content: View>: View {
                                     .opacity(pressed ? 0.6 : 1)
                                     .labelStyle(GCompactLabelStyle())
                                     .font(GFont.callout.weight(.medium))
-                                    .foregroundStyle(GColor.accentText)
+                                    .foregroundStyle(.gAccentText)
                                     .underline(hovering)
                                     .contentShape(Rectangle())
                             }
@@ -353,7 +353,7 @@ private struct GFormRowButton: View {
     var body: some View {
         configuration.label
             .font(GFont.body)
-            .foregroundStyle(configuration.role == .destructive ? GTone.error.text : GColor.accentText)
+            .foregroundStyle(configuration.role == .destructive ? AnyShapeStyle(GTone.error.text) : AnyShapeStyle(.gAccentText))
             // The whole row, like the veil that shows on hover; beside a text, its own width (`gCompactRowButton`).
             .frame(maxWidth: compact ? nil : .infinity, alignment: .leading)
             .contentShape(Rectangle())

@@ -342,3 +342,12 @@ export { AuthResetPassword } from '@masmarino/gabarit/auth-reset-password'
 export { MfaSettings } from '@masmarino/gabarit/mfa-settings'
 export { PasskeySettings } from '@masmarino/gabarit/passkey-settings'
 export { GitField } from '@masmarino/gabarit/git-field'
+export {
+  GROUND_AMBIANCES,
+  groundAccent,
+  type GroundAccent,
+  type GroundAccentProperties,
+  type GroundAmbiance,
+  type GroundAmbianceName,
+  type GroundKind,
+} from '@masmarino/gabarit/ground'

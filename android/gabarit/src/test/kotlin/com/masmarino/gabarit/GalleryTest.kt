@@ -44,8 +44,8 @@ import org.robolectric.annotation.GraphicsMode
 import java.io.File
 
 /**
- * Gabarit's gallery for Android: the Mac gallery's sections (galerie/apple), on the light and dark grounds and on the
- * `aurore` ambiance, drawn on the JVM by Robolectric to build/galerie/<section>-<appearance>.png. Nothing is compared:
+ * Gabarit's gallery for Android: the Mac gallery's sections (galerie/apple), on the light and dark grounds, on the
+ * `aurore` ambiance and on `dore` (4.2: an ambiance with its own accent, a pale gold), drawn on the JVM by Robolectric to build/galerie/<section>-<appearance>.png. Nothing is compared:
  * the images are to be looked at. Robolectric draws in software: the liquid glass's live blur (RenderEffect) is not
  * there, the ground's blurred copy stands for it; the content glass's precomputed blur is (see `ground-photo`).
  *
@@ -56,7 +56,8 @@ import java.io.File
 @Config(sdk = [35], application = android.app.Application::class, qualifiers = "w420dp-h900dp-xhdpi")
 class GalleryTest {
     private val appearances = listOf<Triple<String, Boolean, GGroundSpec?>>(
-        Triple("light", false, null), Triple("dark", true, null), Triple("aurore", true, GGrounds.aurore))
+        Triple("light", false, null), Triple("dark", true, null), Triple("aurore", true, GGrounds.aurore),
+        Triple("dore", true, GGrounds.dore))
 
     private fun draw(name: String, only: List<Triple<String, Boolean, GGroundSpec?>> = appearances, padding: Boolean = true,
                      content: @Composable () -> Unit) {
@@ -78,6 +79,39 @@ class GalleryTest {
                 File(copy).mkdirs()
                 File(folder, "$name-$appearance.png").copyTo(File(copy, "android-$name-$appearance.png"), overwrite = true)
             }
+        }
+    }
+
+    /**
+     * 4.2, an ambiance's own accent: `dore` without its accent (Gabarit's rust, `dore-before`) and with it (`dore`): the
+     * prominent buttons, the chosen chip, the switch, the focus ring, the links, the selection, the chosen tab.
+     */
+    @Test fun accent() = draw("accent", only = listOf(Triple("dore-before", true, GGrounds.dore.copy(accent = null)),
+        Triple("dore", true, GGrounds.dore))) {
+        var on by remember { mutableStateOf(true) }
+        var size by remember { mutableStateOf(1) }
+        var tab by remember { mutableStateOf("messages") }
+        var value by remember { mutableStateOf(0.6f) }
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            GGlass(Modifier.fillMaxWidth()) { Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Text("Accent", style = G.type.title2, color = G.colors.textPrimary)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    GButton("Primary", {}, variant = GButtonVariant.Primary)
+                    GButton("Secondary", {})
+                    GButton("Danger", {}, variant = GButtonVariant.Danger)
+                }
+                GPicker("Size", listOf(0, 1, 2), size, { listOf("Small", "Medium", "Large")[it] }, { size = it }, style = GPickerStyle.Chips)
+                GToggleRow("Notifications", on, { on = it })
+                GSlider(value, { value = it }, label = "Volume")
+                GNavTabs(listOf("Chats", "Calls", "Files"), "Chats", { it }, {})
+            } }
+            GFormSection("Members", rows = listOf({ GRowButton("Invite people", {}) }, { GRowButton("Leave the space", {}, destructive = true) }))
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                GSidebarRow("Profile", "person.crop.circle", true, {}, detail = "3")
+                GSidebarRow("Notifications", "bell", false, {}, detail = "12")
+            }
+            GTabBar(listOf(GTab("today", "Today", "sun.max"), GTab("messages", "Messages", "bubble.left.and.bubble.right", 2),
+                GTab("spaces", "Spaces", "square.grid.2x2")), tab, { tab = it })
         }
     }
 

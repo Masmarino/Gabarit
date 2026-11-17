@@ -105,7 +105,7 @@ public struct GSidebarIcon: View {
             .fontWeight(selected ? .semibold : .regular)
             .frame(maxWidth: Self.glyph.width, maxHeight: Self.glyph.height)
             .frame(width: Self.glyph.width + 2, height: Self.glyph.width + 2)
-            .foregroundStyle(selected ? GColor.accent : GColor.textDiscret)
+            .foregroundStyle(selected ? AnyShapeStyle(.gAccent) : AnyShapeStyle(GColor.textDiscret))
             .accessibilityHidden(true)
     }
 }
@@ -126,9 +126,13 @@ public struct GSidebarLabelStyle: LabelStyle {
     }
 }
 
-/// The side columns' selection, on iPhone and iPad too.
+/// The side columns' selection, on iPhone and iPad too: in the app's accent when it has one (`GTheme.current.accent`,
+/// 4.2). Under a ground with an accent of its own, `.gSelectedFill` follows it.
 public enum GSidebarRowFill {
-    public static var selected: Color { GColor.selectedFill }
+    public static var selected: Color {
+        guard let accent = GTheme.current.accent else { return GColor.selectedFill }
+        return Color(GColorPair(light: accent.opacity(GAccentRule.selected(.light)), dark: accent.opacity(GAccentRule.selected(.dark))))
+    }
 }
 
 /// A clickable row's hover (Mac): a soft veil with rounded corners. In a form's card, the card draws it centred in the

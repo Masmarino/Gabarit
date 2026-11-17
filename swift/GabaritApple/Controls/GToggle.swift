@@ -69,7 +69,7 @@ public struct GSwitch: View {
 
     public var body: some View {
         Capsule()
-            .fill((isOn ? GColor.accent : GColor.track).gHollow())
+            .fill(isOn ? AnyShapeStyle(GAccentStyle(.accent).shadow(.inner(color: .black.opacity(0.12), radius: 1.5, y: 1))) : AnyShapeStyle(GColor.track.gHollow()))
             // Off, a rim stronger than the fine line: the track shows on a white card too.
             .overlay { Capsule().strokeBorder(isOn ? Color.clear : hovering || contrast == .increased ? GColor.border : GColor.border.opacity(0.35), lineWidth: 1) }
             .frame(width: size.width, height: size.height)

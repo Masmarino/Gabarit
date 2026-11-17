@@ -2,11 +2,13 @@ import AppKit
 import GabaritApple
 import SwiftUI
 
-// Shows each section of the gallery in a real window, on the ground, light, dark and on the aurore ambiance, and
+// Shows each section of the gallery in a real window, on the ground, light, dark, on the aurore ambiance and on the dore
+// one (its own accent, 4.2), and
 // captures the window as the Mac draws it (screencapture -l, without its shadow) to
 // <folder>/apple-<section>-<appearance>.png. A window, not ImageRenderer: the renderer draws neither the system's glass
 // (glassEffect) nor its materials. `swift run GabaritGallery <folder> [sections…]`.
-// `--live`: a window to try the controls with the real pointer.
+// `--live`: a window to try the controls with the real pointer. `--appearances=dore,dore-sans-accent`: only those
+// appearances (`dore-sans-accent`, the dore ground with Gabarit's accent: the "before" of 4.2, only on demand).
 
 let arguments = Array(CommandLine.arguments.dropFirst())
 let live = arguments.contains("--live")
@@ -27,15 +29,21 @@ struct GallerySection {
     }
 }
 
-/// The appearances each section is captured in: Gabarit's light and dark grounds, and an ambiance.
-let appearances: [(name: String, scheme: ColorScheme, ground: GGroundSpec)] = [
+/// The appearances each section is captured in: Gabarit's light and dark grounds, and two ambiances (dore brings its own
+/// accent). On demand (`--appearances=`), dore with Gabarit's accent.
+let everyAppearance: [(name: String, scheme: ColorScheme, ground: GGroundSpec)] = [
     ("light", .light, GGroundValues.light), ("dark", .dark, GGroundValues.dark), ("aurore", .dark, GGroundValues.aurore),
+    ("dore", .dark, GGroundValues.dore), ("dore-sans-accent", .dark, GGroundValues.dore.withAccent(nil)),
 ]
+let chosenAppearances = arguments.first { $0.hasPrefix("--appearances=") }
+    .map { Set($0.dropFirst("--appearances=".count).split(separator: ",").map(String.init)) }
+let appearances = everyAppearance.filter { chosenAppearances?.contains($0.name) ?? ($0.name != "dore-sans-accent") }
 
 @MainActor func sections() -> [GallerySection] { [
     GallerySection("glass", width: 760, GlassSection()),
     GallerySection("states", width: 800, StatesSection()),
     GallerySection("controls", ControlsSection()),
+    GallerySection("accent", AccentSection()),
     GallerySection("forms", FormsSection()),
     GallerySection("frame", FrameSection()),
     GallerySection("feedback", FeedbackSection()),

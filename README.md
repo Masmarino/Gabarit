@@ -428,6 +428,15 @@ The web gets the same tokens **without being made to use them**: nothing of the 
   (22px), `--gbt-radius-row` (14px), `--gbt-space-page`, `--gbt-space-gap`, and the apps' ink (`--gbt-ink`, `-2`,
   `-3`, held at 4.5:1; the web's own text tokens stay at 7:1).
 - `_grounds.scss` has every ambiance of `tokens/gabarit.json` as a mixin (`@include tokens.ambiance-aurore`).
+- An ambiance's own accent (4.2, `ground.accent`): `ambiance-dore` poses `--gbt-ground-accent`,
+  `--gbt-ground-accent-text`, `--gbt-ground-on-accent` and `--gbt-ground-selected-fill`. Under the element that
+  carries them, the main buttons and the prominent glass are filled with the accent and take its ink, the chosen
+  chips are tinted with it, the links, the open page tab and the chosen option take its text, the selection its fill,
+  the focus ring, a field's focused edge and the checked controls (checkbox, radio, switch, slider) the accent itself.
+  Without them nothing changes. An application with its own accent computes the four values by the shared rule and
+  poses them: `groundAccent('#B8862B', 'givre')` (or an ambiance of its own, `GroundAmbiance`) from
+  `@masmarino/gabarit/ground` returns them in `properties`, with `edge` and `onAccentContrast` and `holds` (an
+  accent that misses 3:1 against its ground or 4.5:1 for its ink is not refused, `holds` says it).
 - Utility classes: `.gbt-ground` under a page, `.gbt-glass` (`--thin`, `--thick`) for a panel, `.gbt-liquid-glass`
   for what floats. They turn dense where the system asks to reduce transparency.
 - `<gbt-card variant="glass">` is a card of regular content glass, with no edge; `variant="bordered"` is the 1px
@@ -646,14 +655,24 @@ Android (Jetpack Compose) is in `android/`: the `gabarit` library, the iPhone's 
 `GIcon("bell", size = 17f)` at an SF Symbol's point size, or `GIcon("bell", contentDescription, modifier, tint)`
 shaped as Material's `Icon` (24 square, the glyph filling its box). An app's colour themes replace the grounds with
 `GTheme(grounds = …)`.
+
+An ambiance can bring its own accent (4.2, `ground.accent`): `GGroundSpec(…, accent = Color(0xFFE9C979))` (its last
+parameter, null by default) or `GTheme(ground = …, accent = …)` for the app's own, over the ground's. The accent, its
+text (links, the chosen tab), the selection, the focus ring, the tinted and the prominent glass, the primary buttons
+and the ink on them then follow it; without one, nothing changes. Its roles are computed on the ground as
+`tools/tokens.py`'s `accent_tone()`: `GGroundSpec.accentTone()` (null without an accent), `accentToneOn(tone, color)`,
+read back under the theme by `G.accentTone` (`accent`, `accentText`, `onAccent`, `selected`); an app that builds its
+colours itself takes `GColors.withAccent(tone)`. `GGrounds.dore` (a pale gold) is the example, `GAccentTones` the
+generator's values.
+
 JitPack builds it from the tags (`jitpack.yml`):
 
 ```kotlin
 // settings.gradle.kts: maven("https://jitpack.io") { content { includeGroup("com.github.Masmarino") } }
-implementation("com.github.Masmarino:Gabarit:4.1.2")
+implementation("com.github.Masmarino:Gabarit:4.2.0")
 ```
 
-Its gallery draws the Mac gallery's sections, light and dark, on the JVM (Robolectric) to `android/gabarit/build/galerie`:
+Its gallery draws the Mac gallery's sections, light and dark (and on `aurore` and `dore`), on the JVM (Robolectric) to `android/gabarit/build/galerie`:
 `cd android && ./gradlew :gabarit:testDebugUnitTest`.
 
 Light and depth, a little of them, on every platform, one light from above: the page is lit at its top; what is on
@@ -680,6 +699,16 @@ selection and hover (`selectedFill`, `rowHover`) are roles of the apps' set, the
 
 An application's colour themes replace the grounds through `GTheme.current` (`background`, `surface`,
 `sidebar`, `track`, `hairline`). Their own strings are in English and French.
+
+An ambiance may bring its own accent (4.2, `ground.accent`): `GGroundSpec(…, accent: GRGBA(hex: 0xE9C979))`
+(`GGroundValues.dore`, `withAccent(_:)` on any ground), or the app's for every ground that has none,
+`GTheme.current.accent` (the ground's own wins). Under it, every colour derived from the accent follows: the
+accent's fills (a switch, a slider, the chosen tab's line, a badge, the focus ring), the text in the accent (links,
+the chosen tab), the selection, the prominent glass (the primary button, the chosen chip, `GRoundButton`) and the
+ink on it, dark on a pale accent. `GGroundSpec.accentTone()` (GabaritCommon) is tools/tokens.py's
+`accent_tone()`; `EnvironmentValues.gAccentTone` is the accent in force, and the shape styles `.gAccent`,
+`.gAccentText`, `.gOnAccent`, `.gSelectedFill` resolve against it (`GColor.accent` and its kin stay Gabarit's
+rust: read the shape styles in an app's own views). With no accent, nothing changes.
 
 ## Release
 

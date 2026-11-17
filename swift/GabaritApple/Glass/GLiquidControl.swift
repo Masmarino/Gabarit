@@ -5,15 +5,18 @@ import SwiftUI
 // knob while it is held. The glass is the system's own (`glassEffect`), with no rim of Gabarit's: its light is the
 // system's. Under the pointer it lights a little; held down it lights (`controlPressLight`) and grows
 // (`controlPressScale`) on the bouncy spring. A prominent glass (the one thing to do, the chosen chip) is tinted with
-// the ink, the accent or the red at `controlProminent`, its text `onPrimary`.
+// the ink, the accent or the red at `controlProminent`, its text `onPrimary`. Under an accent of the ground's or the
+// app's (4.2), the ink's and the accent's prominent glass take that accent, their text the ink on it (`onAccent`).
 // Less transparency: the system draws the glass dense. More contrast: a true rim (`GColor.border`). Reduced motion: no
 // spring, no growth; the light stays.
 
 public extension GColor {
     /// The accent of a prominent glass (a chosen chip): the accent on a dark ground; on a light one, its text step (rust
     /// 600), so that white text holds 4.5:1 on it at `controlProminent` (rust 500 gives 4.2:1).
+    /// A ground with its own accent (4.2): that accent.
     static func prominentAccent(on ground: GGroundSpec) -> Color {
-        ground.mode == .light ? Color(GColorValues.accentText.light) : Color(GColorValues.accent.dark)
+        if let accent = GAccentToneCache.tone(of: ground) { return Color(accent.accent) }
+        return ground.mode == .light ? Color(GColorValues.accentText.light) : Color(GColorValues.accent.dark)
     }
 
     /// The red of a prominent glass (a danger button), in the ground's mode.
@@ -21,14 +24,23 @@ public extension GColor {
         Color(ground.mode == .light ? GPaletteValues.red700 : GPaletteValues.red400)
     }
 
-    /// The ink of a prominent glass (a primary button), in the ground's mode.
+    /// The ink of a prominent glass (a primary button), in the ground's mode; a ground with its own accent (4.2): that
+    /// accent.
     static func prominentInk(on ground: GGroundSpec) -> Color {
-        Color(ground.mode == .light ? GColorValues.primary.light : GColorValues.primary.dark)
+        if let accent = GAccentToneCache.tone(of: ground) { return Color(accent.accent) }
+        return Color(ground.mode == .light ? GColorValues.primary.light : GColorValues.primary.dark)
     }
 
-    /// The text on a prominent glass, in the ground's mode.
+    /// The text on a prominent glass of the ink or the red, in the ground's mode.
     static func onProminent(on ground: GGroundSpec) -> Color {
         Color(ground.mode == .light ? GColorValues.onPrimary.light : GColorValues.onPrimary.dark)
+    }
+
+    /// The text on a prominent glass of `tint` (4.2): on the ink's and the accent's, the ink on the ground's own accent
+    /// when it has one (`onAccent`); else as `onProminent(on:)`.
+    static func onProminent(_ tint: GProminentTint, on ground: GGroundSpec) -> Color {
+        if tint != .danger, let accent = GAccentToneCache.tone(of: ground) { return Color(accent.onAccent) }
+        return onProminent(on: ground)
     }
 }
 
@@ -65,6 +77,7 @@ public struct GLiquidControl<S: Shape>: ViewModifier {
     let pressed: Bool
     @Environment(\.gGroundTone) private var tone
     @Environment(\.gResolvedGround) private var ground
+    @Environment(\.gAccentTone) private var accent
     @Environment(\.colorSchemeContrast) private var contrast
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -103,7 +116,9 @@ public struct GLiquidControl<S: Shape>: ViewModifier {
     }
 
     private var tint: Color? {
-        switch prominent {
+        // An accent of the ground's or the app's (4.2): the one thing to do and the chosen chip take it.
+        if let accent, prominent == .ink || prominent == .accent { return Color(accent.accent) }
+        return switch prominent {
         case .ink: GColor.prominentInk(on: ground)
         case .accent: GColor.prominentAccent(on: ground)
         case .danger: GColor.prominentDanger(on: ground)

@@ -898,6 +898,8 @@ internal fun gHoldsOnGlass(text: Color): Boolean {
 /** The text on a glass tinted `tint` (prominent), on the current ground. */
 @Composable
 internal fun gInkOnTint(tint: Color): Color {
+    // 4.2: on the prominent glass of an accent of its own, the ink its tone chose (dark on a pale gold).
+    G.accentTone?.let { if (tint == gProminent(it.accent)) return it.onAccent }
     val ground = G.ground
     val liquid = G.groundTone.liquid
     return remember(ground, liquid, tint) { ground.inkOnTint(tint, liquid) }

@@ -40,7 +40,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
     width: $trigger-width-open;
     background: var(--gbt-glass-thick);
     box-shadow:
-      0 0 0 2px var(--gbt-focus-ring, var(--focus-ring)),
+      0 0 0 2px glass.$focus-ring,
       var(--gbt-depth-liquid);
   }
 }

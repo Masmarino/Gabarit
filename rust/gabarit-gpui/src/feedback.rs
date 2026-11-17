@@ -163,6 +163,7 @@ impl GUnreadBadge {
 impl RenderOnce for GUnreadBadge {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
+        let on_accent = cx.theme().on_accent().unwrap_or(gpui::white());
         let label = badge_text(self.count);
         let count = self.count as u64;
         // A new count pops in (not when it is first drawn).
@@ -179,7 +180,7 @@ impl RenderOnce for GUnreadBadge {
             .px(px(5.))
             .rounded_full()
             .bg(colors.accent)
-            .text_color(gpui::white())
+            .text_color(on_accent)
             .g_text(text::CAPTION_2)
             .font_weight(gpui::FontWeight::SEMIBOLD)
             .child(gpui::Text::new_inaccessible(label.into()))

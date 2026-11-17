@@ -54,6 +54,13 @@ fn themes() -> Vec<(String, GTheme)> {
     ];
     for spec in grounds::ALL {
         themes.push((spec.name.to_string(), GTheme::with_ground(*spec)));
+        // An ambiance with its own accent (4.2): its controls too.
+        if let Some(accent) = grounds::accent(spec.name) {
+            themes.push((
+                format!("{} with its accent", spec.name),
+                GTheme::with_ground(*spec).with_accent(Some(accent)),
+            ));
+        }
     }
     themes
 }
@@ -155,9 +162,10 @@ fn the_tinted_glass_prefers_the_accent(cx: &mut TestAppContext) {
         let GMaterial::Tinted { tint, .. } = material else {
             panic!("a tinted glass")
         };
-        // Gabarit's light grounds take the accent's darker step; every dark one, the accent itself.
+        // Gabarit's light grounds take the accent's darker step; every dark one, and an ambiance's own accent, the
+        // accent itself.
         let dark = cx.theme().ground.mode == tokens::GGroundMode::Dark;
-        let expected = if dark {
+        let expected = if dark || cx.theme().accent.is_some() {
             colors.accent
         } else {
             colors.accent_text
@@ -258,5 +266,47 @@ fn the_edge_of_glass_in_a_light_surface_shows(cx: &mut TestAppContext) {
                 }
             }
         }
+    });
+}
+
+/// An ambiance's own accent (4.2), in the controls: the text on its tinted glass is the ink chosen for it (dark on the
+/// pale gold) and holds 4.5:1 on the accent alone too (an unread count, a checkbox); the accent stands 3:1 against the
+/// veiled ground (the focus ring, a checkbox's rim, the tab's line).
+#[gpui::test]
+fn an_ambiances_accent_holds_in_the_controls(cx: &mut TestAppContext) {
+    check(cx, |name, cx| {
+        let theme = cx.theme();
+        let Some(on) = theme.on_accent() else { return };
+        let accent = theme.colors.accent;
+        // The main button (the ink's glass) takes the accent too.
+        let (main, main_text) = ink_glass(cx);
+        assert_eq!(main_text, on, "{name}");
+        assert!(
+            matches!(main, GMaterial::Tinted { tint, .. } if tint == accent),
+            "{name}"
+        );
+        let (material, text) = accent_glass(cx);
+        assert_eq!(text, on, "{name}");
+        let GMaterial::Tinted { tint, .. } = material else {
+            panic!("a tinted glass")
+        };
+        assert_eq!(tint, accent, "{name}");
+        let alone = contrast(rgb(on), rgb(accent));
+        assert!(
+            alone >= glass::TEXT_MINIMUM as f64,
+            "{name}: on the accent {alone:.2}"
+        );
+        let edge = worst(accent, &grounds_under(cx, 0.));
+        assert!(
+            edge >= glass::EDGE_MINIMUM as f64,
+            "{name}: the accent's edge {edge:.2}"
+        );
+        // Its text (links, a form's button, a back link) on the veiled ground and every content glass.
+        let surfaces = gabarit_gpui::tone::accent_surfaces(&theme.ground, &theme.tone);
+        let text = worst(theme.colors.accent_text, &surfaces);
+        assert!(
+            text >= glass::TEXT_MINIMUM as f64,
+            "{name}: its text {text:.2}"
+        );
     });
 }

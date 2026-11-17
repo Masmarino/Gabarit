@@ -186,9 +186,39 @@ $bouncy-duration: 0.6s;
 // highlight (white at 0.6 in the light theme, at 0.08 in the dark: its label keeps 7:1 on it, contrast.spec.ts).
 $lens-light: linear-gradient(var(--gbt-relief-highlight), var(--gbt-relief-highlight));
 
+// An ambiance's own accent (4.2, tokens/gabarit.json's "ground.accent"). An ambiance that brings one
+// (`ambiance-dore`), or an application with its own (`groundAccent()` of `@masmarino/gabarit/ground` computes them),
+// poses `--gbt-ground-accent`, `--gbt-ground-accent-text`, `--gbt-ground-on-accent` and `--gbt-ground-selected-fill`
+// on an element; under it the components follow the accent: the main buttons and the prominent glass are filled with
+// it and take its ink, the chosen chips are tinted with it, the chosen tab, the links and the chosen option take its
+// text, the selection its fill, the focus ring, a field's focused edge and the checked controls the accent itself.
+// Read where they are drawn, they follow any element that carries them. Without them, every one is Gabarit's own:
+// the rendering does not change.
+$accent: var(--gbt-ground-accent, var(--accent));
+$accent-text: var(--gbt-ground-accent-text, var(--accent-text));
+// The main action's fill (the ink without an accent) and its text; held or hovered, 15 % toward its text, as on
+// every platform.
+$main: var(--gbt-ground-accent, var(--primary));
+$on-main: var(--gbt-ground-on-accent, var(--text-on-primary));
+$main-hover: color-mix(
+  in srgb,
+  var(--gbt-ground-accent, var(--primary-hover)) 85%,
+  var(--gbt-ground-on-accent, var(--primary-hover))
+);
+// Text in the main colour (a link, the chosen option): the accent's text (4.5:1 on the ground and its glasses).
+$main-text: var(--gbt-ground-accent-text, var(--primary));
+$main-text-hover: var(--gbt-ground-accent-text, var(--primary-hover));
+$focus-ring: var(--gbt-focus-ring, var(--gbt-ground-accent, var(--focus-ring)));
+$selection: var(--gbt-ground-selected-fill, color-mix(in srgb, var(--accent) 22%, transparent));
+// The accent's glow, as `--gbt-glow`, `--gbt-glow-hover` and `--gbt-glow-line` (the themes') draw it.
+$glow: 0 0 10px color-mix(in srgb, #{$accent} 45%, transparent);
+$glow-hover: 0 0 14px color-mix(in srgb, #{$accent} 45%, transparent);
+$glow-line: 0 6px 6px -6px color-mix(in srgb, #{$accent} 60%, transparent);
+
 // What the chosen glass is tinted with (a chip, a filter): the accent, deepened by the ink so that its text, in
-// `--text-on-primary`, keeps 7:1 (contrast.spec.ts). The ink alone (`--primary`) tints the prominent button.
-$chosen-tint: color-mix(in srgb, var(--accent) 50%, var(--primary));
+// `--text-on-primary`, keeps 7:1 (contrast.spec.ts); an ambiance's own accent as it is, its ink chosen on it. The ink
+// alone (`--primary`) tints the prominent button, or an ambiance's own accent.
+$chosen-tint: var(--gbt-ground-accent, color-mix(in srgb, var(--accent) 50%, var(--primary)));
 
 // The liquid glass's light without its shadow: a rim at the top and at the bottom, never across.
 $liquid-rims:
@@ -210,10 +240,11 @@ $liquid-rims:
   @include edged-when-asked($liquid-rims);
 }
 
-// The prominent glass: tinted (the ink by default), its text in `--text-on-primary`. Dense when asked: the plain tint.
-@mixin prominent-glass($tint: var(--primary)) {
+// The prominent glass: tinted (the ink by default, or an ambiance's own accent), its text in `--text-on-primary` (or
+// the accent's ink). Dense when asked: the plain tint.
+@mixin prominent-glass($tint: $main) {
   background: color-mix(in srgb, #{$tint} #{$prominent}, transparent);
-  color: var(--text-on-primary);
+  color: $on-main;
   -webkit-backdrop-filter: var(--gbt-liquid-blur);
   backdrop-filter: var(--gbt-liquid-blur);
   box-shadow: var(--gbt-depth-liquid);
@@ -274,5 +305,5 @@ $liquid-rims:
 }
 
 @mixin glass-hollow-focus {
-  border-color: var(--primary);
+  border-color: $main;
 }

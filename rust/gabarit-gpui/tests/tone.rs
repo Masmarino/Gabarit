@@ -16,6 +16,7 @@ fn tones_match_the_generator() {
         tones::SOUS_BOIS,
         tones::LAITON,
         tones::GIVRE,
+        tones::DORE,
     ];
     assert_eq!(grounds::ALL.len(), expected.len());
     for (ground, want) in grounds::ALL.iter().zip(expected) {

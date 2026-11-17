@@ -783,7 +783,13 @@
     }
   },
   "ground": {
-    "_": "The ground (4.0): what runs under the whole window, rail and bar included. An ambiance is a linear gradient of 2 to 4 stops at an angle (CSS degrees: 180 runs from the top down), plus a light: a radial wash of a colour at (x, y), fractions of the window, its radius a fraction of the window's longer side, its strength the colour's opacity at its centre. \"mode\" sets the ink (light: dark ink, dark: light ink), \"kind\" the glass laid on it (glass.kinds). tools/tokens.py computes each ambiance's tone at its worst point (every stop, and the light at its centre): the veil laid over the whole ground, the ink's opacities, the glass; --check fails when an ambiance cannot reach 4.5:1 for text and 3:1 for edges. light, dark and black are Gabarit's own grounds; the others are samples, for the check and the galleries: an app brings its own and computes their tone at run time (GGroundTone).",
+    "_": "The ground (4.0): what runs under the whole window, rail and bar included. An ambiance is a linear gradient of 2 to 4 stops at an angle (CSS degrees: 180 runs from the top down), plus a light: a radial wash of a colour at (x, y), fractions of the window, its radius a fraction of the window's longer side, its strength the colour's opacity at its centre. \"mode\" sets the ink (light: dark ink, dark: light ink), \"kind\" the glass laid on it (glass.kinds). tools/tokens.py computes each ambiance's tone at its worst point (every stop, and the light at its centre): the veil laid over the whole ground, the ink's opacities, the glass; --check fails when an ambiance cannot reach 4.5:1 for text and 3:1 for edges. light, dark and black are Gabarit's own grounds; the others are samples, for the check and the galleries: an app brings its own and computes their tone at run time (GGroundTone). An ambiance may bring its own \"accent\" (4.2): the main buttons, the chosen chip and tab, the links, the selection and the focus ring take it instead of Gabarit's rust, and the tinted glass is tinted with it; ground.accent says how its roles are derived. Without one, Gabarit's accent stays.",
+    "accent": {
+      "_": "An ambiance's own accent (4.2), its roles derived the same way on every platform and at run time. \"accent\": the colour as given (fills, the focus ring, the prominent glass at glass.control.prominent); it must stand 3:1 against the veiled ground at its worst point. \"accentText\" (links, the chosen tab's label, text in the accent): the accent itself if it holds 4.5:1 on the veiled ground and on every content glass at the worst point, else the accent mixed toward the ambiance's ink by steps of \"step\" until it does. \"onAccent\" (text and icons on the accent): of \"inks\", the one with the best contrast at the worst of the accent alone and of the prominent glass over the veiled ground; it must hold 4.5:1 (a pale accent takes the dark ink). \"selectedFill\": the accent at \"selected\" of the ambiance's mode.",
+      "step": 0.05,
+      "selected": { "light": 0.1, "dark": 0.16 },
+      "inks": ["#FFFFFF", "slate900"]
+    },
     "ambiances": {
       "light": {
         "mode": "light",
@@ -873,6 +879,16 @@
         "stops": ["#EEF3F8", "#DDE8F3", "#E9E4F5"],
         "light": { "color": "#FFFFFF", "x": 0.15, "y": -0.05, "radius": 0.8, "strength": 1 },
         "glass": "#FFFFFF"
+      },
+      "dore": {
+        "mode": "dark",
+        "kind": "tinted",
+        "ink": "#FFFFFF",
+        "angle": 155,
+        "stops": ["#2B200D", "#4A3816", "#1A1309"],
+        "light": { "color": "#E9C979", "x": 0.18, "y": -0.06, "radius": 0.7, "strength": 0.3 },
+        "glass": "#17110A",
+        "accent": "#E9C979"
       }
     }
   },

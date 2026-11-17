@@ -6,6 +6,8 @@
 //!     cargo run --release --bin galerie -- --measure-start    prints the time to the first frame, then quits
 //!
 //!     cargo run --bin galerie -- --page glass --ground aurore     on one of the ambiances of `tokens::grounds`
+//!     cargo run --bin galerie -- --page controls --ground dore      an ambiance with its own accent (4.2): pale gold
+//!     cargo run --bin galerie -- --page controls --ground dore --no-accent     the same ground, Gabarit's accent
 //!
 //! Pages: glass, controls, states, forms, frame, feedback, sheet, menus, text, list. `--height <points>`: a taller
 //! window. `--journal <file>`: what it says
@@ -407,7 +409,13 @@ impl Gallery {
                             .text_color(colors.ink_2)
                             .child(SharedString::from(format!(
                                 "The ground « {ground} » runs under the whole window; the panels are content glass, \
-                                 what commands and floats is liquid glass."
+                                 what commands and floats is liquid glass.{}",
+                                if cx.theme().accent.is_some() {
+                                    " The ambiance brings its own accent: the main button, the chosen chip, the \
+                                     links, the selection and the focus ring take it."
+                                } else {
+                                    ""
+                                }
                             ))),
                     ),
             )
@@ -1514,7 +1522,14 @@ impl Render for Gallery {
             .measure
             .as_ref()
             .map(|measure| (measure.render_start.clone(), measure.cpu.clone()));
-        let label = format!("{} · {}", self.page.title(), cx.theme().ground.name);
+        let label = match cx.theme().accent {
+            Some(_) => format!(
+                "{} · {} · its accent",
+                self.page.title(),
+                cx.theme().ground.name
+            ),
+            None => format!("{} · {}", self.page.title(), cx.theme().ground.name),
+        };
         div()
             .id("gallery")
             .track_focus(&self.focus)
@@ -1628,6 +1643,8 @@ fn main() {
         None
     };
     let open_sheet = flag("--sheet");
+    // The ambiance's own accent (4.2), unless `--no-accent` (to compare).
+    let own_accent = !flag("--no-accent");
     // A taller window (the states page, captured whole).
     let height = value("--height")
         .and_then(|height| height.parse::<f32>().ok())
@@ -1686,8 +1703,12 @@ fn main() {
                         Some(appearance) => theme::set_appearance(appearance, cx),
                         None => theme::follow_system_appearance(window, cx),
                     }
-                    if ground.is_some() {
+                    if let Some(spec) = ground {
                         theme::set_ground(ground, GAppearance::Light, cx);
+                        let accent = tokens::grounds::accent(spec.name).filter(|_| own_accent);
+                        if accent.is_some() {
+                            theme::set_accent(accent, cx);
+                        }
                     }
                     cx.new(|cx| {
                         let mut gallery = Gallery::new(page, cx);

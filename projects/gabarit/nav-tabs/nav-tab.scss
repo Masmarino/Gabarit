@@ -38,7 +38,7 @@
 }
 
 :host([data-active]) .gbt-nav-tab__icon {
-  color: var(--primary);
+  color: glass.$main-text;
 }
 
 .gbt-nav-tab__label {
@@ -62,9 +62,9 @@
 }
 
 :host([data-active]) .gbt-nav-tab__badge {
-  background: var(--primary);
+  background: glass.$main;
   box-shadow: none;
-  color: var(--text-on-primary);
+  color: glass.$on-main;
 }
 
 @mixin vertical {
@@ -146,10 +146,11 @@
 
   :host([data-orientation='#{$orientation}'][data-active]),
   :host([data-orientation='#{$orientation}'][data-active]:hover) {
-    border-bottom-color: var(--accent);
+    border-bottom-color: glass.$accent;
     background: none;
-    box-shadow: var(--gbt-glow-line);
-    color: var(--text-primary);
+    box-shadow: glass.$glow-line;
+    // An ambiance's own accent (4.2) gives its label the accent's text.
+    color: var(--gbt-ground-accent-text, var(--text-primary));
     font-weight: 600;
   }
 

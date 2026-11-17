@@ -279,8 +279,8 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &--selected {
-    background: var(--primary);
-    color: var(--text-on-primary);
+    background: glass.$main;
+    color: glass.$on-main;
     font-weight: 600;
   }
 }

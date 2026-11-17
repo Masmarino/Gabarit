@@ -36,7 +36,7 @@ public struct GMenuItem: View {
                 // Always drawn, hidden when unticked: the lines keep the same width (and no empty symbol is asked for).
                 Image(systemName: "checkmark")
                     .font(GFont.subheadline.weight(.semibold))
-                    .foregroundStyle(GColor.accent)
+                    .foregroundStyle(.gAccent)
                     .frame(width: 16)
                     .opacity(checked ? 1 : 0)
                     .accessibilityHidden(true)

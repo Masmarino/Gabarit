@@ -88,7 +88,7 @@ describe('public surface', () => {
   })
 
   it('exposes the version', () => {
-    expect(api.GABARIT_VERSION).toBe('4.1.2')
+    expect(api.GABARIT_VERSION).toBe('4.2.0')
   })
 
   it('exports the thirteen dataviz primitives', () => {
@@ -249,6 +249,13 @@ describe('public surface', () => {
     }
     const proof: import('../public-api').MfaProof = { backupCode: 'x' }
     expect([config, status, proof]).toHaveLength(3)
+  })
+
+  it("exports an ambiance's own accent (4.2): its rule and Gabarit's ambiances", () => {
+    expect(api).toHaveProperty('groundAccent')
+    expect(api).toHaveProperty('GROUND_AMBIANCES')
+    const tone: import('../public-api').GroundAccent | null = api.groundAccent('#E9C979', 'dore')
+    expect(tone?.properties['--gbt-ground-accent']).toBe('#e9c979')
   })
 
   it("doesn't expose the auth kit's test and story fakes", () => {

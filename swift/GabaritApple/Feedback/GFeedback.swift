@@ -171,7 +171,7 @@ public struct GTypingDots: View {
                 ForEach(0..<3) { i in
                     let wave = (sin(t * 6 - Double(i) * 0.9) + 1) / 2
                     Circle()
-                        .fill(GColor.accent.opacity(0.35 + 0.65 * wave))
+                        .fill(GAccentStyle(.accent).opacity(0.35 + 0.65 * wave))
                         .frame(width: 6, height: 6)
                         .offset(y: -3 * wave)
                 }

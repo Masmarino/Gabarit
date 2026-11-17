@@ -170,9 +170,9 @@ impl GButton {
             return colors.error_text;
         }
         match self.variant {
-            GButtonVariant::Primary | GButtonVariant::Danger | GButtonVariant::GlassProminent => {
-                colors.on_primary
-            }
+            GButtonVariant::Primary | GButtonVariant::GlassProminent => colors.on_primary,
+            // Its red keeps its ink, an ambiance's accent or not.
+            GButtonVariant::Danger => cx.theme().on_error_fill(),
             GButtonVariant::Secondary | GButtonVariant::Glass => colors.text_primary,
             GButtonVariant::Ghost => colors.text_secondary,
         }

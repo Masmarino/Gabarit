@@ -768,8 +768,9 @@ describe('the ground and its glasses', () => {
       expect(glassScssValue('press-light')).toBe(0.14)
       expect(glassScssValue('press-light-core')).toBeLessThan(0.14)
       expect(glassScssValue('prominent')).toBe(86)
+      // Without an ambiance's own accent (4.2, `--gbt-ground-accent`), the accent deepened by the ink.
       expect(glassScss).toContain(
-        '$chosen-tint: color-mix(in srgb, var(--accent) 50%, var(--primary));',
+        '$chosen-tint: var(--gbt-ground-accent, color-mix(in srgb, var(--accent) 50%, var(--primary)));',
       )
     })
 
@@ -815,7 +816,9 @@ describe('the ground and its glasses', () => {
     })
 
     it(`a field's edge with the focus reaches 3:1 on its hollow of thin glass (${theme})`, () => {
-      expect(mixinBody('glass-hollow-focus')).toContain('border-color: var(--primary);')
+      // The ink, or an ambiance's own accent (4.2): it holds 3:1 on its ground (tools/tokens.py checks it).
+      expect(mixinBody('glass-hollow-focus')).toContain('border-color: $main;')
+      expect(glassScss).toContain('$main: var(--gbt-ground-accent, var(--primary));')
       for (const stop of stops) {
         for (const surface of [
           stop,

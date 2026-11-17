@@ -22,7 +22,9 @@ public struct GGroundLight: Sendable, Hashable {
 
 /// An ambiance: a linear gradient of 2 to 4 stops at `angle` (CSS degrees: 180 runs from the top down), plus a light.
 /// `glass` is the colour of its content glass and of its veil; `ink` and `shade` its own, or the mode's main text and
-/// its darkest stop deepened.
+/// its darkest stop deepened. `accent` (4.2): its own accent, nil for Gabarit's (the rust); with one, every colour
+/// derived from the accent follows it under this ground (`accentTone()`: the text in the accent, the ink on it, the
+/// selection).
 public struct GGroundSpec: Sendable, Hashable {
     public let name: String
     public let mode: GGroundMode
@@ -33,18 +35,27 @@ public struct GGroundSpec: Sendable, Hashable {
     public let glass: GRGBA
     public let ink: GRGBA?
     public let shade: GRGBA?
+    /// The ambiance's own accent (4.2); nil: Gabarit's.
+    public let accent: GRGBA?
 
     public init(name: String, mode: GGroundMode, kind: GGlassKind, angle: Double, stops: [GRGBA], light: GGroundLight,
-                glass: GRGBA, ink: GRGBA? = nil, shade: GRGBA? = nil) {
+                glass: GRGBA, ink: GRGBA? = nil, shade: GRGBA? = nil, accent: GRGBA? = nil) {
         precondition((1...4).contains(stops.count), "a ground has 1 to 4 stops")
         (self.name, self.mode, self.kind, self.angle, self.stops) = (name, mode, kind, angle, stops)
-        (self.light, self.glass, self.ink, self.shade) = (light, glass, ink, shade)
+        (self.light, self.glass, self.ink, self.shade, self.accent) = (light, glass, ink, shade, accent)
+    }
+
+    /// The same ground with `accent` as its own (nil: Gabarit's).
+    public func withAccent(_ accent: GRGBA?) -> GGroundSpec {
+        GGroundSpec(name: name, mode: mode, kind: kind, angle: angle, stops: stops, light: light, glass: glass, ink: ink,
+                    shade: shade, accent: accent)
     }
 
     /// One colour, as a ground (a community's colour, a plain theme): the light is that colour.
-    public static func plain(_ color: GRGBA, mode: GGroundMode, kind: GGlassKind, glass: GRGBA) -> GGroundSpec {
+    public static func plain(_ color: GRGBA, mode: GGroundMode, kind: GGlassKind, glass: GRGBA,
+                             accent: GRGBA? = nil) -> GGroundSpec {
         GGroundSpec(name: "plain", mode: mode, kind: kind, angle: 180, stops: [color, color],
-                    light: GGroundLight(color: color, x: 0.5, y: 0, radius: 1, strength: 0), glass: glass)
+                    light: GGroundLight(color: color, x: 0.5, y: 0, radius: 1, strength: 0), glass: glass, accent: accent)
     }
 }
 
@@ -128,5 +139,86 @@ extension GGroundSpec {
         let ink3 = steps.first { $0 >= GGlassValues.inkDiscret - 1e-9 && holds(veil, $0, edge) } ?? 1
         let liquid = steps.reversed().first { $0 <= kind.values.liquid + 1e-9 && holds(veil, 1, text, white: $0) } ?? 0
         return GGroundTone(veil: veil, ink: ink, ink2: ink2, ink3: ink3, liquid: liquid, shade: resolvedShade)
+    }
+}
+
+// MARK: The accent (4.2)
+
+/// tokens/gabarit.json's `ground.accent`: the steps toward the ink, the selection's opacity by mode, the inks that may
+/// lie on the accent (white, slate 900).
+public enum GAccentRule {
+    public static let step = 0.05
+    public static func selected(_ mode: GGroundMode) -> Double { mode == .light ? 0.1 : 0.16 }
+    public static let inks = [GRGBA(hex: 0xFFFFFF), GPaletteValues.slate900]
+}
+
+extension GGroundSpec {
+    /// Where the accent's text may land: the veiled ground and every content glass over it, at each worst point.
+    func accentSurfaces(veil: Double) -> [GRGBA] {
+        let kind = kind.values
+        return worstPoints.flatMap { point -> [GRGBA] in
+            let veiled = GLuminance.laid(glass, veil, on: point)
+            return [veiled] + [kind.thin, kind.regular, kind.thick].map { GLuminance.laid(glass, $0, on: veiled) }
+        }
+    }
+
+    /// What the accent fills: the accent alone, and the prominent glass (the accent at `controlProminent`) over the
+    /// veiled ground at each worst point.
+    func accentFills(_ accent: GRGBA, veil: Double) -> [GRGBA] {
+        [accent] + worstPoints.map {
+            GLuminance.laid(accent, GGlassValues.controlProminent, on: GLuminance.laid(glass, veil, on: $0))
+        }
+    }
+
+    /// The ground's own accent and its roles (4.2): tools/tokens.py's `accent_tone()`, step for step. The text in the
+    /// accent (links, the chosen tab): the first of the accent moved toward the ink by steps of `GAccentRule.step` that
+    /// holds 4.5:1 on the veiled ground and every content glass at every worst point. The ink on the accent: of
+    /// `GAccentRule.inks`, the one whose worst contrast on the accent and on the prominent glass is the highest. The
+    /// selection: the accent at `GAccentRule.selected(mode)`. Nil: no accent of its own, or no veil holds its ink.
+    public func accentTone() -> GAccentTone? {
+        guard accent != nil, let tone = tone() else { return nil }
+        return accentTone(under: tone)
+    }
+
+    /// The same, with `tone` as the ground's (an app's ground no veil holds: `GGroundTone` with an opaque veil).
+    public func accentTone(under tone: GGroundTone) -> GAccentTone? {
+        guard let accent = accent?.opacity(1) else { return nil }
+        let surfaces = accentSurfaces(veil: tone.veil)
+        let count = Int((1 / GAccentRule.step).rounded())
+        let amounts = (0...count).map { min(Double($0) * GAccentRule.step, 1) }
+        func mixed(_ amount: Double) -> GRGBA {
+            GRGBA(red: accent.red + (tone.ink.red - accent.red) * amount,
+                  green: accent.green + (tone.ink.green - accent.green) * amount,
+                  blue: accent.blue + (tone.ink.blue - accent.blue) * amount, alpha: 1)
+        }
+        let text = amounts.lazy.map(mixed).first { candidate in
+            surfaces.allSatisfy { GLuminance.contrast(candidate, $0) >= GGlassValues.textMinimum - 1e-9 }
+        } ?? mixed(1)
+        let fills = accentFills(accent, veil: tone.veil)
+        func worst(_ ink: GRGBA) -> Double { fills.map { GLuminance.contrast(ink, $0) }.min() ?? 0 }
+        // The first of the best, as Python's max().
+        var on = GAccentRule.inks[0]
+        for ink in GAccentRule.inks.dropFirst() where worst(ink) > worst(on) { on = ink }
+        return GAccentTone(accent: accent, accentText: text.byteRounded, onAccent: on,
+                           selected: GAccentRule.selected(mode))
+    }
+
+    /// The accent against the veiled ground, at its worst point (its rim, the focus ring: 3:1 wanted).
+    public func accentEdge(under tone: GGroundTone) -> Double? {
+        guard let accent else { return nil }
+        return worstPoints.map { GLuminance.contrast(accent, GLuminance.laid(glass, tone.veil, on: $0)) }.min()
+    }
+
+    /// The ink on the accent, at its worst (on the accent alone and on the prominent glass: 4.5:1 wanted).
+    public func onAccentContrast(_ accentTone: GAccentTone, under tone: GGroundTone) -> Double {
+        accentFills(accentTone.accent, veil: tone.veil).map { GLuminance.contrast(accentTone.onAccent, $0) }.min() ?? 0
+    }
+}
+
+extension GRGBA {
+    /// Rounded to a byte per channel, as the generator writes colours.
+    var byteRounded: GRGBA {
+        func byte(_ v: Double) -> Double { (v * 255).rounded(.toNearestOrEven) / 255 }
+        return GRGBA(red: byte(red), green: byte(green), blue: byte(blue), alpha: alpha)
     }
 }

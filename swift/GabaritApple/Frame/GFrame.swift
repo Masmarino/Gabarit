@@ -125,15 +125,15 @@ public struct GRailItem: View {
         let shape = RoundedRectangle(cornerRadius: GRadius.row, style: .continuous)
         return VStack(spacing: 3) {
             icon
-                .foregroundStyle(current ? AnyShapeStyle(GColor.accent) : AnyShapeStyle(hovering ? .gInk : .gInk2))
+                .foregroundStyle(current ? AnyShapeStyle(.gAccent) : AnyShapeStyle(hovering ? .gInk : .gInk2))
                 .frame(height: 22)
                 .overlay(alignment: .topTrailing) {
                     if badge > 0 {
                         Text(gBadgeText(badge))
                             .font(GFont.caption2.weight(.semibold).monospacedDigit())
-                            .foregroundStyle(GColor.onPrimary)
+                            .foregroundStyle(.gOnAccent)
                             .padding(.horizontal, 4).padding(.vertical, 1)
-                            .background(GColor.accent, in: .capsule)
+                            .background(.gAccent, in: .capsule)
                             .fixedSize()
                             .offset(x: 14, y: -6)
                     }
@@ -170,13 +170,13 @@ public struct GRailItem: View {
                 }
             Text(title).font(GFont.caption2.weight(current ? .semibold : .medium)).lineLimit(1).minimumScaleFactor(0.8)
         }
-        .foregroundStyle(current ? GColor.accent : (hovering ? GFrameColor.text : GFrameColor.textDiscret))
+        .foregroundStyle(current ? AnyShapeStyle(.gAccent) : AnyShapeStyle(hovering ? GFrameColor.text : GFrameColor.textDiscret))
         .frame(maxWidth: .infinity, minHeight: 52)
         .background(pressed || current ? GFrameColor.selected : (hovering ? GFrameColor.hover : .clear),
                     in: .rect(cornerRadius: GRadius.sm))
         .gPressScale(pressed)
         .overlay(alignment: .leading) {
-            if current { Rectangle().fill(GColor.accent).frame(width: 2).padding(.vertical, 6).gGlow(radius: 5) }
+            if current { Rectangle().fill(.gAccent).frame(width: 2).padding(.vertical, 6).gGlow(radius: 5) }
         }
         .contentShape(Rectangle())
     }

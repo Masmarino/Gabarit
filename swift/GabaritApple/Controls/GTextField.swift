@@ -48,7 +48,7 @@ public struct GFieldFrame: ViewModifier {
 
     private func framed(_ content: Content) -> some View {
         let shape = multiline ? AnyInsettableShape(RoundedRectangle(cornerRadius: GRadius.row, style: .continuous)) : AnyInsettableShape(Capsule())
-        let rim: AnyShapeStyle = focused ? AnyShapeStyle(GColor.accent) : contrast == .increased ? AnyShapeStyle(.gInk)
+        let rim: AnyShapeStyle = focused ? AnyShapeStyle(.gAccent) : contrast == .increased ? AnyShapeStyle(.gInk)
             : AnyShapeStyle(hovering || preview != nil ? GColor.border.opacity(0.35) : Color.clear)
         return content
             .font(GFont.body)

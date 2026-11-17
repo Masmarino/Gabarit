@@ -2,7 +2,7 @@
 //! ambiance of its own, a colour drawn from a picture). `tests/tokens.rs` compares it with the tones the generator
 //! wrote (`tokens::tones`). Computed in f64, as Python does.
 
-use crate::tokens::{self, GGroundMode, GGroundSpec, GGroundToneValues, GRgba, glass};
+use crate::tokens::{self, GAccentTone, GGroundMode, GGroundSpec, GGroundToneValues, GRgba, glass};
 
 type Rgb = [f64; 3];
 
@@ -142,4 +142,144 @@ pub fn tone(spec: &GGroundSpec) -> Option<GGroundToneValues> {
         liquid: liquid as f32,
         shade: shade(spec),
     })
+}
+
+/// tokens/gabarit.json's `ground.accent`: the step by which an accent's text moves toward the ink, the selection's
+/// opacity by mode, the inks laid on the accent (white, slate 900). The generator does not write them as constants.
+pub mod accent_rule {
+    use crate::tokens::{GGroundMode, GRgba, palette};
+
+    pub const STEP: f64 = 0.05;
+    pub const INKS: [GRgba; 2] = [GRgba::hex(0xFFFFFF), palette::SLATE_900];
+
+    pub const fn selected(mode: GGroundMode) -> f32 {
+        match mode {
+            GGroundMode::Light => 0.1,
+            GGroundMode::Dark => 0.16,
+        }
+    }
+}
+
+/// `a` moved toward `b` by `amount` (0: `a`, 1: `b`).
+fn mixed(a: Rgb, b: Rgb, amount: f64) -> Rgb {
+    [0, 1, 2].map(|i| a[i] + (b[i] - a[i]) * amount)
+}
+
+/// A colour rounded to bytes, as the generator writes it (Python's `round`).
+fn to_bytes(c: Rgb) -> GRgba {
+    let byte = |v: f64| (round_half_even(v * 255.0) / 255.0) as f32;
+    GRgba {
+        red: byte(c[0]),
+        green: byte(c[1]),
+        blue: byte(c[2]),
+        alpha: 1.0,
+    }
+}
+
+/// The ground under the glass at each worst point: its glass colour laid at the tone's veil.
+fn veiled_points(spec: &GGroundSpec, tone: &GGroundToneValues) -> Vec<Rgb> {
+    let glass_colour = rgb(spec.glass);
+    worst_points(spec)
+        .into_iter()
+        .map(|point| laid(glass_colour, tone.veil as f64, point))
+        .collect()
+}
+
+/// Where an accent's text may land: the veiled ground and every content glass over it, at each worst point.
+pub fn accent_surfaces(spec: &GGroundSpec, tone: &GGroundToneValues) -> Vec<Rgb> {
+    let (kind, glass_colour) = (spec.kind.values(), rgb(spec.glass));
+    veiled_points(spec, tone)
+        .into_iter()
+        .flat_map(|veiled| {
+            [
+                veiled,
+                laid(glass_colour, kind.thin as f64, veiled),
+                laid(glass_colour, kind.regular as f64, veiled),
+                laid(glass_colour, kind.thick as f64, veiled),
+            ]
+        })
+        .collect()
+}
+
+/// What the accent fills: the accent alone, and the prominent glass (the accent at `glass::CONTROL_PROMINENT`) over
+/// the veiled ground at each worst point.
+pub fn accent_fills(spec: &GGroundSpec, tone: &GGroundToneValues, accent: GRgba) -> Vec<Rgb> {
+    let a = rgb(accent);
+    std::iter::once(a)
+        .chain(
+            veiled_points(spec, tone)
+                .into_iter()
+                .map(|veiled| laid(a, glass::CONTROL_PROMINENT as f64, veiled)),
+        )
+        .collect()
+}
+
+/// An ambiance's own accent and its roles (4.2): tools/tokens.py's `accent_tone()`, step for step. The text's colour
+/// is the first mix of the accent toward the tone's ink, by `accent_rule::STEP`, that holds 4.5:1 on every surface
+/// ([`accent_surfaces`]); the ink on the accent, of `accent_rule::INKS`, the one whose worst contrast on the fills
+/// ([`accent_fills`]) is the best; the selection, the accent at its mode's opacity. Whether the accent may be used
+/// at all is [`accent_edge`] (3:1) and [`on_accent_contrast`] (4.5:1).
+pub fn accent_tone(spec: &GGroundSpec, tone: &GGroundToneValues, accent: GRgba) -> GAccentTone {
+    let (a, ink) = (rgb(accent), rgb(tone.ink));
+    let surfaces = accent_surfaces(spec, tone);
+    let text_minimum = glass::TEXT_MINIMUM as f64 - 1e-9;
+    let steps = (1.0 / accent_rule::STEP).round() as usize;
+    let text = (0..=steps)
+        .map(|index| mixed(a, ink, (index as f64 * accent_rule::STEP).min(1.0)))
+        .find(|candidate| {
+            surfaces
+                .iter()
+                .all(|under| contrast(*candidate, *under) >= text_minimum)
+        })
+        .unwrap_or(ink);
+    let fills = accent_fills(spec, tone, accent);
+    let worst = |ink: GRgba| {
+        fills
+            .iter()
+            .map(|fill| contrast(rgb(ink), *fill))
+            .fold(f64::INFINITY, f64::min)
+    };
+    // The first of the inks wins a tie, as Python's `max`.
+    let on = accent_rule::INKS
+        .into_iter()
+        .fold(None::<(GRgba, f64)>, |best, ink| {
+            let held = worst(ink);
+            match best {
+                Some((_, best_held)) if best_held >= held => best,
+                _ => Some((ink, held)),
+            }
+        })
+        .expect("two inks")
+        .0;
+    GAccentTone {
+        accent: GRgba {
+            alpha: 1.0,
+            ..accent
+        },
+        accent_text: to_bytes(text),
+        on_accent: on,
+        selected: accent_rule::selected(spec.mode),
+    }
+}
+
+/// The accent against the veiled ground at its worst point (a rim, the focus ring): 3:1 at least.
+pub fn accent_edge(spec: &GGroundSpec, tone: &GGroundToneValues, accent: GRgba) -> f64 {
+    let a = rgb(accent);
+    veiled_points(spec, tone)
+        .into_iter()
+        .map(|veiled| contrast(a, veiled))
+        .fold(f64::INFINITY, f64::min)
+}
+
+/// The ink on the accent at its worst fill ([`accent_fills`]): 4.5:1 at least.
+pub fn on_accent_contrast(
+    spec: &GGroundSpec,
+    tone: &GGroundToneValues,
+    accent: &GAccentTone,
+) -> f64 {
+    let on = rgb(accent.on_accent);
+    accent_fills(spec, tone, accent.accent)
+        .into_iter()
+        .map(|fill| contrast(on, fill))
+        .fold(f64::INFINITY, f64::min)
 }

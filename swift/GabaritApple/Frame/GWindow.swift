@@ -190,7 +190,7 @@ public struct GRailButton: View {
                 let shape = RoundedRectangle(cornerRadius: style == .ground ? GRadius.pill : GRadius.sm, style: .continuous)
                 Image(systemName: symbol)
                     .font(.system(size: 15))
-                    .foregroundStyle(isOn ? AnyShapeStyle(GColor.accent) : style == .ground ? AnyShapeStyle(hovering ? .gInk : .gInk2)
+                    .foregroundStyle(isOn ? AnyShapeStyle(.gAccent) : style == .ground ? AnyShapeStyle(hovering ? .gInk : .gInk2)
                                      : AnyShapeStyle(hovering ? GFrameColor.text : GFrameColor.textDiscret))
                     .frame(maxWidth: .infinity, minHeight: 32)
                     .background {

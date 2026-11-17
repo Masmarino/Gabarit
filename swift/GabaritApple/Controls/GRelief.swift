@@ -62,8 +62,9 @@ public extension View {
     }
 
     /// What is on glows a little, in its colour (a switch, the current tab, a selection). `active` false: nothing.
-    func gGlow(_ color: Color = GColor.accent, radius: CGFloat = 5, active: Bool = true) -> some View {
-        shadow(color: active ? color.opacity(0.45) : .clear, radius: radius)
+    /// `color` nil: the accent in force (the ground's own, the app's, or Gabarit's: 4.2).
+    func gGlow(_ color: Color? = nil, radius: CGFloat = 5, active: Bool = true) -> some View {
+        modifier(GGlow(color: color, radius: radius, active: active))
     }
 
     /// The light on one of the frame's dark bars: a soft sheen from above, a lit top edge.
@@ -146,6 +147,18 @@ private struct GRaised<S: InsettableShape>: ViewModifier {
             .shadow(color: lit ? GColor.reliefShadow : .clear, radius: hovering ? raised.radius + 2 : raised.radius,
                     x: raised.x, y: hovering ? raised.y + 1 : raised.y)
             .offset(y: active && pressed && !reduceMotion ? 0.5 : 0)
+    }
+}
+/// A glow in `color`, or in the accent in force.
+private struct GGlow: ViewModifier {
+    let color: Color?
+    let radius: CGFloat
+    let active: Bool
+    @Environment(\.gAccentTone) private var accent
+
+    func body(content: Content) -> some View {
+        let color = color ?? GAccentStyle.color(.accent, accent)
+        content.shadow(color: active ? color.opacity(0.45) : .clear, radius: radius)
     }
 }
 #endif

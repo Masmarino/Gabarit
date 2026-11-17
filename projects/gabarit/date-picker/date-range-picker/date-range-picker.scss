@@ -290,24 +290,24 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &--in-range::before {
-    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    background: color-mix(in srgb, #{glass.$main} 12%, transparent);
   }
 
   &--start-cap,
   &--end-cap {
-    color: var(--text-on-primary);
+    color: glass.$on-main;
     font-weight: 600;
   }
 
   &--start-cap::before {
-    background: var(--primary);
-    color: var(--text-on-primary);
+    background: glass.$main;
+    color: glass.$on-main;
     border-radius: 50% 0 0 50%;
   }
 
   &--end-cap::before {
-    background: var(--primary);
-    color: var(--text-on-primary);
+    background: glass.$main;
+    color: glass.$on-main;
     border-radius: 0 50% 50% 0;
   }
 

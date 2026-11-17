@@ -361,6 +361,7 @@ impl RenderOnce for GCheckbox {
         // The check pops in on the bouncy spring (it grows past its size and settles), the ground fills with it;
         // unchecked, it shrinks away. No movement when first drawn; less motion: at once.
         let (empty, full) = (colors.background, colors.accent);
+        let mark = cx.theme().on_accent().unwrap_or(gpui::white());
         let box_ = motion::spring_to(
             box_,
             "g-check-pop",
@@ -371,7 +372,7 @@ impl RenderOnce for GCheckbox {
                 let scale = phase.0.max(0.);
                 box_.bg(crate::theme::mix(empty, full, phase.0.clamp(0., 1.)))
                     .when(scale > 0.02, |this| {
-                        this.child(icon("check", px(11.), gpui::white()).with_transformation(
+                        this.child(icon("check", px(11.), mark).with_transformation(
                             gpui::Transformation::scale(gpui::size(scale, scale)),
                         ))
                     })

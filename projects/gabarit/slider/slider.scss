@@ -46,7 +46,7 @@
   }
 
   @media (prefers-reduced-transparency: reduce) {
-    border-color: var(--accent);
+    border-color: glass.$accent;
     background: var(--gbt-knob);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
@@ -79,8 +79,8 @@ input[type='range'] {
     box-shadow: var(--gbt-depth-hollow);
     background: linear-gradient(
       to right,
-      var(--accent) 0%,
-      var(--accent) var(--gbt-slider-fill),
+      glass.$accent 0%,
+      glass.$accent var(--gbt-slider-fill),
       var(--border-color) var(--gbt-slider-fill),
       var(--border-color) 100%
     );
@@ -128,8 +128,8 @@ input[type='range'] {
   &::-moz-range-progress {
     height: 4px;
     border-radius: 999px;
-    background: var(--accent);
-    box-shadow: var(--gbt-glow);
+    background: glass.$accent;
+    box-shadow: glass.$glow;
   }
 
   &::-moz-range-thumb {

@@ -58,13 +58,13 @@
 }
 
 .gbt-switch__input:checked + .gbt-switch__track {
-  background: var(--accent);
-  box-shadow: var(--gbt-depth-hollow), var(--gbt-glow);
+  background: glass.$accent;
+  box-shadow: var(--gbt-depth-hollow), glass.$glow;
 }
 
 .gbt-switch:not(.gbt-switch--disabled):hover .gbt-switch__input:checked + .gbt-switch__track {
-  background: var(--accent);
-  box-shadow: var(--gbt-depth-hollow), var(--gbt-glow-hover);
+  background: glass.$accent;
+  box-shadow: var(--gbt-depth-hollow), glass.$glow-hover;
 }
 
 .gbt-switch__input:focus-visible + .gbt-switch__track {

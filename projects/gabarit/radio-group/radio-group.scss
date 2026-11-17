@@ -1,3 +1,5 @@
+@use '../src/lib/tokens/glass';
+
 .gbt-radio-group {
   display: flex;
   flex-direction: column;
@@ -57,7 +59,7 @@
   input {
     width: 1rem;
     height: 1rem;
-    accent-color: var(--primary);
+    accent-color: glass.$main;
     // The option's cursor over the round too: the hand, or `not-allowed` when it is disabled (4.1.2).
     cursor: inherit;
   }

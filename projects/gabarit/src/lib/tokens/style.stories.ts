@@ -1,11 +1,18 @@
 import { AfterViewInit, Component, ElementRef, inject } from '@angular/core'
 import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import type { Meta, StoryObj } from '@storybook/angular-vite'
-import { auroreAmbiance, darkTheme } from '../../../.storybook/preview'
+import {
+  auroreAmbiance,
+  darkTheme,
+  doreAmbiance,
+  doreWithoutAccent,
+} from '../../../.storybook/preview'
 import { Badge } from '../../../badge'
 import { Button } from '../../../button'
 import { Card } from '../../../card'
+import { Checkbox } from '../../../checkbox'
 import { GbtInput } from '../../../input'
+import { NavTab, NavTabs } from '../../../nav-tabs'
 import { SegmentedControl } from '../../../segmented-control'
 import { Select } from '../../../select'
 import { Slider } from '../../../slider'
@@ -64,7 +71,10 @@ function forceStates(root: HTMLElement): void {
     Badge,
     Button,
     Card,
+    Checkbox,
     GbtInput,
+    NavTab,
+    NavTabs,
     SegmentedControl,
     Select,
     Slider,
@@ -173,6 +183,23 @@ function forceStates(root: HTMLElement): void {
         <gbt-tag color="#15805d" [removable]="true">Ready</gbt-tag>
       </div>
     </section>
+    <section>
+      <h2>Links, checks, the page's tabs and the focus ring</h2>
+      <div class="row">
+        <gbt-button text="Read the guide" variant="link" />
+        <gbt-checkbox label="Checked" [checked]="true" />
+        <gbt-checkbox label="Not checked" />
+        <div class="row" data-force="focus">
+          <button type="button" class="gbt-chip" aria-pressed="true">Focused chip</button>
+          <button type="button" class="gbt-chip">Focused</button>
+        </div>
+      </div>
+      <gbt-nav-tabs ariaLabel="Settings" [landmark]="false">
+        <a gbtNavTab href="#general" [active]="true" [badge]="3">General</a>
+        <a gbtNavTab href="#members">Members</a>
+        <a gbtNavTab href="#security">Security</a>
+      </gbt-nav-tabs>
+    </section>
     <section class="row">
       <gbt-segmented-control label="View" [options]="views" [(value)]="view" />
       <gbt-segmented-control ariaLabel="Period" size="sm" [options]="periods" [(value)]="period" />
@@ -264,3 +291,13 @@ export const Light: Story = {}
 export const Dark: Story = { decorators: [darkTheme] }
 
 export const Aurore: Story = { decorators: [auroreAmbiance] }
+
+/** The doré ambiance (4.2) brings its own accent: the main buttons, the chosen chips and tab, the links, the checked
+ * controls and the focus ring follow it. */
+export const Dore: Story = { name: 'Doré (its own accent)', decorators: [doreAmbiance] }
+
+/** The same ground under Gabarit's accent, to compare. */
+export const DoreWithoutAccent: Story = {
+  name: 'Doré without its accent',
+  decorators: [doreWithoutAccent],
+}

@@ -103,7 +103,7 @@ private struct GMenuFace: View {
         .padding(.leading, 14).padding(.trailing, 10)
         .frame(minHeight: GControlMetrics.compact)
         .gLiquidControl(hovering: hovering, pressed: pressed)
-        .overlay { if open { Capsule().strokeBorder(GColor.accent, lineWidth: 1.5).allowsHitTesting(false) } }
+        .overlay { if open { Capsule().strokeBorder(.gAccent, lineWidth: 1.5).allowsHitTesting(false) } }
         .contentShape(Capsule())
         .opacity(isEnabled ? 1 : GOpacity.disabled)
     }
@@ -227,7 +227,7 @@ private struct GMenuRow: View {
         HStack(spacing: 10) {
             Text(title).font(GFont.body.weight(checked ? .semibold : .regular)).foregroundStyle(GColor.textPrimary)
             Spacer(minLength: 16)
-            Image(systemName: "checkmark").font(GFont.subheadline.weight(.semibold)).foregroundStyle(GColor.accent)
+            Image(systemName: "checkmark").font(GFont.subheadline.weight(.semibold)).foregroundStyle(.gAccent)
                 .opacity(checked ? 1 : 0)
         }
         .padding(.horizontal, 14).padding(.vertical, 9)
@@ -253,7 +253,7 @@ private struct GChips<Value: Hashable>: View {
                     GLive { hovering, pressed in
                         Text(option.title)
                             .font(GFont.callout.weight(current ? .semibold : .medium))
-                            .foregroundStyle(current ? AnyShapeStyle(GOnProminent()) : AnyShapeStyle(.gInk))
+                            .foregroundStyle(current ? AnyShapeStyle(GOnProminent(.accent)) : AnyShapeStyle(.gInk))
                             .padding(.horizontal, 14)
                             .frame(minHeight: GControlMetrics.compact)
                             .gLiquidControl(prominent: current ? .accent : nil, hovering: hovering, pressed: pressed)

@@ -4,6 +4,10 @@
 //! The ground (`GTheme::ground`) is Gabarit's light or dark one by default, after the appearance; an app may lay its
 //! own ambiance instead ([`set_ground`]): its tone is then computed once ([`crate::tone::tone`]), and the ink and the
 //! glass come from it.
+//!
+//! An ambiance may bring its own accent (4.2, [`GTheme::with_accent`], [`set_accent`]): the main buttons in tinted glass,
+//! the chosen chip, the tab's line, the links, the selection and the focus ring take it instead of Gabarit's rust, its
+//! roles derived by [`crate::tone::accent_tone`]. `GGroundSpec` keeps its fields: the accent goes to the theme.
 
 use std::borrow::Cow;
 
@@ -12,8 +16,8 @@ use gpui::{
 };
 
 use crate::tokens::{
-    self, GColorRoles, GGroundMode, GGroundSpec, GGroundToneValues, GRgba, GTextStyle, GWeight,
-    grounds, tones,
+    self, GAccentTone, GColorRoles, GGroundMode, GGroundSpec, GGroundToneValues, GRgba, GTextStyle,
+    GWeight, grounds, tones,
 };
 
 /// The colours by role, as GPUI's.
@@ -114,6 +118,8 @@ pub struct GTheme {
     pub tone: GGroundToneValues,
     /// The app laid its own ground: it stays when the appearance changes (the ground has its own mode).
     pub own_ground: bool,
+    /// The ambiance's own accent and its roles (4.2, [`GTheme::with_accent`]); `None`: Gabarit's rust.
+    pub accent: Option<GAccentTone>,
     /// The system asks for less motion: no press scale, no animated knob.
     pub reduce_motion: bool,
     /// "Reduce transparency": the glass turns dense (`glass::REDUCED`, 0.94 of the ground's glass colour).
@@ -140,6 +146,7 @@ impl GTheme {
             ground,
             tone,
             own_ground: false,
+            accent: None,
             reduce_motion: false,
             reduce_transparency: false,
             increase_contrast: false,
@@ -176,6 +183,63 @@ impl GTheme {
             own_ground: true,
             ..base
         }
+    }
+
+    /// The theme with an ambiance's own accent (4.2), its roles computed here, once, on this theme's ground and tone
+    /// ([`crate::tone::accent_tone`]): `accent` and `accent_text` (links, a label in the accent), the selection
+    /// (`selected_fill`, the accent at its mode's opacity), the main button (`primary` the accent, `on_primary` the
+    /// ink on it, `primary_hover` that ink at 15 %), and the ink laid on it ([`GTheme::on_accent`]); the
+    /// focus ring, the tab's line and the tinted glass ([`crate::glass::accent_glass`]) follow. `None`: back to
+    /// Gabarit's accent, the colours as [`GTheme::new`] and [`GTheme::with_ground`] give them.
+    pub fn with_accent(mut self, accent: Option<GRgba>) -> Self {
+        let values = match self.appearance {
+            GAppearance::Light => tokens::LIGHT,
+            GAppearance::Dark => tokens::DARK,
+        };
+        self.accent =
+            accent.map(|accent| crate::tone::accent_tone(&self.ground, &self.tone, accent));
+        let colors = &mut self.colors;
+        match self.accent {
+            Some(tone) => {
+                colors.accent = hsla(tone.accent);
+                colors.accent_text = hsla(tone.accent_text);
+                colors.selected_fill = hsla(GRgba {
+                    alpha: tone.selected,
+                    ..tone.accent
+                });
+                // The main button in the accent, its text the ink chosen for it; under the pointer, 15 % of that ink.
+                colors.primary = hsla(tone.accent);
+                colors.on_primary = hsla(tone.on_accent);
+                colors.primary_hover = mix(colors.primary, colors.on_primary, 0.15);
+            }
+            None => {
+                colors.accent = hsla(values.accent);
+                colors.accent_text = hsla(values.accent_text);
+                colors.selected_fill = hsla(values.selected_fill);
+                colors.primary = hsla(values.primary);
+                colors.on_primary = hsla(values.on_primary);
+                colors.primary_hover = hsla(values.primary_hover);
+            }
+        }
+        self
+    }
+
+    /// The ink on the ambiance's accent (a pale accent takes the dark ink); `None` without an accent of its own (each
+    /// control keeps its own: white on Gabarit's rust).
+    pub fn on_accent(&self) -> Option<Hsla> {
+        self.accent.map(|tone| hsla(tone.on_accent))
+    }
+
+    /// The ink on a solid ground of a state's colour (a danger button): the mode's `on_primary`, which an ambiance's
+    /// accent does not take.
+    pub fn on_error_fill(&self) -> Hsla {
+        if self.accent.is_none() {
+            return self.colors.on_primary;
+        }
+        hsla(match self.appearance {
+            GAppearance::Light => tokens::LIGHT.on_primary,
+            GAppearance::Dark => tokens::DARK.on_primary,
+        })
     }
 
     /// The colour of the ground's glass (its veil's, its panels'), opaque.
@@ -276,21 +340,33 @@ fn replace(mut theme: GTheme, cx: &mut App) {
     cx.refresh_windows();
 }
 
-/// Sets the appearance (redraws every window). An app's own ground stays (it has its own mode): see [`set_ground`].
+/// Sets the appearance (redraws every window). An app's own ground stays (it has its own mode): see [`set_ground`];
+/// its own accent too ([`set_accent`]).
 pub fn set_appearance(appearance: GAppearance, cx: &mut App) {
-    let own = cx
-        .try_global::<GTheme>()
+    let current = cx.try_global::<GTheme>();
+    let own = current
         .filter(|theme| theme.own_ground)
         .map(|theme| theme.ground);
-    match own {
-        Some(spec) => replace(GTheme::with_ground(spec), cx),
-        None => replace(GTheme::new(appearance), cx),
-    }
+    let accent = current
+        .and_then(|theme| theme.accent)
+        .map(|tone| tone.accent);
+    let theme = match own {
+        Some(spec) => GTheme::with_ground(spec),
+        None => GTheme::new(appearance),
+    };
+    replace(theme.with_accent(accent), cx);
+}
+
+/// Gives the current ground an accent of its own (4.2: `tokens::grounds::accent(name)` for a sample ambiance, or the
+/// app's), or takes it back (`None`). Redraws.
+pub fn set_accent(accent: Option<GRgba>, cx: &mut App) {
+    let theme = cx.theme().clone().with_accent(accent);
+    replace(theme, cx);
 }
 
 /// Lays the app's own ground under its windows (an ambiance of `tokens::grounds`, or one of its own), its tone
 /// computed once; the appearance becomes the ground's mode. `None`: back to Gabarit's light or dark ground, after
-/// `appearance`.
+/// `appearance`. The ambiance's accent, if any, goes back to Gabarit's: give the new one with [`set_accent`].
 pub fn set_ground(ground: Option<GGroundSpec>, appearance: GAppearance, cx: &mut App) {
     match ground {
         Some(spec) => replace(GTheme::with_ground(spec), cx),

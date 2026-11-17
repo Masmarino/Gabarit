@@ -276,7 +276,8 @@ public enum GGroundValues {
     public static let sousBois = GGroundSpec(name: "sousBois", mode: .dark, kind: .tinted, angle: 160, stops: [GRGBA(hex: 0x16301F), GRGBA(hex: 0x2E4A2A), GRGBA(hex: 0x0F1F18)], light: GGroundLight(color: GRGBA(hex: 0x9CC27A), x: 0.1, y: -0.05, radius: 0.7, strength: 0.4), glass: GRGBA(hex: 0x0B1A10), ink: GRGBA(hex: 0xFFFFFF), shade: nil)
     public static let laiton = GGroundSpec(name: "laiton", mode: .dark, kind: .tinted, angle: 150, stops: [GRGBA(hex: 0x3A2A12), GRGBA(hex: 0x6B4E1F), GRGBA(hex: 0x22180C)], light: GGroundLight(color: GRGBA(hex: 0xE0B465), x: 0.2, y: -0.05, radius: 0.7, strength: 0.45), glass: GRGBA(hex: 0x1C140A), ink: GRGBA(hex: 0xFFFFFF), shade: nil)
     public static let givre = GGroundSpec(name: "givre", mode: .light, kind: .light, angle: 160, stops: [GRGBA(hex: 0xEEF3F8), GRGBA(hex: 0xDDE8F3), GRGBA(hex: 0xE9E4F5)], light: GGroundLight(color: GRGBA(hex: 0xFFFFFF), x: 0.15, y: -0.05, radius: 0.8, strength: 1), glass: GRGBA(hex: 0xFFFFFF), ink: nil, shade: nil)
-    public static let all = [light, dark, black, aurore, lagune, braise, nuitPolaire, sousBois, laiton, givre]
+    public static let dore = GGroundSpec(name: "dore", mode: .dark, kind: .tinted, angle: 155, stops: [GRGBA(hex: 0x2B200D), GRGBA(hex: 0x4A3816), GRGBA(hex: 0x1A1309)], light: GGroundLight(color: GRGBA(hex: 0xE9C979), x: 0.18, y: -0.06, radius: 0.7, strength: 0.3), glass: GRGBA(hex: 0x17110A), ink: GRGBA(hex: 0xFFFFFF), shade: nil, accent: GRGBA(hex: 0xE9C979))
+    public static let all = [light, dark, black, aurore, lagune, braise, nuitPolaire, sousBois, laiton, givre, dore]
 }
 
 /// The tones tools/tokens.py computed (GGroundSpec.tone() must find the same).
@@ -291,6 +292,30 @@ public enum GGroundTones {
     public static let sousBois = GGroundTone(veil: 0.0, ink: GRGBA(hex: 0xFFFFFF), ink2: 0.8, ink3: 0.54, liquid: 0.1, shade: GRGBA(hex: 0x040907))
     public static let laiton = GGroundTone(veil: 0.11, ink: GRGBA(hex: 0xFFFFFF), ink2: 0.8, ink3: 0.55, liquid: 0.1, shade: GRGBA(hex: 0x0A0704))
     public static let givre = GGroundTone(veil: 0.0, ink: GRGBA(hex: 0x10151C), ink2: 0.62, ink3: 0.47, liquid: 0.26, shade: GRGBA(hex: 0x46444A))
+    public static let dore = GGroundTone(veil: 0.0, ink: GRGBA(hex: 0xFFFFFF), ink2: 0.69, ink3: 0.47, liquid: 0.1, shade: GRGBA(hex: 0x080603))
+}
+
+/// An ambiance's own accent and its roles (4.2, ground.accent): the accent as given (fills, the focus ring,
+/// the prominent glass), its text's colour (4.5:1 on the ground and every glass), the ink laid on it, the
+/// selection's opacity.
+public struct GAccentTone: Sendable, Hashable {
+    public let accent: GRGBA
+    public let accentText: GRGBA
+    public let onAccent: GRGBA
+    public let selected: Double
+
+    public init(accent: GRGBA, accentText: GRGBA, onAccent: GRGBA, selected: Double) {
+        self.accent = accent
+        self.accentText = accentText
+        self.onAccent = onAccent
+        self.selected = selected
+    }
+}
+
+/// The accents tools/tokens.py computed for the ambiances that bring one (GGroundSpec.accentTone() must find
+/// the same).
+public enum GAccentTones {
+    public static let dore = GAccentTone(accent: GRGBA(hex: 0xE9C979), accentText: GRGBA(hex: 0xE9C979), onAccent: GRGBA(hex: 0x10151C), selected: 0.16)
 }
 
 /// The font families, and the files each one ships (in GabaritApple's resources).

@@ -61,6 +61,7 @@ private val LocalDark = staticCompositionLocalOf { false }
 private val LocalGrounds = staticCompositionLocalOf<GThemeGrounds?> { null }
 private val LocalGround = staticCompositionLocalOf { GGrounds.light }
 private val LocalGroundTone = staticCompositionLocalOf { GGroundTones.light }
+private val LocalAccentTone = staticCompositionLocalOf<GAccentTone?> { null }
 private val LocalReduceTransparency = staticCompositionLocalOf { false }
 private val LocalHighContrast = staticCompositionLocalOf { false }
 
@@ -75,6 +76,13 @@ object G {
 
     /** The current ground's tone (its veil, its ink's opacities, its liquid glass's white), computed once per ground. */
     val groundTone: GGroundTone @Composable @ReadOnlyComposable get() = LocalGroundTone.current
+
+    /**
+     * The accent's roles when the ground brings its own accent or the theme was given one (4.2): its text, the ink on
+     * it (`onAccent`, for what an app draws on the accent), the selection's opacity. Null: Gabarit's rust. `G.colors`
+     * already carries them (`accent`, `accentText`, `selectedFill`, `primary`, `onPrimary`).
+     */
+    val accentTone: GAccentTone? @Composable @ReadOnlyComposable get() = LocalAccentTone.current
 
     /** The glass is dense, nothing shows through it (the theme's `reduceTransparency`). */
     val reduceTransparency: Boolean @Composable @ReadOnlyComposable get() = LocalReduceTransparency.current
@@ -130,6 +138,10 @@ fun Modifier.gPageGround(): Modifier = composed {
  * - `reduceTransparency`: dense glass (`GGlassValues.reduced`); by default when the battery saver is on.
  * - `highContrast`: the glass's light becomes a true rim; by default as the system's contrast (Android 14) or its
  *   high-contrast text.
+ * - `accent` (4.2): the app's own accent, over the ground's (`GGroundSpec.accent`); null: the ground's, or Gabarit's
+ *   rust. With one, the accent, its text (links, the chosen tab), the selection, the focus ring, the tinted and the
+ *   prominent glass, and the primary buttons (`primary`, the ink on them `onPrimary`) take it, their roles computed on
+ *   the ground (`GGroundSpec.accentToneOn`, read back by `G.accentTone`). Without one, nothing changes.
  */
 @Composable
 fun GTheme(
@@ -138,14 +150,16 @@ fun GTheme(
     ground: GGroundSpec? = null,
     reduceTransparency: Boolean = gSystemReduceTransparency(),
     highContrast: Boolean = gSystemHighContrast(),
+    accent: Color? = null,
     content: @Composable () -> Unit,
 ) {
-    GScheme(dark, grounds, ground, reduceTransparency, highContrast, content)
+    GScheme(dark, grounds, ground, reduceTransparency, highContrast, accent, content)
 }
 
 /**
  * A part always light or always dark (the graphite frame): Gabarit's theme, forced. `ground`: as `GTheme`'s; by
- * default the mode's own ground. The accessibility settings are kept from the theme around it.
+ * default the mode's own ground. The accessibility settings are kept from the theme around it. `accent`: as `GTheme`'s;
+ * by default the accent around it (the ground's own, if it brings one).
  */
 @Composable
 fun GScheme(
@@ -154,12 +168,17 @@ fun GScheme(
     ground: GGroundSpec? = null,
     reduceTransparency: Boolean = LocalReduceTransparency.current,
     highContrast: Boolean = LocalHighContrast.current,
+    accent: Color? = null,
     content: @Composable () -> Unit,
 ) {
     val spec = ground ?: if (dark) GGrounds.dark else GGrounds.light
     val tone = remember(spec) { gToneOf(spec) }
     val isDark = if (ground != null) spec.mode == GGroundMode.DARK else dark
-    val base = gColorsOn(if (isDark) GDarkColors else GLightColors, spec, tone, custom = ground != null)
+    // 4.2: the theme's accent, else the ground's, else (a part inside a theme) the accent around it.
+    val accentColor = accent ?: spec.accent ?: LocalAccentTone.current?.accent
+    val accentTone = remember(spec, tone, accentColor) { accentColor?.let { spec.accentToneOn(tone, it) } }
+    val mode = if (isDark) GDarkColors else GLightColors
+    val base = gColorsOn(mode, spec, tone, custom = ground != null).let { if (accentTone == null) it else it.withAccent(accentTone) }
     val colors = if (grounds == null) base
     else base.copy(background = if (grounds.gradient != null) Color.Transparent else grounds.background, sidebar = grounds.sidebar,
         surface = grounds.surface, track = grounds.track, hairline = grounds.hairline)
@@ -175,7 +194,7 @@ fun GScheme(
         surfaceContainer = surface, surfaceContainerLow = surface, surfaceContainerHigh = surface,
         surfaceContainerHighest = colors.track, surfaceContainerLowest = grounds?.backgroundOpaque ?: colors.background,
         outline = colors.border, outlineVariant = colors.hairline,
-        error = colors.error, onError = colors.onPrimary,
+        error = colors.error, onError = mode.onPrimary,
         scrim = Color.Black.copy(alpha = 0.35f),
     )
     val materialType = Typography(
@@ -186,7 +205,7 @@ fun GScheme(
         labelLarge = type.callout, labelMedium = type.caption, labelSmall = type.caption2,
     )
     CompositionLocalProvider(LocalColors provides colors, LocalTypography provides type, LocalDark provides isDark,
-        LocalGrounds provides grounds, LocalGround provides spec, LocalGroundTone provides tone,
+        LocalGrounds provides grounds, LocalGround provides spec, LocalGroundTone provides tone, LocalAccentTone provides accentTone,
         LocalReduceTransparency provides reduceTransparency, LocalHighContrast provides highContrast) {
         MaterialTheme(colorScheme = material, typography = materialType) {
             // Set inside: MaterialTheme sets its ripple.
@@ -238,6 +257,16 @@ internal fun gColorsOn(base: GColors, spec: GGroundSpec, tone: GGroundTone, cust
     )
     return if (!custom) glassed else glassed.copy(textPrimary = ink, textSecondary = ink2, textDiscret = ink3)
 }
+
+/**
+ * These colours with an accent of their own (4.2, `GTheme(accent = …)` or a ground's `accent`): the accent and the
+ * focus ring, its text (links, the chosen tab), the selection, and the primary buttons (the accent, the ink on it). For
+ * an app that builds its colours itself; `tone` from `GGroundSpec.accentTone()` or `accentToneOn(…)`.
+ */
+fun GColors.withAccent(tone: GAccentTone): GColors = copy(
+    accent = tone.accent, accentText = tone.accentText, selectedFill = tone.accent.copy(alpha = tone.selected),
+    primary = tone.accent, primaryHover = lerp(tone.accent, tone.onAccent, 0.15f), onPrimary = tone.onAccent,
+)
 
 /** The ground's middle, opaque: its stops' middle (what lies under an opaque surface, a popup's). */
 internal val GGroundSpec.middle: Color

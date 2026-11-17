@@ -317,13 +317,14 @@ public struct GGlassGroup<Content: View>: View {
 }
 
 /// A round button of liquid glass (an icon: compose, call, close): the system's glass button, in a circle, with Gabarit's
-/// ink. `prominent`: filled with the ink (the one thing to do).
+/// ink. `prominent`: filled with the ink (the one thing to do), or with the accent of the ground's or the app's (4.2).
 public struct GRoundButton: View {
     let systemImage: String
     let title: String
     var prominent: Bool
     let action: () -> Void
     @ScaledMetric(relativeTo: .body) private var size: CGFloat = 20
+    @Environment(\.gAccentTone) private var accent
 
     public init(systemImage: String, title: String, prominent: Bool = false, action: @escaping () -> Void) {
         self.systemImage = systemImage
@@ -334,10 +335,10 @@ public struct GRoundButton: View {
 
     public var body: some View {
         if prominent {
-            Button(action: action) { label }
+            Button(action: action) { prominentLabel }
                 .buttonStyle(.glassProminent)
                 .buttonBorderShape(.circle)
-                .tint(GColor.primary)
+                .tint(accent.map { Color($0.accent) } ?? GColor.primary)
                 .help(title)
                 .accessibilityLabel(title)
         } else {
@@ -347,6 +348,11 @@ public struct GRoundButton: View {
                 .help(title)
                 .accessibilityLabel(title)
         }
+    }
+
+    /// On the accent (4.2), the ink on it; on the ink, the system's.
+    @ViewBuilder private var prominentLabel: some View {
+        if let accent { label.foregroundStyle(Color(accent.onAccent)) } else { label }
     }
 
     private var label: some View {

@@ -325,7 +325,8 @@ object GGrounds {
     val sousBois = GGroundSpec("sousBois", GGroundMode.DARK, GGlassKind.TINTED, 160f, listOf(Color(0xFF16301F), Color(0xFF2E4A2A), Color(0xFF0F1F18)), GGroundLight(Color(0xFF9CC27A), 0.1f, -0.05f, 0.7f, 0.4f), Color(0xFF0B1A10), Color(0xFFFFFFFF), null)
     val laiton = GGroundSpec("laiton", GGroundMode.DARK, GGlassKind.TINTED, 150f, listOf(Color(0xFF3A2A12), Color(0xFF6B4E1F), Color(0xFF22180C)), GGroundLight(Color(0xFFE0B465), 0.2f, -0.05f, 0.7f, 0.45f), Color(0xFF1C140A), Color(0xFFFFFFFF), null)
     val givre = GGroundSpec("givre", GGroundMode.LIGHT, GGlassKind.LIGHT, 160f, listOf(Color(0xFFEEF3F8), Color(0xFFDDE8F3), Color(0xFFE9E4F5)), GGroundLight(Color(0xFFFFFFFF), 0.15f, -0.05f, 0.8f, 1f), Color(0xFFFFFFFF), null, null)
-    val all = listOf(light, dark, black, aurore, lagune, braise, nuitPolaire, sousBois, laiton, givre)
+    val dore = GGroundSpec("dore", GGroundMode.DARK, GGlassKind.TINTED, 155f, listOf(Color(0xFF2B200D), Color(0xFF4A3816), Color(0xFF1A1309)), GGroundLight(Color(0xFFE9C979), 0.18f, -0.06f, 0.7f, 0.3f), Color(0xFF17110A), Color(0xFFFFFFFF), null, accent = Color(0xFFE9C979))
+    val all = listOf(light, dark, black, aurore, lagune, braise, nuitPolaire, sousBois, laiton, givre, dore)
 }
 
 /** The tones tools/tokens.py computed (GGroundSpec.tone() must find the same). */
@@ -340,4 +341,18 @@ object GGroundTones {
     val sousBois = GGroundTone(0.0f, Color(0xFFFFFFFF), 0.8f, 0.54f, 0.1f, Color(0xFF040907))
     val laiton = GGroundTone(0.11f, Color(0xFFFFFFFF), 0.8f, 0.55f, 0.1f, Color(0xFF0A0704))
     val givre = GGroundTone(0.0f, Color(0xFF10151C), 0.62f, 0.47f, 0.26f, Color(0xFF46444A))
+    val dore = GGroundTone(0.0f, Color(0xFFFFFFFF), 0.69f, 0.47f, 0.1f, Color(0xFF080603))
+}
+
+/**
+ * An ambiance's own accent and its roles (4.2, ground.accent): the accent as given (fills, the focus ring, the
+ * prominent glass), its text's colour (4.5:1 on the ground and every glass), the ink laid on it, the selection's
+ * opacity.
+ */
+@Immutable
+data class GAccentTone(val accent: Color, val accentText: Color, val onAccent: Color, val selected: Float)
+
+/** The accents tools/tokens.py computed for the ambiances that bring one (GGroundSpec.accentTone() must find the same). */
+object GAccentTones {
+    val dore = GAccentTone(Color(0xFFE9C979), Color(0xFFE9C979), Color(0xFF10151C), 0.16f)
 }

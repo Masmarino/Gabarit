@@ -95,4 +95,35 @@ struct GContrastTests {
         let (l1, l2) = (luminance(r, g, b), luminance(ground.red, ground.green, ground.blue))
         return (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
     }
+
+    /// Every ambiance that brings its own accent (4.2): its text holds 4.5:1 on the veiled ground and every content
+    /// glass, the ink on it 4.5:1 (on the accent and on the prominent glass), the accent itself 3:1 on the veiled
+    /// ground (a rim, the focus ring), its selection under the ink 4.5:1, at every worst point.
+    @Test func ambianceAccents() throws {
+        let grounds = GGroundValues.all.filter { $0.accent != nil }
+        #expect(!grounds.isEmpty)
+        for ground in grounds {
+            let tone = try #require(ground.tone(), "\(ground.name)")
+            let accent = try #require(ground.accentTone(), "\(ground.name)")
+            let kind = ground.kind.values
+            for point in ground.worstPoints {
+                let veiled = GLuminance.laid(ground.glass, tone.veil, on: point)
+                let edge = ratio(accent.accent, over: veiled)
+                #expect(edge >= 3 - 1e-9, "\(ground.name): accent on the ground, \(edge)")
+                for opacity in [0, kind.thin, kind.regular, kind.thick] {
+                    let under = GLuminance.laid(ground.glass, opacity, on: veiled)
+                    let text = ratio(accent.accentText, over: under)
+                    #expect(text >= 4.5 - 1e-9, "\(ground.name): accentText at \(opacity), \(text)")
+                    let selected = GLuminance.laid(accent.accent, accent.selected, on: under)
+                    let ink = ratio(tone.ink, over: selected)
+                    #expect(ink >= 4.5 - 1e-9, "\(ground.name): ink on the selection at \(opacity), \(ink)")
+                }
+                let prominent = GLuminance.laid(accent.accent, GGlassValues.controlProminent, on: veiled)
+                for fill in [accent.accent, prominent] {
+                    let on = ratio(accent.onAccent, over: fill)
+                    #expect(on >= 4.5 - 1e-9, "\(ground.name): onAccent, \(on)")
+                }
+            }
+        }
+    }
 }

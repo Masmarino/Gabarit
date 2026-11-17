@@ -39,6 +39,7 @@ public enum GButtonMaterial: Sendable, Hashable {
 public struct GButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.gPointerPreview) private var preview
+    @Environment(\.gAccentTone) private var accent
     public var variant: GButtonVariant
     public var compact: Bool
     public var material: GButtonMaterial
@@ -85,7 +86,8 @@ public struct GButtonStyle: ButtonStyle {
     /// ground (no red holds 4.5:1 on the liquid glass of a dark ground: there, the ink, on glass washed with red).
     private func glassForeground(_ role: ButtonRole?) -> AnyShapeStyle {
         switch variant {
-        case .primary, .danger: AnyShapeStyle(GOnProminent())
+        case .primary: AnyShapeStyle(GOnProminent(.ink))
+        case .danger: AnyShapeStyle(GOnProminent(.danger))
         case .secondary, .ghost: role == .destructive ? AnyShapeStyle(GDestructiveInk()) : AnyShapeStyle(.gInk)
         }
     }
@@ -111,6 +113,7 @@ public struct GButtonStyle: ButtonStyle {
     private func foreground(_ role: ButtonRole?) -> Color {
         // The text's red: 4.5:1 on the hover's and the press's grounds too.
         if role == .destructive, variant == .secondary || variant == .ghost { return GTone.error.text }
+        if variant == .primary, let accent { return Color(accent.onAccent) }
         return switch variant {
         case .primary, .danger: GColor.onPrimary
         case .secondary: GColor.textPrimary
@@ -120,7 +123,12 @@ public struct GButtonStyle: ButtonStyle {
 
     /// Hovered, a step lighter (the ink) or under the veil (the surfaces); pressed, a little more.
     private func background(pressed: Bool, hovering: Bool) -> Color {
-        switch variant {
+        // An accent of the ground's or the app's (4.2): the accent, a step toward its ink hovered, two held down.
+        if variant == .primary, let accent {
+            let fill = Color(accent.accent), on = Color(accent.onAccent)
+            return pressed ? fill.mix(with: on, by: 0.2) : (hovering ? fill.mix(with: on, by: 0.1) : fill)
+        }
+        return switch variant {
         // On ink, a step towards the hover's colour; held down, the whole way, under its shade (gRaised): it never fades.
         case .primary: pressed ? GColor.primaryHover : (hovering ? GColor.primary.mix(with: GColor.primaryHover, by: 0.55) : GColor.primary)
         // On the surface (laid below), a veil; a stronger one held down.
@@ -162,10 +170,16 @@ private struct GDestructiveWash: ViewModifier {
     }
 }
 
-/// The text on a prominent glass, in the ground's mode (`onPrimary`).
+/// The text on a prominent glass of `tint`, in the ground's mode (`onPrimary`); on the ink's and the accent's, under an
+/// accent of the ground's or the app's (4.2), the ink on that accent (`onAccent`).
 struct GOnProminent: ShapeStyle {
+    let tint: GProminentTint
+
+    init(_ tint: GProminentTint) { self.tint = tint }
+
     func resolve(in environment: EnvironmentValues) -> Color.Resolved {
-        GColor.onProminent(on: environment.gResolvedGround).resolve(in: environment)
+        if tint != .danger, let accent = environment.gAccentTone { return Color(accent.onAccent).resolve(in: environment) }
+        return GColor.onProminent(on: environment.gResolvedGround).resolve(in: environment)
     }
 }
 

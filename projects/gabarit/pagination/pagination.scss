@@ -1,5 +1,6 @@
 @use '../src/lib/tokens/a11y';
 @use '../src/lib/tokens/depth';
+@use '../src/lib/tokens/glass';
 
 :host {
   display: block;
@@ -83,17 +84,17 @@
 }
 
 .gbt-pagination__page--current {
-  background: var(--primary);
-  color: var(--text-on-primary);
+  background: glass.$main;
+  color: glass.$on-main;
   font-weight: 600;
   @include depth.ink;
 
   &:hover {
-    background-color: var(--primary);
+    background-color: glass.$main;
   }
 
   &:active {
-    background-color: var(--primary);
+    background-color: glass.$main;
     @include depth.sunk($ink: true);
   }
 }

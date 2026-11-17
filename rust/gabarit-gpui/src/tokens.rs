@@ -488,8 +488,21 @@ pub mod grounds {
     pub const SOUS_BOIS: GGroundSpec = GGroundSpec { name: "sousBois", mode: GGroundMode::Dark, kind: GGlassKind::Tinted, angle: 160.0, stops: &[GRgba::hex(0x16301F), GRgba::hex(0x2E4A2A), GRgba::hex(0x0F1F18)], light: GGroundLight { color: GRgba::hex(0x9CC27A), x: 0.1, y: -0.05, radius: 0.7, strength: 0.4 }, glass: GRgba::hex(0x0B1A10), ink: Some(GRgba::hex(0xFFFFFF)), shade: None };
     pub const LAITON: GGroundSpec = GGroundSpec { name: "laiton", mode: GGroundMode::Dark, kind: GGlassKind::Tinted, angle: 150.0, stops: &[GRgba::hex(0x3A2A12), GRgba::hex(0x6B4E1F), GRgba::hex(0x22180C)], light: GGroundLight { color: GRgba::hex(0xE0B465), x: 0.2, y: -0.05, radius: 0.7, strength: 0.45 }, glass: GRgba::hex(0x1C140A), ink: Some(GRgba::hex(0xFFFFFF)), shade: None };
     pub const GIVRE: GGroundSpec = GGroundSpec { name: "givre", mode: GGroundMode::Light, kind: GGlassKind::Light, angle: 160.0, stops: &[GRgba::hex(0xEEF3F8), GRgba::hex(0xDDE8F3), GRgba::hex(0xE9E4F5)], light: GGroundLight { color: GRgba::hex(0xFFFFFF), x: 0.15, y: -0.05, radius: 0.8, strength: 1.0 }, glass: GRgba::hex(0xFFFFFF), ink: None, shade: None };
+    pub const DORE: GGroundSpec = GGroundSpec { name: "dore", mode: GGroundMode::Dark, kind: GGlassKind::Tinted, angle: 155.0, stops: &[GRgba::hex(0x2B200D), GRgba::hex(0x4A3816), GRgba::hex(0x1A1309)], light: GGroundLight { color: GRgba::hex(0xE9C979), x: 0.18, y: -0.06, radius: 0.7, strength: 0.3 }, glass: GRgba::hex(0x17110A), ink: Some(GRgba::hex(0xFFFFFF)), shade: None };
 
-    pub const ALL: &[GGroundSpec] = &[LIGHT, DARK, BLACK, AURORE, LAGUNE, BRAISE, NUIT_POLAIRE, SOUS_BOIS, LAITON, GIVRE];
+    pub const ALL: &[GGroundSpec] = &[LIGHT, DARK, BLACK, AURORE, LAGUNE, BRAISE, NUIT_POLAIRE, SOUS_BOIS, LAITON, GIVRE, DORE];
+
+    /// The accents of the ambiances that bring one (4.2): `GGroundSpec` keeps its fields (an app writes it
+    /// whole), the accent goes to the theme (`GTheme::with_accent`).
+    pub const DORE_ACCENT: GRgba = GRgba::hex(0xE9C979);
+
+    /// A sample ambiance's own accent, by its name.
+    pub fn accent(name: &str) -> Option<GRgba> {
+        match name {
+            "dore" => Some(DORE_ACCENT),
+            _ => None,
+        }
+    }
 }
 
 /// A ground's tone as tools/tokens.py computed it: the veil laid over the ground (the glass's colour, at
@@ -518,6 +531,26 @@ pub mod tones {
     pub const SOUS_BOIS: GGroundToneValues = GGroundToneValues { veil: 0.0, ink: GRgba::hex(0xFFFFFF), ink2: 0.8, ink3: 0.54, liquid: 0.1, shade: GRgba::hex(0x040907) };
     pub const LAITON: GGroundToneValues = GGroundToneValues { veil: 0.11, ink: GRgba::hex(0xFFFFFF), ink2: 0.8, ink3: 0.55, liquid: 0.1, shade: GRgba::hex(0x0A0704) };
     pub const GIVRE: GGroundToneValues = GGroundToneValues { veil: 0.0, ink: GRgba::hex(0x10151C), ink2: 0.62, ink3: 0.47, liquid: 0.26, shade: GRgba::hex(0x46444A) };
+    pub const DORE: GGroundToneValues = GGroundToneValues { veil: 0.0, ink: GRgba::hex(0xFFFFFF), ink2: 0.69, ink3: 0.47, liquid: 0.1, shade: GRgba::hex(0x080603) };
+}
+
+/// An ambiance's own accent and its roles (4.2, ground.accent): the accent as given (fills, the focus ring, the
+/// prominent glass), its text's colour (4.5:1 on the ground and every glass), the ink laid on it, the
+/// selection's opacity.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct GAccentTone {
+    pub accent: GRgba,
+    pub accent_text: GRgba,
+    pub on_accent: GRgba,
+    pub selected: f32,
+}
+
+/// The accents tools/tokens.py computed for the ambiances that bring one (`tone::accent_tone` must find the
+/// same).
+pub mod accent_tones {
+    use super::*;
+
+    pub const DORE: GAccentTone = GAccentTone { accent: GRgba::hex(0xE9C979), accent_text: GRgba::hex(0xE9C979), on_accent: GRgba::hex(0x10151C), selected: 0.16 };
 }
 
 /// A shadow: its colour, its blur radius (as SwiftUI's: half a CSS blur), its offset.

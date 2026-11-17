@@ -12,9 +12,25 @@ export const auroreAmbiance: Decorator = (story) => {
   return story()
 }
 
+// The doré ambiance (4.2): a ground that brings its own accent, under the dark theme (`style.scss` lays it).
+export const doreAmbiance: Decorator = (story) => {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  document.documentElement.setAttribute('data-ambiance', 'dore')
+  return story()
+}
+
+// The same ground without its accent: the components keep Gabarit's (to compare).
+export const doreWithoutAccent: Decorator = (story) => {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  document.documentElement.setAttribute('data-ambiance', 'dore')
+  document.documentElement.setAttribute('data-ground-accent', 'none')
+  return story()
+}
+
 const resetTheme: Decorator = (story) => {
   document.documentElement.removeAttribute('data-theme')
   document.documentElement.removeAttribute('data-ambiance')
+  document.documentElement.removeAttribute('data-ground-accent')
   return story()
 }
 

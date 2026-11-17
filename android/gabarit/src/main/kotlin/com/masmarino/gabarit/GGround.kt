@@ -27,7 +27,8 @@ data class GGroundLight(val color: Color, val x: Float, val y: Float, val radius
 /**
  * An ambiance: a linear gradient of 2 to 4 [stops] at [angle] (CSS degrees: 180 runs from the top down), plus a
  * [light]. [glass] is the colour of its content glass and of its veil; [ink] and [shade] its own, or the mode's main
- * text and its darkest stop deepened.
+ * text and its darkest stop deepened. [accent] (4.2): its own accent, or null (Gabarit's rust); under `GTheme`, the
+ * accent, its text, the ink on it, the selection, the focus ring and the prominent glass follow it (`accentTone()`).
  */
 @Immutable
 data class GGroundSpec(
@@ -40,6 +41,7 @@ data class GGroundSpec(
     val glass: Color,
     val ink: Color? = null,
     val shade: Color? = null,
+    val accent: Color? = null,
 ) {
     init { require(stops.size in 1..4) { "a ground has 1 to 4 stops" } }
 
@@ -97,6 +99,36 @@ data class GGroundSpec(
         return GGroundTone(veil.toFloat(), resolvedInk, ink2.toFloat(), ink3.toFloat(), liquid.toFloat(), resolvedShade)
     }
 
+    /**
+     * Its own accent's roles (4.2), or null without one (or if no veil holds): tools/tokens.py's `accent_tone()`.
+     * `GAccentTones` holds the generator's for Gabarit's ambiances; this is for the grounds an app brings at run time.
+     */
+    fun accentTone(): GAccentTone? {
+        val color = accent ?: return null
+        return accentToneOn(tone() ?: return null, color)
+    }
+
+    /**
+     * [color]'s roles on this ground under [tone] (a theme passes its own accent, or keeps the dense glass's tone when
+     * no veil holds): the accent as given; its text, the accent mixed toward the ink by steps of a twentieth until it
+     * holds 4.5:1 on the veiled ground and on the thin, regular and thick glass at every worst point; the ink on it,
+     * white or slate900, whichever holds best on the accent and on the prominent glass over the veiled ground; the
+     * selection's opacity, the mode's.
+     */
+    fun accentToneOn(tone: GGroundTone, color: Color): GAccentTone {
+        val a = GLuminance.rgb(color)
+        val ink = GLuminance.rgb(tone.ink)
+        val glass = GLuminance.rgb(glass)
+        val k = kind.values
+        val veiled = worstPoints.map { GLuminance.laid(glass, tone.veil.toDouble(), it) }
+        val surfaces = veiled.flatMap { v -> listOf(v) + listOf(k.thin, k.regular, k.thick).map { GLuminance.laid(glass, it.toDouble(), v) } }
+        val text = GAccentRule.amounts.asSequence().map { amount -> DoubleArray(3) { a[it] + (ink[it] - a[it]) * amount } }
+            .firstOrNull { mix -> surfaces.all { GLuminance.contrast(mix, it) >= GGlassValues.textMinimum - 1e-9 } } ?: ink
+        val fills = listOf(a) + veiled.map { GLuminance.laid(a, GGlassValues.controlProminent.toDouble(), it) }
+        val on = GAccentRule.inks.maxBy { candidate -> fills.minOf { GLuminance.contrast(GLuminance.rgb(candidate), it) } }
+        return GAccentTone(color, GLuminance.byteColor(text), on, if (mode == GGroundMode.LIGHT) GAccentRule.selectedLight else GAccentRule.selectedDark)
+    }
+
     companion object {
         /** One colour, as a ground (a community's colour, a plain theme). */
         fun plain(color: Color, mode: GGroundMode, kind: GGlassKind, glass: Color) = GGroundSpec(
@@ -111,6 +143,15 @@ data class GGroundSpec(
  */
 @Immutable
 data class GGroundTone(val veil: Float, val ink: Color, val ink2: Float, val ink3: Float, val liquid: Float, val shade: Color)
+
+/** tokens/gabarit.json's `ground.accent` (4.2): the text's step toward the ink, the selection's opacities, the inks on it. */
+internal object GAccentRule {
+    const val step = 0.05
+    const val selectedLight = 0.1f
+    const val selectedDark = 0.16f
+    val inks = listOf(Color.White, GPalette.slate900)
+    val amounts = (0..Math.round(1 / step).toInt()).map { min(it * step, 1.0) }
+}
 
 /** WCAG's luminance and contrast, in doubles (as tools/tokens.py). */
 object GLuminance {
@@ -132,6 +173,9 @@ object GLuminance {
     /** [top] at [opacity] on the opaque [under]. */
     fun laid(top: DoubleArray, opacity: Double, under: DoubleArray) =
         DoubleArray(3) { top[it] * opacity + under[it] * (1 - opacity) }
+
+    /** A colour from doubles, each channel rounded to its byte (as the generator's hexa()). */
+    fun byteColor(c: DoubleArray) = Color(roundHalfEven(c[0] * 255), roundHalfEven(c[1] * 255), roundHalfEven(c[2] * 255))
 
     /** Rounding half to even, as Python's round(). */
     fun roundHalfEven(value: Double): Int = Math.rint(value).roundToInt()

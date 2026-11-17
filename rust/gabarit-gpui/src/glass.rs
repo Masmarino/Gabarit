@@ -782,15 +782,25 @@ pub fn tinted_glass(tints: &[Hsla], cx: &App) -> (GMaterial, Hsla) {
 }
 
 /// The accent's tinted glass: the accent, or its darker step for text (`accent_text`) where the accent would not
-/// hold 4.5:1 with either text (Gabarit's light ground).
+/// hold 4.5:1 with either text (Gabarit's light ground). An ambiance's own accent (4.2) tints it itself, its text
+/// the ink chosen for it ([`crate::theme::GTheme::on_accent`]: dark on a pale gold).
 pub fn accent_glass(cx: &App) -> (GMaterial, Hsla) {
-    let colors = cx.theme().colors;
+    let theme = cx.theme();
+    if let Some(on) = theme.on_accent() {
+        return (GMaterial::tinted(theme.colors.accent), on);
+    }
+    let colors = theme.colors;
     tinted_glass(&[colors.accent, colors.accent_text], cx)
 }
 
-/// The ink's tinted glass (a main button in Gabarit's ink).
+/// The ink's tinted glass (a main button in Gabarit's ink; in an ambiance's own accent, when it brings one).
 pub fn ink_glass(cx: &App) -> (GMaterial, Hsla) {
-    let colors = cx.theme().colors;
+    let theme = cx.theme();
+    // An ambiance's own accent (4.2): the main button takes it (`primary` is the accent), its text the ink on it.
+    if let Some(on) = theme.on_accent() {
+        return (GMaterial::tinted(theme.colors.primary), on);
+    }
+    let colors = theme.colors;
     tinted_glass(&[colors.primary], cx)
 }
 

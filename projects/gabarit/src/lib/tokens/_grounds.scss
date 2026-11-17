@@ -291,3 +291,36 @@
   --gbt-glass-hollow: rgba(70, 68, 74, 0.1);
   color-scheme: light;
 }
+
+@mixin ambiance-dore {
+  --gbt-ground:
+    radial-gradient(circle 70vmax at 18% -6%, rgba(233, 201, 121, 0.3) 0%, transparent 100%),
+    linear-gradient(155deg, #2b200d, #4a3816, #1a1309);
+  --gbt-ink: #ffffff;
+  --gbt-ink-2: rgba(255, 255, 255, 0.69);
+  --gbt-ink-3: rgba(255, 255, 255, 0.47);
+  --gbt-ground-veil: rgba(23, 17, 10, 0);
+  --gbt-glass-thin: rgba(23, 17, 10, 0.22);
+  --gbt-glass-regular: rgba(23, 17, 10, 0.34);
+  --gbt-glass-thick: rgba(23, 17, 10, 0.62);
+  --gbt-glass-liquid: rgba(255, 255, 255, 0.1);
+  --gbt-glass-rim: rgba(255, 255, 255, 0.22);
+  --gbt-glass-rim-edge: rgba(255, 255, 255, 0.12);
+  --gbt-liquid-rim: rgba(255, 255, 255, 0.6);
+  --gbt-liquid-rim-soft: rgba(255, 255, 255, 0.12);
+  --gbt-glass-rim-top: rgba(255, 255, 255, 0.24);
+  --gbt-glass-rim-bottom: rgba(255, 255, 255, 0.14);
+  --gbt-glass-sheen: rgba(255, 255, 255, 0.07);
+  --gbt-liquid-rim-top: rgba(255, 255, 255, 0.45);
+  --gbt-liquid-rim-bottom: rgba(255, 255, 255, 0.28);
+  --gbt-liquid-sheen: rgba(255, 255, 255, 0.14);
+  --gbt-glass-shadow: rgba(8, 6, 3, 0.55);
+  --gbt-glass-shadow-near: rgba(8, 6, 3, 0.2);
+  --gbt-liquid-shadow: rgba(8, 6, 3, 0.4);
+  --gbt-glass-hollow: rgba(8, 6, 3, 0.32);
+  --gbt-ground-accent: #e9c979;
+  --gbt-ground-accent-text: #e9c979;
+  --gbt-ground-on-accent: #10151c;
+  --gbt-ground-selected-fill: rgba(233, 201, 121, 0.16);
+  color-scheme: dark;
+}

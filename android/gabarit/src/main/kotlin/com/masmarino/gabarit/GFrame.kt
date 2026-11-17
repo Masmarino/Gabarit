@@ -676,11 +676,11 @@ object GCommandSearch {
 @Composable
 private fun gLiquidSelection(): Color = if (G.ground.mode == GGroundMode.LIGHT) Color.White.copy(alpha = 0.62f) else Color.White.copy(alpha = 0.14f)
 
-/** A count's mark on the ground: rust, its number in white. */
+/** A count's mark on the ground: rust, its number in white (4.2: an accent of its own, the ink its tone chose). */
 @Composable
 private fun GroundBadge(count: Int, modifier: Modifier) {
     Text(gBadgeText(count), style = G.type.caption2.copy(fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
-        color = Color.White, modifier = modifier.background(G.colors.accent, RoundedCornerShape(GRadius.pill)).padding(horizontal = 5.dp, vertical = 1.dp))
+        color = G.accentTone?.onAccent ?: Color.White, modifier = modifier.background(G.colors.accent, RoundedCornerShape(GRadius.pill)).padding(horizontal = 5.dp, vertical = 1.dp))
 }
 
 @Composable

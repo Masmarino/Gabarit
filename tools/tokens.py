@@ -13,8 +13,9 @@ Generated, never to be edited by hand:
 - Compose: android/gabarit/src/main/kotlin/com/masmarino/gabarit/GTokens.kt, GText.kt and GSymbols.kt;
 - Rust (GPUI): rust/gabarit-gpui/src/tokens.rs (plain values, no UI framework; IBM Plex embedded);
 - the ground and the glass (4.0): every ambiance's tone (tone()), in each of the files above, plus the web's
-  _grounds.scss and Compose's GMotion.kt. --check also fails when an ambiance misses 4.5:1 for its text or 3:1 for
-  its edges at its worst point (check_grounds());
+  _grounds.scss (and ground/ground-tokens.ts, what the web's groundAccent() reads, 4.2) and Compose's GMotion.kt.
+  --check also fails when an ambiance misses 4.5:1 for its text or 3:1 for its edges at its worst point
+  (check_grounds());
 - symbols: swift/GabaritCommon/GSymbols.swift, from tokens/symbols.json (SF Symbols' names → Phosphor's).
 """
 import json
@@ -150,6 +151,55 @@ def tone(ambiance: dict) -> dict:
 
 
 TONES = {name: tone(ambiance) for name, ambiance in AMBIANCES.items()}
+
+
+ACCENT = TOKENS["ground"]["accent"]
+
+
+def mixed(a, b, amount: float):
+    """`a` moved toward `b` by `amount` (0: `a`, 1: `b`)."""
+    return tuple(x + (y - x) * amount for x, y in zip(a, b))
+
+
+def hexa(colour) -> str:
+    return "#" + "".join(f"{round(c * 255):02X}" for c in colour)
+
+
+def accent_surfaces(ambiance: dict, t: dict) -> list:
+    """Where an accent's text may land: the veiled ground and every content glass over it, at each worst point."""
+    kind, glass = KINDS[ambiance["kind"]], rgb(ambiance["glass"])
+    out = []
+    for point in ambiance_points(ambiance):
+        veiled = laid(glass, t["veil"], point)
+        out.append(veiled)
+        out += [laid(glass, kind[name], veiled) for name in ("thin", "regular", "thick")]
+    return out
+
+
+def accent_tone(ambiance: dict, t: dict) -> dict | None:
+    """An ambiance's own accent and its roles (4.2, ground.accent); None without one. The same computation is written
+    in GabaritCommon, the Compose library and gabarit-gpui; their tests compare it with these."""
+    if "accent" not in ambiance or t["veil"] is None:
+        return None
+    accent, ink = rgb(ambiance["accent"]), rgb(t["ink"])
+    surfaces = accent_surfaces(ambiance, t)
+    step = ACCENT["step"]
+    amounts = [min(index * step, 1.0) for index in range(int(round(1 / step)) + 1)]
+    text = next(mixed(accent, ink, amount) for amount in amounts
+                if all(contrast(mixed(accent, ink, amount), under) >= TEXT_MINIMUM - 1e-9 for under in surfaces))
+    glass = rgb(ambiance["glass"])
+    fills = [accent] + [laid(accent, GLASS["control"]["prominent"], laid(glass, t["veil"], point))
+                        for point in ambiance_points(ambiance)]
+    inks = [rgb("#" + resolve(value)[0]) for value in ACCENT["inks"]]
+    on = max(inks, key=lambda candidate: min(contrast(candidate, fill) for fill in fills))
+    return {"accent": ambiance["accent"].upper(), "accentText": hexa(text), "onAccent": hexa(on),
+            "selected": ACCENT["selected"][ambiance["mode"]],
+            "onAccentContrast": min(contrast(on, fill) for fill in fills),
+            "edge": min(contrast(accent, laid(glass, t["veil"], point)) for point in ambiance_points(ambiance))}
+
+
+ACCENTS = {name: accent_tone(ambiance, TONES[name]) for name, ambiance in AMBIANCES.items()
+           if accent_tone(ambiance, TONES[name])}
 
 
 def hexa_opacity(hexa: str, opacity: float) -> str:
@@ -290,7 +340,54 @@ def web_ambiance(name: str) -> list[str]:
     roles = glass_roles(name)
     lines = [f"  --gbt-ground:{css_ground(AMBIANCES[name])};"]
     lines += [f"  --gbt-{css_role(role)}: {css_rgba(value)};" for role, value in roles.items()]
+    if name in ACCENTS:
+        a = ACCENTS[name]
+        # Its own accent (4.2): the components take it through --gbt-ground-accent and its roles.
+        lines += [f"  --gbt-ground-accent: {css_rgba(a['accent'])};",
+                  f"  --gbt-ground-accent-text: {css_rgba(a['accentText'])};",
+                  f"  --gbt-ground-on-accent: {css_rgba(a['onAccent'])};",
+                  f"  --gbt-ground-selected-fill: {css_rgba(hexa_opacity(a['accent'], a['selected']))};"]
     return lines
+
+
+def web_ground_ts() -> str:
+    """The ambiances and the values their accent's rule reads, for the web's groundAccent() (4.2, the ground entry
+    point): an application that brings its own accent computes its roles as tools/tokens.py does."""
+    def number(value: float) -> str:
+        return f"{value:g}"
+
+    lines = ["// The ambiances of tokens/gabarit.json (4.0) and what the rule of an ambiance's own accent reads (4.2):",
+             "// groundAccent() computes, at run time, what tools/tokens.py computes for the ambiances that bring one.",
+             f"// {HEADER}", "", "import type { GroundAmbiance, GroundKind } from './ground-types'", "",
+             "/** Gabarit's ambiances, by their name in tokens/gabarit.json (`ambiance-<name>` in `_grounds.scss`). */",
+             "export const GROUND_AMBIANCES = {"]
+    for name, ambiance in AMBIANCES.items():
+        light = ambiance["light"]
+        stops = ", ".join(f"'{stop.upper()}'" for stop in ambiance["stops"])
+        lines += [f"  {name}: {{", f"    mode: '{ambiance['mode']}',", f"    kind: '{ambiance['kind']}',",
+                  f"    angle: {number(ambiance['angle'])},", f"    stops: [{stops}],",
+                  f"    light: {{ color: '{light['color'].upper()}', x: {number(light['x'])}, y: {number(light['y'])}, "
+                  f"strength: {number(light['strength'])} }},",
+                  f"    glass: '{ambiance['glass'].upper()}',", f"    ink: '{ambiance_ink(ambiance).upper()}',"]
+        if "accent" in ambiance:
+            lines.append(f"    accent: '{ambiance['accent'].upper()}',")
+        lines.append("  },")
+    lines += ["} as const satisfies Record<string, GroundAmbiance>", "",
+              "/** The content glasses of each kind of ambiance: their opacities over the veiled ground. */",
+              "export const GROUND_KINDS: Record<GroundKind, { thin: number; regular: number; thick: number }> = {"]
+    for name, kind in KINDS.items():
+        lines.append(f"  {name}: {{ thin: {number(kind['thin'])}, regular: {number(kind['regular'])}, "
+                     f"thick: {number(kind['thick'])} }},")
+    inks = ", ".join(f"'#{resolve(value)[0]}'" for value in ACCENT["inks"])
+    lines += ["}", "", "/** The rule's numbers: the minimums, the ink's limits under the veil, the accent's steps. */",
+              "export const GROUND_RULE = {", f"  text: {number(TEXT_MINIMUM)},", f"  edge: {number(EDGE_MINIMUM)},",
+              f"  secondaryMax: {number(GLASS['ink']['secondaryMax'])},",
+              f"  discretMax: {number(GLASS['ink']['discretMax'])},",
+              f"  prominent: {number(GLASS['control']['prominent'])},", f"  step: {number(ACCENT['step'])},",
+              f"  selected: {{ light: {number(ACCENT['selected']['light'])}, "
+              f"dark: {number(ACCENT['selected']['dark'])} }},",
+              f"  inks: [{inks}],", "} as const", ""]
+    return "\n".join(lines)
 
 
 def css_role(role: str) -> str:
@@ -515,13 +612,29 @@ def swift_grounds() -> list[str]:
         stops = ", ".join(swift_rgba(stop) for stop in a["stops"])
         lines.append(f"    public static let {name} = GGroundSpec(name: \"{name}\", mode: .{a['mode']}, kind: .{a['kind']}, "
                      f"angle: {a['angle']}, stops: [{stops}], light: {light(a)}, glass: {swift_rgba(a['glass'])}, "
-                     f"ink: {ink}, shade: {shade})")
+                     f"ink: {ink}, shade: {shade}" + (f", accent: {swift_rgba(a['accent'])}" if "accent" in a else "") + ")")
     lines += ["    public static let all = [" + ", ".join(AMBIANCES) + "]", "}", "",
               "/// The tones tools/tokens.py computed (GGroundSpec.tone() must find the same).",
               "public enum GGroundTones {"]
     for name, t in TONES.items():
         lines.append(f"    public static let {name} = GGroundTone(veil: {t['veil']}, ink: {swift_rgba(t['ink'])}, "
                      f"ink2: {t['ink2']}, ink3: {t['ink3']}, liquid: {t['liquid']}, shade: {swift_rgba(t['shade'])})")
+    lines += ["}", "",
+              "/// An ambiance's own accent and its roles (4.2, ground.accent): the accent as given (fills, the focus ring,",
+              "/// the prominent glass), its text's colour (4.5:1 on the ground and every glass), the ink laid on it, the",
+              "/// selection's opacity.",
+              "public struct GAccentTone: Sendable, Hashable {",
+              "    public let accent: GRGBA", "    public let accentText: GRGBA", "    public let onAccent: GRGBA",
+              "    public let selected: Double", "",
+              "    public init(accent: GRGBA, accentText: GRGBA, onAccent: GRGBA, selected: Double) {",
+              "        self.accent = accent", "        self.accentText = accentText", "        self.onAccent = onAccent",
+              "        self.selected = selected", "    }", "}", "",
+              "/// The accents tools/tokens.py computed for the ambiances that bring one (GGroundSpec.accentTone() must find",
+              "/// the same).", "public enum GAccentTones {"]
+    for name, a in ACCENTS.items():
+        lines.append(f"    public static let {name} = GAccentTone(accent: {swift_rgba(a['accent'])}, "
+                     f"accentText: {swift_rgba(a['accentText'])}, onAccent: {swift_rgba(a['onAccent'])}, "
+                     f"selected: {a['selected']})")
     return lines
 
 
@@ -811,12 +924,25 @@ def kotlin_grounds() -> list[str]:
         lines.append(f"    val {name} = GGroundSpec(\"{name}\", GGroundMode.{a['mode'].upper()}, GGlassKind.{a['kind'].upper()}, "
                      f"{kotlin_float(a['angle'])}, listOf({stops}), GGroundLight({kotlin_color(l['color'])}, "
                      f"{kotlin_float(l['x'])}, {kotlin_float(l['y'])}, {kotlin_float(l['radius'])}, {kotlin_float(l['strength'])}), "
-                     f"{kotlin_color(a['glass'])}, {ink}, {shade})")
+                     f"{kotlin_color(a['glass'])}, {ink}, {shade}"
+                     + (f", accent = {kotlin_color(a['accent'])}" if "accent" in a else "") + ")")
     lines += ["    val all = listOf(" + ", ".join(AMBIANCES) + ")", "}", "",
               "/** The tones tools/tokens.py computed (GGroundSpec.tone() must find the same). */", "object GGroundTones {"]
     for name, t in TONES.items():
         lines.append(f"    val {name} = GGroundTone({kotlin_float(t['veil'])}, {kotlin_color(t['ink'])}, {kotlin_float(t['ink2'])}, "
                      f"{kotlin_float(t['ink3'])}, {kotlin_float(t['liquid'])}, {kotlin_color(t['shade'])})")
+    lines += ["}", "",
+              "/**",
+              " * An ambiance's own accent and its roles (4.2, ground.accent): the accent as given (fills, the focus ring, the",
+              " * prominent glass), its text's colour (4.5:1 on the ground and every glass), the ink laid on it, the selection's",
+              " * opacity.", " */",
+              "@Immutable",
+              "data class GAccentTone(val accent: Color, val accentText: Color, val onAccent: Color, val selected: Float)", "",
+              "/** The accents tools/tokens.py computed for the ambiances that bring one (GGroundSpec.accentTone() must find the same). */",
+              "object GAccentTones {"]
+    for name, a in ACCENTS.items():
+        lines.append(f"    val {name} = GAccentTone({kotlin_color(a['accent'])}, {kotlin_color(a['accentText'])}, "
+                     f"{kotlin_color(a['onAccent'])}, {kotlin_float(a['selected'])})")
     lines += ["}", ""]
     return lines
 
@@ -1153,7 +1279,18 @@ def rust_grounds() -> list[str]:
                      f"color: {rust_rgba(l['color'])}, x: {rust_float(l['x'])}, y: {rust_float(l['y'])}, "
                      f"radius: {rust_float(l['radius'])}, strength: {rust_float(l['strength'])} }}, "
                      f"glass: {rust_rgba(a['glass'])}, ink: {opt('ink')}, shade: {opt('shade')} }};")
-    lines += ["", "    pub const ALL: &[GGroundSpec] = &[" + ", ".join(snake(n).upper() for n in AMBIANCES) + "];",
+    lines += ["", "    pub const ALL: &[GGroundSpec] = &[" + ", ".join(snake(n).upper() for n in AMBIANCES) + "];", "",
+              "    /// The accents of the ambiances that bring one (4.2): `GGroundSpec` keeps its fields (an app writes it",
+              "    /// whole), the accent goes to the theme (`GTheme::with_accent`)."]
+    for name, a in AMBIANCES.items():
+        if "accent" in a:
+            lines.append(f"    pub const {snake(name).upper()}_ACCENT: GRgba = {rust_rgba(a['accent'])};")
+    lines += ["", "    /// A sample ambiance's own accent, by its name.",
+              "    pub fn accent(name: &str) -> Option<GRgba> {", "        match name {"]
+    for name, a in AMBIANCES.items():
+        if "accent" in a:
+            lines.append(f"            \"{name}\" => Some({snake(name).upper()}_ACCENT),")
+    lines += ["            _ => None,", "        }", "    }",
               "}", "",
               "/// A ground's tone as tools/tokens.py computed it: the veil laid over the ground (the glass's colour, at",
               "/// `veil`), the ink and the opacities of its secondary and discreet steps, the liquid glass's white.",
@@ -1166,6 +1303,19 @@ def rust_grounds() -> list[str]:
         lines.append(f"    pub const {snake(name).upper()}: GGroundToneValues = GGroundToneValues {{ veil: {rust_float(t['veil'])}, "
                      f"ink: {rust_rgba(t['ink'])}, ink2: {rust_float(t['ink2'])}, ink3: {rust_float(t['ink3'])}, "
                      f"liquid: {rust_float(t['liquid'])}, shade: {rust_rgba(t['shade'])} }};")
+    lines += ["}", "",
+              "/// An ambiance's own accent and its roles (4.2, ground.accent): the accent as given (fills, the focus ring, the",
+              "/// prominent glass), its text's colour (4.5:1 on the ground and every glass), the ink laid on it, the",
+              "/// selection's opacity.",
+              "#[derive(Clone, Copy, Debug, PartialEq)]",
+              "pub struct GAccentTone {", "    pub accent: GRgba,", "    pub accent_text: GRgba,", "    pub on_accent: GRgba,",
+              "    pub selected: f32,", "}", "",
+              "/// The accents tools/tokens.py computed for the ambiances that bring one (`tone::accent_tone` must find the",
+              "/// same).", "pub mod accent_tones {", "    use super::*;", ""]
+    for name, a in ACCENTS.items():
+        lines.append(f"    pub const {snake(name).upper()}: GAccentTone = GAccentTone {{ accent: {rust_rgba(a['accent'])}, "
+                     f"accent_text: {rust_rgba(a['accentText'])}, on_accent: {rust_rgba(a['onAccent'])}, "
+                     f"selected: {rust_float(a['selected'])} }};")
     lines += ["}", ""]
     return lines
 
@@ -1200,6 +1350,12 @@ def check_grounds() -> list[str]:
             under = laid((1, 1, 1), t["liquid"], veiled)
             if contrast(ink, under) < TEXT_MINIMUM - 1e-9:
                 problems.append(f"{name}: ink on the liquid glass, {contrast(ink, under):.2f}:1")
+        if name in ACCENTS:
+            a = ACCENTS[name]
+            if a["edge"] < EDGE_MINIMUM - 1e-9:
+                problems.append(f"{name}: its accent against the ground, {a['edge']:.2f}:1 < {EDGE_MINIMUM}:1")
+            if a["onAccentContrast"] < TEXT_MINIMUM - 1e-9:
+                problems.append(f"{name}: the ink on its accent, {a['onAccentContrast']:.2f}:1 < {TEXT_MINIMUM}:1")
         if not 2 <= len(ambiance["stops"]) <= 4:
             problems.append(f"{name}: {len(ambiance['stops'])} stops (2 to 4)")
     return problems
@@ -1212,6 +1368,7 @@ OUTPUTS = {
     "projects/gabarit/src/lib/tokens/_palette.scss": web_palette,
     "projects/gabarit/src/lib/tokens/_themes.scss": web_themes,
     "projects/gabarit/src/lib/tokens/_grounds.scss": web_grounds,
+    "projects/gabarit/ground/ground-tokens.ts": web_ground_ts,
     "swift/GabaritCommon/GTokens.swift": swift_common,
     "swift/GabaritApple/GTokens+SwiftUI.swift": swift_apple,
     "swift/GabaritGtk/Resources/gabarit-light.css": lambda: gtk_colors("light"),

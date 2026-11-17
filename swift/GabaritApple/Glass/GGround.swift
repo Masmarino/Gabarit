@@ -30,6 +30,7 @@ enum GGroundToneCache {
         GGroundValues.lagune: GGroundTones.lagune, GGroundValues.braise: GGroundTones.braise,
         GGroundValues.nuitPolaire: GGroundTones.nuitPolaire, GGroundValues.sousBois: GGroundTones.sousBois,
         GGroundValues.laiton: GGroundTones.laiton, GGroundValues.givre: GGroundTones.givre,
+        GGroundValues.dore: GGroundTones.dore,
     ]
     private static let computed = Mutex<[GGroundSpec: GGroundTone]>([:])
 
@@ -43,6 +44,113 @@ enum GGroundToneCache {
             return tone
         }
     }
+}
+
+// MARK: The accent (4.2)
+
+public extension EnvironmentValues {
+    /// The accent in force and its roles (4.2): the ground's own (`GGroundSpec.accent`), else the app's
+    /// (`GTheme.current.accent`), computed against the ground in force. Nil: Gabarit's accent, unchanged.
+    var gAccentTone: GAccentTone? {
+        let ground = gResolvedGround
+        guard let accent = ground.accent ?? gThemeAccent ?? GTheme.current.accent else { return nil }
+        return GAccentToneCache.tone(of: ground.withAccent(accent))
+    }
+}
+
+extension EnvironmentValues {
+    /// `GTheme.current.accent`, carried by `gGround` so that a change redraws what is under it.
+    @Entry var gThemeAccent: GRGBA?
+}
+
+/// The accents' roles, computed once per ground and accent: Gabarit's ambiances' from the generator, an app's on first use.
+enum GAccentToneCache {
+    private static let known: [GGroundSpec: GAccentTone] = [GGroundValues.dore: GAccentTones.dore]
+    private static let computed = Mutex<[GGroundSpec: GAccentTone]>([:])
+
+    static func tone(of spec: GGroundSpec) -> GAccentTone? {
+        guard spec.accent != nil else { return nil }
+        if let tone = known[spec] { return tone }
+        return computed.withLock { cache in
+            if let tone = cache[spec] { return tone }
+            // Under the tone the ground is drawn with (an opaque veil when none holds).
+            let tone = spec.accentTone(under: GGroundToneCache.tone(of: spec))
+            cache[spec] = tone
+            return tone
+        }
+    }
+}
+
+/// The app's accent (4.2), for its whole window: what an ambiance with an accent of its own does, on every ground that
+/// has none. Observed: a change redraws. A ground's own accent wins over it.
+@Observable
+final class GThemeAccent: @unchecked Sendable {
+    static let shared = GThemeAccent()
+    var accent: GRGBA?
+}
+
+public extension GTheme {
+    /// The app's own accent (4.2), nil for Gabarit's rust. Every colour derived from the accent follows it, computed
+    /// against the ground in force (`EnvironmentValues.gAccentTone`): the accent's fills (a switch, a slider, the chosen
+    /// tab's line, the focus ring), the text in the accent (links, the chosen tab), the selection, the prominent glass
+    /// (the primary button, the chosen chip) and the ink on it (`.gOnAccent`: dark on a pale accent). A ground that
+    /// brings its own (`GGroundSpec(accent:)`) wins over it. `GColor.accent` and its kin stay Gabarit's: read
+    /// `.gAccent`, `.gAccentText`, `.gOnAccent`, `.gSelectedFill` instead.
+    var accent: GRGBA? {
+        get { GThemeAccent.shared.accent }
+        set { GThemeAccent.shared.accent = newValue }
+    }
+}
+
+/// A colour derived from the accent in force (4.2): the ground's own or the app's (`gAccentTone`), or Gabarit's.
+public struct GAccentStyle: ShapeStyle {
+    public enum Role: Sendable, Hashable {
+        /// The accent as given: fills, a rim, the focus ring (3:1 on the ground). Gabarit's: `GColor.accent`.
+        case accent
+        /// Text in the accent: links, the chosen tab's name (4.5:1 on the ground and every glass). `GColor.accentText`.
+        case text
+        /// Text and icons on the accent and on its prominent glass (4.5:1). Gabarit's: `GColor.onPrimary`.
+        case onAccent
+        /// The selection: the accent at the mode's opacity. `GColor.selectedFill`.
+        case selectedFill
+    }
+
+    let role: Role
+
+    public init(_ role: Role) { self.role = role }
+
+    public func resolve(in environment: EnvironmentValues) -> Color.Resolved {
+        Self.color(role, environment.gAccentTone).resolve(in: environment)
+    }
+
+    /// The colour of `role` under `tone` (nil: Gabarit's).
+    static func color(_ role: Role, _ tone: GAccentTone?) -> Color {
+        guard let tone else {
+            return switch role {
+            case .accent: GColor.accent
+            case .text: GColor.accentText
+            case .onAccent: GColor.onPrimary
+            case .selectedFill: GColor.selectedFill
+            }
+        }
+        return switch role {
+        case .accent: Color(tone.accent)
+        case .text: Color(tone.accentText)
+        case .onAccent: Color(tone.onAccent)
+        case .selectedFill: Color(tone.accent.opacity(tone.selected))
+        }
+    }
+}
+
+public extension ShapeStyle where Self == GAccentStyle {
+    /// The accent in force (4.2): the ground's own, the app's, or Gabarit's rust.
+    static var gAccent: GAccentStyle { GAccentStyle(.accent) }
+    /// Text in the accent in force: links, the chosen tab.
+    static var gAccentText: GAccentStyle { GAccentStyle(.text) }
+    /// The ink on the accent in force (dark on a pale accent).
+    static var gOnAccent: GAccentStyle { GAccentStyle(.onAccent) }
+    /// The selection in the accent in force.
+    static var gSelectedFill: GAccentStyle { GAccentStyle(.selectedFill) }
 }
 
 // MARK: Ink
@@ -183,6 +291,9 @@ private struct GGroundModifier: ViewModifier {
         let ground = spec ?? (scheme == .dark ? GGroundValues.dark : GGroundValues.light)
         content
             .environment(\.gGround, ground)
+            // Read here, in a body: a change of the app's accent redraws what is under the ground. The system's tint is
+            // left alone (`.tint(nil)` would undo an app's): Gabarit's controls take `.gAccent` themselves.
+            .environment(\.gThemeAccent, GTheme.current.accent)
             .environment(\.gGroundPainted, true)
             .background {
                 GGroundPaint(spec: ground)
@@ -199,4 +310,5 @@ private struct GGroundModifier: ViewModifier {
             #endif
     }
 }
+
 #endif

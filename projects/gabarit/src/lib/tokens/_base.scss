@@ -29,6 +29,6 @@
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    background: glass.$selection;
   }
 }

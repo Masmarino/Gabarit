@@ -25,9 +25,9 @@ public struct GSlider: View {
         if system {
             Group {
                 if let step {
-                    Slider(value: $value, in: range, step: step).tint(GColor.accent)
+                    Slider(value: $value, in: range, step: step).tint(GAccentStyle(.accent))
                 } else {
-                    Slider(value: $value, in: range).tint(GColor.accent)
+                    Slider(value: $value, in: range).tint(GAccentStyle(.accent))
                 }
             }
             .accessibilityLabel(label ?? "")
@@ -67,7 +67,7 @@ private struct GSliderTrack: View {
             let width = max(geometry.size.width - knob, 1)
             ZStack(alignment: .leading) {
                 Capsule().fill(GColor.track.gHollow(0.1)).frame(height: 4).padding(.horizontal, knob / 2)
-                Capsule().fill(GColor.accent).frame(width: knob / 2 + width * fraction, height: 4).padding(.leading, knob / 2).gGlow(radius: 3)
+                Capsule().fill(.gAccent).frame(width: knob / 2 + width * fraction, height: 4).padding(.leading, knob / 2).gGlow(radius: 3)
                 knobView(knob)
                     .frame(width: knob, height: knob)
                     .offset(x: width * fraction)

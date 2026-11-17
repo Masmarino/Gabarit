@@ -198,7 +198,7 @@ public struct GNavTabs<Tab: Hashable>: View {
                             .padding(.vertical, 8)
                             .overlay(alignment: .bottom) {
                                 if current {
-                                    Rectangle().fill(GColor.accent).frame(height: 2).gGlow(radius: 4)
+                                    Rectangle().fill(.gAccent).frame(height: 2).gGlow(radius: 4)
                                 } else if hovering {
                                     Rectangle().fill(GColor.border.opacity(0.5)).frame(height: 2)
                                 }
@@ -269,7 +269,7 @@ public struct GTabBar: View {
                     VStack(spacing: 2) {
                         icon(tab, current: current)
                             .frame(height: 24)
-                            .foregroundStyle(current ? AnyShapeStyle(GColor.accent) : AnyShapeStyle(.gInk2))
+                            .foregroundStyle(current ? AnyShapeStyle(.gAccent) : AnyShapeStyle(.gInk2))
                             .overlay(alignment: .topTrailing) { badge(tab) }
                         Text(tab.title)
                             .font(GFont.caption2.weight(current ? .semibold : .medium))
@@ -312,10 +312,10 @@ public struct GTabBar: View {
                             .font(GFont.caption2.weight(current ? .semibold : .medium))
                             .lineLimit(1)
                     }
-                    .foregroundStyle(current ? GColor.accentText : GColor.textSecondary)
+                    .foregroundStyle(current ? AnyShapeStyle(.gAccentText) : AnyShapeStyle(GColor.textSecondary))
                     .frame(maxWidth: .infinity, minHeight: 54)
                     .overlay(alignment: .top) {
-                        if current { Rectangle().fill(GColor.accent).frame(height: 2).padding(.horizontal, 18) }
+                        if current { Rectangle().fill(.gAccent).frame(height: 2).padding(.horizontal, 18) }
                     }
                     .contentShape(Rectangle())
                 }
@@ -334,9 +334,9 @@ public struct GTabBar: View {
         if tab.badge > 0 {
             Text(gBadgeText(tab.badge))
                 .font(GFont.caption2.weight(.semibold).monospacedDigit())
-                .foregroundStyle(style == .ground ? GColor.onPrimary : GColor.textPrimary)
+                .foregroundStyle(style == .ground ? AnyShapeStyle(.gOnAccent) : AnyShapeStyle(GColor.textPrimary))
                 .padding(.horizontal, 5).padding(.vertical, 1)
-                .background(style == .ground ? GColor.accent : GColor.track, in: .capsule)
+                .background(style == .ground ? AnyShapeStyle(.gAccent) : AnyShapeStyle(GColor.track), in: .capsule)
                 .fixedSize()
                 .offset(x: 16, y: -6)
         }

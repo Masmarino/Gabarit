@@ -129,7 +129,7 @@ public struct GCommandPalette: View {
                 .textFieldStyle(.plain)
                 .font(GFont.body)
                 .foregroundStyle(GColor.textPrimary)
-                .tint(GColor.accent)
+                .tint(GAccentStyle(.accent))
                 .focused($fieldFocused)
                 .autocorrectionDisabled()
                 #if os(iOS)
@@ -181,7 +181,7 @@ public struct GCommandPalette: View {
             HStack(spacing: 10) {
                 Image(systemName: item.icon)
                     .font(GFont.subheadline)
-                    .foregroundStyle(active ? GColor.accent : GColor.textSecondary)
+                    .foregroundStyle(active ? AnyShapeStyle(.gAccent) : AnyShapeStyle(GColor.textSecondary))
                     .frame(width: 20)
                     .accessibilityHidden(true)
                 Text(item.label).font(GFont.subheadline.weight(.medium)).foregroundStyle(GColor.textPrimary).lineLimit(1)
@@ -197,7 +197,7 @@ public struct GCommandPalette: View {
             .frame(minHeight: 40)
             .background(active ? GColor.hover : .clear, in: RoundedRectangle(cornerRadius: GRadius.row, style: .continuous))
             .overlay(alignment: .leading) {
-                if active { Rectangle().fill(GColor.accent).frame(width: 2).padding(.vertical, 8) }
+                if active { Rectangle().fill(.gAccent).frame(width: 2).padding(.vertical, 8) }
             }
             .contentShape(Rectangle())
         }

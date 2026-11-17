@@ -17,3 +17,21 @@ body {
   --gbt-liquid-text: var(--gbt-ink-2);
   --gbt-ground-text-discret: var(--gbt-ink-2);
 }
+
+// The doré ambiance (4.2): it brings its own accent, which the components under it follow (`--gbt-ground-accent` and
+// its roles). `data-ground-accent="none"` takes it away, to compare with the same ground under Gabarit's accent.
+:root[data-ambiance='dore'] {
+  @include tokens.ambiance-dore;
+  --text-primary: var(--gbt-ink);
+  --primary: var(--gbt-ink);
+  --text-secondary: var(--gbt-ink-2);
+  --gbt-liquid-text: var(--gbt-ink-2);
+  --gbt-ground-text-discret: var(--gbt-ink-2);
+}
+
+:root[data-ambiance='dore'][data-ground-accent='none'] {
+  --gbt-ground-accent: initial;
+  --gbt-ground-accent-text: initial;
+  --gbt-ground-on-accent: initial;
+  --gbt-ground-selected-fill: initial;
+}
