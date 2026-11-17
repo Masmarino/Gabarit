@@ -424,9 +424,23 @@ private fun CacheDrawScope.shadowPainter(shape: Shape, path: Path, shadows: List
 }
 
 /** The band of the shape not covered by the shape moved down by `by` px: its top edge, following its corners. */
-private fun DrawScope.topBand(path: Path, by: Float, color: Color) {
-    val lower = Path().apply { addPath(path, Offset(0f, by)) }
-    clipPath(path) { clipPath(lower, ClipOp.Difference) { drawRect(color) } }
+// Light is the edge of things, and it runs up and down, never across (iOS 27's liquid glass, not iOS 26's slanted
+// gleam): a point of light along the edge, `top` at the top, out by the middle, `bottom` at the bottom, the sides only
+// the passage between the two; inside, two soft lights (`sheen`), about 8 points under the top and 6 over the bottom.
+// `from` and `to`: where the whole glass's top and bottom lie, for a slice of it (a row of a list).
+
+/** The edge's point of light along `edge` (the glass's outline, or the whole card's for a slice), cut to `path`. */
+private fun DrawScope.gEdgeLight(path: Path, edge: Path, top: Color, bottom: Color, from: Float = 0f, to: Float = size.height) {
+    val rim = Brush.verticalGradient(0f to top, 0.5f to Color.Transparent, 1f to bottom, startY = from, endY = to)
+    clipPath(path) { drawPath(edge, rim, style = Stroke(2.dp.toPx())) }
+}
+
+/** The two soft lights inside, under the top and over the bottom (clamped: nothing past them). */
+private fun DrawScope.gSheen(path: Path, sheen: Color, from: Float = 0f, to: Float = size.height) {
+    clipPath(path) {
+        drawRect(Brush.verticalGradient(listOf(sheen, Color.Transparent), startY = from, endY = from + 8.dp.toPx()))
+        drawRect(Brush.verticalGradient(listOf(Color.Transparent, sheen), startY = to - 6.dp.toPx(), endY = to))
+    }
 }
 
 private fun Outline.path(): Path = Path().apply { addOutline(this@path) }
@@ -435,7 +449,8 @@ private fun Outline.path(): Path = Path().apply { addOutline(this@path) }
 
 /**
  * The content glass, behind this view: the ground's blurred copy at its place, the glass's colour at `density`, the
- * light on its top edge (`glassRim`) and a half-point rim (`glassRimEdge`), a wide soft shadow. The glass is dense with
+ * edge's light drawn up and down (`glassRimTop` → nothing → `glassRimBottom`) and its two soft lights inside
+ * (`glassSheen`), a wide soft shadow. The glass is dense with
  * `G.reduceTransparency` (`GGlassValues.reduced`); with `G.highContrast` its light becomes a true rim (`border`). Cut
  * what it holds to its corners yourself (`.clip(shape)`) if it may overflow.
  */
@@ -467,7 +482,6 @@ fun Modifier.gGlass(
     return this.onGloballyPositioned { position.value = it.positionInWindow() }.drawWithCache {
         val path = shape.createOutline(size, layoutDirection, this).path()
         val shade = shadowPainter(shape, path, shadows)
-        val hair = 0.5.dp.toPx()
         val line = 1.dp.toPx()
         onDrawBehind {
             shade()
@@ -477,8 +491,8 @@ fun Modifier.gGlass(
             }
             if (contrast) drawPath(path, colors.border, style = Stroke(line))
             else {
-                topBand(path, line, colors.glassRim)
-                drawPath(path, colors.glassRimEdge, style = Stroke(hair))
+                gSheen(path, colors.glassSheen)
+                gEdgeLight(path, path, colors.glassRimTop, colors.glassRimBottom)
             }
         }
     }
@@ -530,9 +544,9 @@ fun Modifier.gBackdropSource(backdrop: GBackdrop): Modifier =
 
 /**
  * The liquid glass, behind this view: the ground (and `backdrop`) under it blurred live (`GGlassValues.blurLiquid`),
- * saturated (1.9) and brightened (1.06); the white of `glassLiquid`; an edge of light, brighter at the top left
- * (`liquidRim` → `liquidRimSoft` → nothing → `liquidRimSoft` → `liquidRim`, at 135°, along its contour); a hollow of
- * light at the bottom; a short shadow (`liquidShadow`). From Android 13 its edge refracts (an AGSL shader). On a
+ * saturated (1.9) and brightened (1.06); the white of `glassLiquid`; its edge's light, up and down, never across
+ * (`liquidRimTop` at the top, out by the middle, `liquidRimBottom` at the bottom); two soft lights inside, under the
+ * top and over the bottom (`liquidSheen`); a short shadow (`liquidShadow`). From Android 13 its edge refracts (an AGSL shader). On a
  * software canvas (a test's), the ground's blurred copy stands for the live blur. Dense with `G.reduceTransparency`;
  * a true rim with `G.highContrast`. For what commands and floats, never for content.
  */
@@ -563,12 +577,6 @@ fun Modifier.gLiquidGlass(
             else -> min(size.width, size.height) / 2
         }
         val effect = gLiquidEffect(GGlassValues.blurLiquid.dp.toPx(), size, corner, 1.dp.toPx())
-        val rimWidth = 1.2.dp.toPx()
-        val rim = gCssLinear(135f, size, listOf(0f to colors.liquidRim, 0.3f to colors.liquidRimSoft, 0.55f to Color.Transparent,
-            0.85f to colors.liquidRimSoft, 1f to colors.liquidRim))
-        val hollowHeight = 14.dp.toPx().coerceAtMost(size.height / 2)
-        val hollow = Brush.verticalGradient(listOf(Color.Transparent, colors.liquidRimSoft), startY = size.height - hollowHeight, endY = size.height)
-        val top = Color.White.copy(alpha = colors.liquidRim.alpha * 0.58f)
         onDrawWithContent {
             shade()
             clipPath(path) {
@@ -587,13 +595,12 @@ fun Modifier.gLiquidGlass(
                         drawLayer(layer)
                     } else painter.paint(this, position.value, blurred = true, filter = filter)
                     drawRect(scene?.tone?.let { Color.White.copy(alpha = it.liquid) } ?: colors.glassLiquid)
-                    drawRect(hollow)
-                    topBand(path, 1.5.dp.toPx(), top)
                 }
             }
+            if (!contrast) gSheen(path, colors.liquidSheen)
             drawContent()
             if (contrast) drawPath(path, colors.border, style = Stroke(1.dp.toPx()))
-            else drawPath(path, rim, style = Stroke(rimWidth))
+            else gEdgeLight(path, path, colors.liquidRimTop, colors.liquidRimBottom)
         }
     }
 }
@@ -730,7 +737,8 @@ internal val GGroundSpec.fieldFill: Color
 
 /**
  * A slice of a content glass laid row by row (a lazy list's section): the ground's copy and the glass at its place,
- * the light on top of the first, the shadow under the last, the half-point rim of the whole card cut to the slice.
+ * the edge's light of the whole card cut to the slice (its top on the first, its bottom on the last, nothing between
+ * two rows), the shadow under the last.
  */
 @Composable
 internal fun Modifier.gGlassSlice(first: Boolean, last: Boolean, density: GGlassDensity = GGlassDensity.Regular): Modifier {
@@ -756,8 +764,9 @@ internal fun Modifier.gGlassSlice(first: Boolean, last: Boolean, density: GGlass
         val path = shape.createOutline(size, layoutDirection, this).path()
         val shade = shadowPainter(shape, path, shadows)
         val radius = r.toPx()
-        val line = (if (contrast) 1.dp else 0.5.dp).toPx()
-        // The whole card's rim, drawn beyond the slice and cut to it: only the sides stay between two rows.
+        val line = 1.dp.toPx()
+        // The whole card's edge, drawn beyond the slice and cut to it. The slice does not know the card's height: its light
+        // goes out by the first slice's bottom and comes back from the last one's top.
         val top = if (first) 0f else -radius * 2
         val bottom = if (last) size.height else size.height + radius * 2
         val card = Path().apply {
@@ -769,8 +778,14 @@ internal fun Modifier.gGlassSlice(first: Boolean, last: Boolean, density: GGlass
             clipPath(path) {
                 if (!reduced) painter.paint(this, position.value, blurred = true, filter = saturate)
                 drawRect(tint)
-                if (first && !contrast) topBand(path, 1.dp.toPx(), colors.glassRim)
-                drawPath(card, if (contrast) colors.border else colors.glassRimEdge, style = Stroke(line))
+                if (contrast) drawPath(card, colors.border, style = Stroke(line))
+            }
+            if (!contrast && (first || last)) {
+                val from = when { first -> 0f; else -> -size.height }
+                val to = when { last -> size.height; else -> size.height * 2 }
+                gSheen(path, colors.glassSheen, from, to)
+                gEdgeLight(path, card, if (first) colors.glassRimTop else Color.Transparent,
+                    if (last) colors.glassRimBottom else Color.Transparent, from, to)
             }
         }
     }

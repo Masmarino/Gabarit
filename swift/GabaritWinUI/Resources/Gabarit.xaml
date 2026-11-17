@@ -100,6 +100,18 @@
             <SolidColorBrush x:Key="GLiquidRimBrush" Color="#F2FFFFFF"/>
             <Color x:Key="GLiquidRimSoftColor">#59FFFFFF</Color>
             <SolidColorBrush x:Key="GLiquidRimSoftBrush" Color="#59FFFFFF"/>
+            <Color x:Key="GGlassRimTopColor">#8CFFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassRimTopBrush" Color="#8CFFFFFF"/>
+            <Color x:Key="GGlassRimBottomColor">#52FFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassRimBottomBrush" Color="#52FFFFFF"/>
+            <Color x:Key="GGlassSheenColor">#2EFFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassSheenBrush" Color="#2EFFFFFF"/>
+            <Color x:Key="GLiquidRimTopColor">#B2FFFFFF</Color>
+            <SolidColorBrush x:Key="GLiquidRimTopBrush" Color="#B2FFFFFF"/>
+            <Color x:Key="GLiquidRimBottomColor">#73FFFFFF</Color>
+            <SolidColorBrush x:Key="GLiquidRimBottomBrush" Color="#73FFFFFF"/>
+            <Color x:Key="GLiquidSheenColor">#59FFFFFF</Color>
+            <SolidColorBrush x:Key="GLiquidSheenBrush" Color="#59FFFFFF"/>
             <Color x:Key="GGlassShadowColor">#38182030</Color>
             <SolidColorBrush x:Key="GGlassShadowBrush" Color="#38182030"/>
             <Color x:Key="GGlassShadowNearColor">#0F182030</Color>
@@ -299,6 +311,18 @@
             <SolidColorBrush x:Key="GLiquidRimBrush" Color="#6BFFFFFF"/>
             <Color x:Key="GLiquidRimSoftColor">#14FFFFFF</Color>
             <SolidColorBrush x:Key="GLiquidRimSoftBrush" Color="#14FFFFFF"/>
+            <Color x:Key="GGlassRimTopColor">#29FFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassRimTopBrush" Color="#29FFFFFF"/>
+            <Color x:Key="GGlassRimBottomColor">#17FFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassRimBottomBrush" Color="#17FFFFFF"/>
+            <Color x:Key="GGlassSheenColor">#0DFFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassSheenBrush" Color="#0DFFFFFF"/>
+            <Color x:Key="GLiquidRimTopColor">#59FFFFFF</Color>
+            <SolidColorBrush x:Key="GLiquidRimTopBrush" Color="#59FFFFFF"/>
+            <Color x:Key="GLiquidRimBottomColor">#38FFFFFF</Color>
+            <SolidColorBrush x:Key="GLiquidRimBottomBrush" Color="#38FFFFFF"/>
+            <Color x:Key="GLiquidSheenColor">#1AFFFFFF</Color>
+            <SolidColorBrush x:Key="GLiquidSheenBrush" Color="#1AFFFFFF"/>
             <Color x:Key="GGlassShadowColor">#99000000</Color>
             <SolidColorBrush x:Key="GGlassShadowBrush" Color="#99000000"/>
             <Color x:Key="GGlassShadowNearColor">#4C000000</Color>
@@ -498,6 +522,18 @@
             <SolidColorBrush x:Key="GLiquidRimBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
             <StaticResource x:Key="GLiquidRimSoftColor" ResourceKey="SystemColorWindowTextColor"/>
             <SolidColorBrush x:Key="GLiquidRimSoftBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GGlassRimTopColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GGlassRimTopBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GGlassRimBottomColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GGlassRimBottomBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GGlassSheenColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GGlassSheenBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GLiquidRimTopColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GLiquidRimTopBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GLiquidRimBottomColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GLiquidRimBottomBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GLiquidSheenColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GLiquidSheenBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
             <StaticResource x:Key="GGlassShadowColor" ResourceKey="SystemColorWindowTextColor"/>
             <SolidColorBrush x:Key="GGlassShadowBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
             <StaticResource x:Key="GGlassShadowNearColor" ResourceKey="SystemColorWindowTextColor"/>

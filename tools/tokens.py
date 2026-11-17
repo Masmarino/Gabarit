@@ -167,6 +167,12 @@ def glass_roles(name: str) -> dict:
         "glassRim": hexa_opacity("#FFFFFF", kind["rim"]), "glassRimEdge": hexa_opacity("#FFFFFF", kind["rimEdge"]),
         "liquidRim": hexa_opacity("#FFFFFF", kind["liquidRim"]),
         "liquidRimSoft": hexa_opacity("#FFFFFF", kind["liquidRimSoft"]),
+        "glassRimTop": hexa_opacity("#FFFFFF", kind["rimTop"]),
+        "glassRimBottom": hexa_opacity("#FFFFFF", kind["rimBottom"]),
+        "glassSheen": hexa_opacity("#FFFFFF", kind["sheen"]),
+        "liquidRimTop": hexa_opacity("#FFFFFF", kind["liquidRimTop"]),
+        "liquidRimBottom": hexa_opacity("#FFFFFF", kind["liquidRimBottom"]),
+        "liquidSheen": hexa_opacity("#FFFFFF", kind["liquidSheen"]),
         "glassShadow": hexa_opacity(t["shade"], kind["shadow"]),
         "glassShadowNear": hexa_opacity(t["shade"], kind["shadowNear"]),
         "liquidShadow": hexa_opacity(t["shade"], kind["liquidShadow"]),
@@ -194,7 +200,7 @@ def glass_constants() -> list[tuple[str, float]]:
 
 
 KIND_FIELDS = ["thin", "regular", "thick", "liquid", "rim", "rimEdge", "liquidRim", "liquidRimSoft", "shadow",
-               "shadowNear", "liquidShadow"]
+               "shadowNear", "liquidShadow", "rimTop", "rimBottom", "sheen", "liquidRimTop", "liquidRimBottom", "liquidSheen"]
 
 
 def css_name(name: str) -> str:
@@ -297,13 +303,18 @@ def web_glass(key: str) -> list[str]:
               f"brightness({g['brightness']['liquid']:g});",
               f"  --gbt-radius-glass: {TOKENS['radius']['glass']}px;", f"  --gbt-radius-row: {TOKENS['radius']['row']}px;",
               f"  --gbt-space-page: {TOKENS['spacing']['page']}px;", f"  --gbt-space-gap: {TOKENS['spacing']['gap']}px;",
+              # Light is the edge of things, drawn vertically (never across): a point of light at the top and one at
+              # the bottom, the sides only the passage between them, two soft lights inside, under the top and over
+              # the bottom.
               "  --gbt-glass-rim-light:",
-              "    inset 0 1px 0 var(--gbt-glass-rim), inset 0 0 0 0.5px var(--gbt-glass-rim-edge);",
+              "    inset 0 1px 0 var(--gbt-glass-rim-top), inset 0 -1px 0 var(--gbt-glass-rim-bottom),",
+              "    inset 0 9px 9px -8px var(--gbt-glass-sheen), inset 0 -7px 7px -6px var(--gbt-glass-sheen);",
               "  --gbt-depth-glass:",
               f"    0 {shadow['y']}px {shadow['blur']}px {shadow['spread']}px var(--gbt-glass-shadow), "
               f"0 {shadow['nearY']}px {shadow['nearBlur']}px {shadow['nearSpread']}px var(--gbt-glass-shadow-near);",
               "  --gbt-depth-liquid:",
-              "    inset 0 1px 1.5px var(--gbt-liquid-rim), inset 0 -10px 18px -14px var(--gbt-liquid-rim-soft),",
+              "    inset 0 1px 0 var(--gbt-liquid-rim-top), inset 0 -1px 0 var(--gbt-liquid-rim-bottom),",
+              "    inset 0 9px 9px -8px var(--gbt-liquid-sheen), inset 0 -7px 7px -6px var(--gbt-liquid-sheen),",
               f"    0 {shadow['liquidY']}px {shadow['liquidBlur']}px {shadow['liquidSpread']}px var(--gbt-liquid-shadow);"]
     return lines
 

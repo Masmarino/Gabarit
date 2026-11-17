@@ -1,15 +1,15 @@
 //! The glass (4.0): two materials laid on the ground (`ground.rs`), and nothing else on it.
 //!
 //! - **The content glass** ([`GGlass`]: `thin`, `regular`, `thick`) for the panels: the ground's glass colour at the
-//!   density's opacity over the ground blurred wide, one point of light along its top edge and half a point all round
-//!   (the rim), a wide soft shadow (`shadow.glass`, two layers), radius `radius::GLASS` (22).
+//!   density's opacity over the ground blurred wide, its edge's light (below), a wide soft shadow (`shadow.glass`, two layers), radius `radius::GLASS` (22).
 //! - **The liquid glass** ([`GLiquidGlass`]) for what commands and floats (menus, tooltips, the open tab, a search, a
-//!   header's buttons): clearer (white at `glassLiquid`) over the ground blurred short and saturated, a rim of light
-//!   brighter at the top left and dimmer at the bottom right (two inset lights offset across the diagonal: GPUI has no
-//!   gradient border, the offset draws the same fading along the curve), a hollow of light at the bottom, a short
-//!   shadow. **Never for content**: a sheet that holds a form is thick content glass.
+//!   header's buttons): clearer (white at `glassLiquid`) over the ground blurred short and saturated, its edge's
+//!   light, brighter, a short shadow. **Never for content**: a sheet that holds a form is thick content glass.
 //!
-//! Light is the edge of things: no hairline around a glass, no line between rows. Accessibility: "Reduce
+//! Light is the edge of things: no hairline around a glass, no line between rows. It runs up and down, never across
+//! (iOS 27's liquid glass, not iOS 26's slanted gleam): a point of light along the edge, bright at the top, out by the
+//! middle, back at the bottom, the sides only the passage between the two (two stroked halves, each in a vertical
+//! gradient); inside, two soft lights, about 8 points under the top and 6 over the bottom. Accessibility: "Reduce
 //! transparency" ([`crate::theme::set_reduce_transparency`]) makes every glass dense (`glass::REDUCED` of the ground's
 //! glass colour); "Increase contrast" ([`crate::theme::set_increase_contrast`]) turns the rim into an outline.
 //!
@@ -22,9 +22,10 @@
 use std::rc::Rc;
 
 use gpui::{
-    AnyElement, App, BoxShadow, ClickEvent, Corners, CursorStyle, Div, ElementId, Hsla,
-    IntoElement, ParentElement, Pixels, RenderOnce, Role, SharedString, StyleRefinement, Styled,
-    Window, canvas, div, fill, outline, prelude::*, px,
+    AnyElement, App, Bounds, BoxShadow, ClickEvent, Corners, CursorStyle, Div, ElementId, Hsla,
+    IntoElement, ParentElement, PathBuilder, Pixels, RenderOnce, Role, SharedString,
+    StyleRefinement, Styled, Window, canvas, div, fill, linear_color_stop, linear_gradient,
+    outline, point, prelude::*, px,
 };
 
 use crate::assets::icon;
@@ -141,29 +142,21 @@ impl GMaterial {
         }
     }
 
-    /// Its light, inside its edge: the content's, a point along the top and half a point all round; the liquid's,
-    /// brighter at the top left, dimmer at the bottom right, and its hollow of light at the bottom.
-    fn rims(self, cx: &App) -> Vec<BoxShadow> {
+    /// Its edge's light (`top`, `bottom`) and its two soft lights inside (`sheen`): the content's, soft; the
+    /// liquid's, brighter.
+    fn edge_light(self, cx: &App) -> (Hsla, Hsla, Hsla) {
         let colors = &cx.theme().colors;
         match self {
-            GMaterial::Content { .. } | GMaterial::Selected => vec![
-                BoxShadow::new(px(0.), px(1.), colors.glass_rim).inset(),
-                BoxShadow::new(px(0.), px(0.), colors.glass_rim_edge)
-                    .spread_radius(px(0.5))
-                    .inset(),
-            ],
-            GMaterial::Liquid { .. } => vec![
-                BoxShadow::new(px(0.), px(-10.), colors.liquid_rim_soft)
-                    .blur_radius(px(9.))
-                    .spread_radius(px(-14.))
-                    .inset(),
-                BoxShadow::new(px(-1.2), px(-1.2), colors.liquid_rim_soft)
-                    .blur_radius(px(0.6))
-                    .inset(),
-                BoxShadow::new(px(1.2), px(1.2), colors.liquid_rim)
-                    .blur_radius(px(0.6))
-                    .inset(),
-            ],
+            GMaterial::Content { .. } | GMaterial::Selected => (
+                colors.glass_rim_top,
+                colors.glass_rim_bottom,
+                colors.glass_sheen,
+            ),
+            GMaterial::Liquid { .. } => (
+                colors.liquid_rim_top,
+                colors.liquid_rim_bottom,
+                colors.liquid_sheen,
+            ),
         }
     }
 
@@ -196,8 +189,104 @@ pub fn paint_glass(
             outline(bounds, theme.colors.border, gpui::BorderStyle::Solid).corner_radii(corners),
         );
     } else {
-        window.paint_inset_shadows(bounds, corners, &material.rims(cx));
+        let (top, bottom, sheen) = material.edge_light(cx);
+        paint_edge_light(bounds, corners, top, bottom, sheen, window);
     }
+}
+
+/// Light is the edge of things, up and down (see the module): the two soft lights inside, then the point of light
+/// along the edge, half a point in, as two halves each stroked in a vertical gradient (out by the middle).
+pub fn paint_edge_light(
+    bounds: Bounds<Pixels>,
+    corners: Corners<Pixels>,
+    top: Hsla,
+    bottom: Hsla,
+    sheen: Hsla,
+    window: &mut Window,
+) {
+    let height = f32::from(bounds.size.height).max(1.);
+    let clear = Hsla { a: 0., ..sheen };
+    window.paint_quad(
+        fill(
+            bounds,
+            linear_gradient(
+                180.,
+                linear_color_stop(sheen, 0.),
+                linear_color_stop(clear, (8. / height).min(0.5)),
+            ),
+        )
+        .corner_radii(corners),
+    );
+    window.paint_quad(
+        fill(
+            bounds,
+            linear_gradient(
+                180.,
+                linear_color_stop(clear, (1. - 6. / height).max(0.5)),
+                linear_color_stop(sheen, 1.),
+            ),
+        )
+        .corner_radii(corners),
+    );
+    for upper in [true, false] {
+        let lit = if upper { top } else { bottom };
+        let (from, to) = if upper {
+            (lit, Hsla { a: 0., ..lit })
+        } else {
+            (Hsla { a: 0., ..lit }, lit)
+        };
+        if let Some(path) = edge_half(bounds, corners, upper) {
+            window.paint_path(
+                path,
+                linear_gradient(180., linear_color_stop(from, 0.), linear_color_stop(to, 1.)),
+            );
+        }
+    }
+}
+
+/// Half the outline, half a point in, from one side's middle round the top (or the bottom) to the other's: a stroke
+/// of one point.
+fn edge_half(
+    bounds: Bounds<Pixels>,
+    corners: Corners<Pixels>,
+    upper: bool,
+) -> Option<gpui::Path<Pixels>> {
+    let inset = 0.5;
+    let (x0, y0) = (
+        f32::from(bounds.origin.x) + inset,
+        f32::from(bounds.origin.y) + inset,
+    );
+    let (x1, y1) = (
+        f32::from(bounds.origin.x + bounds.size.width) - inset,
+        f32::from(bounds.origin.y + bounds.size.height) - inset,
+    );
+    let middle = (y0 + y1) / 2.;
+    let radius = |r: Pixels| {
+        (f32::from(r) - inset)
+            .max(0.)
+            .min((y1 - y0) / 2.)
+            .min((x1 - x0) / 2.)
+    };
+    let mut builder = PathBuilder::stroke(px(1.));
+    let at = |x: f32, y: f32| point(px(x), px(y));
+    if upper {
+        let (left, right) = (radius(corners.top_left), radius(corners.top_right));
+        builder.move_to(at(x0, middle));
+        builder.line_to(at(x0, y0 + left));
+        builder.arc_to(at(left, left), px(0.), false, true, at(x0 + left, y0));
+        builder.line_to(at(x1 - right, y0));
+        builder.arc_to(at(right, right), px(0.), false, true, at(x1, y0 + right));
+        builder.line_to(at(x1, middle));
+    } else {
+        let (left, right) = (radius(corners.bottom_left), radius(corners.bottom_right));
+        builder.move_to(at(x0, middle));
+        builder.line_to(at(x0, y1 - left));
+        builder.arc_to(at(left, left), px(0.), false, false, at(x0 + left, y1));
+        builder.line_to(at(x1 - right, y1));
+        builder.arc_to(at(right, right), px(0.), false, false, at(x1, y1 - right));
+        builder.line_to(at(x1, middle));
+    }
+    builder.build().ok()
 }
 
 /// The glass's layer, over the whole of its parent (which must be `relative`): put it first among its children.

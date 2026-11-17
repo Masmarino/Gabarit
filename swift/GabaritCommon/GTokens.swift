@@ -132,6 +132,12 @@ public enum GColorValues {
     public static let glassRimEdge = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.5), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.06))
     public static let liquidRim = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.95), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.42))
     public static let liquidRimSoft = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.35), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.08))
+    public static let glassRimTop = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.55), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.16))
+    public static let glassRimBottom = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.32), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.09))
+    public static let glassSheen = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.18), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.05))
+    public static let liquidRimTop = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.7), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.35))
+    public static let liquidRimBottom = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.45), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.22))
+    public static let liquidSheen = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.35), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.1))
     public static let glassShadow = GColorPair(light: GRGBA(hex: 0x182030, alpha: 0.22), dark: GRGBA(hex: 0x000000, alpha: 0.6))
     public static let glassShadowNear = GColorPair(light: GRGBA(hex: 0x182030, alpha: 0.06), dark: GRGBA(hex: 0x000000, alpha: 0.3))
     public static let liquidShadow = GColorPair(light: GRGBA(hex: 0x182030, alpha: 0.2), dark: GRGBA(hex: 0x000000, alpha: 0.45))
@@ -237,7 +243,7 @@ public enum GGlassValues {
 
 /// What a kind of glass lays on a ground: its colour's opacities, its rims', its shadows'.
 public struct GGlassKindValues: Sendable, Hashable {
-    public let thin, regular, thick, liquid, rim, rimEdge, liquidRim, liquidRimSoft, shadow, shadowNear, liquidShadow: Double
+    public let thin, regular, thick, liquid, rim, rimEdge, liquidRim, liquidRimSoft, shadow, shadowNear, liquidShadow, rimTop, rimBottom, sheen, liquidRimTop, liquidRimBottom, liquidSheen: Double
 }
 
 public enum GGlassKind: String, Sendable, Hashable, CaseIterable {
@@ -247,9 +253,9 @@ public enum GGlassKind: String, Sendable, Hashable, CaseIterable {
 
     public var values: GGlassKindValues {
         switch self {
-        case .light: GGlassKindValues(thin: 0.46, regular: 0.68, thick: 0.88, liquid: 0.26, rim: 0.85, rimEdge: 0.5, liquidRim: 0.95, liquidRimSoft: 0.35, shadow: 0.22, shadowNear: 0.06, liquidShadow: 0.2)
-        case .dark: GGlassKindValues(thin: 0.42, regular: 0.62, thick: 0.86, liquid: 0.07, rim: 0.09, rimEdge: 0.06, liquidRim: 0.42, liquidRimSoft: 0.08, shadow: 0.6, shadowNear: 0.3, liquidShadow: 0.45)
-        case .tinted: GGlassKindValues(thin: 0.22, regular: 0.34, thick: 0.62, liquid: 0.1, rim: 0.22, rimEdge: 0.12, liquidRim: 0.6, liquidRimSoft: 0.12, shadow: 0.55, shadowNear: 0.2, liquidShadow: 0.4)
+        case .light: GGlassKindValues(thin: 0.46, regular: 0.68, thick: 0.88, liquid: 0.26, rim: 0.85, rimEdge: 0.5, liquidRim: 0.95, liquidRimSoft: 0.35, shadow: 0.22, shadowNear: 0.06, liquidShadow: 0.2, rimTop: 0.55, rimBottom: 0.32, sheen: 0.18, liquidRimTop: 0.7, liquidRimBottom: 0.45, liquidSheen: 0.35)
+        case .dark: GGlassKindValues(thin: 0.42, regular: 0.62, thick: 0.86, liquid: 0.07, rim: 0.09, rimEdge: 0.06, liquidRim: 0.42, liquidRimSoft: 0.08, shadow: 0.6, shadowNear: 0.3, liquidShadow: 0.45, rimTop: 0.16, rimBottom: 0.09, sheen: 0.05, liquidRimTop: 0.35, liquidRimBottom: 0.22, liquidSheen: 0.1)
+        case .tinted: GGlassKindValues(thin: 0.22, regular: 0.34, thick: 0.62, liquid: 0.1, rim: 0.22, rimEdge: 0.12, liquidRim: 0.6, liquidRimSoft: 0.12, shadow: 0.55, shadowNear: 0.2, liquidShadow: 0.4, rimTop: 0.24, rimBottom: 0.14, sheen: 0.07, liquidRimTop: 0.45, liquidRimBottom: 0.28, liquidSheen: 0.14)
         }
     }
 }

@@ -877,7 +877,7 @@
     }
   },
   "glass": {
-    "_": "The two glasses (4.0). Content glass (thin, regular, thick) for the panels: dense enough for long text. Liquid glass for what commands and floats (tabs, a bar's search and buttons, the composer, menus, sheets, tooltips), never for content: more transparent, a short blur that saturates what lies under it, a brighter rim at the top left, a hollow of light at the bottom, a short shadow. Each kind (an ambiance's \"kind\") gives the nominal opacities of the glass's colour (the ambiance's \"glass\"), the liquid glass's white, the rims and the shadows' strengths; the colour of a shadow is the ambiance's \"shade\" (by default its darkest stop, deepened). \"reduced\": the opacity of every glass when the system asks to reduce transparency.",
+    "_": "The two glasses (4.0). Content glass (thin, regular, thick) for the panels: dense enough for long text. Liquid glass for what commands and floats (tabs, a bar's search and buttons, the composer, menus, sheets, tooltips), never for content: more transparent, a short blur that saturates what lies under it, a rim of light drawn vertically, never across: bright at the top, out by the middle, back at the bottom (\"liquidRimTop\", \"liquidRimBottom\"), two soft lights inside under the top and over the bottom (\"liquidSheen\"), a short shadow; the content glass has the same, softer (\"rimTop\", \"rimBottom\", \"sheen\"). \"rim\", \"rimEdge\", \"liquidRim\" and \"liquidRimSoft\" are kept for 4.0.0's readers. Each kind (an ambiance's \"kind\") gives the nominal opacities of the glass's colour (the ambiance's \"glass\"), the liquid glass's white, the rims and the shadows' strengths; the colour of a shadow is the ambiance's \"shade\" (by default its darkest stop, deepened). \"reduced\": the opacity of every glass when the system asks to reduce transparency.",
     "kinds": {
       "light": {
         "thin": 0.46,
@@ -890,7 +890,13 @@
         "liquidRimSoft": 0.35,
         "shadow": 0.22,
         "shadowNear": 0.06,
-        "liquidShadow": 0.2
+        "liquidShadow": 0.2,
+        "rimTop": 0.55,
+        "rimBottom": 0.32,
+        "sheen": 0.18,
+        "liquidRimTop": 0.7,
+        "liquidRimBottom": 0.45,
+        "liquidSheen": 0.35
       },
       "dark": {
         "thin": 0.42,
@@ -903,7 +909,13 @@
         "liquidRimSoft": 0.08,
         "shadow": 0.6,
         "shadowNear": 0.3,
-        "liquidShadow": 0.45
+        "liquidShadow": 0.45,
+        "rimTop": 0.16,
+        "rimBottom": 0.09,
+        "sheen": 0.05,
+        "liquidRimTop": 0.35,
+        "liquidRimBottom": 0.22,
+        "liquidSheen": 0.1
       },
       "tinted": {
         "thin": 0.22,
@@ -916,7 +928,13 @@
         "liquidRimSoft": 0.12,
         "shadow": 0.55,
         "shadowNear": 0.2,
-        "liquidShadow": 0.4
+        "liquidShadow": 0.4,
+        "rimTop": 0.24,
+        "rimBottom": 0.14,
+        "sheen": 0.07,
+        "liquidRimTop": 0.45,
+        "liquidRimBottom": 0.28,
+        "liquidSheen": 0.14
       }
     },
     "blur": { "content": 28, "liquid": 9 },

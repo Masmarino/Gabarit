@@ -230,6 +230,9 @@ internal fun gColorsOn(base: GColors, spec: GGroundSpec, tone: GGroundTone, cust
         glassThick = spec.glass.copy(alpha = k.thick), glassLiquid = white.copy(alpha = tone.liquid),
         glassRim = white.copy(alpha = k.rim), glassRimEdge = white.copy(alpha = k.rimEdge),
         liquidRim = white.copy(alpha = k.liquidRim), liquidRimSoft = white.copy(alpha = k.liquidRimSoft),
+        glassRimTop = white.copy(alpha = k.rimTop), glassRimBottom = white.copy(alpha = k.rimBottom), glassSheen = white.copy(alpha = k.sheen),
+        liquidRimTop = white.copy(alpha = k.liquidRimTop), liquidRimBottom = white.copy(alpha = k.liquidRimBottom),
+        liquidSheen = white.copy(alpha = k.liquidSheen),
         glassShadow = tone.shade.copy(alpha = k.shadow), glassShadowNear = tone.shade.copy(alpha = k.shadowNear),
         liquidShadow = tone.shade.copy(alpha = k.liquidShadow),
     )

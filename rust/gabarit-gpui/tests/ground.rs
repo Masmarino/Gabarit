@@ -54,6 +54,24 @@ fn ground_roles_match_the_generator() {
                 generated.glass_shadow_near,
             ),
             ("liquid_shadow", laid.liquid_shadow, generated.liquid_shadow),
+            ("glass_rim_top", laid.glass_rim_top, generated.glass_rim_top),
+            (
+                "glass_rim_bottom",
+                laid.glass_rim_bottom,
+                generated.glass_rim_bottom,
+            ),
+            ("glass_sheen", laid.glass_sheen, generated.glass_sheen),
+            (
+                "liquid_rim_top",
+                laid.liquid_rim_top,
+                generated.liquid_rim_top,
+            ),
+            (
+                "liquid_rim_bottom",
+                laid.liquid_rim_bottom,
+                generated.liquid_rim_bottom,
+            ),
+            ("liquid_sheen", laid.liquid_sheen, generated.liquid_sheen),
         ];
         for (name, got, want) in pairs {
             assert!(close(got, want), "{}: {name} {got:?} ≠ {want:?}", spec.name);

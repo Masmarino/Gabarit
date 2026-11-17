@@ -117,6 +117,12 @@
   --gbt-glass-rim-edge: rgba(255, 255, 255, 0.5);
   --gbt-liquid-rim: rgba(255, 255, 255, 0.95);
   --gbt-liquid-rim-soft: rgba(255, 255, 255, 0.35);
+  --gbt-glass-rim-top: rgba(255, 255, 255, 0.55);
+  --gbt-glass-rim-bottom: rgba(255, 255, 255, 0.32);
+  --gbt-glass-sheen: rgba(255, 255, 255, 0.18);
+  --gbt-liquid-rim-top: rgba(255, 255, 255, 0.7);
+  --gbt-liquid-rim-bottom: rgba(255, 255, 255, 0.45);
+  --gbt-liquid-sheen: rgba(255, 255, 255, 0.35);
   --gbt-glass-shadow: rgba(24, 32, 48, 0.22);
   --gbt-glass-shadow-near: rgba(24, 32, 48, 0.06);
   --gbt-liquid-shadow: rgba(24, 32, 48, 0.2);
@@ -127,11 +133,13 @@
   --gbt-space-page: 20px;
   --gbt-space-gap: 16px;
   --gbt-glass-rim-light:
-    inset 0 1px 0 var(--gbt-glass-rim), inset 0 0 0 0.5px var(--gbt-glass-rim-edge);
+    inset 0 1px 0 var(--gbt-glass-rim-top), inset 0 -1px 0 var(--gbt-glass-rim-bottom),
+    inset 0 9px 9px -8px var(--gbt-glass-sheen), inset 0 -7px 7px -6px var(--gbt-glass-sheen);
   --gbt-depth-glass:
     0 18px 40px -18px var(--gbt-glass-shadow), 0 2px 6px -2px var(--gbt-glass-shadow-near);
   --gbt-depth-liquid:
-    inset 0 1px 1.5px var(--gbt-liquid-rim), inset 0 -10px 18px -14px var(--gbt-liquid-rim-soft),
+    inset 0 1px 0 var(--gbt-liquid-rim-top), inset 0 -1px 0 var(--gbt-liquid-rim-bottom),
+    inset 0 9px 9px -8px var(--gbt-liquid-sheen), inset 0 -7px 7px -6px var(--gbt-liquid-sheen),
     0 10px 26px -12px var(--gbt-liquid-shadow);
 }
 
@@ -246,6 +254,12 @@
   --gbt-glass-rim-edge: rgba(255, 255, 255, 0.06);
   --gbt-liquid-rim: rgba(255, 255, 255, 0.42);
   --gbt-liquid-rim-soft: rgba(255, 255, 255, 0.08);
+  --gbt-glass-rim-top: rgba(255, 255, 255, 0.16);
+  --gbt-glass-rim-bottom: rgba(255, 255, 255, 0.09);
+  --gbt-glass-sheen: rgba(255, 255, 255, 0.05);
+  --gbt-liquid-rim-top: rgba(255, 255, 255, 0.35);
+  --gbt-liquid-rim-bottom: rgba(255, 255, 255, 0.22);
+  --gbt-liquid-sheen: rgba(255, 255, 255, 0.1);
   --gbt-glass-shadow: rgba(0, 0, 0, 0.6);
   --gbt-glass-shadow-near: rgba(0, 0, 0, 0.3);
   --gbt-liquid-shadow: rgba(0, 0, 0, 0.45);
@@ -256,11 +270,13 @@
   --gbt-space-page: 20px;
   --gbt-space-gap: 16px;
   --gbt-glass-rim-light:
-    inset 0 1px 0 var(--gbt-glass-rim), inset 0 0 0 0.5px var(--gbt-glass-rim-edge);
+    inset 0 1px 0 var(--gbt-glass-rim-top), inset 0 -1px 0 var(--gbt-glass-rim-bottom),
+    inset 0 9px 9px -8px var(--gbt-glass-sheen), inset 0 -7px 7px -6px var(--gbt-glass-sheen);
   --gbt-depth-glass:
     0 18px 40px -18px var(--gbt-glass-shadow), 0 2px 6px -2px var(--gbt-glass-shadow-near);
   --gbt-depth-liquid:
-    inset 0 1px 1.5px var(--gbt-liquid-rim), inset 0 -10px 18px -14px var(--gbt-liquid-rim-soft),
+    inset 0 1px 0 var(--gbt-liquid-rim-top), inset 0 -1px 0 var(--gbt-liquid-rim-bottom),
+    inset 0 9px 9px -8px var(--gbt-liquid-sheen), inset 0 -7px 7px -6px var(--gbt-liquid-sheen),
     0 10px 26px -12px var(--gbt-liquid-shadow);
 }
 

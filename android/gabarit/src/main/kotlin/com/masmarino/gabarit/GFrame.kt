@@ -381,15 +381,17 @@ fun GDropdownMenu(expanded: Boolean, onDismiss: () -> Unit, modifier: Modifier =
         tonalElevation = 0.dp, shadowElevation = 8.dp, border = gLiquidBorder(), content = content)
 }
 
-/** The edge of light of what floats in a window of its own (a menu, a dialog): brighter at the top left; a true rim with high contrast. */
+/**
+ * The edge of light of what floats in a window of its own (a menu, a dialog): up and down, never across, bright at the
+ * top, out by the middle, back at the bottom; a true rim with high contrast.
+ */
 @Composable
 internal fun gLiquidBorder(): BorderStroke {
     val colors = G.colors
     if (G.highContrast) return BorderStroke(1.dp, colors.border)
     // Light on light shows nothing: a light ground's menu keeps a hint of the discreet ink at its edge.
-    val soft = if (G.isDark) colors.liquidRimSoft else colors.ink.copy(alpha = 0.08f)
-    return BorderStroke(1.2.dp, Brush.linearGradient(0f to colors.liquidRim, 0.3f to soft, 0.55f to soft.copy(alpha = soft.alpha / 2),
-        0.85f to soft, 1f to colors.liquidRim))
+    val soft = if (G.isDark) Color.Transparent else colors.ink.copy(alpha = 0.08f)
+    return BorderStroke(1.dp, Brush.verticalGradient(0f to colors.liquidRimTop, 0.5f to soft, 1f to colors.liquidRimBottom))
 }
 
 /** A bubble menu's lines (4.0: no line between them), on the menu's ground: put it in a `GDropdownMenu`. */
