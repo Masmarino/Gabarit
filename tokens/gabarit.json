@@ -888,9 +888,9 @@
         "rimEdge": 0.5,
         "liquidRim": 0.95,
         "liquidRimSoft": 0.35,
-        "shadow": 0.22,
-        "shadowNear": 0.06,
-        "liquidShadow": 0.2,
+        "shadow": 0.27,
+        "shadowNear": 0.1,
+        "liquidShadow": 0.26,
         "rimTop": 0.55,
         "rimBottom": 0.32,
         "sheen": 0.18,
@@ -945,7 +945,7 @@
     "brightness": { "liquid": 1.06 },
     "reduced": 0.94,
     "control": {
-      "_": "The controls on liquid glass (4.1): pressed, a glass lights up (white over it at \"pressLight\") and grows by \"pressScale\", on the \"bouncy\" spring; the prominent glass (the main button, the chosen chip) is the accent (or the ink) at \"prominent\"; a field is a hollow of thin glass, its shade at the kind's \"hollow\" inside its top edge.",
+      "_": "The controls on liquid glass (4.1): pressed, a glass lights up (white over it at \"pressLight\") and grows by \"pressScale\", on the \"bouncy\" spring; the prominent glass (the main button, the chosen chip) is the accent (or the ink) at \"prominent\"; a field is a hollow of thin glass, its shade at the kind's \"hollow\" inside its top edge. Laid in a light surface (a sheet, a card, thick glass), white on white loses its edges (4.1.1): what floats keeps its light on top and takes the ink at its bottom edge and a contact shadow; a field's hollow takes the ink under its top edge and the light at its bottom; a form's card takes the ink at its bottom edge only (the values: each platform's \"nested\" constants).",
       "pressScale": 1.04,
       "pressLight": 0.14,
       "prominent": 0.86

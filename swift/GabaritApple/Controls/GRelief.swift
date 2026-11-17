@@ -46,7 +46,8 @@ public extension View {
     /// (`fill: GColor.surface` gives 3.x's card back).
     @ViewBuilder func gCardDepth<S: InsettableShape>(_ shape: S, fill: Color? = nil) -> some View {
         if let fill {
-            background { shape.fill(fill).shadow(color: GColor.cardShadow, radius: GShadowValues.card.radius, x: GShadowValues.card.x, y: GShadowValues.card.y) }
+            environment(\.gOnSurface, true)
+                .background { shape.fill(fill).shadow(color: GColor.cardShadow, radius: GShadowValues.card.radius, x: GShadowValues.card.x, y: GShadowValues.card.y) }
                 .overlay {
                     // Light on the top edge, shade on the bottom one.
                     shape.inset(by: 1).strokeBorder(LinearGradient(stops: [.init(color: GColor.reliefHighlight, location: 0), .init(color: .clear, location: 0.2),

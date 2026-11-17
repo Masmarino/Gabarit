@@ -41,6 +41,7 @@ let appearances: [(name: String, scheme: ColorScheme, ground: GGroundSpec)] = [
     GallerySection("feedback", FeedbackSection()),
     GallerySection("window", width: 700, WindowSection()),
     GallerySection("overlays", OverlaysSection()),
+    GallerySection("sheet", width: 560, SheetSection()),
 ] }
 
 /// A section on its ground, as a window shows it.

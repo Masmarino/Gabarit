@@ -17,7 +17,9 @@ public struct GTextFieldStyle: TextFieldStyle {
 
 /// A field's frame (4.1): a hollow of thin glass (`gGlassHollow`), with no rim at rest; a capsule for a line of text, a
 /// row's corners (`GRadius.row`) for a long text (`multiline`). The focus draws the accent's rim (3:1); more contrast, a
-/// rim always (`GColor.border`). `bare` (a form card's row): none, the card is its frame (a frame in a frame), the row
+/// rim always, in the ground's ink (4.1.1: `GColor.border` fell under 3:1 at a light ground's brightest point, and on
+/// the ambiances; the ink holds 4.5:1 on every ground, GFieldRimTests). In a light surface, an edge of the ground's
+/// ink (`gGlassHollow`). `bare` (a form card's row): none, the card is its frame (a frame in a frame), the row
 /// its room, the text and the cursor what is seen.
 public struct GFieldFrame: ViewModifier {
     var isBare: Bool
@@ -46,7 +48,8 @@ public struct GFieldFrame: ViewModifier {
 
     private func framed(_ content: Content) -> some View {
         let shape = multiline ? AnyInsettableShape(RoundedRectangle(cornerRadius: GRadius.row, style: .continuous)) : AnyInsettableShape(Capsule())
-        let rim = focused ? GColor.accent : contrast == .increased ? GColor.border : hovering || preview != nil ? GColor.border.opacity(0.35) : Color.clear
+        let rim: AnyShapeStyle = focused ? AnyShapeStyle(GColor.accent) : contrast == .increased ? AnyShapeStyle(.gInk)
+            : AnyShapeStyle(hovering || preview != nil ? GColor.border.opacity(0.35) : Color.clear)
         return content
             .font(GFont.body)
             .focused($focused)

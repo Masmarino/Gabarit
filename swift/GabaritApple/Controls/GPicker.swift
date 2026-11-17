@@ -237,7 +237,9 @@ private struct GMenuRow: View {
 }
 #endif
 
-/// Chips side by side (4.1): capsules of liquid glass, the current choice in glass tinted with the accent.
+/// Chips side by side (4.1): capsules of liquid glass, the current choice in glass tinted with the accent. In a light
+/// surface (4.1.1), the others take a glass's edge (`GNestedFloat`, in
+/// `gLiquidControl`): white glass would vanish there.
 private struct GChips<Value: Hashable>: View {
     @Binding var selection: Value
     let options: [(value: Value, title: String)]

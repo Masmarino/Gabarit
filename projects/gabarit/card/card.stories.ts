@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite'
 import { expect, within } from 'storybook/test'
-import { darkTheme } from '../.storybook/preview'
+import { auroreAmbiance, darkTheme } from '../.storybook/preview'
 import { Badge } from '../badge/badge'
 import { Button } from '../button/button'
 import { Icon } from '../icon/icon'
 import { Checkbox } from '../checkbox/checkbox'
 import { Switch } from '../switch/switch'
+import { GbtInput } from '../input/input'
 import { Card, CardHeader } from './card'
 import { CardLink } from './card-link'
 
@@ -314,4 +315,44 @@ export const GlassDark: Story = {
   ...Glass,
   name: 'Glass on the ground (dark)',
   decorators: [darkTheme],
+}
+
+/**
+ * Controls laid in a card (4.1.1): the card is a light glass, so the field's hollow, the chips not chosen and a form's
+ * card laid in it keep their glass and take an edge of ink (and the chips and the card a near shadow), which white on white would lose.
+ */
+export const ControlsInGlass: Story = {
+  name: 'Controls in the glass',
+  render: () => ({
+    template: `
+      <div style="max-width: 32rem">
+        <gbt-card heading="Nouvelle note" icon="file">
+          <gbt-input label="Titre" placeholder="Sans titre" />
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0">
+            <button type="button" class="gbt-chip">Tout</button>
+            <button type="button" class="gbt-chip" aria-pressed="true">Épinglées</button>
+            <button type="button" class="gbt-chip">Partagées</button>
+          </div>
+          <gbt-card form>
+            <gbt-input label="Lieu" placeholder="Où ?" />
+            <gbt-switch label="Rappel" />
+            <gbt-switch label="Partager avec la famille" />
+          </gbt-card>
+        </gbt-card>
+      </div>
+    `,
+    moduleMetadata: { imports: [Card, GbtInput, Switch] },
+  }),
+}
+
+export const ControlsInGlassDark: Story = {
+  ...ControlsInGlass,
+  name: 'Controls in the glass (dark)',
+  decorators: [darkTheme],
+}
+
+export const ControlsInGlassAurore: Story = {
+  ...ControlsInGlass,
+  name: 'Controls in the glass (aurore)',
+  decorators: [auroreAmbiance],
 }

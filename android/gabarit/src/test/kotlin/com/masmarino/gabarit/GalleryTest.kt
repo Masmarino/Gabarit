@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -160,6 +161,41 @@ class GalleryTest {
                 { GRow { GFormButtons { GButton("Reset", {}); GButton("Save", {}, variant = GButtonVariant.Primary) } } },
             ))
             GFormSection("Members", rows = listOf({ GRowButton("Invite people", {}) }, { GRowButton("Leave the space", {}, destructive = true) }))
+        }
+    }
+
+    /**
+     * 4.1.1: a sheet (thick content glass, as `GBottomSheet` draws it, on the ground) holding fields, chips, switches and
+     * two form sections: what lies in a light surface takes the ink's light tint, not white on white.
+     */
+    @Test fun sheet() = draw("sheet") {
+        var title by remember { mutableStateOf("Buy a present for Léa") }
+        var note by remember { mutableStateOf("") }
+        var date by remember { mutableStateOf(false) }
+        var important by remember { mutableStateOf(true) }
+        var repeat by remember { mutableStateOf(0) }
+        val shape = RoundedCornerShape(topStart = GRadius.glass, topEnd = GRadius.glass)
+        Column(Modifier.fillMaxSize().padding(top = 40.dp)) {
+            Column(Modifier.fillMaxSize().gGlass(GGlassDensity.Thick, shape, GGlassShadow.None).clip(shape)) {
+                CompositionLocalProvider(LocalGInSheet provides true) {
+                    GSheetTitle("Reminder", "On all your devices", dismiss = {})
+                    Column(Modifier.padding(horizontal = 20.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+                        GTextField("Title", title, { title = it })
+                        GTextField("Note", note, { note = it }, prompt = "A word for later")
+                        GChips(listOf(0, 1, 2), repeat, { listOf("Once", "Every day", "Every week")[it] }, { repeat = it })
+                        GFormSection("Due") {
+                            GToggleRow("Date", date, { date = it }, contentPadding = GFormMetrics.rowPadding)
+                            GToggleRow("Important", important, { important = it }, contentPadding = GFormMetrics.rowPadding)
+                        }
+                        GFormSection("Remind me", rows = listOf(
+                            { GFormRow("Before", trailing = { Text("15 min") }) },
+                            { GFormRow("Sound", trailing = { Text("Chime") }) },
+                            { GRow { GTextField("", "", {}, prompt = "A field in the section") } },
+                        ))
+                        GFormButtons { GButton("Delete", {}, destructive = true); GButton("Save", {}, variant = GButtonVariant.Primary) }
+                    }
+                }
+            }
         }
     }
 

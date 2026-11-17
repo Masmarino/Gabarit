@@ -368,7 +368,8 @@ impl RenderOnce for GFormSection {
                 if index > 0 && self.separated {
                     card = card.child(div().pl(px(16.)).child(div().h(px(1.)).bg(colors.hairline)));
                 }
-                card = card.child(match row {
+                // A card's rows lie in its glass (4.1.1).
+                card = card.child(crate::glass::in_glass(match row {
                     Row::Card(element) => div()
                         .flex()
                         .items_center()
@@ -379,7 +380,7 @@ impl RenderOnce for GFormSection {
                         .into_any_element(),
                     Row::Button(element) => element,
                     Row::Bare(element) => div().p(px(12.)).child(element).into_any_element(),
-                });
+                }));
             }
             section = section.child(card);
         }

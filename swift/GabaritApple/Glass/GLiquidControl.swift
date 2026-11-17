@@ -90,6 +90,8 @@ public struct GLiquidControl<S: Shape>: ViewModifier {
                 .allowsHitTesting(false)
             }
             .glassEffect(Glass.regular.tint(Color.white.opacity(tone.liquid * 0.5)), in: shape)
+            // In a light surface (4.1.1), a clear glass takes its shade at the bottom (`GNestedFloat`).
+            .modifier(GNestedFloat(shape: shape, active: prominent == nil))
             .overlay {
                 if contrast == .increased {
                     shape.stroke(GColor.border, lineWidth: 1).allowsHitTesting(false).accessibilityHidden(true)
@@ -122,19 +124,30 @@ public extension View {
 
 /// The glass's colour at its thin density, a faint veil of the ground's shade (`hollow` × 0.4: on a light ground, white
 /// glass alone would not show on a card of white glass), and the shade falling in from the top edge (`glassHollow`).
+/// Laid in a light surface (a sheet, a card: 4.1.1), the same ground, and a hollow's edge: the ink's shadow under its
+/// top edge, a trace of ink all round, the light on its bottom edge.
 struct GGlassHollow<S: InsettableShape>: ViewModifier {
     let shape: S
     @Environment(\.gResolvedGround) private var ground
+    @Environment(\.gNestedLight) private var nested
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     func body(content: Content) -> some View {
         let tone = GGroundToneCache.tone(of: ground)
         let fill = reduceTransparency ? Color(ground.glass.opacity(GGlassValues.reduced)) : ground.glassColor(.thin)
-        let shade = Color(tone.shade).opacity(ground.kind.values.hollow)
+        let shade = nested ? Color(tone.ink).opacity(GNestedEdgeValues.hollowShadow) : Color(tone.shade).opacity(ground.kind.values.hollow)
         content.background {
             ZStack {
                 shape.fill(fill)
-                shape.fill(Color(tone.shade).opacity(ground.kind.values.hollow * 0.4).shadow(.inner(color: shade, radius: 2.5, y: 1.5)))
+                if nested {
+                    shape.fill(Color(tone.shade).opacity(ground.kind.values.hollow * 0.4).shadow(.inner(color: shade, radius: 2, y: 1)))
+                    shape.strokeBorder(Color(tone.ink).opacity(GNestedEdgeValues.hollowTrace), lineWidth: 1)
+                    shape.strokeBorder(LinearGradient(stops: [.init(color: .white.opacity(0), location: 0.5),
+                                                              .init(color: .white.opacity(0.9), location: 1)],
+                                                      startPoint: .top, endPoint: .bottom), lineWidth: 1)
+                } else {
+                    shape.fill(Color(tone.shade).opacity(ground.kind.values.hollow * 0.4).shadow(.inner(color: shade, radius: 2.5, y: 1.5)))
+                }
             }
             .allowsHitTesting(false)
         }

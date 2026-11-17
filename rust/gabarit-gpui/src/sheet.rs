@@ -235,7 +235,10 @@ impl RenderOnce for GSheet {
             }
         })
         .child(self.title)
-        .child(div().flex_1().min_h_0().child(self.content));
+        // Its content lies in its glass (4.1.1): the clear glass in it takes its edge on a light glass.
+        .child(crate::glass::in_glass(
+            div().flex_1().min_h_0().child(self.content),
+        ));
         // It opens on the panes' spring, rising a little as a slight zoom would, its veil fading in; it leaves
         // quicker, sinking. Less motion: plain fades (`GMotionExt`).
         let named =

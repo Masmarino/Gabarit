@@ -303,16 +303,21 @@ private struct GFormSection: View {
     }
 }
 
-/// A form's card: content glass with no line (4.0), or 3.x's surface and fine border when its rows are separated.
+/// A form's card: content glass with no line (4.0), or 3.x's surface and fine border when its rows are separated. In a
+/// light surface (a sheet, a card: 4.1.1), white glass on white glass would vanish: the same card, a sharper near
+/// shadow and a fine edge of ink at its bottom (`GNestedCard`).
 private struct GFormCard<S: InsettableShape>: ViewModifier {
     let shape: S
     let separated: Bool
+    @Environment(\.gOnSurface) private var onSurface
+    @Environment(\.gResolvedGround) private var ground
 
     func body(content: Content) -> some View {
         if separated {
             content.gCardDepth(shape, fill: GColor.surface).overlay { shape.strokeBorder(GColor.hairline, lineWidth: 1) }
         } else {
             content.gCardDepth(shape)
+                .modifier(GNestedCard(shape: shape, active: onSurface && ground.mode == .light))
         }
     }
 }

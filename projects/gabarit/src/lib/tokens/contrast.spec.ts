@@ -817,7 +817,12 @@ describe('the ground and its glasses', () => {
     it(`a field's edge with the focus reaches 3:1 on its hollow of thin glass (${theme})`, () => {
       expect(mixinBody('glass-hollow-focus')).toContain('border-color: var(--primary);')
       for (const stop of stops) {
-        for (const surface of [stop, glassOver('thin', stop), glassOver('regular', stop)]) {
+        for (const surface of [
+          stop,
+          glassOver('thin', stop),
+          glassOver('regular', stop),
+          glassOver('thick', stop),
+        ]) {
           expect(
             ratio(token('primary', theme), surface),
             `focused edge on ${surface}`,
@@ -825,6 +830,72 @@ describe('the ground and its glasses', () => {
         }
       }
     })
+
+    // Laid in a light glass (4.1.1, `holds-controls`): what floats keeps its rim of light and takes the ink at its
+    // bottom edge, a field's hollow the ink's shade inside its top edge; their glass is unchanged. Over a card, a thick
+    // glass or a sheet on its dimmed ground, the bottom of a chip's edge and the shade of a hollow stand out at 1.3:1
+    // from the surface around them, and the text keeps 7:1.
+    if (theme === 'light') {
+      const backdrop = (stop: string) => over('#000000', 0.4, stop)
+      const content = ['text-primary', 'text-secondary', 'gbt-ground-text-discret']
+      const sheet = ['text-primary', 'gbt-liquid-text']
+      const lightSurfaces = (): [string, string[]][] =>
+        stops.flatMap((stop) => [
+          [glassOver('regular', stop), content] as [string, string[]],
+          [glassOver('thick', stop), content] as [string, string[]],
+          [glassOver('thick', backdrop(stop)), sheet] as [string, string[]],
+        ])
+      const ink = (alpha: number, base: string) => over(token('text-primary', theme), alpha, base)
+
+      it(`a light glass poses the light and the shade of the controls laid in it, light only (light)`, () => {
+        const holds = mixinBody('holds-controls')
+        for (const name of ['low', 'contact', 'hollow-shade', 'hollow-light', 'group-low']) {
+          expect(holds).toMatch(
+            new RegExp(`--gbt-nested-${name}: light-dark\\([^;]+, transparent\\);`),
+          )
+        }
+        expect(mixinBody('glass')).toContain('@include holds-controls;')
+        expect(mixinBody('floating-glass')).toContain('@include holds-controls;')
+        expect(mixinBody('liquid-control')).toContain('$nested-float')
+        expect(mixinBody('glass-hollow')).toContain('$nested-hollow,')
+        // No line at rest, and the glass is the 4.1.0's.
+        expect(mixinBody('glass-hollow')).toContain(
+          'border: 1px solid var(--gbt-field-border, transparent);',
+        )
+        expect(mixinBody('glass-hollow')).toContain(
+          'background: var(--gbt-field-ground, var(--gbt-glass-thin));',
+        )
+      })
+
+      it(`the bottom of a chip's edge and a hollow's shade stand out at 1.3:1, the text keeps 7:1 (light)`, () => {
+        for (const [surface, texts] of lightSurfaces()) {
+          // A chip's bottom edge: the ink over its liquid glass, against the surface under it.
+          const chip = token('gbt-glass-liquid', theme, surface)
+          const low = ink(glassScssValue('nested-low'), chip)
+          expect(ratio(low, surface), `chip's bottom ${low} on ${surface}`).toBeGreaterThanOrEqual(
+            1.3,
+          )
+          // A hollow's top edge: the shade and the trace over its thin glass, against the surface around it.
+          const hollow = token('gbt-glass-thin', theme, surface)
+          const shade = ink(
+            glassScssValue('nested-hollow-trace'),
+            ink(glassScssValue('nested-hollow-shade'), hollow),
+          )
+          expect(
+            ratio(shade, surface),
+            `hollow's shade ${shade} on ${surface}`,
+          ).toBeGreaterThanOrEqual(1.3)
+          for (const inside of [surface, chip, hollow]) {
+            for (const name of texts) {
+              expect(
+                ratio(token(name, theme), inside),
+                `${name} on ${inside}`,
+              ).toBeGreaterThanOrEqual(7)
+            }
+          }
+        }
+      })
+    }
 
     it(`a field's edge on the ground reaches 3:1, bare and under the liquid glass (${theme})`, () => {
       for (const stop of stops) {

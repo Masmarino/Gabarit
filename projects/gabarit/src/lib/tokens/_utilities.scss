@@ -342,7 +342,8 @@
   @include glass.liquid-glass;
 }
 
-// A chip (4.1): a filter, a choice among several, a suggestion. A capsule of thin liquid glass; the chosen one
+// A chip (4.1): a filter, a choice among several, a suggestion. A capsule of thin liquid glass (in a light glass, the
+// ink at its bottom edge: white on white would lose it); the chosen one
 // (`aria-pressed`, `aria-selected` or `aria-checked` true, or `.gbt-chip--selected`) in the glass tinted by the accent.
 // Put it on a `<button>` (or a link). Never the content: a label inside a row is a `gbt-badge`.
 .gbt-chip {
@@ -362,6 +363,9 @@
   white-space: nowrap;
   cursor: pointer;
   @include glass.liquid-thin;
+  // In a light glass (4.1.1, `holds-controls`): its rim of light at the top, the ink at its bottom edge and a contact
+  // shadow; its glass unchanged.
+  box-shadow: glass.$liquid-rims, glass.$nested-float;
   color: var(--text-primary);
   @include glass.liquid-motion;
 

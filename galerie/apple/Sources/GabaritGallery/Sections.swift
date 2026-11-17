@@ -309,3 +309,42 @@ struct LiveSection: View {
         .frame(width: 720, height: 640)
     }
 }
+
+// MARK: A sheet
+
+/// A sheet (thick glass on the ground) holding what an editor holds: fields, chips, a switch, a form's section. Laid
+/// in a light surface, Gabarit's white glass would vanish (4.1.1): the hollows, the chips not chosen and the section
+/// take an edge of the ground's ink.
+struct SheetSection: View {
+    @State private var title = "Call the bank"
+    @State private var note = ""
+    @State private var repeats = 1
+    @State private var important = true
+    @State private var allDay = false
+    @State private var place = "Lyon"
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            GForm {
+                Section {
+                    GTextField("Title", text: $title).gFormBare()
+                    GTextField("Note", text: $note, prompt: "A few words", axis: .vertical).gFormBare()
+                    GPicker("Repeat", selection: $repeats, options: [(0, "Never"), (1, "Daily"), (2, "Weekly"), (3, "Monthly")], style: .chips)
+                        .gFormBare()
+                    Toggle(isOn: $allDay) { Text("All day"); Text("No time, the whole day.") }.gFormBare()
+                }
+                Section("Due") {
+                    LabeledContent("Date", value: "Tomorrow, 9:00")
+                    Toggle("Important", isOn: $important)
+                    TextField("Place", text: $place)
+                }
+                Section {
+                    GSheetButton(title: "Save") {}
+                }
+            }
+            .frame(height: 600)
+        }
+        .gSheet(symbol: "bell", title: "Reminder", summary: "Something to remember, at the right time.")
+        .clipShape(RoundedRectangle(cornerRadius: GRadius.glass, style: .continuous))
+    }
+}

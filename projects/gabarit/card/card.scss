@@ -5,6 +5,11 @@
 :host {
   --gbt-card-radius: var(--gbt-radius-glass);
   --gbt-card-focus-offset: -2px;
+  // The light the glass the card is laid in asks for (4.1.1, `glass.holds-controls`), read here, on the host: the
+  // card's own glass poses it again for what it holds.
+  --gbt-card-laid-low: var(--gbt-nested-group-low);
+  --gbt-card-laid-contact: var(--gbt-nested-contact);
+  --gbt-card-laid-shadow: var(--gbt-nested-group-shadow);
 
   position: relative;
   display: grid;
@@ -212,12 +217,27 @@
 
 // A form's card: it is the fields' frame, a frame in a frame would be one too many. Its fields lose theirs (a focused
 // one still shows its ring), and the card's rows are split by a fine line.
+// Laid in a light glass (a sheet, a card, 4.1.1), a glass in the glass: no frame, a sharper near shadow and the ink at
+// its bottom edge only. Elsewhere, and in the dark, as before.
 .gbt-card[data-form] {
   --gbt-field-border: transparent;
   --gbt-field-border-hover: transparent;
   --gbt-field-ground: transparent;
   --gbt-field-hollow: none;
   --gbt-field-padding: 0;
+
+  box-shadow:
+    inset 0 -1px 0 var(--gbt-card-laid-low, transparent),
+    var(--gbt-glass-rim-light),
+    0 1px 3px var(--gbt-card-laid-contact, transparent),
+    0 4px 12px -6px var(--gbt-card-laid-shadow, transparent),
+    var(--gbt-depth-glass);
+
+  @media (prefers-contrast: more) {
+    box-shadow:
+      inset 0 0 0 1px var(--border-color),
+      var(--gbt-depth-glass);
+  }
 
   .gbt-card__body ::ng-deep > * + * {
     display: block;

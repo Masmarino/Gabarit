@@ -2,7 +2,8 @@
 //! under the pointer and held down (the press's light laid over the clear glass, under the tinted one).
 
 use gabarit_gpui::glass::{
-    GMaterial, accent_glass, hover_light, ink_glass, legible_on_glass, press_light, thin_glass_ink,
+    GMaterial, accent_glass, hover_light, ink_glass, legible_on_glass, nested, press_light,
+    thin_glass_ink,
 };
 use gabarit_gpui::theme::{GAppearance, GTheme};
 use gabarit_gpui::tokens::{self, glass, grounds};
@@ -205,6 +206,57 @@ fn gabarits_grounds_keep_their_red(cx: &mut TestAppContext) {
         if name == "light" || name == "dark" {
             let red = cx.theme().colors.error_text;
             assert_eq!(rgb(legible_on_glass(red, 1., None, cx)), rgb(red), "{name}");
+        }
+    });
+}
+
+/// 4.1.1: on a light glass, what is laid in a light surface (a card, a sheet, a section in a sheet) keeps its glass and
+/// takes the dark half of its edge: the ink at a chip's bottom edge, the ink's shade inside a field's top edge. Each
+/// tells it from that surface by 1.3:1 at least at the ground's worst points (the edge only shows a shape: not a
+/// field's 3:1, `glass::EDGE_MINIMUM`).
+const EDGE_SHOWS: f64 = 1.3;
+
+#[gpui::test]
+fn the_edge_of_glass_in_a_light_surface_shows(cx: &mut TestAppContext) {
+    check(cx, |name, cx| {
+        let theme = cx.theme();
+        if theme.ground.kind != tokens::GGlassKind::Light {
+            return;
+        }
+        let colors = theme.colors;
+        let ink = |opacity: f32| {
+            gabarit_gpui::theme::alpha(
+                Hsla {
+                    a: 1.,
+                    ..colors.ink
+                },
+                opacity,
+            )
+        };
+        let glass_colour = rgb(theme.glass_color());
+        for point in worst_points(&theme.ground) {
+            let backdrop = laid(glass_colour, theme.tone.veil as f64, point);
+            let card = over(colors.glass_regular, backdrop);
+            let sheet = over(colors.glass_thick, backdrop);
+            let section = over(colors.glass_regular, sheet);
+            for (place, surface) in [("card", card), ("sheet", sheet), ("section", section)] {
+                // A chip at rest: the thin liquid glass over the ground's backdrop, the ink at its bottom edge.
+                let chip = over(GMaterial::liquid_thin().tint(cx), backdrop);
+                let low = over(ink(nested::LOW), chip);
+                // A field's hollow: the thin glass over the surface, at its top edge the ink's shade and its trace.
+                let hollow = over(colors.glass_thin, surface);
+                let shade = over(
+                    ink(nested::HOLLOW_TRACE),
+                    over(ink(nested::HOLLOW_SHADE), hollow),
+                );
+                for (what, edge) in [("chip's bottom edge", low), ("field's shade", shade)] {
+                    let held = contrast(edge, surface);
+                    assert!(
+                        held >= EDGE_SHOWS,
+                        "{what} in a {place} on {name}: {held:.2}"
+                    );
+                }
+            }
         }
     });
 }

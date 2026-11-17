@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/angular-vite'
 import { Component, signal } from '@angular/core'
-import { darkTheme } from '../.storybook/preview'
+import { FormsModule } from '@angular/forms'
+import { auroreAmbiance, darkTheme } from '../.storybook/preview'
 import { Button } from '../button/button'
+import { Card } from '../card/card'
+import { GbtInput } from '../input/input'
+import { Switch } from '../switch/switch'
 import { Modal } from './modal'
 
 const meta: Meta<Modal> = {
@@ -183,4 +187,64 @@ export const BusyDark: Story = {
     moduleMetadata: { imports: [BusyHost] },
   }),
   decorators: [darkTheme],
+}
+
+@Component({
+  selector: 'gbt-story-modal-controls-host',
+  standalone: true,
+  imports: [Modal, Button, Card, GbtInput, Switch, FormsModule],
+  template: `
+    <gbt-modal [isOpen]="true" heading="Rappel">
+      <gbt-input label="Titre" [(ngModel)]="title" />
+      <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0">
+        @for (list of lists; track list) {
+          <button
+            type="button"
+            class="gbt-chip"
+            [attr.aria-pressed]="list === chosen"
+            (click)="chosen = list"
+          >
+            {{ list }}
+          </button>
+        }
+      </div>
+      <gbt-card heading="Échéance" [headingLevel]="3" form>
+        <gbt-input label="Note" placeholder="Une précision" />
+        <gbt-switch label="Date" [(ngModel)]="dated" />
+        <gbt-switch label="Important" [(ngModel)]="important" />
+      </gbt-card>
+      <div modal-footer>
+        <gbt-button variant="secondary" text="Annuler" />
+        <gbt-button text="Enregistrer" />
+      </div>
+    </gbt-modal>
+  `,
+})
+class ControlsHost {
+  title = 'Acheter un cadeau pour Léa'
+  lists = ['Courses', 'Maison', 'Travail']
+  chosen = 'Maison'
+  dated = false
+  important = true
+}
+
+/**
+ * A sheet holding controls (4.1.1): a field, chips and a form's card laid in a light glass. There the field's hollow,
+ * the chips not chosen and the form's card keep their glass and take an edge of ink (and the chips and the card a near shadow), which white on white would lose.
+ */
+export const WithControls: Story = {
+  render: () => ({
+    template: `<gbt-story-modal-controls-host />`,
+    moduleMetadata: { imports: [ControlsHost] },
+  }),
+}
+
+export const WithControlsDark: Story = {
+  ...WithControls,
+  decorators: [darkTheme],
+}
+
+export const WithControlsAurore: Story = {
+  ...WithControls,
+  decorators: [auroreAmbiance],
 }

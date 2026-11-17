@@ -6,6 +6,45 @@ liste, une bulle ou une carte.
 
 Rien n'est retiré : ce qui casse est l'aspect par défaut, et chaque plateforme garde un chemin vers celui de la 4.0.
 
+## 4.1.1 : le verre posé dans une surface claire
+
+En clair, le verre blanc posé dans une surface déjà claire (une feuille, une carte, un verre épais) perdait ses bords :
+chips non choisies presque invisibles, champ réduit à un trait, rangées de formulaire en plaques à peine visibles. La
+4.1.1 garde le fond de la 4.1.0 et dessine **un bord de verre**, pas un trait : le relief a la lumière en haut et
+l'ombre en bas, le creux l'inverse ; sur un sol clair, c'est la moitié sombre qui travaille.
+
+- **Ce qui flotte** (chips non choisies, boutons de verre, face des menus de choix) : le reflet blanc du haut reste ;
+  l'encre à 0,20 au bord du bas, un passage doux d'encre à 0,08 le long des côtés, une ombre de contact serrée (y 1,
+  flou 3 en CSS) à l'ombre proche du sol. Les verres teintés (bouton principal, chip choisie) ne changent pas.
+- **Le creux d'un champ** : pas de trait au repos ; l'encre à 0,14 sous le bord du haut (y 1, flou 2), une trace à 0,06
+  tout autour, la lumière blanche au bord du bas. Le focus et l'erreur ne changent pas.
+- **La carte d'une section de formulaire** : pas de cadre ; une ombre proche plus nette ; l'encre à 0,12 au bord du bas
+  seulement.
+- En clair, les ombres du verre sont un peu plus marquées partout : large 0,22 → 0,27, proche 0,06 → 0,10, verre
+  liquide 0,20 → 0,26.
+- Le fond, le regroupement et les espacements ne changent pas ; le sombre et les ambiances ne bougent pas. Un essai
+  vérifie, sur chaque plateforme, que le bas d'une chip et l'ombre d'un creux se distinguent (1,3:1 au moins) de la
+  surface, au pire point des sols clairs.
+- Les valeurs sont des constantes de chaque plateforme (`GNestedEdgeValues` sur Apple, `GNestedValues` sur Android,
+  `glass::nested` en GPUI, `_glass.scss` sur le web), pas encore des jetons.
+
+Comment chaque plateforme sait qu'un contrôle est posé dans une surface :
+
+- **GPUI** : `glass::in_glass(…)` (type `GInGlass`), posé par `GSheet`, `GGlass` et la carte d'une `GFormSection`. Une
+  carte faite par l'app avec `relief::card` ou `glass_on` s'enveloppe elle-même : `in_glass(relief::card(…).child(…))`.
+  Nouveaux : `is_in_glass`, `holds_controls`. En GPUI, la règle vaut pour tout verre liquide clair posé dans un verre
+  clair (boutons fantômes, piste du contrôle segmenté et étiquettes compris).
+- **Apple** : l'environnement public `gOnSurface`, posé par `gGlass`, `gCardDepth`/`gSurface` et `gSheetGround` (donc
+  `gSheet`, `GSheetStack`) ; l'app n'a rien à faire. Le contour « plus de contraste » d'un champ prend l'encre au lieu
+  de `GColor.border` (qui tombait sous 3:1).
+- **Android** : `LocalGOnGlass` (feuilles, cartes de formulaire, `GGlass`), comme en 4.1.0. Avec `GFormCardSlice`,
+  chaque tranche trace sa part du bord de la carte entière.
+- **Web** : `glass()` et `floating-glass` posent des propriétés héritées `--gbt-nested-*` (par `light-dark()` : clair
+  seulement), lues par les contrôles. Demande Chrome 123, Safari 17.5 ou Firefox 120.
+
+Rien ne casse. Reste ouvert : sur les ambiances, l'anneau de focus à l'accent ne tient pas 3:1 autour d'un champ
+(Apple le déclare comme défaut connu dans son essai).
+
 ## Partout
 
 - **Boutons** : capsules de verre liquide. Le secondaire et le tertiaire en verre clair, à l'encre du sol ; le principal

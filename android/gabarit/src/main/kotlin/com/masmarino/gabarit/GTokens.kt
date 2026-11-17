@@ -174,9 +174,9 @@ val GLightColors = GColors(
     liquidRimTop = Color(0xFFFFFFFF).copy(alpha = 0.7f),
     liquidRimBottom = Color(0xFFFFFFFF).copy(alpha = 0.45f),
     liquidSheen = Color(0xFFFFFFFF).copy(alpha = 0.35f),
-    glassShadow = Color(0xFF182030).copy(alpha = 0.22f),
-    glassShadowNear = Color(0xFF182030).copy(alpha = 0.06f),
-    liquidShadow = Color(0xFF182030).copy(alpha = 0.2f),
+    glassShadow = Color(0xFF182030).copy(alpha = 0.27f),
+    glassShadowNear = Color(0xFF182030).copy(alpha = 0.1f),
+    liquidShadow = Color(0xFF182030).copy(alpha = 0.26f),
     glassHollow = Color(0xFF182030).copy(alpha = 0.1f),
 )
 
@@ -308,7 +308,7 @@ object GGlassValues {
 data class GGlassKindValues(val thin: Float, val regular: Float, val thick: Float, val liquid: Float, val rim: Float, val rimEdge: Float, val liquidRim: Float, val liquidRimSoft: Float, val shadow: Float, val shadowNear: Float, val liquidShadow: Float, val rimTop: Float, val rimBottom: Float, val sheen: Float, val liquidRimTop: Float, val liquidRimBottom: Float, val liquidSheen: Float, val hollow: Float)
 
 enum class GGlassKind(val values: GGlassKindValues) {
-    LIGHT(GGlassKindValues(0.46f, 0.68f, 0.88f, 0.26f, 0.85f, 0.5f, 0.95f, 0.35f, 0.22f, 0.06f, 0.2f, 0.55f, 0.32f, 0.18f, 0.7f, 0.45f, 0.35f, 0.1f)),
+    LIGHT(GGlassKindValues(0.46f, 0.68f, 0.88f, 0.26f, 0.85f, 0.5f, 0.95f, 0.35f, 0.27f, 0.1f, 0.26f, 0.55f, 0.32f, 0.18f, 0.7f, 0.45f, 0.35f, 0.1f)),
     DARK(GGlassKindValues(0.42f, 0.62f, 0.86f, 0.07f, 0.09f, 0.06f, 0.42f, 0.08f, 0.6f, 0.3f, 0.45f, 0.16f, 0.09f, 0.05f, 0.35f, 0.22f, 0.1f, 0.4f)),
     TINTED(GGlassKindValues(0.22f, 0.34f, 0.62f, 0.1f, 0.22f, 0.12f, 0.6f, 0.12f, 0.55f, 0.2f, 0.4f, 0.24f, 0.14f, 0.07f, 0.45f, 0.28f, 0.14f, 0.32f)),
 }

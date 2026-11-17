@@ -11,6 +11,15 @@
 //! a held knob; the fields in a hollow of thin glass ([`GMaterial::Hollow`]). Held down, a control's glass lights and
 //! grows a little on the bouncy spring.
 //!
+//! 4.1.1: on a light glass, the clear glass laid in a surface already light (a sheet, a card, a thick glass) lost its
+//! edges, white on white. There the relief has its light above and its shade below, the hollow the other way round; on
+//! a light ground, the dark half does the work ([`nested`]). What floats (a chip at rest, a glass button, a picker's
+//! face) keeps its light at the top and takes the ink at its bottom edge, softer up its sides, and a contact shadow; a
+//! field's hollow takes the ink's shade inside its top edge, a trace all around and the white at its bottom; a form's
+//! card laid in the glass, a sharper near shadow and the ink at its bottom edge only. No uniform line. What lies in a
+//! content glass is drawn [`in_glass`] (a sheet, a `GGlass`, a form's card do it for their content). The dark glass
+//! and the ambiances keep their look.
+//!
 //! Light is the edge of things: no hairline around a glass, no line between rows. It runs up and down, never across
 //! (iOS 27's liquid glass, not iOS 26's slanted gleam): a point of light along the edge, bright at the top, out by the
 //! middle, back at the bottom, the sides only the passage between the two (two stroked halves, each in a vertical
@@ -168,6 +177,20 @@ impl GMaterial {
 
     /// Its shadows, under it (`shadow.glass`, two layers; the liquid's, short): CSS's blurs halved, as GPUI's.
     pub fn shadows(self, cx: &App) -> Vec<BoxShadow> {
+        let colors = &cx.theme().colors;
+        // Laid in a light glass (4.1.1), what floats takes a contact shadow under it as well (its backdrop hides it
+        // inside). A card's, under a glass that lets it through, is painted outside its edge (`paint_nested_edge`).
+        if self.nesting(cx) == Some(Nesting::Float) {
+            let mut shadows = self.resting_shadows(cx);
+            shadows.push(
+                BoxShadow::new(px(0.), px(1.), colors.glass_shadow_near).blur_radius(px(1.5)),
+            );
+            return shadows;
+        }
+        self.resting_shadows(cx)
+    }
+
+    fn resting_shadows(self, cx: &App) -> Vec<BoxShadow> {
         if self.is_nested() {
             return Vec::new();
         }
@@ -288,6 +311,126 @@ pub fn paint_lit_glass(
     } else {
         let (top, bottom, sheen) = material.edge_light(cx);
         paint_edge_light(bounds, corners, top, bottom, sheen, window);
+    }
+    if !theme.increase_contrast
+        && let Some(nesting) = material.nesting(cx)
+    {
+        paint_nested_edge(nesting, bounds, corners, window, cx);
+    }
+}
+
+/// The edge of a glass laid in a light glass (4.1.1, [`nested`]), over its own light.
+fn paint_nested_edge(
+    nesting: Nesting,
+    bounds: Bounds<Pixels>,
+    corners: Corners<Pixels>,
+    window: &mut Window,
+    cx: &App,
+) {
+    let height = f32::from(bounds.size.height).max(1.);
+    let band = |color: Hsla, depth: f32, top: bool| {
+        let clear = Hsla { a: 0., ..color };
+        let edge = (depth / height).min(0.5);
+        let gradient = if top {
+            linear_gradient(
+                180.,
+                linear_color_stop(color, 0.),
+                linear_color_stop(clear, edge),
+            )
+        } else {
+            linear_gradient(
+                180.,
+                linear_color_stop(clear, 1. - edge),
+                linear_color_stop(color, 1.),
+            )
+        };
+        fill(bounds, gradient).corner_radii(corners)
+    };
+    // The lower half of the outline, the colour at the bottom, out by the middle of the sides.
+    let low = |color: Hsla, window: &mut Window| {
+        if let Some(path) = edge_half(bounds, corners, false) {
+            window.paint_path(
+                path,
+                linear_gradient(
+                    180.,
+                    linear_color_stop(Hsla { a: 0., ..color }, 0.),
+                    linear_color_stop(color, 1.),
+                ),
+            );
+        }
+    };
+    match nesting {
+        Nesting::Float => {
+            window.paint_quad(band(ink_at(nested::LOW_SOFT, cx), 4., false));
+            low(ink_at(nested::LOW, cx), window);
+        }
+        Nesting::Hollow => {
+            window.paint_quad(band(ink_at(nested::HOLLOW_SHADE, cx), 3., true));
+            window.paint_quad(
+                outline(
+                    bounds,
+                    ink_at(nested::HOLLOW_TRACE, cx),
+                    gpui::BorderStyle::Solid,
+                )
+                .corner_radii(corners),
+            );
+            low(gpui::white(), window);
+        }
+        Nesting::Group => {
+            // A sharper near shadow, outside its edge only (a box's shadow would grey its clear glass): a contact
+            // line under its lower half, a soft shade under its middle.
+            let colors = &cx.theme().colors;
+            for (spread, strength) in [(1., 1.), (2., 0.5)] {
+                let around = Bounds {
+                    origin: point(bounds.origin.x - px(spread), bounds.origin.y),
+                    size: gpui::size(
+                        bounds.size.width + px(2. * spread),
+                        bounds.size.height + px(spread),
+                    ),
+                };
+                let wider = Corners {
+                    top_left: corners.top_left + px(spread),
+                    top_right: corners.top_right + px(spread),
+                    bottom_left: corners.bottom_left + px(spread),
+                    bottom_right: corners.bottom_right + px(spread),
+                };
+                let shade = alpha(
+                    colors.glass_shadow_near,
+                    colors.glass_shadow_near.a * strength,
+                );
+                if let Some(path) = edge_half(around, wider, false) {
+                    window.paint_path(
+                        path,
+                        linear_gradient(
+                            180.,
+                            linear_color_stop(Hsla { a: 0., ..shade }, 0.),
+                            linear_color_stop(shade, 1.),
+                        ),
+                    );
+                }
+            }
+            let inset = corners.bottom_left.max(corners.bottom_right).min(px(12.));
+            let under = Bounds {
+                origin: point(
+                    bounds.origin.x + inset,
+                    bounds.origin.y + bounds.size.height,
+                ),
+                size: gpui::size(bounds.size.width - inset * 2., px(5.)),
+            };
+            let soft = alpha(colors.glass_shadow, colors.glass_shadow.a * 0.5);
+            window.paint_quad(
+                fill(
+                    under,
+                    linear_gradient(
+                        180.,
+                        linear_color_stop(soft, 0.),
+                        linear_color_stop(Hsla { a: 0., ..soft }, 1.),
+                    ),
+                )
+                .corner_radii(Corners::all(px(2.5))),
+            );
+            low(ink_at(nested::GROUP_LOW, cx), window);
+        }
     }
 }
 
@@ -651,6 +794,172 @@ pub fn ink_glass(cx: &App) -> (GMaterial, Hsla) {
     tinted_glass(&[colors.primary], cx)
 }
 
+/// How many content glasses the element being laid out or painted lies in (4.1.1): [`in_glass`] counts them.
+#[derive(Default)]
+struct GGlassDepth(u32);
+
+impl gpui::Global for GGlassDepth {}
+
+fn glass_depth(cx: &App) -> u32 {
+    cx.try_global::<GGlassDepth>().map_or(0, |depth| depth.0)
+}
+
+/// Whether what is being drawn lies in a content glass (a sheet, a `GGlass`, a form's card): see [`in_glass`].
+pub fn is_in_glass(cx: &App) -> bool {
+    glass_depth(cx) > 0
+}
+
+/// Whether what is being drawn lies in a content glass on a light glass (4.1.1): there, the clear glass takes the
+/// edge of [`nested`]. Never on a dark glass or an ambiance.
+pub fn holds_controls(cx: &App) -> bool {
+    is_in_glass(cx) && light_glass(cx)
+}
+
+fn light_glass(cx: &App) -> bool {
+    cx.theme().ground.kind == crate::tokens::GGlassKind::Light
+}
+
+/// The ground's ink at `opacity`.
+fn ink_at(opacity: f32, cx: &App) -> Hsla {
+    alpha(
+        Hsla {
+            a: 1.,
+            ..cx.theme().colors.ink
+        },
+        opacity,
+    )
+}
+
+/// The edge of the clear glass laid in a light glass (4.1.1, a trial of the web chosen by Florian): the ink's opacities,
+/// on a light glass only.
+pub mod nested {
+    /// What floats: the ink at its bottom edge, along the lower half of its outline (out by the middle of its sides).
+    pub const LOW: f32 = 0.2;
+    /// What floats: the ink's soft shade inside its bottom, up the curve of its sides.
+    pub const LOW_SOFT: f32 = 0.08;
+    /// A field's hollow: the ink's shade inside its top edge.
+    pub const HOLLOW_SHADE: f32 = 0.14;
+    /// A field's hollow: a trace of the ink all around.
+    pub const HOLLOW_TRACE: f32 = 0.06;
+    /// A form's card in the glass: the ink at its bottom edge only.
+    pub const GROUP_LOW: f32 = 0.12;
+}
+
+/// How a glass is laid in a light glass (4.1.1).
+#[derive(Clone, Copy, PartialEq)]
+enum Nesting {
+    /// It floats (a chip at rest, a glass button, a picker's face).
+    Float,
+    /// It is dug in (a field).
+    Hollow,
+    /// A glass in the glass (a form's card).
+    Group,
+}
+
+impl GMaterial {
+    /// How it is laid in a light glass, where it is (none on a dark glass or an ambiance, nor outside a glass).
+    fn nesting(self, cx: &App) -> Option<Nesting> {
+        if !light_glass(cx) {
+            return None;
+        }
+        let held = is_in_glass(cx);
+        match self {
+            GMaterial::Liquid { nested: false } | GMaterial::LiquidThin { nested: false }
+                if held =>
+            {
+                Some(Nesting::Float)
+            }
+            GMaterial::Hollow if held => Some(Nesting::Hollow),
+            GMaterial::Content { nested: true, .. } => Some(Nesting::Group),
+            GMaterial::Content { .. } if held => Some(Nesting::Group),
+            _ => None,
+        }
+    }
+}
+
+/// Lays `content` in a content glass (4.1.1): while it is laid out and painted, [`is_in_glass`] says so, and the
+/// clear glass in it (a field's hollow, a chip at rest) takes its edge on a light glass ([`holds_controls`]). A sheet, a
+/// `GGlass` and a form's card do it for their content; an app does it for content glass of its own (`glass_on`).
+/// It adds no box: `content` is laid as it would be.
+pub fn in_glass(content: impl IntoElement) -> GInGlass {
+    GInGlass {
+        content: Some(content.into_any_element()),
+    }
+}
+
+/// See [`in_glass`].
+pub struct GInGlass {
+    content: Option<AnyElement>,
+}
+
+impl GInGlass {
+    fn deeper<R>(cx: &mut App, f: impl FnOnce(&mut App) -> R) -> R {
+        let depth = glass_depth(cx);
+        cx.set_global(GGlassDepth(depth + 1));
+        let result = f(cx);
+        cx.set_global(GGlassDepth(depth));
+        result
+    }
+}
+
+impl IntoElement for GInGlass {
+    type Element = Self;
+
+    fn into_element(self) -> Self::Element {
+        self
+    }
+}
+
+impl gpui::Element for GInGlass {
+    type RequestLayoutState = AnyElement;
+    type PrepaintState = ();
+
+    fn id(&self) -> Option<ElementId> {
+        None
+    }
+
+    fn source_location(&self) -> Option<&'static core::panic::Location<'static>> {
+        None
+    }
+
+    fn request_layout(
+        &mut self,
+        _id: Option<&gpui::GlobalElementId>,
+        _inspector_id: Option<&gpui::InspectorElementId>,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> (gpui::LayoutId, AnyElement) {
+        let mut content = self.content.take().expect("laid out once");
+        let layout = Self::deeper(cx, |cx| content.request_layout(window, cx));
+        (layout, content)
+    }
+
+    fn prepaint(
+        &mut self,
+        _id: Option<&gpui::GlobalElementId>,
+        _inspector_id: Option<&gpui::InspectorElementId>,
+        _bounds: Bounds<Pixels>,
+        content: &mut AnyElement,
+        window: &mut Window,
+        cx: &mut App,
+    ) {
+        Self::deeper(cx, |cx| content.prepaint(window, cx));
+    }
+
+    fn paint(
+        &mut self,
+        _id: Option<&gpui::GlobalElementId>,
+        _inspector_id: Option<&gpui::InspectorElementId>,
+        _bounds: Bounds<Pixels>,
+        content: &mut AnyElement,
+        _prepaint: &mut (),
+        window: &mut Window,
+        cx: &mut App,
+    ) {
+        Self::deeper(cx, |cx| content.paint(window, cx));
+    }
+}
+
 /// The glass's layer, over the whole of its parent (which must be `relative`): put it first among its children.
 pub fn glass_layer(material: GMaterial, radius: Pixels) -> impl IntoElement {
     canvas(
@@ -730,9 +1039,10 @@ impl ParentElement for GGlass {
 
 impl RenderOnce for GGlass {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+        // Its content lies in a content glass (4.1.1): the clear glass in it takes its edge there.
         glass_on(self.base, self.material, self.radius, cx)
             .text_color(cx.theme().colors.ink)
-            .children(self.children)
+            .children(self.children.into_iter().map(in_glass))
     }
 }
 

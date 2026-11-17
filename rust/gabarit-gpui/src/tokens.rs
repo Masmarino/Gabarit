@@ -273,9 +273,9 @@ pub const LIGHT: GColorValues = GColorRoles {
     liquid_rim_top: GRgba::hexa(0xFFFFFF, 0.7),
     liquid_rim_bottom: GRgba::hexa(0xFFFFFF, 0.45),
     liquid_sheen: GRgba::hexa(0xFFFFFF, 0.35),
-    glass_shadow: GRgba::hexa(0x182030, 0.22),
-    glass_shadow_near: GRgba::hexa(0x182030, 0.06),
-    liquid_shadow: GRgba::hexa(0x182030, 0.2),
+    glass_shadow: GRgba::hexa(0x182030, 0.27),
+    glass_shadow_near: GRgba::hexa(0x182030, 0.1),
+    liquid_shadow: GRgba::hexa(0x182030, 0.26),
     glass_hollow: GRgba::hexa(0x182030, 0.1),
 };
 
@@ -441,7 +441,7 @@ pub enum GGlassKind {
 impl GGlassKind {
     pub const fn values(self) -> GGlassKindValues {
         match self {
-            GGlassKind::Light => GGlassKindValues { thin: 0.46, regular: 0.68, thick: 0.88, liquid: 0.26, rim: 0.85, rim_edge: 0.5, liquid_rim: 0.95, liquid_rim_soft: 0.35, shadow: 0.22, shadow_near: 0.06, liquid_shadow: 0.2, rim_top: 0.55, rim_bottom: 0.32, sheen: 0.18, liquid_rim_top: 0.7, liquid_rim_bottom: 0.45, liquid_sheen: 0.35, hollow: 0.1 },
+            GGlassKind::Light => GGlassKindValues { thin: 0.46, regular: 0.68, thick: 0.88, liquid: 0.26, rim: 0.85, rim_edge: 0.5, liquid_rim: 0.95, liquid_rim_soft: 0.35, shadow: 0.27, shadow_near: 0.1, liquid_shadow: 0.26, rim_top: 0.55, rim_bottom: 0.32, sheen: 0.18, liquid_rim_top: 0.7, liquid_rim_bottom: 0.45, liquid_sheen: 0.35, hollow: 0.1 },
             GGlassKind::Dark => GGlassKindValues { thin: 0.42, regular: 0.62, thick: 0.86, liquid: 0.07, rim: 0.09, rim_edge: 0.06, liquid_rim: 0.42, liquid_rim_soft: 0.08, shadow: 0.6, shadow_near: 0.3, liquid_shadow: 0.45, rim_top: 0.16, rim_bottom: 0.09, sheen: 0.05, liquid_rim_top: 0.35, liquid_rim_bottom: 0.22, liquid_sheen: 0.1, hollow: 0.4 },
             GGlassKind::Tinted => GGlassKindValues { thin: 0.22, regular: 0.34, thick: 0.62, liquid: 0.1, rim: 0.22, rim_edge: 0.12, liquid_rim: 0.6, liquid_rim_soft: 0.12, shadow: 0.55, shadow_near: 0.2, liquid_shadow: 0.4, rim_top: 0.24, rim_bottom: 0.14, sheen: 0.07, liquid_rim_top: 0.45, liquid_rim_bottom: 0.28, liquid_sheen: 0.14, hollow: 0.32 },
         }

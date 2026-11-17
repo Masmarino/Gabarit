@@ -59,6 +59,8 @@ public struct GGlass<S: InsettableShape>: ViewModifier {
         let tone = GGroundToneCache.tone(of: spec)
         let kind = spec.kind.values
         content
+            // What is in it is laid in a surface (4.1.1): on a light ground, its hollows and chips take an edge of ink.
+            .environment(\.gOnSurface, true)
             .background {
                 if reduceTransparency {
                     shape.fill(Color(spec.glass.opacity(GGlassValues.reduced)))
@@ -71,6 +73,124 @@ public struct GGlass<S: InsettableShape>: ViewModifier {
                 GGlassShadow(shape: shape, color: Color(tone.shade), far: kind.shadow, near: kind.shadowNear)
             }
             .overlay { GGlassRim(shape: shape, rim: kind.rim, edge: kind.rimEdge) }
+    }
+}
+
+// MARK: In a surface
+
+public extension EnvironmentValues {
+    /// This view is laid in a surface of content glass (4.1.1): a card (`gGlass`, `gCardDepth`, `gSurface`), a sheet
+    /// (`gSheetGround`), thick glass. On a light ground, white glass vanishes there; what is in it keeps its ground and
+    /// takes a glass's edge: what floats (a chip, a glass button, a choice's face) its light at the top and its shade at
+    /// the bottom, a hollow (a field) the other way round, a form's section a sharper shadow and a fine edge at the bottom.
+    /// On a light ground the dark half does the work.
+    @Entry var gOnSurface = false
+}
+
+extension EnvironmentValues {
+    /// A control laid in a light surface: in a surface of content glass, or in a form's card, on a light ground.
+    var gNestedLight: Bool { (gOnSurface || gFormCardRow) && gResolvedGround.mode == .light }
+}
+
+/// The glass's edges in a light surface (4.1.1), in the ground's ink.
+enum GNestedEdgeValues {
+    /// What floats: the fine edge at its bottom.
+    static let floatBottom = 0.2
+    /// What floats: the soft pass along its sides, blurred and moved down.
+    static let floatSides = 0.08
+    static let floatSidesBlur: CGFloat = 3
+    static let floatSidesY: CGFloat = 2
+    /// A hollow: the shadow under its top edge, and the trace all round.
+    static let hollowShadow = 0.14
+    static let hollowTrace = 0.06
+    /// A form's section: the fine edge at its bottom.
+    static let cardBottom = 0.12
+}
+
+/// Outside `shape` only: a translucent glass would show what is drawn under it through itself.
+private struct GOutside<S: Shape>: ViewModifier {
+    let shape: S
+
+    func body(content: Content) -> some View {
+        content.mask {
+            ZStack {
+                Rectangle().padding(-40)
+                shape.blendMode(.destinationOut)
+            }
+            .compositingGroup()
+        }
+    }
+}
+
+/// The edge of what floats in a light surface (4.1.1): a chip, a glass button, a choice's face. The system's glass keeps
+/// its light at the top; this lays its shade at the bottom: a fine edge of ink, a soft pass along the sides that follows
+/// the curve, a tight contact shadow under it. Out of a light surface, or `active` false: nothing.
+struct GNestedFloat<S: Shape>: ViewModifier {
+    let shape: S
+    var active = true
+    @Environment(\.gNestedLight) private var nested
+    @Environment(\.gGroundTone) private var tone
+    @Environment(\.gResolvedGround) private var ground
+
+    func body(content: Content) -> some View {
+        let on = active && nested
+        let ink = Color(tone.ink)
+        content
+            .background {
+                if on {
+                    ZStack {
+                        // The contact shadow, tight under it.
+                        shape.fill(Color(tone.shade).opacity(ground.kind.values.shadowNear)).offset(y: 1).blur(radius: 1.5)
+                        // The soft pass along its sides, moved down: it follows the curve, not the top.
+                        shape.stroke(ink.opacity(GNestedEdgeValues.floatSides), lineWidth: 1.5)
+                            .offset(y: GNestedEdgeValues.floatSidesY).blur(radius: GNestedEdgeValues.floatSidesBlur / 2)
+                    }
+                    .modifier(GOutside(shape: shape))
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                }
+            }
+            .overlay {
+                if on {
+                    // The fine edge at the bottom: a point inside the shape, the ink coming in from its lower half.
+                    shape.stroke(LinearGradient(stops: [.init(color: ink.opacity(0), location: 0.55),
+                                                        .init(color: ink.opacity(GNestedEdgeValues.floatBottom), location: 1)],
+                                                startPoint: .top, endPoint: .bottom), lineWidth: 2)
+                        .clipShape(shape)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
+            }
+    }
+}
+
+/// A form's section in a light surface (4.1.1): its card as on the ground, a sharper near shadow, a fine edge of ink at
+/// its bottom only. `active` false: nothing.
+struct GNestedCard<S: InsettableShape>: ViewModifier {
+    let shape: S
+    let active: Bool
+    @Environment(\.gGroundTone) private var tone
+    @Environment(\.gResolvedGround) private var ground
+
+    func body(content: Content) -> some View {
+        content
+            .background {
+                if active {
+                    shape.fill(Color(tone.shade).opacity(ground.kind.values.shadowNear)).offset(y: 1).blur(radius: 1)
+                        .modifier(GOutside(shape: shape))
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
+            }
+            .overlay {
+                if active {
+                    shape.strokeBorder(LinearGradient(stops: [.init(color: Color(tone.ink).opacity(0), location: 0.75),
+                                                              .init(color: Color(tone.ink).opacity(GNestedEdgeValues.cardBottom), location: 1)],
+                                                      startPoint: .top, endPoint: .bottom), lineWidth: 1)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
+            }
     }
 }
 

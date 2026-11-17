@@ -553,7 +553,8 @@ impl Gallery {
 
     fn controls(&self, cx: &mut Context<Self>) -> AnyElement {
         let colors = cx.theme().colors;
-        relief::card(px(tokens::radius::GLASS), cx)
+        // A GGlass: its controls lie in its glass (4.1.1), a field and a chip at rest take their edge.
+        GGlass::regular()
             .flex()
             .flex_col()
             .gap(px(14.))
@@ -1311,7 +1312,8 @@ impl Gallery {
                 .text_color(colors.text_discret)
                 .child(text)
         };
-        relief::card(px(tokens::radius::GLASS), cx)
+        // A GGlass: its controls lie in its glass (4.1.1), a field and a chip at rest take their edge.
+        GGlass::regular()
             .flex()
             .flex_col()
             .gap(px(14.))
@@ -1478,10 +1480,10 @@ impl Render for Gallery {
                 GForm::new("sheet-form")
                     .static_layout()
                     .on_glass()
+                    // As an app's sheet lays it (SkollN's reminder): a titled field in a section, a section of
+                    // switches and chips, a lone switch in a section of its own.
                     .section(
-                        GFormSection::new()
-                            .header("Name")
-                            .row(GFieldFrame::new(self.sheet_name.clone()).bare()),
+                        GFormSection::new().row(GTextField::new("Name", self.sheet_name.clone())),
                     )
                     .section(
                         GFormSection::new()
@@ -1491,13 +1493,18 @@ impl Render for Gallery {
                                 GToggle::new("invite-only", "Invitation only", true)
                                     .detail("Members invite the others."),
                             )
-                            .row(GPicker::new(
-                                "sheet-kind",
-                                "Kind",
-                                ["Friends", "Family", "Club"],
-                                0,
-                            )),
+                            .row(GToggle::new("sheet-date", "Meeting date", false))
+                            .row(
+                                GPicker::new(
+                                    "sheet-kind",
+                                    "Kind",
+                                    ["Friends", "Family", "Club"],
+                                    0,
+                                )
+                                .chips(),
+                            ),
                     )
+                    .section(GFormSection::new().row(GToggle::new("sheet-pinned", "Pinned", false)))
                     .section(
                         GFormSection::new().bare(form::sheet_button("sheet-create", "Create")),
                     ),

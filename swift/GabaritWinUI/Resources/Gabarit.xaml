@@ -112,12 +112,12 @@
             <SolidColorBrush x:Key="GLiquidRimBottomBrush" Color="#73FFFFFF"/>
             <Color x:Key="GLiquidSheenColor">#59FFFFFF</Color>
             <SolidColorBrush x:Key="GLiquidSheenBrush" Color="#59FFFFFF"/>
-            <Color x:Key="GGlassShadowColor">#38182030</Color>
-            <SolidColorBrush x:Key="GGlassShadowBrush" Color="#38182030"/>
-            <Color x:Key="GGlassShadowNearColor">#0F182030</Color>
-            <SolidColorBrush x:Key="GGlassShadowNearBrush" Color="#0F182030"/>
-            <Color x:Key="GLiquidShadowColor">#33182030</Color>
-            <SolidColorBrush x:Key="GLiquidShadowBrush" Color="#33182030"/>
+            <Color x:Key="GGlassShadowColor">#45182030</Color>
+            <SolidColorBrush x:Key="GGlassShadowBrush" Color="#45182030"/>
+            <Color x:Key="GGlassShadowNearColor">#1A182030</Color>
+            <SolidColorBrush x:Key="GGlassShadowNearBrush" Color="#1A182030"/>
+            <Color x:Key="GLiquidShadowColor">#42182030</Color>
+            <SolidColorBrush x:Key="GLiquidShadowBrush" Color="#42182030"/>
             <Color x:Key="GGlassHollowColor">#1A182030</Color>
             <SolidColorBrush x:Key="GGlassHollowBrush" Color="#1A182030"/>
             <SolidColorBrush x:Key="GBorderSoftBrush" Color="#997D8794"/>

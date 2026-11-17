@@ -466,6 +466,27 @@ fun Modifier.gGlass(
     shadow: GGlassShadow = GGlassShadow.Panel,
 ): Modifier {
     val colors = G.colors
+    val shadows = when (shadow) {
+        GGlassShadow.Panel -> listOf(
+            GShadow(GGlassValues.shadowY, GGlassValues.shadowBlur, GGlassValues.shadowSpread, colors.glassShadow),
+            GShadow(GGlassValues.shadowNearY, GGlassValues.shadowNearBlur, GGlassValues.shadowNearSpread, colors.glassShadowNear))
+        GGlassShadow.Near -> listOf(GShadow(GGlassValues.shadowNearY, GGlassValues.shadowNearBlur, GGlassValues.shadowNearSpread, colors.glassShadowNear))
+        GGlassShadow.None -> emptyList()
+    }
+    return gGlassOf(density, shape, shadows, Color.Transparent)
+}
+
+/**
+ * A form's card laid in a light surface (4.1.1, the glass's edge): the regular glass as it is, no frame; a sharper near
+ * shadow (`gNestedCardShadows`) and a fine edge of the ink at its bottom only (`GNestedValues.cardBottom`).
+ */
+@Composable
+internal fun Modifier.gGlassNestedCard(shape: Shape): Modifier =
+    gGlassOf(GGlassDensity.Regular, shape, gNestedCardShadows(), G.colors.ink.copy(alpha = GNestedValues.cardBottom))
+
+@Composable
+private fun Modifier.gGlassOf(density: GGlassDensity, shape: Shape, shadows: List<GShadow>, bottomInk: Color): Modifier {
+    val colors = G.colors
     val reduced = G.reduceTransparency
     val contrast = G.highContrast
     val painter = rememberGGroundPainter()
@@ -475,13 +496,6 @@ fun Modifier.gGlass(
         density == GGlassDensity.Thin -> colors.glassThin
         density == GGlassDensity.Regular -> colors.glassRegular
         else -> colors.glassThick
-    }
-    val shadows = when (shadow) {
-        GGlassShadow.Panel -> listOf(
-            GShadow(GGlassValues.shadowY, GGlassValues.shadowBlur, GGlassValues.shadowSpread, colors.glassShadow),
-            GShadow(GGlassValues.shadowNearY, GGlassValues.shadowNearBlur, GGlassValues.shadowNearSpread, colors.glassShadowNear))
-        GGlassShadow.Near -> listOf(GShadow(GGlassValues.shadowNearY, GGlassValues.shadowNearBlur, GGlassValues.shadowNearSpread, colors.glassShadowNear))
-        GGlassShadow.None -> emptyList()
     }
     val saturate = remember { ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(GGlassValues.saturationContent) }) }
     return this.onGloballyPositioned { position.value = it.positionInWindow() }.drawWithCache {
@@ -498,6 +512,7 @@ fun Modifier.gGlass(
             else {
                 gSheen(path, colors.glassSheen)
                 gEdgeLight(path, path, colors.glassRimTop, colors.glassRimBottom)
+                if (bottomInk.alpha > 0f) gEdgeLight(path, path, Color.Transparent, bottomInk)
             }
         }
     }
@@ -655,7 +670,8 @@ val LocalGOnGlass = staticCompositionLocalOf { false }
 /**
  * A lens of liquid glass lying on something (a content glass, a track): its white (`white`), lit when held down
  * (`light`), its own colour (`tint`), its two soft lights and its edge's light up and down (a true rim with high
- * contrast), a short shadow; what is under it shows through, nothing is drawn again.
+ * contrast), a short shadow; what is under it shows through, nothing is drawn again. `floats` (4.1.1, the glass's
+ * edge, in a light surface): its bottom edge in the ink, a soft passage of the ink along its sides, a contact shadow.
  */
 @Composable
 internal fun Modifier.gLiquidLens(
@@ -664,11 +680,17 @@ internal fun Modifier.gLiquidLens(
     shadow: Boolean = true,
     tint: Color = Color.Transparent,
     light: () -> Float = { 0f },
+    floats: Boolean = false,
 ): Modifier {
     val colors = G.colors
     val contrast = G.highContrast
-    val shadows = if (shadow) listOf(GShadow(GGlassValues.shadowLiquidY, GGlassValues.shadowLiquidBlur, GGlassValues.shadowLiquidSpread,
-        colors.liquidShadow)) else emptyList()
+    val ink = colors.ink
+    // 4.1.1, the glass's edge (`floats`): the soft passage along its sides and the contact shadow tight under it.
+    val shadows = (if (shadow) listOf(GShadow(GGlassValues.shadowLiquidY, GGlassValues.shadowLiquidBlur, GGlassValues.shadowLiquidSpread,
+        colors.liquidShadow)) else emptyList()) + (if (floats && !contrast) listOf(
+        GShadow(GNestedValues.passageY, GNestedValues.passageBlur, 0f, ink.copy(alpha = GNestedValues.passage)),
+        GShadow(GNestedValues.contactY, GNestedValues.contactBlur, 0f, colors.glassShadowNear)) else emptyList())
+    val bottomInk = ink.copy(alpha = GNestedValues.floatBottom)
     return this.drawWithCache {
         val path = shape.createOutline(size, layoutDirection, this).path()
         val shade = shadowPainter(shape, path, shadows)
@@ -683,7 +705,11 @@ internal fun Modifier.gLiquidLens(
             if (!contrast && tint.alpha < 0.5f) gSheen(path, colors.liquidSheen)
             drawContent()
             if (contrast) drawPath(path, colors.border, style = Stroke(1.dp.toPx()))
-            else gEdgeLight(path, path, colors.liquidRimTop, colors.liquidRimBottom)
+            else if (floats) {
+                // Light at the top, shade at the bottom: the white light stays on top, the ink's edge lies at the bottom.
+                gEdgeLight(path, path, colors.liquidRimTop, Color.Transparent)
+                gEdgeLight(path, path, Color.Transparent, bottomInk)
+            } else gEdgeLight(path, path, colors.liquidRimTop, colors.liquidRimBottom)
         }
     }
 }
@@ -723,11 +749,12 @@ internal fun rememberGPressGlow(pressed: Boolean, grow: Boolean = true): GPressG
  * white, no shadow); on a content glass, a lens of it; on liquid glass, only its colour and the light of the press (no
  * glass on glass). Held down (`pressed`), it grows a little and lights up. `tint`: a tinted glass's colour (the
  * prominent glass: the accent or the ink at `controlProminent`). Dense with `G.reduceTransparency`, a true rim with
- * `G.highContrast`.
+ * `G.highContrast`. In a light surface on a light glass (4.1.1), a clear glass that `floats` (a chip, a glass button, a
+ * menu's face; not a track) takes the glass's edge (`gLiquidLens`'s `floats`).
  */
 @Composable
 internal fun Modifier.gControlGlass(shape: Shape, pressed: Boolean, tint: Color = Color.Transparent, thin: Boolean = false,
-                                    grow: Boolean = true): Modifier {
+                                    grow: Boolean = true, floats: Boolean = true): Modifier {
     val glow = rememberGPressGlow(pressed, grow)
     val grown = this.graphicsLayer { scaleX = glow.scale; scaleY = glow.scale }
     val colors = G.colors
@@ -743,7 +770,9 @@ internal fun Modifier.gControlGlass(shape: Shape, pressed: Boolean, tint: Color 
         }
         GControlPlace.Glass -> {
             val white = if (G.reduceTransparency) G.ground.glass.copy(alpha = GGlassValues.reduced) else colors.glassLiquid
-            grown.gLiquidLens(shape, if (thin) white.copy(alpha = white.alpha * 0.6f) else white, shadow = !thin, tint = tint, light = { glow.light })
+            val edged = floats && tint.alpha == 0f && G.ground.kind == GGlassKind.LIGHT
+            grown.gLiquidLens(shape, if (thin) white.copy(alpha = white.alpha * 0.6f) else white, shadow = !thin, tint = tint,
+                light = { glow.light }, floats = edged)
         }
         GControlPlace.Ground -> grown.gLiquidGlassOf(shape, shadow = !thin, white = if (thin) 0.6f else 1f, tint = tint, light = { glow.light })
     }
@@ -752,7 +781,8 @@ internal fun Modifier.gControlGlass(shape: Shape, pressed: Boolean, tint: Color 
 /**
  * A hollow of thin glass (4.1: a field): the thin glass's colour, the shade of the hollow (`glassHollow`) falling
  * inside from its top edge, the light caught by its bottom edge; no rim (with high contrast the field draws its own).
- * Dense with `G.reduceTransparency`.
+ * Dense with `G.reduceTransparency`. In a light surface (4.1.1, the glass's edge): the shade is the ink's
+ * (`GNestedValues.hollowShade`, tighter), a trace of the ink all around, the white light at the bottom.
  */
 @Composable
 fun Modifier.gGlassHollow(shape: Shape): Modifier {
@@ -761,6 +791,10 @@ fun Modifier.gGlassHollow(shape: Shape): Modifier {
     val hollow = colors.glassHollow
     val light = colors.liquidRimBottom
     val contrast = G.highContrast
+    // 4.1.1, the glass's edge: in a light surface the hollow's shade is the ink's, sharper, with a trace all around.
+    val nested = gNestedLight()
+    val inner = colors.ink.copy(alpha = GNestedValues.hollowShade)
+    val trace = colors.ink.copy(alpha = GNestedValues.hollowTrace)
     return this.drawWithCache {
         val edge = shape.createOutline(size, layoutDirection, this).path()
         // All but the shape, a hair lower: blurred and cut to the shape, only its shade on the inside remains.
@@ -768,20 +802,60 @@ fun Modifier.gGlassHollow(shape: Shape): Modifier {
             fillType = android.graphics.Path.FillType.EVEN_ODD
             val margin = 8.dp.toPx()
             addRect(-margin, -margin, size.width + margin, size.height + margin, android.graphics.Path.Direction.CW)
-            addPath(edge.asAndroidPath(), 0f, 2.dp.toPx())
+            addPath(edge.asAndroidPath(), 0f, (if (nested) GNestedValues.hollowShadeY else 2f).dp.toPx())
         }
         val shade = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = hollow.toArgb()
-            maskFilter = BlurMaskFilter(2.5.dp.toPx(), BlurMaskFilter.Blur.NORMAL)
+            color = (if (nested) inner else hollow).toArgb()
+            maskFilter = BlurMaskFilter((if (nested) GNestedValues.hollowShadeBlur else 2.5f).dp.toPx(), BlurMaskFilter.Blur.NORMAL)
         }
         onDrawBehind {
             drawPath(edge, fill)
             // A hollow is a little darker than what is around it: a veil of its shade over the whole.
             drawPath(edge, hollow.copy(alpha = hollow.alpha * 0.4f))
             clipPath(edge) { drawIntoCanvas { it.nativeCanvas.drawPath(outside, shade) } }
+            if (nested && !contrast) clipPath(edge) { drawPath(edge, trace, style = Stroke(2.dp.toPx())) }
             if (!contrast) gEdgeLight(edge, edge, Color.Transparent, light)
         }
     }
+}
+
+// MARK: In a light surface (4.1.1, the glass's edge)
+
+/**
+ * The glass's edge in a light surface (4.1.1, from the web's trial): a relief has the light on top and the shade at its
+ * bottom, a hollow the other way; on a light ground the dark half does the work. Opacities of the ground's ink, dp.
+ */
+internal object GNestedValues {
+    /** What floats (a chip, a glass button, a menu's face): its bottom edge (1 dp). */
+    const val floatBottom = 0.2f
+    /** Its soft passage along the sides: blurred, a little lower. */
+    const val passage = 0.08f
+    const val passageY = 2f
+    const val passageBlur = 6f
+    /** Its contact shadow, tight under it (the ground's near shadow). */
+    const val contactY = 1f
+    const val contactBlur = 3f
+    /** A field's hollow: the shade under its top edge, and the trace all around (1 dp). */
+    const val hollowShade = 0.14f
+    const val hollowShadeY = 1f
+    const val hollowShadeBlur = 2f
+    const val hollowTrace = 0.06f
+    /** A form's card: the fine edge at its bottom only. */
+    const val cardBottom = 0.12f
+}
+
+/**
+ * Whether a control lies in a light surface (a content glass, a form's card, a sheet, on a light glass): its glass stays
+ * white, its edge does the work (the glass's edge). The dark glass and the ambiances keep theirs.
+ */
+@Composable
+internal fun gNestedLight(): Boolean = G.ground.kind == GGlassKind.LIGHT && gControlPlace() == GControlPlace.Glass
+
+/** A form's card's sharper near shadow in a light surface: y 1 blur 3, and y 4 blur 12 spread -6. */
+@Composable
+private fun gNestedCardShadows(): List<GShadow> {
+    val near = G.colors.glassShadowNear
+    return listOf(GShadow(1f, 3f, 0f, near), GShadow(4f, 12f, -6f, near))
 }
 
 /** A prominent glass's colour: `color` at `controlProminent`. */
@@ -948,7 +1022,8 @@ internal val GGroundSpec.fieldFill: Color
  * two rows), the shadow under the last.
  */
 @Composable
-internal fun Modifier.gGlassSlice(first: Boolean, last: Boolean, density: GGlassDensity = GGlassDensity.Regular): Modifier {
+internal fun Modifier.gGlassSlice(first: Boolean, last: Boolean, density: GGlassDensity = GGlassDensity.Regular,
+                                  nested: Boolean = false): Modifier {
     val colors = G.colors
     val reduced = G.reduceTransparency
     val contrast = G.highContrast
@@ -963,9 +1038,14 @@ internal fun Modifier.gGlassSlice(first: Boolean, last: Boolean, density: GGlass
         density == GGlassDensity.Regular -> colors.glassRegular
         else -> colors.glassThick
     }
-    val shadows = if (!last) emptyList() else listOf(
-        GShadow(GGlassValues.shadowY, GGlassValues.shadowBlur, GGlassValues.shadowSpread, colors.glassShadow),
-        GShadow(GGlassValues.shadowNearY, GGlassValues.shadowNearBlur, GGlassValues.shadowNearSpread, colors.glassShadowNear))
+    val shadows = when {
+        !last -> emptyList()
+        nested -> gNestedCardShadows()
+        else -> listOf(
+            GShadow(GGlassValues.shadowY, GGlassValues.shadowBlur, GGlassValues.shadowSpread, colors.glassShadow),
+            GShadow(GGlassValues.shadowNearY, GGlassValues.shadowNearBlur, GGlassValues.shadowNearSpread, colors.glassShadowNear))
+    }
+    val bottomInk = if (nested && last) colors.ink.copy(alpha = GNestedValues.cardBottom) else Color.Transparent
     val saturate = remember { ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(GGlassValues.saturationContent) }) }
     return this.onGloballyPositioned { position.value = it.positionInWindow() }.drawWithCache {
         val path = shape.createOutline(size, layoutDirection, this).path()
@@ -993,6 +1073,7 @@ internal fun Modifier.gGlassSlice(first: Boolean, last: Boolean, density: GGlass
                 gSheen(path, colors.glassSheen, from, to)
                 gEdgeLight(path, card, if (first) colors.glassRimTop else Color.Transparent,
                     if (last) colors.glassRimBottom else Color.Transparent, from, to)
+                if (bottomInk.alpha > 0f) gEdgeLight(path, card, Color.Transparent, bottomInk, from, to)
             }
         }
     }

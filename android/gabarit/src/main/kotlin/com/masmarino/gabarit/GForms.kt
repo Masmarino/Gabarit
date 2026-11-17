@@ -129,12 +129,15 @@ fun Modifier.gCardDepth(shape: Shape): Modifier {
 }
 
 /**
- * A form's card (4.0): a regular content glass, the glass's radius, no rim; what it holds is cut to its corners. 3.x's
+ * A form's card (4.0): a regular content glass, the glass's radius, no rim; what it holds is cut to its corners. In a
+ * light surface (a sheet, a content glass; 4.1.1) the same glass, a sharper near shadow and a fine edge of the ink at
+ * its bottom. 3.x's
  * card (the surface, a fine rim, the large radius): `gSurfaceCard()`.
  */
 @Composable
 fun Modifier.gCard(): Modifier {
     val shape = RoundedCornerShape(GRadius.glass)
+    if (gNestedLight()) return this.gGlassNestedCard(shape).clip(shape)
     return this.gGlass(GGlassDensity.Regular, shape).clip(shape)
 }
 
@@ -316,7 +319,7 @@ fun GFormCardSlice(first: Boolean, last: Boolean, content: @Composable ColumnSco
     val r = GRadius.glass
     val shape = RoundedCornerShape(topStart = if (first) r else 0.dp, topEnd = if (first) r else 0.dp,
         bottomStart = if (last) r else 0.dp, bottomEnd = if (last) r else 0.dp)
-    Column(Modifier.fillMaxWidth().gGlassSlice(first, last).clip(shape)
+    Column(Modifier.fillMaxWidth().gGlassSlice(first, last, nested = gNestedLight()).clip(shape)
         .padding(top = if (first) 4.dp else 0.dp, bottom = if (last) 4.dp else 0.dp)) {
         CompositionLocalProvider(LocalGFormCard provides true) { content() }
     }
@@ -467,7 +470,7 @@ private fun <T> GGlassSegments(options: List<T>, selection: T, title: (T) -> Str
     // The track is a little hollow: a veil of the hollow's shade over its thin glass, the lens brighter than it.
     val hollow = colors.glassHollow.let { it.copy(alpha = it.alpha * 0.5f) }
     val density = LocalDensity.current
-    Box(modifier.heightIn(min = GControlMetrics.touchTarget).gControlGlass(shape, false, thin = true)
+    Box(modifier.heightIn(min = GControlMetrics.touchTarget).gControlGlass(shape, false, thin = true, floats = false)
         .drawWithCache { val outline = shape.createOutline(size, layoutDirection, this); onDrawBehind { drawOutline(outline, hollow) } }
         .padding(3.dp)) {
         if (target != null) {

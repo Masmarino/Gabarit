@@ -49,6 +49,35 @@
   }
 }
 
+// What a light glass tells the controls laid in it (4.1.1): colours, inherited by what it holds whatever its place in
+// the DOM, laid as extra layers over a control's own light (`transparent` where none is posed). Only a light scheme
+// takes them: `light-dark()` follows the `color-scheme` of the theme or of the ambiance, so the dark theme and the dark
+// ambiances keep the controls they had (theirs stay visible on a dark glass).
+@mixin holds-controls {
+  --gbt-nested-low: light-dark(#{ink($nested-low)}, transparent);
+  --gbt-nested-low-soft: light-dark(#{ink($nested-low-soft)}, transparent);
+  --gbt-nested-contact: light-dark(var(--gbt-glass-shadow-near), transparent);
+  --gbt-nested-hollow-shade: light-dark(#{ink($nested-hollow-shade)}, transparent);
+  --gbt-nested-hollow-trace: light-dark(#{ink($nested-hollow-trace)}, transparent);
+  --gbt-nested-hollow-light: light-dark(#fff, transparent);
+  --gbt-nested-group-low: light-dark(#{ink($nested-group-low)}, transparent);
+  --gbt-nested-group-shadow: light-dark(var(--gbt-glass-shadow), transparent);
+}
+
+// What floats in a light glass (a chip, a glass button, a select's face): the ink at its bottom edge, softer up the
+// curve of its sides, and a tight contact shadow under it. Laid after the control's own light (its rim at the top).
+$nested-float:
+  inset 0 -1px 0 var(--gbt-nested-low, transparent),
+  inset 0 -2px 3px -1px var(--gbt-nested-low-soft, transparent),
+  0 1px 3px var(--gbt-nested-contact, transparent);
+
+// What is hollowed in a light glass (a field): the ink's shade inside its top edge with a trace all around, the white
+// at its bottom.
+$nested-hollow:
+  inset 0 1px 2px var(--gbt-nested-hollow-shade, transparent),
+  inset 0 0 0 1px var(--gbt-nested-hollow-trace, transparent),
+  inset 0 -1px 0 var(--gbt-nested-hollow-light, transparent);
+
 // The content glass: a panel, a card, a sheet. `$density`: thin, regular or thick (a sheet, a drawer).
 // `$shadow: false` for a glass laid in another glass (no second shadow under it).
 @mixin glass($density: regular, $shadow: true) {
@@ -61,6 +90,7 @@
   backdrop-filter: var(--gbt-glass-blur);
   box-shadow: var(--gbt-glass-rim-light), $depth;
   @include on-ground;
+  @include holds-controls;
   @include dense-when-asked;
   @include edged-when-asked($depth);
 }
@@ -82,6 +112,7 @@
 // rises above the panels.
 @mixin floating-glass {
   @include liquid-glass(thick);
+  @include holds-controls;
   box-shadow: var(--gbt-depth-liquid), var(--gbt-depth-glass);
   @include edged-when-asked((var(--gbt-depth-liquid), var(--gbt-depth-glass)));
 }
@@ -100,6 +131,22 @@ $radius-md: var(--site-border-radius);
 $press-scale: 1.04;
 $press-light: 0.14;
 $prominent: 86%;
+
+// Laid in a light surface (4.1.1, a trial): white on white loses its edges. The relief has its light above and its
+// shade below, the hollow the other way round; on a light ground the dark half does the work. So what floats keeps its
+// rim of light at the top and takes the ink at its bottom edge (`nested-low`), the curve of a capsule passing from the
+// one to the other along its sides, and a contact shadow under it; a field's hollow takes the ink's shade inside its
+// top edge (`nested-hollow-shade`, with a trace all around) and the white at its bottom; a form's card, a glass in the
+// glass, a sharper near shadow and the ink at its bottom edge only (`nested-group-low`). No uniform line.
+$nested-low: 0.2;
+$nested-low-soft: 0.08;
+$nested-hollow-shade: 0.14;
+$nested-hollow-trace: 0.06;
+$nested-group-low: 0.12;
+
+@function ink($alpha) {
+  @return color-mix(in srgb, var(--text-primary) #{$alpha * 100%}, transparent);
+}
 
 // The light of a held glass, from above and from below as the rims, never across: `pressLight` at its edges, a trace
 // at its middle where its label sits (white at 0.14 all over would take the ink under 7:1 on the dark ground's light).
@@ -151,6 +198,8 @@ $liquid-rims:
 // A control in liquid glass (a button, a chip, the lens of a segmented control): the clear glass, the ground's ink.
 @mixin liquid-control {
   @include liquid-glass;
+  // In a light glass (4.1.1, `holds-controls`), the ink at its bottom edge and a contact shadow.
+  box-shadow: var(--gbt-depth-liquid), $nested-float;
   color: var(--text-primary);
 }
 
@@ -199,12 +248,14 @@ $liquid-rims:
 
 // A text field: a hollow of thin glass, no edge at rest (its shade falls inside its top edge, a light lines its
 // bottom). With the focus it takes the ink's edge (3:1 at least, contrast.spec.ts) and the focus ring; with more
-// contrast asked, its edge stays. A form's card unsets the hollow (`--gbt-field-*`).
+// contrast asked, its edge stays. A form's card unsets the hollow (`--gbt-field-*`). In a light glass the hollow
+// deepens (`$nested-hollow`), its glass unchanged, no line at rest.
 @mixin glass-hollow {
   background: var(--gbt-field-ground, var(--gbt-glass-thin));
   border: 1px solid var(--gbt-field-border, transparent);
   box-shadow: var(
     --gbt-field-hollow,
+    $nested-hollow,
     inset 0 1px 3px var(--gbt-glass-hollow),
     inset 0 -1px 0 var(--gbt-glass-rim-bottom)
   );

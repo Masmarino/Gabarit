@@ -100,10 +100,12 @@ private struct GSheetGroundModifier: ViewModifier {
         #if os(iOS)
         content
             .environment(\.gGroundPainted, true)
+            .environment(\.gOnSurface, true)
             .presentationBackground { GSheetGround() }
         #else
         content
             .environment(\.gGroundPainted, true)
+            .environment(\.gOnSurface, true)
             .background { GSheetGround() }
         #endif
     }
