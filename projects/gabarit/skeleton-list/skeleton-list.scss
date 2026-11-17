@@ -20,7 +20,7 @@
   margin-top: 0.125rem;
 
   &[data-leading='square'] {
-    border-radius: 0.25rem;
+    border-radius: var(--site-border-radius);
   }
 }
 

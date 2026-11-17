@@ -652,7 +652,12 @@ impl RenderOnce for GPageBand {
                 .border_1()
                 .border_color(frame.rim)
         } else {
-            crate::glass::glass_on(div(), crate::glass::GMaterial::liquid(), px(radius::XL), cx)
+            crate::glass::glass_on(
+                div(),
+                crate::glass::GMaterial::liquid(),
+                px(radius::ROW),
+                cx,
+            )
         };
         let ground = if framed { frame_ground(cx) } else { div() };
         ground
@@ -870,7 +875,7 @@ impl RenderOnce for GRailItem {
                                 div()
                                     .px(px(4.))
                                     .py(px(1.))
-                                    .rounded(px(radius::XS))
+                                    .rounded(px(radius::PILL))
                                     .when(framed, |this| this.bg(frame.rim).text_color(frame.text))
                                     .when(!framed, |this| this.bg(accent).text_color(on_accent))
                                     .g_text(text::CAPTION_2)
@@ -994,7 +999,7 @@ impl RenderOnce for GSidebarRow {
             .w_full()
             .h(px(SIDEBAR_ROW_HEIGHT))
             .px(px(10.))
-            .rounded(px(radius::MD))
+            .rounded(px(radius::ROW))
             .bg(ground)
             .role(Role::Tab)
             .aria_label(self.title.clone())
@@ -1013,11 +1018,11 @@ impl RenderOnce for GSidebarRow {
                 "g-row-hover",
                 hover_on,
                 colors.row_hover,
-                px(radius::MD),
+                px(radius::ROW),
             ))
             // The chosen section on thick glass (4.0), as a `GInsetList`'s chosen row.
             .when(selected && !pressed, |this| {
-                this.child(crate::glass::selection_layer(px(radius::MD)))
+                this.child(crate::glass::selection_layer(px(radius::ROW)))
             })
             .child(
                 div()

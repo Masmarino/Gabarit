@@ -1,5 +1,5 @@
 @use '../src/lib/tokens/a11y';
-@use '../src/lib/tokens/depth';
+@use '../src/lib/tokens/glass';
 
 :host(.gbt-segmented-control-host--labelled) {
   display: inline-block;
@@ -18,12 +18,34 @@
 }
 
 .gbt-segmented-control {
+  position: relative;
   display: inline-flex;
   gap: 2px;
   padding: 2px;
-  background: var(--bg-panel);
-  border-radius: var(--site-border-radius-sm);
-  box-shadow: var(--gbt-depth-hollow);
+  // A track of thin liquid glass (4.1); the chosen option is a lens that glides along it.
+  border-radius: glass.$radius-pill;
+  @include glass.liquid-thin;
+}
+
+// The lens: a clear liquid glass a step brighter than the track, under the chosen option's label. It glides on the
+// spring; with less motion asked, it jumps.
+.gbt-segmented-control__lens {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: glass.$radius-pill;
+  @include glass.liquid-control;
+  background-image: glass.$lens-light;
+  pointer-events: none;
+
+  &--glides {
+    @media (prefers-reduced-motion: no-preference) {
+      transition:
+        transform glass.$bouncy-duration glass.$bouncy,
+        width glass.$bouncy-duration glass.$bouncy,
+        height glass.$bouncy-duration glass.$bouncy;
+    }
+  }
 }
 
 .gbt-segmented-control__option {
@@ -35,7 +57,8 @@
   padding: 0.375rem 0.75rem;
   background: none;
   border: none;
-  border-radius: calc(var(--site-border-radius-sm) - 2px);
+  position: relative;
+  border-radius: glass.$radius-pill;
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 600;
@@ -63,17 +86,26 @@
     opacity: 0.5;
   }
 
+  // Before the lens is placed (a server render): the chosen option is its own glass.
   &--selected {
-    background: var(--bg-principal);
-    color: var(--text-primary);
-    @include depth.raised;
+    @include glass.liquid-control;
+  }
+}
 
-    &:hover:not(:disabled) {
-      @include depth.raised-hover;
-    }
+// Once the lens is placed, it is the chosen option's ground.
+.gbt-segmented-control--lens .gbt-segmented-control__option--selected {
+  &,
+  &:hover:not(:disabled),
+  &:active:not(:disabled) {
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+    transform: none;
+    transition: color 0.12s cubic-bezier(0.4, 0, 0.2, 1);
 
-    &:active:not(:disabled) {
-      @include depth.sunk;
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
     }
   }
 }

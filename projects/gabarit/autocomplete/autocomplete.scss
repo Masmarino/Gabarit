@@ -33,14 +33,18 @@ $easing: cubic-bezier(0.34, 1.56, 0.64, 1);
   font-family: var(--font-family);
   font-size: 0.875rem;
   color: var(--text-primary);
-  background: var(--bg-principal);
-  border: 1px solid var(--border-color);
-  border-radius: var(--site-border-radius-sm);
+  // A hollow of thin glass (4.1): no edge at rest, the ink's edge with the focus.
+  border-radius: glass.$radius-pill;
+  @include glass.glass-hollow;
   transition: border-color var(--site-transition-fast);
+
+  &:hover:not(:disabled):not(:focus) {
+    @include glass.glass-hollow-hover;
+  }
 
   &:focus {
     outline: none;
-    border-color: var(--primary);
+    @include glass.glass-hollow-focus;
   }
 
   &:focus-visible {
@@ -62,7 +66,7 @@ $easing: cubic-bezier(0.34, 1.56, 0.64, 1);
   max-height: 280px;
   overflow-y: auto;
   // What floats: the liquid glass (4.0), dense enough to be read over the page.
-  border-radius: var(--site-border-radius-lg);
+  border-radius: var(--gbt-radius-glass);
   @include glass.floating-glass;
   animation: gbt-autocomplete-scale-in 0.15s $easing both;
 
@@ -93,7 +97,7 @@ $easing: cubic-bezier(0.34, 1.56, 0.64, 1);
   padding: 8px 10px;
   background: transparent;
   border: none;
-  border-radius: var(--gbt-radius-menu, var(--site-border-radius-sm));
+  border-radius: var(--gbt-radius-menu, var(--gbt-radius-row));
   color: var(--text-primary);
   font-size: 14px;
   text-align: left;

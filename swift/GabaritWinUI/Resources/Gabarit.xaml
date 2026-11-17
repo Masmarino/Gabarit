@@ -118,6 +118,8 @@
             <SolidColorBrush x:Key="GGlassShadowNearBrush" Color="#0F182030"/>
             <Color x:Key="GLiquidShadowColor">#33182030</Color>
             <SolidColorBrush x:Key="GLiquidShadowBrush" Color="#33182030"/>
+            <Color x:Key="GGlassHollowColor">#1A182030</Color>
+            <SolidColorBrush x:Key="GGlassHollowBrush" Color="#1A182030"/>
             <SolidColorBrush x:Key="GBorderSoftBrush" Color="#997D8794"/>
             <SolidColorBrush x:Key="GBorderStrongBrush" Color="#CC7D8794"/>
             <SolidColorBrush x:Key="GBorderHoverBrush" Color="#807D8794"/>
@@ -329,6 +331,8 @@
             <SolidColorBrush x:Key="GGlassShadowNearBrush" Color="#4C000000"/>
             <Color x:Key="GLiquidShadowColor">#73000000</Color>
             <SolidColorBrush x:Key="GLiquidShadowBrush" Color="#73000000"/>
+            <Color x:Key="GGlassHollowColor">#66000000</Color>
+            <SolidColorBrush x:Key="GGlassHollowBrush" Color="#66000000"/>
             <SolidColorBrush x:Key="GBorderSoftBrush" Color="#99646C77"/>
             <SolidColorBrush x:Key="GBorderStrongBrush" Color="#CC646C77"/>
             <SolidColorBrush x:Key="GBorderHoverBrush" Color="#80646C77"/>
@@ -540,6 +544,8 @@
             <SolidColorBrush x:Key="GGlassShadowNearBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
             <StaticResource x:Key="GLiquidShadowColor" ResourceKey="SystemColorWindowTextColor"/>
             <SolidColorBrush x:Key="GLiquidShadowBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GGlassHollowColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GGlassHollowBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
             <SolidColorBrush x:Key="GBorderSoftBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
             <SolidColorBrush x:Key="GBorderStrongBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
             <SolidColorBrush x:Key="GBorderHoverBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>

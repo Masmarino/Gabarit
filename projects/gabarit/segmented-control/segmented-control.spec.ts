@@ -244,13 +244,13 @@ describe('SegmentedControl additions', () => {
       expect(track(fixture).classList.contains('gbt-segmented-control--tinted')).toBe(true)
     })
 
-    it('draws the tinted track with the --bg-track token, not --bg-panel', () => {
+    it('draws the tinted track with the --bg-track token, the plain one in thin liquid glass', () => {
       const scss = readFileSync(
         join(process.cwd(), 'projects/gabarit/segmented-control/segmented-control.scss'),
         'utf8',
       )
       expect(scss).toMatch(/--tinted\s*\{[^}]*background:\s*var\(--bg-track\)/)
-      expect(scss).toMatch(/\.gbt-segmented-control\s*\{[^}]*background:\s*var\(--bg-panel\)/)
+      expect(scss).toMatch(/\.gbt-segmented-control\s*\{[^}]*@include glass\.liquid-thin;/)
     })
   })
 

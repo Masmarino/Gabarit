@@ -42,7 +42,7 @@
   padding: 0.5rem 0.75rem;
   // A tile of glass, lit at its top: no edge; it thickens under the pointer.
   border: none;
-  border-radius: var(--gbt-radius-tile, var(--site-border-radius-lg));
+  border-radius: var(--gbt-radius-tile, var(--gbt-radius-row));
   @include glass.glass(thin, $shadow: false);
   color: var(--text-primary);
   font: inherit;

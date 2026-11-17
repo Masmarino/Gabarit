@@ -14,7 +14,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    border-radius: var(--site-border-radius-sm);
+    border-radius: 999px;
 
     &:nth-child(3n + 1) .gbt-chart-legend__line {
       stroke: var(--chart-series-1-base);

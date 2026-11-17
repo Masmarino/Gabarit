@@ -1,4 +1,5 @@
 @use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/glass';
 
 .gbt-slider {
   display: flex;
@@ -29,6 +30,27 @@
   margin: 0;
   font-size: 0.75rem;
   color: var(--color-error-text);
+}
+
+// A range's thumb lets no backdrop through (no filter on its pseudo-element): its glass takes the regular fill so that
+// it stays seen over the track, with the liquid's light and shadow.
+@mixin liquid-thumb {
+  border-color: transparent;
+  background: glass.$press-glow, var(--gbt-glass-regular);
+  box-shadow:
+    var(--gbt-depth-liquid),
+    0 1px 4px var(--gbt-liquid-shadow);
+
+  @media (prefers-reduced-motion: no-preference) {
+    scale: glass.$press-scale;
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    border-color: var(--accent);
+    background: var(--gbt-knob);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 input[type='range'] {
@@ -75,6 +97,11 @@ input[type='range'] {
     box-shadow: var(--gbt-depth-knob);
     appearance: none;
     cursor: pointer;
+    transition: scale glass.$bouncy-duration glass.$bouncy;
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
   }
 
   &:not(:disabled):hover::-webkit-slider-thumb {
@@ -82,9 +109,9 @@ input[type='range'] {
     box-shadow: var(--gbt-depth-knob-hover);
   }
 
+  // Held down or dragged (4.1): the thumb turns to liquid glass, lit, over the track it lets through.
   &:not(:disabled):active::-webkit-slider-thumb {
-    border-color: var(--accent);
-    box-shadow: var(--gbt-glow);
+    @include liquid-thumb;
   }
 
   &:focus-visible::-webkit-slider-thumb {
@@ -121,9 +148,9 @@ input[type='range'] {
     box-shadow: var(--gbt-depth-knob-hover);
   }
 
+  // Held down or dragged (4.1): the thumb turns to liquid glass, lit, over the track it lets through.
   &:not(:disabled):active::-moz-range-thumb {
-    border-color: var(--accent);
-    box-shadow: var(--gbt-glow);
+    @include liquid-thumb;
   }
 
   &:focus-visible::-moz-range-thumb {

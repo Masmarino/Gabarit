@@ -1,0 +1,143 @@
+#if canImport(SwiftUI)
+import SwiftUI
+
+// The controls on the liquid glass (4.1): buttons, chips, a segmented control's track and lens, a switch's or a slider's
+// knob while it is held. The glass is the system's own (`glassEffect`), with no rim of Gabarit's: its light is the
+// system's. Under the pointer it lights a little; held down it lights (`controlPressLight`) and grows
+// (`controlPressScale`) on the bouncy spring. A prominent glass (the one thing to do, the chosen chip) is tinted with
+// the ink, the accent or the red at `controlProminent`, its text `onPrimary`.
+// Less transparency: the system draws the glass dense. More contrast: a true rim (`GColor.border`). Reduced motion: no
+// spring, no growth; the light stays.
+
+public extension GColor {
+    /// The accent of a prominent glass (a chosen chip): the accent on a dark ground; on a light one, its text step (rust
+    /// 600), so that white text holds 4.5:1 on it at `controlProminent` (rust 500 gives 4.2:1).
+    static func prominentAccent(on ground: GGroundSpec) -> Color {
+        ground.mode == .light ? Color(GColorValues.accentText.light) : Color(GColorValues.accent.dark)
+    }
+
+    /// The red of a prominent glass (a danger button), in the ground's mode.
+    static func prominentDanger(on ground: GGroundSpec) -> Color {
+        Color(ground.mode == .light ? GPaletteValues.red700 : GPaletteValues.red400)
+    }
+
+    /// The ink of a prominent glass (a primary button), in the ground's mode.
+    static func prominentInk(on ground: GGroundSpec) -> Color {
+        Color(ground.mode == .light ? GColorValues.primary.light : GColorValues.primary.dark)
+    }
+
+    /// The text on a prominent glass, in the ground's mode.
+    static func onProminent(on ground: GGroundSpec) -> Color {
+        Color(ground.mode == .light ? GColorValues.onPrimary.light : GColorValues.onPrimary.dark)
+    }
+}
+
+/// What tints a prominent glass.
+public enum GProminentTint: Sendable, Hashable {
+    /// The ink (a primary button).
+    case ink
+    /// The accent (a chosen chip).
+    case accent
+    /// The red (a danger button).
+    case danger
+}
+
+public extension View {
+    /// A control of liquid glass in `shape`: clear, or `prominent` (tinted). `hovering` and `pressed`: its answer to the
+    /// pointer and the finger (the light, the growth on the bouncy spring).
+    func gLiquidControl<S: Shape>(in shape: S, prominent: GProminentTint? = nil, hovering: Bool = false,
+                                  pressed: Bool = false) -> some View {
+        modifier(GLiquidControl(shape: shape, prominent: prominent, hovering: hovering, pressed: pressed))
+    }
+
+    /// A control of liquid glass in a capsule.
+    func gLiquidControl(prominent: GProminentTint? = nil, hovering: Bool = false, pressed: Bool = false) -> some View {
+        modifier(GLiquidControl(shape: Capsule(), prominent: prominent, hovering: hovering, pressed: pressed))
+    }
+}
+
+/// A control of liquid glass: the system's glass, a little whiter on a dark ground (as `gLiquidGlass`), or tinted at
+/// `controlProminent`; the light of the pointer and the press laid on it, under the label.
+public struct GLiquidControl<S: Shape>: ViewModifier {
+    let shape: S
+    let prominent: GProminentTint?
+    let hovering: Bool
+    let pressed: Bool
+    @Environment(\.gGroundTone) private var tone
+    @Environment(\.gResolvedGround) private var ground
+    @Environment(\.colorSchemeContrast) private var contrast
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    public init(shape: S, prominent: GProminentTint? = nil, hovering: Bool = false, pressed: Bool = false) {
+        self.shape = shape
+        self.prominent = prominent
+        self.hovering = hovering
+        self.pressed = pressed
+    }
+
+    public func body(content: Content) -> some View {
+        content
+            .background {
+                ZStack {
+                    if let tint {
+                        shape.fill(tint.opacity(GGlassValues.controlProminent))
+                    }
+                    // The light: on a prominent glass under white text (a light ground), none, it would pale the text.
+                    if prominent == nil || ground.mode == .dark {
+                        shape.fill(Color.white.opacity(pressed ? GGlassValues.controlPressLight : hovering ? GGlassValues.controlPressLight / 2 : 0))
+                    }
+                }
+                .allowsHitTesting(false)
+            }
+            .glassEffect(Glass.regular.tint(Color.white.opacity(tone.liquid * 0.5)), in: shape)
+            .overlay {
+                if contrast == .increased {
+                    shape.stroke(GColor.border, lineWidth: 1).allowsHitTesting(false).accessibilityHidden(true)
+                }
+            }
+            .scaleEffect(pressed && !reduceMotion ? GGlassValues.controlPressScale : 1)
+            .animation(reduceMotion ? nil : GAnimation.bouncy, value: pressed)
+            .animation(GAnimation.hover, value: hovering)
+    }
+
+    private var tint: Color? {
+        switch prominent {
+        case .ink: GColor.prominentInk(on: ground)
+        case .accent: GColor.prominentAccent(on: ground)
+        case .danger: GColor.prominentDanger(on: ground)
+        case nil: nil
+        }
+    }
+}
+
+// MARK: Hollow
+
+public extension View {
+    /// The hollow of thin glass a field is (4.1): the ground's glass colour at its thin density, the ground's shade falling
+    /// in from the top edge (`hollow` of the glass's kind), no rim. Less transparency: a dense colour.
+    func gGlassHollow<S: InsettableShape>(in shape: S) -> some View {
+        modifier(GGlassHollow(shape: shape))
+    }
+}
+
+/// The glass's colour at its thin density, a faint veil of the ground's shade (`hollow` × 0.4: on a light ground, white
+/// glass alone would not show on a card of white glass), and the shade falling in from the top edge (`glassHollow`).
+struct GGlassHollow<S: InsettableShape>: ViewModifier {
+    let shape: S
+    @Environment(\.gResolvedGround) private var ground
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    func body(content: Content) -> some View {
+        let tone = GGroundToneCache.tone(of: ground)
+        let fill = reduceTransparency ? Color(ground.glass.opacity(GGlassValues.reduced)) : ground.glassColor(.thin)
+        let shade = Color(tone.shade).opacity(ground.kind.values.hollow)
+        content.background {
+            ZStack {
+                shape.fill(fill)
+                shape.fill(Color(tone.shade).opacity(ground.kind.values.hollow * 0.4).shadow(.inner(color: shade, radius: 2.5, y: 1.5)))
+            }
+            .allowsHitTesting(false)
+        }
+    }
+}
+#endif

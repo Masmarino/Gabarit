@@ -896,7 +896,8 @@
         "sheen": 0.18,
         "liquidRimTop": 0.7,
         "liquidRimBottom": 0.45,
-        "liquidSheen": 0.35
+        "liquidSheen": 0.35,
+        "hollow": 0.1
       },
       "dark": {
         "thin": 0.42,
@@ -915,7 +916,8 @@
         "sheen": 0.05,
         "liquidRimTop": 0.35,
         "liquidRimBottom": 0.22,
-        "liquidSheen": 0.1
+        "liquidSheen": 0.1,
+        "hollow": 0.4
       },
       "tinted": {
         "thin": 0.22,
@@ -934,13 +936,20 @@
         "sheen": 0.07,
         "liquidRimTop": 0.45,
         "liquidRimBottom": 0.28,
-        "liquidSheen": 0.14
+        "liquidSheen": 0.14,
+        "hollow": 0.32
       }
     },
     "blur": { "content": 28, "liquid": 9 },
     "saturation": { "content": 1.5, "liquid": 1.9 },
     "brightness": { "liquid": 1.06 },
     "reduced": 0.94,
+    "control": {
+      "_": "The controls on liquid glass (4.1): pressed, a glass lights up (white over it at \"pressLight\") and grows by \"pressScale\", on the \"bouncy\" spring; the prominent glass (the main button, the chosen chip) is the accent (or the ink) at \"prominent\"; a field is a hollow of thin glass, its shade at the kind's \"hollow\" inside its top edge.",
+      "pressScale": 1.04,
+      "pressLight": 0.14,
+      "prominent": 0.86
+    },
     "shadow": {
       "y": 18,
       "blur": 40,
@@ -955,6 +964,7 @@
     "ink": { "secondary": 0.62, "discret": 0.42, "secondaryMax": 0.8, "discretMax": 0.64 }
   },
   "radius": {
+    "_": "4.1: four radii, nothing else in the components. pill: what commands (buttons, chips and tags, the segmented control and its lens, a page's tabs, text and search fields, a switch, a slider's thumb, a one-line toast or tooltip). glass (22): what holds (panels, cards, sheets, pop-overs, menus, dialogs, the date picker, the command palette). row (14): what lies in a glass (rows and their selection, a menu's items, a multi-line text area, a multi-line tooltip, thumbnails). md (8): the small things (a checkbox, inline code, a small square badge). Avatars and presence dots are circles. Inside another shape, a radius is the outer one less the gap between them (concentric), never less than md. xs, sm, lg, xl, xxl and xxxl stay for the apps, not for Gabarit's components.",
     "xs": 4,
     "sm": 6,
     "md": 8,

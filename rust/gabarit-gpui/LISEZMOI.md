@@ -13,7 +13,7 @@ carte graphique : la base de l'app de bureau SkollN (Windows, Linux, Mac). Le re
 | `src/glass.rs`          | Le verre de contenu (`GGlass` : thin, regular, thick) et le verre liquide (`GLiquidGlass`, `GGlassButton`, `GGlassTabs`). |
 | `src/motion.rs`         | Le mouvement : durées (`QUICK` 0,15 s, `NORMAL` 0,25 s, `SLOW`, `GROUND` 0,45 s), ressorts (`SPRING`, `BOUNCY`, `SNAPPY`, `PAGE`, `SHARED`), `GMotion::page` et `GMotion::ground`, entrées et sorties (`GMotion`, `g_enter`, `g_exit`, `g_enter_on_change`, `g_collapse`), couleurs et calques qui fondent au survol ; « Réduire les animations » : de simples fondus courts. |
 | `src/relief.rs`         | Le relief : carte posée (un verre depuis la 4.0), bouton en volume qui s'enfonce, creux, lueur, ombres.   |
-| `src/button.rs`         | `GButton` (primary, secondary, ghost, danger, destructeur), `GCloseButton`.                               |
+| `src/button.rs`         | `GButton` (primary, glass_prominent, secondary/glass, ghost, danger, destructeur, solid), `GCloseButton`. |
 | `src/controls.rs`       | `GToggle` (et `GSwitch`), `GCheckbox`, `GSlider`, `GStepper`.                                             |
 | `src/picker.rs`         | `GPicker` : menu (la liste en `GMenu`, la coche sur le choix) ou pastilles.                               |
 | `src/text_field.rs`     | `GTextInput` (l'état), `GTextField` (titre et cadre), `GFieldFrame` : une ligne ou plusieurs.             |
@@ -28,7 +28,7 @@ carte graphique : la base de l'app de bureau SkollN (Windows, Linux, Mac). Le re
 | `fonts/`, `icons/`      | IBM Plex (SIL OFL, copie de celles de GabaritApple) ; les icônes Phosphor utiles (MIT), et quatre dessinées pour Gabarit. |
 | `correctifs/`           | `gpui-pre-wgpu` corrigé : les émojis en couleur sous Linux (voir « Les correctifs de GPUI »).                |
 | `captures/`             | Les captures de la galerie sur le Mac (et une sous Windows, une sous Linux).                              |
-| `tests/`                | Les jetons contre `GTokens.swift` ; le ton et les rôles du sol ; la saisie (composition, UTF-16, émojis, arabe, hébreu, presse-papiers). |
+| `tests/`                | Les jetons contre `GTokens.swift` ; le ton et les rôles du sol ; le contraste des contrôles en verre ; la saisie (composition, UTF-16, émojis, arabe, hébreu, presse-papiers). |
 
 ## Le sol et le verre (4.0)
 
@@ -49,6 +49,41 @@ flou au système (`WindowBackgroundAppearance::Blurred`).
 Le cadre graphite de la 3.x reste possible : `framed()` sur `GWindowHeader`, `GPageBand`, `GRailItem`, `GBarTitle`,
 `GCloseButton`. « Réduire la transparence » (`theme::set_reduce_transparency`) rend le verre dense ; « Augmenter le
 contraste » (`theme::set_increase_contrast`) change le reflet en contour.
+
+## Les contrôles en verre liquide, les rayons (4.1)
+
+Les contrôles passent sur le verre liquide, avec la même lumière que le reste (en haut et en bas, jamais en
+diagonale) :
+
+- **Boutons** : capsules de verre liquide. `GButton` secondaire (et `.glass()`) : verre liquide clair, encre du sol ;
+  `ghost()` : verre liquide fin, le second cran de l'encre ; `.primary()` : verre teinté de l'encre ;
+  `.glass_prominent()` : verre teinté de l'accent (ou de son cran plus sombre là où le texte ne tiendrait pas 4,5:1).
+  Le texte d'un verre teinté est blanc ou graphite, celui qui tient le mieux sur le pire point du sol
+  (`glass::prominent_ink`). `danger()` reste rouge plein ; `.solid()` rend l'aspect opaque de la 4.0.
+- **À l'appui** (`glass::control_glass`) : le verre s'éclaire (blanc à `CONTROL_PRESS_LIGHT`, sous la teinte d'un verre
+  teinté) et grossit jusqu'à `CONTROL_PRESS_SCALE` (1,04) sur le ressort `BOUNCY`. GPUI n'a pas de transformation
+  d'échelle pour une boîte : c'est le verre qui grandit autour du contenu (ses marges, en fractions de sa taille), le
+  texte ne bouge pas. « Réduire les animations » : il s'éclaire sans grandir. L'appui suit le bouton de la souris
+  (`motion::use_press`, `motion::on_press`) jusqu'au relâchement, même hors du contrôle.
+- **Chips, étiquettes** (`GPicker::chips`, `GBadge`) : verre liquide fin (`GMaterial::LiquidThin`) ; la chip choisie en
+  verre teinté de l'accent. Les compteurs (`GUnreadBadge`) et les pastilles restent pleins.
+- **Contrôle segmenté** (`GGlassTabs`) : une piste de verre fin, et une lentille de verre liquide qui glisse d'un
+  segment à l'autre sur le ressort `SHARED`.
+- **Interrupteur, curseur** : piste inchangée ; le bouton devient du verre liquide tant qu'on le tient.
+- **Champs** (`GFieldFrame`) : un creux de verre fin (`GMaterial::Hollow`), sans bordure ; au focus, le contour de
+  l'accent (3:1). « Augmenter le contraste » : le contour toujours.
+- Menus, bulles d'aide, toasts en verre liquide ; la feuille reste du verre de contenu épais (elle porte un
+  formulaire : du contenu) ; avatars et présence pleins ; jamais de verre liquide pour une ligne de liste ou une bulle.
+
+`tests/controls_glass.rs` vérifie le contraste du texte de chaque contrôle sur le pire point de chaque sol, au repos,
+au survol et à l'appui.
+
+**Les rayons** : quatre seulement dans les composants. La capsule (`radius::PILL`) pour ce qui commande (boutons,
+chips, étiquettes, contrôle segmenté, champs d'une ligne, interrupteur, toast, bulle d'aide) ; `radius::GLASS` (22) pour
+ce qui contient (panneaux, cartes, sections de formulaire, feuilles, menus, bandeaux) ; `radius::ROW` (14) pour ce qui
+est posé dans un verre (lignes et leur sélection, lignes d'un menu, champ de plusieurs lignes, vignettes) ;
+`radius::MD` (8) pour les petites choses (case à cocher, squelette). Avatars et pastilles : des cercles. Le cadre
+sombre de la 3.x (`framed()`) et les boutons de fenêtre de Windows gardent les leurs.
 
 ## GPUI : la version
 

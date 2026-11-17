@@ -1,3 +1,5 @@
+@use '../src/lib/tokens/glass';
+
 :host {
   display: inline-flex;
   max-width: 100%;
@@ -8,11 +10,13 @@
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  border-radius: var(--site-border-radius-sm);
+  border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.4;
   max-width: 100%;
+  // Its colour is its name, opaque (the text is chosen on it); the liquid glass lends it its light (4.1).
+  box-shadow: glass.$liquid-rims;
 }
 
 .gbt-tag__label {
@@ -32,7 +36,7 @@
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: 999px;
   color: currentColor;
   cursor: pointer;
   transition: background var(--site-transition-fast);

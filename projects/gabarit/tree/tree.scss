@@ -15,7 +15,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   gap: 0.375rem;
   height: 32px;
   padding-right: 0.5rem;
-  border-radius: var(--site-border-radius-sm);
+  border-radius: var(--gbt-radius-row);
   color: var(--text-primary);
   font-size: 13px;
   cursor: pointer;
@@ -55,7 +55,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   height: 20px;
   background: none;
   border: none;
-  border-radius: var(--site-border-radius-xs);
+  border-radius: 999px;
   color: var(--text-secondary);
   cursor: pointer;
 

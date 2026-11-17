@@ -36,6 +36,7 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -245,12 +246,41 @@ fun Modifier.gHollow(fill: Color, shape: Shape, strength: Float = 0.12f): Modifi
 
 // MARK: Buttons
 
-/** Gabarit's buttons: ink (primary), a light ground and a fine frame (secondary), no ground (ghost), red (danger). */
-enum class GButtonVariant { Primary, Secondary, Ghost, Danger }
+/**
+ * Gabarit's buttons: ink (primary), a light ground and a fine frame (secondary), no ground (ghost), red (danger); 4.1:
+ * clear liquid glass in the ink (`Glass`), liquid glass tinted with the ink (`GlassProminent`). Under `GButtonLook.Glass`
+ * (the default), a primary button is drawn as `GlassProminent`, a secondary or ghost one as `Glass`.
+ */
+enum class GButtonVariant { Primary, Secondary, Ghost, Danger, Glass, GlassProminent }
+
+/**
+ * How the primary, secondary and ghost buttons are drawn: liquid glass (4.1's default), or 4.0's solid grounds
+ * (`Solid`: the ink, a light ground and a fine rim, nothing). Under 3.x grounds (`GTheme(grounds = …)`), always solid.
+ */
+enum class GButtonLook { Glass, Solid }
+
+/** The buttons' look below (`GButtonLook.Glass` by default; provide `GButtonLook.Solid` to keep 4.0's buttons). */
+val LocalGButtonLook = compositionLocalOf { GButtonLook.Glass }
+
+/** The variant as it is drawn: under the glass look, primary is prominent glass, secondary and ghost clear glass. */
+@Composable
+private fun GButtonVariant.drawn(): GButtonVariant {
+    val glass = LocalGButtonLook.current == GButtonLook.Glass && G.grounds == null
+    if (!glass) return when (this) {
+        GButtonVariant.Glass -> if (G.grounds == null) this else GButtonVariant.Secondary
+        GButtonVariant.GlassProminent -> if (G.grounds == null) this else GButtonVariant.Primary
+        else -> this
+    }
+    return when (this) {
+        GButtonVariant.Primary -> GButtonVariant.GlassProminent
+        GButtonVariant.Secondary, GButtonVariant.Ghost -> GButtonVariant.Glass
+        else -> this
+    }
+}
 
 /**
  * A Gabarit button. `compact` false: full height (44), a sheet's main button. `destructive`: a secondary or ghost button
- * whose text is red ("Delete", "Leave").
+ * whose text is red ("Delete", "Leave"). 4.1: a capsule; glass held down grows a little and lights up (`GMotion.bouncy`).
  */
 @Composable
 fun GButton(
@@ -265,35 +295,54 @@ fun GButton(
     val colors = G.colors
     val interaction = remember { MutableInteractionSource() }
     val pressed = interaction.gPressed()
-    val shape = RoundedCornerShape(GRadius.sm)
-    // Held down it never fades: towards the hover's colour on ink, a stronger veil elsewhere, darker on red.
-    val ground = when (variant) {
-        GButtonVariant.Primary -> if (pressed) colors.primaryHover else colors.primary
-        // On the ground's glass, the field's light ground (4.0); 3.x's grounds keep their surface.
-        GButtonVariant.Secondary -> (if (G.grounds == null) G.ground.fieldFill else colors.surface)
-            .let { if (pressed) colors.press.compositeOver(it) else it }
-        GButtonVariant.Ghost -> if (pressed) colors.press else Color.Transparent
-        GButtonVariant.Danger -> if (pressed) lerp(colors.error, Color.Black, 0.18f) else colors.error
+    val shape = RoundedCornerShape(GRadius.pill)
+    val drawn = variant.drawn()
+    // A red text on clear glass where it holds 4.5:1; elsewhere (a dark or tinted ground) the ink on a glass veiled with
+    // red (as a state's label; the danger button stays the full red).
+    val redGlass = destructive && drawn == GButtonVariant.Glass && !gHoldsOnGlass(colors.errorText)
+    val tint = when {
+        drawn == GButtonVariant.GlassProminent -> gProminent(colors.primary)
+        redGlass -> colors.error.copy(alpha = 0.24f)
+        else -> Color.Transparent
     }
     // The text's red on the press's ground too (4.5:1).
     val foreground = when {
-        destructive && (variant == GButtonVariant.Secondary || variant == GButtonVariant.Ghost) -> colors.errorText
-        variant == GButtonVariant.Primary || variant == GButtonVariant.Danger -> colors.onPrimary
-        variant == GButtonVariant.Secondary -> colors.textPrimary
+        redGlass -> colors.ink
+        destructive && (drawn == GButtonVariant.Secondary || drawn == GButtonVariant.Ghost || drawn == GButtonVariant.Glass) -> colors.errorText
+        drawn == GButtonVariant.GlassProminent -> gInkOnTint(tint)
+        drawn == GButtonVariant.Glass -> colors.ink
+        drawn == GButtonVariant.Primary || drawn == GButtonVariant.Danger -> colors.onPrimary
+        drawn == GButtonVariant.Secondary -> colors.textPrimary
         else -> colors.textSecondary
     }
     val height = if (compact) GControlMetrics.button else 44.dp
+    val face = when (drawn) {
+        GButtonVariant.Glass, GButtonVariant.GlassProminent -> Modifier.gControlGlass(shape, pressed, tint)
+        else -> {
+            // Held down it never fades: towards the hover's colour on ink, a stronger veil elsewhere, darker on red.
+            val ground = when (drawn) {
+                GButtonVariant.Primary -> if (pressed) colors.primaryHover else colors.primary
+                // On the ground's glass, the field's light ground (4.0); 3.x's grounds keep their surface.
+                GButtonVariant.Secondary -> (if (G.grounds == null) G.ground.fieldFill else colors.surface)
+                    .let { if (pressed) colors.press.compositeOver(it) else it }
+                GButtonVariant.Ghost -> if (pressed) colors.press else Color.Transparent
+                else -> if (pressed) lerp(colors.error, Color.Black, 0.18f) else colors.error
+            }
+            (if (drawn == GButtonVariant.Ghost) Modifier
+            else Modifier.gRaised(shape, pressed, onInk = drawn == GButtonVariant.Primary || drawn == GButtonVariant.Danger))
+                .clip(shape)
+                .background(ground, shape)
+                .then(if (drawn == GButtonVariant.Secondary) Modifier.border(1.dp, colors.ink3, shape) else Modifier)
+        }
+    }
     Row(
         modifier
             .alpha(if (enabled) 1f else GOpacity.disabled)
             .heightIn(min = height)
-            .then(if (variant == GButtonVariant.Ghost) Modifier
-            else Modifier.gRaised(shape, pressed, onInk = variant == GButtonVariant.Primary || variant == GButtonVariant.Danger))
+            .then(face)
             .clip(shape)
-            .background(ground, shape)
-            .then(if (variant == GButtonVariant.Secondary) Modifier.border(1.dp, colors.ink3, shape) else Modifier)
             .clickable(interaction, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
-            .padding(horizontal = if (compact) 12.dp else 16.dp),
+            .padding(horizontal = if (compact) 14.dp else 18.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -326,25 +375,30 @@ fun GSheetButton(title: String, onClick: () -> Unit, variant: GButtonVariant = G
     GButton(title, onClick, Modifier.fillMaxWidth(), variant, compact = false, enabled = enabled, destructive = destructive)
 
 /**
- * A round icon button on the page (a field's, a row's action): the icon (the Mac's name) in `tint`, the track's grey
- * while pressed, a 44 target. `title`: what screen readers say.
+ * A round icon button on the page (a field's, a row's action): the icon (the Mac's name) in `tint`, a 44 target.
+ * 4.1 (`glass`): a circle of liquid glass (38), growing and lighting up while held down; `glass` false (or on liquid
+ * glass): no ground, the track's grey while pressed, as 4.0. `title`: what screen readers say.
  */
 @Composable
 fun GIconButton(icon: String, title: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true,
-                tint: Color = G.colors.textSecondary, size: Float = 17f) {
+                tint: Color = G.colors.textSecondary, size: Float = 17f, glass: Boolean = G.grounds == null) {
     val interaction = remember { MutableInteractionSource() }
     val pressed = interaction.gPressed()
+    val lens = glass && gControlPlace() != GControlPlace.Liquid
     Box(
-        modifier.size(GControlMetrics.touchTarget).alpha(if (enabled) 1f else GOpacity.disabled).clip(CircleShape)
-            .background(if (pressed) G.colors.press else Color.Transparent)
+        modifier.size(GControlMetrics.touchTarget).alpha(if (enabled) 1f else GOpacity.disabled)
+            .then(if (lens) Modifier else Modifier.clip(CircleShape).background(if (pressed) G.colors.press else Color.Transparent))
             .clickable(interaction, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
             .semantics { contentDescription = title },
         contentAlignment = Alignment.Center,
-    ) { GIcon(icon, size = size, color = tint) }
+    ) {
+        if (lens) Box(Modifier.size(38.dp).gControlGlass(CircleShape, pressed), contentAlignment = Alignment.Center) { GIcon(icon, size = size, color = tint) }
+        else GIcon(icon, size = size, color = tint)
+    }
 }
 
 /**
- * Gabarit's close button: a cross in a circle with a fine rim (on the dark frame when `onFrame`), a 44 target under the
+ * Gabarit's close button: a cross in a circle of liquid glass (4.1), or with a fine rim (on the dark frame when `onFrame`), a 44 target under the
  * finger. `title`: what screen readers say.
  */
 @Composable
@@ -352,13 +406,18 @@ fun GCloseButton(title: String, onFrame: Boolean = false, onClick: () -> Unit) {
     val colors = G.colors
     val interaction = remember { MutableInteractionSource() }
     val pressed = interaction.gPressed()
+    val glass = !onFrame && G.grounds == null && gControlPlace() != GControlPlace.Liquid
     Box(
         Modifier.size(GControlMetrics.touchTarget)
             .clickable(interaction, indication = null, role = Role.Button, onClick = onClick)
             .semantics { contentDescription = title },
         contentAlignment = Alignment.Center,
     ) {
-        Box(
+        // 4.1: a circle of liquid glass, growing and lighting up while held down.
+        if (glass) Box(Modifier.size(30.dp).gControlGlass(CircleShape, pressed), contentAlignment = Alignment.Center) {
+            GIcon("xmark", size = 11f, weight = FontWeight.Bold, color = colors.ink2)
+        }
+        else Box(
             Modifier.size(28.dp).then(if (onFrame) Modifier else Modifier.gRaised(CircleShape, pressed)).clip(CircleShape)
                 .background(if (pressed) (if (onFrame) GFrameColor.closeHover else colors.press) else Color.Transparent)
                 .border(1.dp, if (onFrame) GFrameColor.rim else colors.hairline, CircleShape),
@@ -369,14 +428,22 @@ fun GCloseButton(title: String, onFrame: Boolean = false, onClick: () -> Unit) {
 
 // MARK: Switches
 
-/** A switch's track and knob (46 × 28 under the finger): rust when on, the track's grey and a soft rim when off; `pressed`: its row is held down. */
+/**
+ * A switch's track and knob (46 × 28 under the finger): rust when on, the track's grey and a soft rim when off;
+ * `pressed`: its row is held down, the knob stretches and becomes a lens of liquid glass (4.1, as iOS 27): the track
+ * shows through it.
+ */
 @Composable
 fun GSwitch(isOn: Boolean, modifier: Modifier = Modifier, pressed: Boolean = false) {
     val colors = G.colors
     val still = gReduceMotion()
     val track by animateColorAsState(if (isOn) colors.accent else colors.track, if (still) snap() else GMotion.quick(), label = "switch")
     val knob by animateDpAsState(if (isOn) 20.dp else 2.dp, if (still) snap() else GMotion.bouncy(), label = "switch")
-    val shape = RoundedCornerShape(14.dp)
+    val shape = RoundedCornerShape(GRadius.pill)
+    val glass = G.grounds == null
+    val glow = rememberGPressGlow(pressed && glass, grow = false)
+    // From the white knob to the lens, on the press's pace.
+    val lens = (glow.light / GGlassValues.controlPressLight).coerceIn(0f, 1f)
     Box(
         modifier.size(width = 46.dp, height = 28.dp)
             .then(if (isOn) Modifier.gGlow(colors.accent, shape) else Modifier)
@@ -386,8 +453,15 @@ fun GSwitch(isOn: Boolean, modifier: Modifier = Modifier, pressed: Boolean = fal
     ) {
         // Held down, the knob stretches towards the middle.
         val stretch = if (pressed && !still) 4.dp else 0.dp
-        Box(Modifier.offset(x = if (isOn) knob - stretch else knob, y = 2.dp).size(width = 24.dp + stretch, height = 24.dp).shadow(1.5.dp, CircleShape)
-            .background(Brush.verticalGradient(listOf(Color.White, Color(0xFFEDEDED))), CircleShape))
+        val knobShape = RoundedCornerShape(GRadius.pill)
+        if (lens > 0f) {
+            Box(Modifier.offset(x = if (isOn) knob - stretch else knob, y = 2.dp).size(width = 24.dp + stretch, height = 24.dp)
+                .graphicsLayer { val s = 1f + 0.12f * lens; scaleX = s; scaleY = s }
+                .gLiquidLens(knobShape, Color.White.copy(alpha = 0.9f * (1f - lens) + 0.18f * lens)))
+        } else {
+            Box(Modifier.offset(x = if (isOn) knob - stretch else knob, y = 2.dp).size(width = 24.dp + stretch, height = 24.dp).shadow(1.5.dp, knobShape)
+                .background(Brush.verticalGradient(listOf(Color.White, Color(0xFFEDEDED))), knobShape))
+        }
     }
 }
 
@@ -421,8 +495,9 @@ fun GToggleRow(title: String, isOn: Boolean, onChange: (Boolean) -> Unit, modifi
 // MARK: Text
 
 /**
- * A field's frame: a light ground on the glass, a rim of the discreet ink at rest (3:1 on the glass, in a card too:
- * a control keeps its line), rust and thicker when it has the focus, red if `isError`. `icon`: discreet before the text
+ * A field's frame. 4.1: a hollow of thin glass, a capsule (a field of several lines: the row's radius), no rim at
+ * rest (with high contrast, the discreet ink's, 3:1); rust and thicker when it has the focus (3:1), red if `isError`.
+ * Under 3.x grounds, 4.0's frame: a light ground and a rim of the discreet ink. `icon`: discreet before the text
  * (a search's magnifying glass); `keyboardActions`: in place of `onSubmit` (on Done, Go, Send, Search).
  */
 @Composable
@@ -444,11 +519,13 @@ fun GFieldFrame(
     visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     val colors = G.colors
-    val shape = RoundedCornerShape(GRadius.sm)
+    val glass = G.grounds == null
+    val shape = RoundedCornerShape(if (singleLine && maxLines <= 1) GRadius.pill else GRadius.row)
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     val submit = { onSubmit?.invoke(); Unit }
     val fill = G.ground.fieldFill
+    val contrast = G.highContrast
     BasicTextField(
         value, onValueChange, modifier.fillMaxWidth().alpha(if (enabled) 1f else GOpacity.disabled),
         enabled = enabled, singleLine = singleLine, minLines = minLines, maxLines = maxLines,
@@ -461,9 +538,11 @@ fun GFieldFrame(
                 focused -> colors.accent
                 else -> colors.ink3
             }
-            Row(Modifier.fillMaxWidth().heightIn(min = GControlMetrics.height).gHollow(fill, shape, 0.06f)
-                .border(if (focused || isError) 1.5.dp else 1.dp, rim, shape)
-                .padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
+            val frame = if (glass) Modifier.gGlassHollow(shape)
+                .then(if (focused || isError || contrast) Modifier.border(if (focused || isError) 1.5.dp else 1.dp, rim, shape) else Modifier)
+            else Modifier.gHollow(fill, shape, 0.06f).border(if (focused || isError) 1.5.dp else 1.dp, rim, shape)
+            Row(Modifier.fillMaxWidth().heightIn(min = GControlMetrics.height).then(frame)
+                .padding(horizontal = if (glass) 14.dp else 10.dp, vertical = 6.dp), verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (icon != null) GIcon(icon, size = 15f, color = colors.textDiscret)
                 Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
@@ -559,13 +638,16 @@ fun GTextField(
 @Composable
 fun GMenuFace(text: String, modifier: Modifier = Modifier, open: Boolean = false, pressed: Boolean = false) {
     val colors = G.colors
-    val shape = RoundedCornerShape(GRadius.sm)
+    val shape = RoundedCornerShape(GRadius.pill)
+    val glass = G.grounds == null
     Row(
-        modifier.widthIn(max = 260.dp).heightIn(min = GControlMetrics.compact).then(if (open) Modifier else Modifier.gRaised(shape, pressed)).clip(shape)
-            .background(if (open) colors.hover.compositeOverSafe(G.ground.fieldFill) else G.ground.fieldFill, shape)
-            .background(if (pressed) colors.press else Color.Transparent, shape)
-            .border(if (open) 1.5.dp else 1.dp, if (open) colors.accent else colors.hairline, shape)
-            .padding(start = 10.dp, end = 8.dp),
+        modifier.widthIn(max = 260.dp).heightIn(min = GControlMetrics.compact)
+            .then(if (glass) Modifier.gControlGlass(shape, pressed).then(if (open) Modifier.border(1.5.dp, colors.accent, shape) else Modifier)
+            else Modifier.then(if (open) Modifier else Modifier.gRaised(shape, pressed)).clip(shape)
+                .background(if (open) colors.hover.compositeOverSafe(G.ground.fieldFill) else G.ground.fieldFill, shape)
+                .background(if (pressed) colors.press else Color.Transparent, shape)
+                .border(if (open) 1.5.dp else 1.dp, if (open) colors.accent else colors.hairline, shape))
+            .padding(start = 12.dp, end = 10.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(text, style = G.type.body, color = colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis,
@@ -597,9 +679,9 @@ fun <T> GMenuField(options: List<T>, selection: T, title: (T) -> String, onSelec
     val colors = G.colors
     var open by remember { mutableStateOf(false) }
     val interaction = remember { MutableInteractionSource() }
-    Box(modifier) {
+    Box(modifier.clip(RoundedCornerShape(GRadius.pill))) {
         GMenuFace(title(selection), open = open, pressed = interaction.gPressed(),
-            modifier = Modifier.alpha(if (enabled) 1f else GOpacity.disabled).clip(RoundedCornerShape(GRadius.sm))
+            modifier = Modifier.alpha(if (enabled) 1f else GOpacity.disabled)
                 .clickable(interaction, indication = null, enabled = enabled, role = Role.DropdownList) { open = !open }
                 .semantics {
                     if (label != null) contentDescription = label
@@ -615,26 +697,39 @@ fun <T> GMenuField(options: List<T>, selection: T, title: (T) -> String, onSelec
     }
 }
 
-/** A chip: on the ground with a fine rim; the current one tinted rust. */
+/**
+ * A chip (a filter, a short choice). 4.1: a capsule of thin liquid glass, the current one in liquid glass tinted with the
+ * accent (its text white or dark, whichever holds 4.5:1); held down it grows and lights up. Under 3.x grounds: on the
+ * ground with a fine rim, the current one tinted rust.
+ */
 @Composable
 fun GChip(title: String, selected: Boolean, onClick: () -> Unit) {
     val colors = G.colors
-    val shape = RoundedCornerShape(GRadius.sm)
+    val shape = RoundedCornerShape(GRadius.pill)
     val interaction = remember { MutableInteractionSource() }
     val pressed = interaction.gPressed()
+    val glass = G.grounds == null
+    val tint = gProminent(colors.accent)
+    val text = when {
+        glass && selected -> gInkOnTint(tint)
+        glass -> colors.ink2
+        selected -> colors.accentText
+        else -> colors.textSecondary
+    }
     Box(
         Modifier.heightIn(min = GControlMetrics.compact)
-            .then(if (selected && !pressed) Modifier.gGlow(colors.accent, shape, 3.dp) else Modifier.gRaised(shape, pressed)).clip(shape)
-            .background(if (selected) colors.selectedFill.compositeOverSafe(G.ground.fieldFill) else G.ground.fieldFill, shape)
-            .background(if (pressed) colors.press else Color.Transparent, shape)
-            .border(1.dp, if (selected) colors.accent.copy(alpha = 0.7f) else colors.hairline, shape)
+            .then(if (glass) Modifier.gControlGlass(shape, pressed, if (selected) tint else Color.Transparent, thin = !selected).clip(shape)
+            else Modifier.then(if (selected && !pressed) Modifier.gGlow(colors.accent, shape, 3.dp) else Modifier.gRaised(shape, pressed)).clip(shape)
+                .background(if (selected) colors.selectedFill.compositeOverSafe(G.ground.fieldFill) else G.ground.fieldFill, shape)
+                .background(if (pressed) colors.press else Color.Transparent, shape)
+                .border(1.dp, if (selected) colors.accent.copy(alpha = 0.7f) else colors.hairline, shape))
             .semantics { this.selected = selected }
             .clickable(interaction, indication = null, role = Role.RadioButton, onClick = onClick)
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = 14.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(title, style = G.type.callout.copy(fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium),
-            color = if (selected) colors.accentText else colors.textSecondary, maxLines = 1)
+            color = text, maxLines = 1)
     }
 }
 
@@ -677,7 +772,8 @@ fun <T> GPicker(title: String, options: List<T>, selection: T, optionTitle: (T) 
 // MARK: Numbers
 
 /**
- * Gabarit's slider: a thin track, the filled part in rust, a white knob with a rim (rust while dragged). `label`: its
+ * Gabarit's slider: a thin track, the filled part in rust, a white knob with a rim; 4.1: while dragged, the knob grows
+ * and becomes a lens of liquid glass (the track shows through it; under 3.x grounds, a rust rim). `label`: its
  * name for screen readers; `format`: how they say its value (a percentage by default).
  */
 @Composable
@@ -699,6 +795,7 @@ fun GSlider(value: Float, onValueChange: (Float) -> Unit, modifier: Modifier = M
         change(next.coerceIn(range.start, range.endInclusive))
     }
     val knob = 24.dp
+    val glass = G.grounds == null
     BoxWithConstraints(
         modifier.fillMaxWidth().widthIn(min = 120.dp).height(GControlMetrics.touchTarget).alpha(if (enabled) 1f else GOpacity.disabled)
             .semantics {
@@ -724,7 +821,11 @@ fun GSlider(value: Float, onValueChange: (Float) -> Unit, modifier: Modifier = M
             contentAlignment = Alignment.CenterStart) {
             Box(Modifier.padding(horizontal = knob / 2).fillMaxWidth().height(4.dp).gHollow(colors.track, CircleShape, 0.1f))
             Box(Modifier.padding(start = knob / 2).width(run * fraction).height(4.dp).clip(CircleShape).background(colors.accent))
-            Box(Modifier.offset(x = run * fraction).size(knob)
+            if (dragging && glass) {
+                Box(Modifier.offset(x = run * fraction).size(knob)
+                    .graphicsLayer { if (!still) { scaleX = 1.3f; scaleY = 1.3f } }
+                    .gLiquidLens(CircleShape, Color.White.copy(alpha = if (G.ground.mode == GGroundMode.LIGHT) 0.55f else 0.3f)))
+            } else Box(Modifier.offset(x = run * fraction).size(knob)
                 .graphicsLayer { if (dragging && !still) { scaleX = 1.1f; scaleY = 1.1f } }
                 .then(if (dragging) Modifier.gGlow(colors.accent, CircleShape, 4.dp) else Modifier.shadow(1.5.dp, CircleShape))
                 .background(Color.White, CircleShape)
@@ -738,7 +839,7 @@ fun GSlider(value: Float, onValueChange: (Float) -> Unit, modifier: Modifier = M
 fun GStepper(title: String, value: Int, onValueChange: (Int) -> Unit, range: IntRange, modifier: Modifier = Modifier,
              decrease: String = "−", increase: String = "+") {
     val colors = G.colors
-    val shape = RoundedCornerShape(GRadius.sm)
+    val shape = RoundedCornerShape(GRadius.pill)
     Row(
         modifier.fillMaxWidth().heightIn(min = GControlMetrics.touchTarget)
             .semantics(mergeDescendants = true) {
@@ -750,7 +851,9 @@ fun GStepper(title: String, value: Int, onValueChange: (Int) -> Unit, range: Int
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(title, style = G.type.body, color = colors.textPrimary, modifier = Modifier.weight(1f))
-        Row(Modifier.height(GControlMetrics.compact).gRaised(shape).clip(shape).background(G.ground.fieldFill, shape).border(1.dp, colors.hairline, shape),
+        Row(Modifier.height(GControlMetrics.compact)
+            .then(if (G.grounds == null) Modifier.gControlGlass(shape, false).clip(shape)
+            else Modifier.gRaised(shape).clip(shape).background(G.ground.fieldFill, shape).border(1.dp, colors.hairline, shape)),
             verticalAlignment = Alignment.CenterVertically) {
             StepperButton("minus", decrease, value > range.first) { onValueChange((value - 1).coerceIn(range)) }
             Box(Modifier.width(1.dp).fillMaxHeight().background(colors.hairline))

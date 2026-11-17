@@ -12,6 +12,8 @@ import android.os.Build
 import android.util.LruCache
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,6 +63,8 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
@@ -508,7 +513,7 @@ fun GGlass(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(modifier.gGlass(density, shape, shadow).clip(shape)) {
-        CompositionLocalProvider(LocalContentColor provides G.colors.ink, content = { content() })
+        CompositionLocalProvider(LocalContentColor provides G.colors.ink, LocalGOnGlass provides true, content = { content() })
     }
 }
 
@@ -555,6 +560,17 @@ fun Modifier.gLiquidGlass(
     shape: Shape = RoundedCornerShape(GRadius.pill),
     backdrop: GBackdrop? = null,
     shadow: Boolean = true,
+): Modifier = gLiquidGlassOf(shape, backdrop, shadow)
+
+/** `gLiquidGlass`, its white at `white` times the ground's (a thin glass: less); `tint`: the glass's own colour over it. */
+@Composable
+internal fun Modifier.gLiquidGlassOf(
+    shape: Shape,
+    backdrop: GBackdrop? = null,
+    shadow: Boolean = true,
+    white: Float = 1f,
+    tint: Color = Color.Transparent,
+    light: () -> Float = { 0f },
 ): Modifier {
     val colors = G.colors
     val reduced = G.reduceTransparency
@@ -594,10 +610,15 @@ fun Modifier.gLiquidGlass(
                         }
                         drawLayer(layer)
                     } else painter.paint(this, position.value, blurred = true, filter = filter)
-                    drawRect(scene?.tone?.let { Color.White.copy(alpha = it.liquid) } ?: colors.glassLiquid)
+                    val base = scene?.tone?.let { Color.White.copy(alpha = it.liquid) } ?: colors.glassLiquid
+                    drawRect(base.copy(alpha = base.alpha * white))
                 }
+                // Pressed, the glass lights up (under its own colour: the text on a tinted glass keeps its contrast).
+                val lit = light()
+                if (lit > 0f) drawRect(Color.White.copy(alpha = lit))
+                if (tint.alpha > 0f) drawRect(tint)
             }
-            if (!contrast) gSheen(path, colors.liquidSheen)
+            if (!contrast && tint.alpha < 0.5f) gSheen(path, colors.liquidSheen)
             drawContent()
             if (contrast) drawPath(path, colors.border, style = Stroke(1.dp.toPx()))
             else gEdgeLight(path, path, colors.liquidRimTop, colors.liquidRimBottom)
@@ -620,6 +641,192 @@ fun GLiquidGlass(
     Box(modifier.gLiquidGlass(shape, backdrop), contentAlignment = contentAlignment) {
         CompositionLocalProvider(LocalContentColor provides G.colors.ink, LocalGOnLiquid provides true) { content() }
     }
+}
+
+// MARK: Controls on liquid glass (4.1)
+
+/**
+ * Inside a content glass (a card, a sheet, an inset list): a control's liquid glass lies on it as a lens, it does not
+ * draw the ground again (it would show as a hole in the card). Set by `GGlass`, the forms' cards and `GBottomSheet`;
+ * provide it around what a `Modifier.gGlass` holds.
+ */
+val LocalGOnGlass = staticCompositionLocalOf { false }
+
+/**
+ * A lens of liquid glass lying on something (a content glass, a track): its white (`white`), lit when held down
+ * (`light`), its own colour (`tint`), its two soft lights and its edge's light up and down (a true rim with high
+ * contrast), a short shadow; what is under it shows through, nothing is drawn again.
+ */
+@Composable
+internal fun Modifier.gLiquidLens(
+    shape: Shape,
+    white: Color = G.colors.glassLiquid,
+    shadow: Boolean = true,
+    tint: Color = Color.Transparent,
+    light: () -> Float = { 0f },
+): Modifier {
+    val colors = G.colors
+    val contrast = G.highContrast
+    val shadows = if (shadow) listOf(GShadow(GGlassValues.shadowLiquidY, GGlassValues.shadowLiquidBlur, GGlassValues.shadowLiquidSpread,
+        colors.liquidShadow)) else emptyList()
+    return this.drawWithCache {
+        val path = shape.createOutline(size, layoutDirection, this).path()
+        val shade = shadowPainter(shape, path, shadows)
+        onDrawWithContent {
+            shade()
+            clipPath(path) {
+                drawRect(white)
+                val lit = light()
+                if (lit > 0f) drawRect(Color.White.copy(alpha = lit))
+                if (tint.alpha > 0f) drawRect(tint)
+            }
+            if (!contrast && tint.alpha < 0.5f) gSheen(path, colors.liquidSheen)
+            drawContent()
+            if (contrast) drawPath(path, colors.border, style = Stroke(1.dp.toPx()))
+            else gEdgeLight(path, path, colors.liquidRimTop, colors.liquidRimBottom)
+        }
+    }
+}
+
+/** Where a control lies: on the ground, on a content glass (a lens), or on liquid glass (no glass on glass). */
+internal enum class GControlPlace { Ground, Glass, Liquid }
+
+@Composable
+internal fun gControlPlace(): GControlPlace = when {
+    LocalGOnLiquid.current -> GControlPlace.Liquid
+    LocalGOnGlass.current || LocalGFormCard.current || LocalGInSheet.current -> GControlPlace.Glass
+    else -> GControlPlace.Ground
+}
+
+/**
+ * How a control's glass answers a finger: held down, it grows (`controlPressScale`, on the `bouncy` spring; not with
+ * reduced motion) and lights up (white at `controlPressLight`). `scale` and `light` are read while drawing.
+ */
+@Stable
+internal class GPressGlow(private val scaleState: State<Float>, private val lightState: State<Float>) {
+    val scale: Float get() = scaleState.value
+    val light: Float get() = lightState.value
+}
+
+@Composable
+internal fun rememberGPressGlow(pressed: Boolean, grow: Boolean = true): GPressGlow {
+    val still = gReduceMotion()
+    val scale = animateFloatAsState(if (pressed && grow && !still) GGlassValues.controlPressScale else 1f,
+        if (still) snap() else GMotion.bouncy(), label = "press")
+    val light = animateFloatAsState(if (pressed) GGlassValues.controlPressLight else 0f,
+        if (still) snap() else if (pressed) GMotion.linear() else GMotion.quick(), label = "light")
+    return remember(scale, light) { GPressGlow(scale, light) }
+}
+
+/**
+ * A control's liquid glass (4.1: a button, a chip, a round icon button): on the ground, `gLiquidGlass` (`thin`: less
+ * white, no shadow); on a content glass, a lens of it; on liquid glass, only its colour and the light of the press (no
+ * glass on glass). Held down (`pressed`), it grows a little and lights up. `tint`: a tinted glass's colour (the
+ * prominent glass: the accent or the ink at `controlProminent`). Dense with `G.reduceTransparency`, a true rim with
+ * `G.highContrast`.
+ */
+@Composable
+internal fun Modifier.gControlGlass(shape: Shape, pressed: Boolean, tint: Color = Color.Transparent, thin: Boolean = false,
+                                    grow: Boolean = true): Modifier {
+    val glow = rememberGPressGlow(pressed, grow)
+    val grown = this.graphicsLayer { scaleX = glow.scale; scaleY = glow.scale }
+    val colors = G.colors
+    return when (gControlPlace()) {
+        GControlPlace.Liquid -> grown.drawWithCache {
+            val path = shape.createOutline(size, layoutDirection, this).path()
+            onDrawBehind {
+                clipPath(path) {
+                    if (tint.alpha > 0f) drawRect(tint)
+                    if (glow.light > 0f) drawRect(colors.press.copy(alpha = colors.press.alpha * glow.light / GGlassValues.controlPressLight))
+                }
+            }
+        }
+        GControlPlace.Glass -> {
+            val white = if (G.reduceTransparency) G.ground.glass.copy(alpha = GGlassValues.reduced) else colors.glassLiquid
+            grown.gLiquidLens(shape, if (thin) white.copy(alpha = white.alpha * 0.6f) else white, shadow = !thin, tint = tint, light = { glow.light })
+        }
+        GControlPlace.Ground -> grown.gLiquidGlassOf(shape, shadow = !thin, white = if (thin) 0.6f else 1f, tint = tint, light = { glow.light })
+    }
+}
+
+/**
+ * A hollow of thin glass (4.1: a field): the thin glass's colour, the shade of the hollow (`glassHollow`) falling
+ * inside from its top edge, the light caught by its bottom edge; no rim (with high contrast the field draws its own).
+ * Dense with `G.reduceTransparency`.
+ */
+@Composable
+fun Modifier.gGlassHollow(shape: Shape): Modifier {
+    val colors = G.colors
+    val fill = if (G.reduceTransparency) G.ground.glass.copy(alpha = GGlassValues.reduced) else colors.glassThin
+    val hollow = colors.glassHollow
+    val light = colors.liquidRimBottom
+    val contrast = G.highContrast
+    return this.drawWithCache {
+        val edge = shape.createOutline(size, layoutDirection, this).path()
+        // All but the shape, a hair lower: blurred and cut to the shape, only its shade on the inside remains.
+        val outside = android.graphics.Path().apply {
+            fillType = android.graphics.Path.FillType.EVEN_ODD
+            val margin = 8.dp.toPx()
+            addRect(-margin, -margin, size.width + margin, size.height + margin, android.graphics.Path.Direction.CW)
+            addPath(edge.asAndroidPath(), 0f, 2.dp.toPx())
+        }
+        val shade = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = hollow.toArgb()
+            maskFilter = BlurMaskFilter(2.5.dp.toPx(), BlurMaskFilter.Blur.NORMAL)
+        }
+        onDrawBehind {
+            drawPath(edge, fill)
+            // A hollow is a little darker than what is around it: a veil of its shade over the whole.
+            drawPath(edge, hollow.copy(alpha = hollow.alpha * 0.4f))
+            clipPath(edge) { drawIntoCanvas { it.nativeCanvas.drawPath(outside, shade) } }
+            if (!contrast) gEdgeLight(edge, edge, Color.Transparent, light)
+        }
+    }
+}
+
+/** A prominent glass's colour: `color` at `controlProminent`. */
+internal fun gProminent(color: Color): Color = color.copy(alpha = GGlassValues.controlProminent)
+
+/**
+ * The text on a glass tinted `tint` (its alpha the tint's) on this ground: white or the darkest ink, whichever holds
+ * best at the glass's worst point (each stop of the ground, under its light or not, brightened as the liquid glass
+ * does, its white `liquid` over it, lit by the press or not; dense with reduced transparency).
+ */
+internal fun GGroundSpec.inkOnTint(tint: Color, liquid: Float): Color {
+    val candidates = listOf(Color.White, GPalette.graphite1000)
+    return candidates.maxBy { text -> tintPoints(tint, liquid).minOf { GLuminance.contrast(GLuminance.rgb(it), GLuminance.rgb(text)) } }
+}
+
+/** The colours a glass tinted `tint` can show on this ground (see `inkOnTint`). */
+internal fun GGroundSpec.tintPoints(tint: Color, liquid: Float): List<Color> {
+    val b = GGlassValues.brightnessLiquid
+    val grounds = stops.flatMap { stop ->
+        val lit = light.color.copy(alpha = light.strength.coerceIn(0f, 1f)).compositeOver(stop)
+        listOf(stop, lit)
+    }.map { Color((it.red * b).coerceAtMost(1f), (it.green * b).coerceAtMost(1f), (it.blue * b).coerceAtMost(1f)) }
+    val glasses = grounds.map { Color.White.copy(alpha = liquid).compositeOver(it) } + glass.copy(alpha = GGlassValues.reduced).compositeOver(middle)
+    return glasses.flatMap { g -> listOf(g, Color.White.copy(alpha = GGlassValues.controlPressLight).compositeOver(g)) }
+        .map { tint.compositeOver(it) }
+}
+
+/** Whether `text` holds 4.5:1 on a glass tinted `tint` on this ground, at its worst point. */
+internal fun GGroundSpec.holds(text: Color, tint: Color, liquid: Float): Boolean =
+    tintPoints(tint, liquid).minOf { GLuminance.contrast(GLuminance.rgb(it), GLuminance.rgb(text)) } >= GGlassValues.textMinimum
+
+/** Whether `text` holds on the clear liquid glass of the current ground (a red text on a glass button). */
+@Composable
+internal fun gHoldsOnGlass(text: Color): Boolean {
+    val ground = G.ground
+    val liquid = G.groundTone.liquid
+    return remember(ground, liquid, text) { ground.holds(text, Color.Transparent, liquid) }
+}
+
+/** The text on a glass tinted `tint` (prominent), on the current ground. */
+@Composable
+internal fun gInkOnTint(tint: Color): Color {
+    val ground = G.ground
+    val liquid = G.groundTone.liquid
+    return remember(ground, liquid, tint) { ground.inkOnTint(tint, liquid) }
 }
 
 /** The liquid glass's colours: saturated (`saturationLiquid`), then brightened (`brightnessLiquid`). */

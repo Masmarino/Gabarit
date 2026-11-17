@@ -83,7 +83,8 @@ public struct GPicker<Value: Hashable>: View {
     }
 }
 
-/// A choice's face: the current choice in a field, the two arrows on the right.
+/// A choice's face: the current choice on a capsule of liquid glass (4.1), the two arrows on the right; open, an
+/// accent rim.
 private struct GMenuFace: View {
     let title: String
     var hovering = false
@@ -91,23 +92,19 @@ private struct GMenuFace: View {
     var open = false
     @ScaledMetric(relativeTo: .body) private var chevron: CGFloat = 10
     @Environment(\.isEnabled) private var isEnabled
-    @Environment(\.colorSchemeContrast) private var contrast
 
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: GRadius.sm, style: .continuous)
         HStack(spacing: 8) {
-            Text(title).font(GFont.body).foregroundStyle(GColor.textPrimary).lineLimit(1)
+            Text(title).font(GFont.body).foregroundStyle(.gInk).lineLimit(1)
             Image(systemName: "chevron.up.chevron.down")
                 .font(.system(size: chevron, weight: .semibold))
-                .foregroundStyle(GColor.textDiscret)
+                .foregroundStyle(.gInk2)
         }
-        .padding(.leading, 10).padding(.trailing, 8)
+        .padding(.leading, 14).padding(.trailing, 10)
         .frame(minHeight: GControlMetrics.compact)
-        .background(pressed ? GColor.press : hovering ? GColor.hover : Color.clear, in: shape)
-        .background(.gControlGround, in: shape)
-        .overlay { shape.strokeBorder(open ? GColor.accent : hovering ? GColor.border.opacity(0.7) : GColor.controlRim(contrast), lineWidth: open ? 1.5 : 1) }
-        .gRaised(shape, hovering: hovering, pressed: pressed, active: !open)
-        .contentShape(shape)
+        .gLiquidControl(hovering: hovering, pressed: pressed)
+        .overlay { if open { Capsule().strokeBorder(GColor.accent, lineWidth: 1.5).allowsHitTesting(false) } }
+        .contentShape(Capsule())
         .opacity(isEnabled ? 1 : GOpacity.disabled)
     }
 }
@@ -134,7 +131,8 @@ private struct GMenuField<Value: Hashable>: View {
     }
 }
 #else
-/// The current choice in a Gabarit field; the list opens in a bubble, the current choice ticked in rust.
+/// The current choice in a Gabarit field; the list opens in a bubble (the system's, of liquid glass: 4.1), the current
+/// choice ticked in rust.
 private struct GMenuField<Value: Hashable>: View {
     let title: String
     @Binding var selection: Value
@@ -188,7 +186,6 @@ private struct GMenuField<Value: Hashable>: View {
             }
             .frame(minWidth: 220, maxHeight: 340)
             .fixedSize(horizontal: false, vertical: options.count <= 8)
-            .background(GColor.surface)
             // The bubble is a window of its own: it takes the appearance of the view that opens it.
             .preferredColorScheme(colorScheme)
         }
@@ -240,7 +237,7 @@ private struct GMenuRow: View {
 }
 #endif
 
-/// Chips side by side: the current choice tinted rust, the others on the ground.
+/// Chips side by side (4.1): capsules of liquid glass, the current choice in glass tinted with the accent.
 private struct GChips<Value: Hashable>: View {
     @Binding var selection: Value
     let options: [(value: Value, title: String)]
@@ -250,21 +247,15 @@ private struct GChips<Value: Hashable>: View {
         HStack(spacing: 6) {
             ForEach(options, id: \.value) { option in
                 let current = option.value == selection
-                let shape = RoundedRectangle(cornerRadius: GRadius.sm, style: .continuous)
-                Button { gWithAnimation(.snappy(duration: 0.15), reduceMotion: reduceMotion) { selection = option.value } } label: {
+                Button { gWithAnimation(GAnimation.bouncy, reduceMotion: reduceMotion) { selection = option.value } } label: {
                     GLive { hovering, pressed in
                         Text(option.title)
                             .font(GFont.callout.weight(current ? .semibold : .medium))
-                            .foregroundStyle(current ? GColor.accentText : (hovering ? GColor.textPrimary : GColor.textSecondary))
-                            .padding(.horizontal, 12)
+                            .foregroundStyle(current ? AnyShapeStyle(GOnProminent()) : AnyShapeStyle(.gInk))
+                            .padding(.horizontal, 14)
                             .frame(minHeight: GControlMetrics.compact)
-                            // The veil on what it is laid on: a chosen chip keeps its tint under the finger.
-                            .background(pressed ? GColor.press : (hovering && !current ? GColor.hover : .clear), in: shape)
-                            .background(current ? AnyShapeStyle(GColor.selectedFill) : AnyShapeStyle(.gControlGround), in: shape)
-                            .overlay { shape.strokeBorder(current ? GColor.accent.opacity(0.7) : (hovering ? GColor.border.opacity(0.5) : GColor.hairline), lineWidth: 1) }
-                            .gRaised(shape, hovering: hovering, pressed: pressed, active: !current || pressed)
-                            .gGlow(radius: hovering ? 5 : 3, active: current && !pressed)
-                            .contentShape(shape)
+                            .gLiquidControl(prominent: current ? .accent : nil, hovering: hovering, pressed: pressed)
+                            .contentShape(Capsule())
                             .gTouchTarget(height: GControlMetrics.compact)
                     }
                 }

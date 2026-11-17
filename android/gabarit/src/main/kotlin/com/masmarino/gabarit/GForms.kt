@@ -65,6 +65,23 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
 
 // Gabarit's forms, as on the iPhone: a page's title, sections as content glass with rows of a constant height (4.0: no
 // lines between them, unless a section asks for them), the sentence under a section, the side column's sections,
@@ -254,7 +271,8 @@ fun GChoiceRow(title: String, selected: Boolean, onClick: () -> Unit, modifier: 
 /** A settings section's coloured tile (as on the iPhone): a gradient of its colour, the icon in white. */
 @Composable
 fun GIconTile(icon: String, color: Color, size: Dp = 30.dp) {
-    val shape = RoundedCornerShape(size * 0.28f)
+    // A small square (as a tile in a row): md; larger, a thumbnail: the row's radius.
+    val shape = RoundedCornerShape(if (size <= 40.dp) GRadius.md else GRadius.row)
     Box(
         Modifier.size(size).background(Brush.linearGradient(listOf(color.copy(alpha = 0.95f), color.copy(alpha = 0.6f))), shape)
             .border(0.6.dp, Color.White.copy(alpha = 0.3f), shape),
@@ -377,7 +395,7 @@ fun GForm(title: String, summary: String? = null, modifier: Modifier = Modifier,
 fun GSidebarRow(title: String, icon: String, selected: Boolean, onClick: () -> Unit, detail: String? = null, warns: Boolean = false,
                 warning: String = "Needs attention") {
     val colors = G.colors
-    val shape = RoundedCornerShape(GRadius.md)
+    val shape = RoundedCornerShape(GRadius.row)
     val spoken = listOfNotNull(title, detail, if (warns) warning else null).joinToString(", ")
     Row(
         Modifier.fillMaxWidth().heightIn(min = 40.dp).then(if (selected) Modifier.gGlow(colors.accent, shape, 3.dp) else Modifier).clip(shape).background(if (selected) colors.selectedFill else Color.Transparent, shape)
@@ -399,9 +417,89 @@ fun GSidebarRow(title: String, icon: String, selected: Boolean, onClick: () -> U
     }
 }
 
+/** How a page's tabs are drawn: on a track of thin glass, a lens of liquid glass on the current one (4.1), or underlined (4.0). */
+enum class GNavTabsStyle { Glass, Underline }
+
+/**
+ * A page's tabs. 4.1 (`GNavTabsStyle.Glass`): each as wide as its title, on a track of thin liquid glass, the current
+ * one under a lens of liquid glass that slides from tab to tab (`GMotion.bouncy`). `GNavTabsStyle.Underline` (4.0's):
+ * the text, a rust line under the current one, a fine line under them all. Under 3.x grounds, underlined.
+ */
+@Composable
+fun <T> GNavTabs(tabs: List<T>, selection: T, title: (T) -> String, onSelect: (T) -> Unit, modifier: Modifier = Modifier,
+                 style: GNavTabsStyle = GNavTabsStyle.Glass) {
+    if (style == GNavTabsStyle.Glass && G.grounds == null) {
+        Row(modifier.fillMaxWidth()) { GGlassSegments(tabs, selection, title, onSelect, Modifier, equal = false, role = Role.Tab) }
+        return
+    }
+    GUnderlinedTabs(tabs, selection, title, onSelect, modifier)
+}
+
+/**
+ * A segmented control (two to five short options), 4.1: a capsule of thin liquid glass, the current segment under a
+ * lens of liquid glass that slides from one to the other on a spring (`GMotion.bouncy`; at once with reduced motion),
+ * growing a little and lighting up while held down. Its segments share its width.
+ */
+@Composable
+fun <T> GSegmentedControl(options: List<T>, selection: T, title: (T) -> String, onSelect: (T) -> Unit, modifier: Modifier = Modifier) {
+    GGlassSegments(options, selection, title, onSelect, modifier.fillMaxWidth(), equal = true, role = Role.RadioButton)
+}
+
+@Composable
+private fun <T> GGlassSegments(options: List<T>, selection: T, title: (T) -> String, onSelect: (T) -> Unit, modifier: Modifier,
+                               equal: Boolean, role: Role) {
+    val colors = G.colors
+    val shape = RoundedCornerShape(GRadius.pill)
+    val still = gReduceMotion()
+    // Each segment's place in the track (px), read once laid out.
+    val places = remember { mutableStateMapOf<Int, Pair<Float, Float>>() }
+    val current = options.indexOf(selection).coerceAtLeast(0)
+    val target = places[current]
+    var placed by remember { mutableStateOf(false) }
+    val spec = if (still || !placed) snap<Float>() else GMotion.bouncy()
+    val x by animateFloatAsState(target?.first ?: 0f, spec, label = "lens")
+    val width by animateFloatAsState(target?.second ?: 0f, spec, label = "lens")
+    if (target != null) SideEffect { placed = true }
+    val interactions = remember(options.size) { List(options.size) { MutableInteractionSource() } }
+    val pressed = interactions.getOrNull(current)?.gPressed() == true
+    val glow = rememberGPressGlow(pressed)
+    val lensWhite = if (G.ground.mode == GGroundMode.LIGHT) Color.White.copy(alpha = 0.9f) else Color.White.copy(alpha = 0.26f)
+    // The track is a little hollow: a veil of the hollow's shade over its thin glass, the lens brighter than it.
+    val hollow = colors.glassHollow.let { it.copy(alpha = it.alpha * 0.5f) }
+    val density = LocalDensity.current
+    Box(modifier.heightIn(min = GControlMetrics.touchTarget).gControlGlass(shape, false, thin = true)
+        .drawWithCache { val outline = shape.createOutline(size, layoutDirection, this); onDrawBehind { drawOutline(outline, hollow) } }
+        .padding(3.dp)) {
+        if (target != null) {
+            Box(Modifier.matchParentSize().wrapContentWidth(Alignment.Start)) {
+                Box(Modifier.offset { IntOffset(x.roundToInt(), 0) }.width(with(density) { width.toDp() }).fillMaxHeight()
+                    .graphicsLayer { scaleX = glow.scale; scaleY = glow.scale }
+                    .gLiquidLens(shape, lensWhite, light = { glow.light }))
+            }
+        }
+        Row(Modifier.then(if (equal) Modifier.fillMaxWidth() else Modifier), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            options.forEachIndexed { i, option ->
+                val chosen = i == current
+                Box(
+                    Modifier.then(if (equal) Modifier.weight(1f) else Modifier).heightIn(min = 38.dp)
+                        .onGloballyPositioned { places[i] = it.positionInParent().x to it.size.width.toFloat() }
+                        .clip(shape)
+                        .semantics { selected = chosen }
+                        .clickable(interactions[i], indication = null, role = role) { onSelect(option) }
+                        .padding(horizontal = if (equal) 8.dp else 14.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(title(option), style = G.type.callout.copy(fontWeight = if (chosen) FontWeight.SemiBold else FontWeight.Medium),
+                        color = if (chosen) colors.ink else colors.ink2, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+        }
+    }
+}
+
 /** Underlined tabs: the text, a rust line under the current one, a fine line under them all. */
 @Composable
-fun <T> GNavTabs(tabs: List<T>, selection: T, title: (T) -> String, onSelect: (T) -> Unit, modifier: Modifier = Modifier) {
+private fun <T> GUnderlinedTabs(tabs: List<T>, selection: T, title: (T) -> String, onSelect: (T) -> Unit, modifier: Modifier) {
     val colors = G.colors
     Row(modifier.fillMaxWidth().drawBehind {
         drawLine(colors.hairline, Offset(0f, size.height - 0.5f), Offset(size.width, size.height - 0.5f), 1.dp.toPx())

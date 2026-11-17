@@ -37,7 +37,7 @@
     transform: translateX(-50%);
     white-space: nowrap;
     padding: 0.125rem 0.375rem;
-    border-radius: var(--site-border-radius);
+    border-radius: var(--gbt-radius-row);
     @include glass.floating-glass;
     font-size: 0.6875rem;
     font-variant-numeric: tabular-nums;

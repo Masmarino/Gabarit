@@ -21,7 +21,6 @@ use gpui::{
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::button::metrics;
-use crate::relief::hollow;
 use crate::theme::{ActiveTheme, GTextExt, alpha};
 use crate::tokens::{self, opacity, radius, text};
 
@@ -1341,8 +1340,9 @@ impl Element for GTextElement {
     }
 }
 
-/// A field's frame (`GFieldFrame`): the ground slightly hollow, a fine rim, rust when it has the focus. `bare` (a form
-/// card's row): none, the card is its frame.
+/// A field's frame (`GFieldFrame`), 4.1: a hollow of thin glass, without border (the shade inside its top edge, the
+/// light on its bottom one), a capsule (a field of several lines: `radius::ROW`); with the focus, the accent's outline
+/// (3:1 on the glass). "Increase contrast": the outline always. `bare` (a form card's row): none, the card is its frame.
 #[derive(IntoElement)]
 pub struct GFieldFrame {
     input: Entity<GTextInput>,
@@ -1388,34 +1388,38 @@ impl RenderOnce for GFieldFrame {
                 .child(self.input)
                 .into_any_element();
         }
-        let rim = if focused {
-            colors.accent
-        } else if self.preview_hover {
-            alpha(colors.border, 0.7)
+        let shape = px(if multi_line {
+            radius::ROW
         } else {
-            colors.hairline
-        };
+            radius::PILL
+        });
+        let veil = alpha(colors.ink, 0.04);
         div()
             .id("g-field")
+            .relative()
             .flex()
             .items_center()
             .w_full()
             .min_h(px(metrics::HEIGHT))
-            .px(px(10.))
+            .px(px(if multi_line { 12. } else { 14. }))
             .py(px(if multi_line { 6. } else { 0. }))
-            .rounded(px(radius::SM))
-            .bg(colors.background)
-            .shadow(vec![hollow(0.06)])
-            .border(px(if focused { 1.5 } else { 1. }))
-            .border_color(rim)
+            .rounded(shape)
+            .child(crate::glass::glass_layer(
+                crate::glass::GMaterial::hollow(),
+                shape,
+            ))
+            .when(self.preview_hover && !focused, |this| this.bg(veil))
+            .when(focused, |this| {
+                this.border(px(1.5)).border_color(colors.accent)
+            })
             .when(!focused && !disabled, |this| {
-                this.hover(move |style| style.border_color(alpha(colors.border, 0.7)))
+                this.hover(move |style| style.bg(veil))
             })
             .when(!disabled, |this| this.cursor(CursorStyle::IBeam))
             // A click on the padding too puts the caret in the field.
             .on_click(move |_, window, cx| window.focus(&focus, cx))
             .when(disabled, |this| this.opacity(opacity::DISABLED))
-            .child(self.input)
+            .child(div().relative().flex_1().min_w_0().child(self.input))
             .into_any_element()
     }
 }

@@ -5,7 +5,7 @@
   top: 0;
   padding: 0.375rem 0.625rem;
   // What floats: the liquid glass (4.0), dense enough to be read over the chart.
-  border-radius: var(--site-border-radius);
+  border-radius: var(--gbt-radius-row);
   @include glass.floating-glass;
   color: var(--text-primary);
   font-size: 0.8125rem;

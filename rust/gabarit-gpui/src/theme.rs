@@ -260,6 +260,7 @@ pub fn ground_colors(spec: &GGroundSpec, tone: &GGroundToneValues, base: GColors
         glass_shadow: at(tone.shade, kind.shadow),
         glass_shadow_near: at(tone.shade, kind.shadow_near),
         liquid_shadow: at(tone.shade, kind.liquid_shadow),
+        glass_hollow: at(tone.shade, kind.hollow),
         ..base
     }
 }

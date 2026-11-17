@@ -116,6 +116,7 @@ data class GColors(
     val glassShadow: Color,
     val glassShadowNear: Color,
     val liquidShadow: Color,
+    val glassHollow: Color,
 )
 
 val GLightColors = GColors(
@@ -176,6 +177,7 @@ val GLightColors = GColors(
     glassShadow = Color(0xFF182030).copy(alpha = 0.22f),
     glassShadowNear = Color(0xFF182030).copy(alpha = 0.06f),
     liquidShadow = Color(0xFF182030).copy(alpha = 0.2f),
+    glassHollow = Color(0xFF182030).copy(alpha = 0.1f),
 )
 
 val GDarkColors = GColors(
@@ -236,6 +238,7 @@ val GDarkColors = GColors(
     glassShadow = Color(0xFF000000).copy(alpha = 0.6f),
     glassShadowNear = Color(0xFF000000).copy(alpha = 0.3f),
     liquidShadow = Color(0xFF000000).copy(alpha = 0.45f),
+    glassHollow = Color(0xFF000000).copy(alpha = 0.4f),
 )
 
 object GRadius {
@@ -293,18 +296,21 @@ object GGlassValues {
     const val inkDiscret = 0.42f
     const val inkSecondaryMax = 0.8f
     const val inkDiscretMax = 0.64f
+    const val controlPressScale = 1.04f
+    const val controlPressLight = 0.14f
+    const val controlProminent = 0.86f
     const val textMinimum = 4.5f
     const val edgeMinimum = 3.0f
 }
 
 /** What a kind of glass lays on a ground: its colour's opacities, its rims', its shadows'. */
 @Immutable
-data class GGlassKindValues(val thin: Float, val regular: Float, val thick: Float, val liquid: Float, val rim: Float, val rimEdge: Float, val liquidRim: Float, val liquidRimSoft: Float, val shadow: Float, val shadowNear: Float, val liquidShadow: Float, val rimTop: Float, val rimBottom: Float, val sheen: Float, val liquidRimTop: Float, val liquidRimBottom: Float, val liquidSheen: Float)
+data class GGlassKindValues(val thin: Float, val regular: Float, val thick: Float, val liquid: Float, val rim: Float, val rimEdge: Float, val liquidRim: Float, val liquidRimSoft: Float, val shadow: Float, val shadowNear: Float, val liquidShadow: Float, val rimTop: Float, val rimBottom: Float, val sheen: Float, val liquidRimTop: Float, val liquidRimBottom: Float, val liquidSheen: Float, val hollow: Float)
 
 enum class GGlassKind(val values: GGlassKindValues) {
-    LIGHT(GGlassKindValues(0.46f, 0.68f, 0.88f, 0.26f, 0.85f, 0.5f, 0.95f, 0.35f, 0.22f, 0.06f, 0.2f, 0.55f, 0.32f, 0.18f, 0.7f, 0.45f, 0.35f)),
-    DARK(GGlassKindValues(0.42f, 0.62f, 0.86f, 0.07f, 0.09f, 0.06f, 0.42f, 0.08f, 0.6f, 0.3f, 0.45f, 0.16f, 0.09f, 0.05f, 0.35f, 0.22f, 0.1f)),
-    TINTED(GGlassKindValues(0.22f, 0.34f, 0.62f, 0.1f, 0.22f, 0.12f, 0.6f, 0.12f, 0.55f, 0.2f, 0.4f, 0.24f, 0.14f, 0.07f, 0.45f, 0.28f, 0.14f)),
+    LIGHT(GGlassKindValues(0.46f, 0.68f, 0.88f, 0.26f, 0.85f, 0.5f, 0.95f, 0.35f, 0.22f, 0.06f, 0.2f, 0.55f, 0.32f, 0.18f, 0.7f, 0.45f, 0.35f, 0.1f)),
+    DARK(GGlassKindValues(0.42f, 0.62f, 0.86f, 0.07f, 0.09f, 0.06f, 0.42f, 0.08f, 0.6f, 0.3f, 0.45f, 0.16f, 0.09f, 0.05f, 0.35f, 0.22f, 0.1f, 0.4f)),
+    TINTED(GGlassKindValues(0.22f, 0.34f, 0.62f, 0.1f, 0.22f, 0.12f, 0.6f, 0.12f, 0.55f, 0.2f, 0.4f, 0.24f, 0.14f, 0.07f, 0.45f, 0.28f, 0.14f, 0.32f)),
 }
 
 /** Gabarit's grounds (light, dark, black) and its sample ambiances (tokens/gabarit.json). */

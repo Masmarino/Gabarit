@@ -5,8 +5,16 @@ export const darkTheme: Decorator = (story) => {
   return story()
 }
 
+// The aurore ambiance (4.0): a ground of colour, under the dark theme (`style.scss` lays it).
+export const auroreAmbiance: Decorator = (story) => {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  document.documentElement.setAttribute('data-ambiance', 'aurore')
+  return story()
+}
+
 const resetTheme: Decorator = (story) => {
   document.documentElement.removeAttribute('data-theme')
+  document.documentElement.removeAttribute('data-ambiance')
   return story()
 }
 

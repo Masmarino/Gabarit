@@ -279,7 +279,7 @@ private struct GFormSection: View {
     }
 
     private func card(_ rows: SubviewsCollection) -> some View {
-        let shape = RoundedRectangle(cornerRadius: separated ? GRadius.lg : GRadius.glass, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: GRadius.glass, style: .continuous)
         return VStack(spacing: separated ? 0 : 2) {
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                 if separated, index > 0 { Rectangle().fill(GColor.hairline).frame(height: 1).padding(.leading, 16) }

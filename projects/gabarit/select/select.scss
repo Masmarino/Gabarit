@@ -1,5 +1,4 @@
 @use '../src/lib/tokens/a11y';
-@use '../src/lib/tokens/depth';
 @use '../src/lib/tokens/glass';
 
 $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
@@ -44,24 +43,20 @@ $easing: cubic-bezier(0.34, 1.56, 0.64, 1);
   width: 100%;
   height: var(--gbt-control-height-md);
   padding: 0 10px;
-  background: var(--bg-principal);
-  border: 1px solid var(--border-color);
-  border-radius: var(--site-border-radius-sm);
-  color: var(--text-primary);
+  // A pop-up button in liquid glass (4.1), as a secondary button: lit and grown a little when held.
+  border: 1px solid transparent;
+  border-radius: glass.$radius-pill;
+  @include glass.liquid-control;
   font-size: 14px;
   cursor: pointer;
-  @include depth.raised;
-  transition:
-    border-color 0.15s $easing-std,
-    box-shadow 0.15s $easing-std;
+  @include glass.liquid-motion;
 
   &:hover:not(:disabled) {
-    border-color: var(--text-discret);
-    @include depth.surface-hover;
+    background-image: linear-gradient(var(--bg-hover), var(--bg-hover));
   }
 
   &:active:not(:disabled) {
-    @include depth.surface-sunk;
+    @include glass.liquid-pressed;
   }
 
   &--open,
@@ -122,7 +117,7 @@ $easing: cubic-bezier(0.34, 1.56, 0.64, 1);
   max-height: 280px;
   overflow-y: auto;
   // What floats: the liquid glass (4.0), dense enough to be read over the page.
-  border-radius: var(--site-border-radius-lg);
+  border-radius: var(--gbt-radius-glass);
   @include glass.floating-glass;
   animation: gbt-select-scale-in 0.15s $easing both;
 
@@ -154,7 +149,7 @@ $easing: cubic-bezier(0.34, 1.56, 0.64, 1);
   padding: 8px 10px;
   background: transparent;
   border: none;
-  border-radius: var(--gbt-radius-menu, var(--site-border-radius-sm));
+  border-radius: var(--gbt-radius-menu, var(--gbt-radius-row));
   color: var(--text-primary);
   font-size: 14px;
   text-align: left;

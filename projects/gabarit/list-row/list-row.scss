@@ -102,7 +102,7 @@ $title-line: 1.5rem;
 
     &:focus-visible {
       @include a11y.focus-ring(2px);
-      border-radius: 2px;
+      border-radius: var(--site-border-radius);
     }
   }
 }
@@ -131,13 +131,13 @@ $title-line: 1.5rem;
 
     &:focus-visible {
       @include a11y.focus-ring(1px);
-      border-radius: 2px;
+      border-radius: var(--site-border-radius);
     }
   }
 
   ::ng-deep code {
     padding: 0 0.375rem;
-    border-radius: var(--gbt-radius-chip, var(--site-border-radius-xs));
+    border-radius: var(--gbt-radius-chip, var(--site-border-radius));
     background: var(--bg-hover);
     color: var(--text-primary);
     font-family: var(--gbt-font-mono);

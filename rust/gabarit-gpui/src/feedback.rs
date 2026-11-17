@@ -12,7 +12,7 @@ use gpui::{
 use crate::assets::icon;
 use crate::button::GButton;
 use crate::motion::{self, GMotion, GMotionExt};
-use crate::relief::{card, floating_shadow};
+use crate::relief::card;
 use crate::theme::{ActiveTheme, GTextExt, alpha};
 use crate::tokens::{radius, spacing, text};
 
@@ -73,7 +73,8 @@ impl GTone {
     }
 }
 
-/// A small label: a state's tint, or the hover's veil with no state (`GBadge`).
+/// A small label (`GBadge`), 4.1: a capsule of thin liquid glass, a state's tint over it (its text in the state's
+/// colour), or the ink's second step with no state.
 #[derive(IntoElement)]
 pub struct GBadge {
     title: SharedString,
@@ -103,27 +104,38 @@ impl GBadge {
 
 impl RenderOnce for GBadge {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let colors = cx.theme().colors;
-        let foreground = self
-            .tone
-            .map_or(colors.text_secondary, |tone| tone.tint_text(cx));
-        div()
+        let foreground = self.tone.map_or_else(
+            || crate::glass::thin_glass_ink(cx),
+            |tone| crate::glass::legible_on_glass(tone.tint_text(cx), 0.5, Some(tone.tint(cx)), cx),
+        );
+        let shape = px(radius::PILL);
+        crate::glass::glass_on(div(), crate::glass::GMaterial::liquid_thin(), shape, cx)
+            .relative()
+            .when_some(self.tone, |this, tone| {
+                this.child(
+                    div()
+                        .absolute()
+                        .top_0()
+                        .left_0()
+                        .size_full()
+                        .rounded(shape)
+                        .bg(tone.tint(cx)),
+                )
+            })
             .flex()
             .flex_none()
             .items_center()
             .gap(px(4.))
             .px(px(spacing::XS))
             .py(px(spacing::XXS / 2.0))
-            .rounded(px(radius::SM))
-            .bg(self.tone.map_or(colors.hover, |tone| tone.tint(cx)))
             .text_color(foreground)
             .g_text(text::CAPTION_2)
             .font_weight(gpui::FontWeight::SEMIBOLD)
             .whitespace_nowrap()
             .when_some(self.icon, |this, name| {
-                this.child(icon(name, px(11.), foreground))
+                this.child(icon(name, px(11.), foreground).relative())
             })
-            .child(self.title)
+            .child(div().relative().child(self.title))
     }
 }
 
@@ -218,7 +230,7 @@ impl RenderOnce for GBanner {
             .gap(px(12.))
             .px(px(14.))
             .py(px(10.))
-            .rounded(px(radius::MD))
+            .rounded(px(radius::GLASS))
             .bg(alpha(tone.base(cx), 0.1))
             .border_1()
             .border_color(alpha(tone.base(cx), 0.35))
@@ -248,7 +260,8 @@ impl RenderOnce for GBanner {
     }
 }
 
-/// A passing message, as it shows: the ink of a primary button, a floating shadow (`GToast`).
+/// A passing message, as it shows (`GToast`), 4.1: a capsule of liquid glass in the ground's ink, its short shadow (4.0:
+/// the ink of a primary button).
 #[derive(IntoElement)]
 pub struct GToastView {
     text: SharedString,
@@ -267,24 +280,31 @@ impl GToastView {
 impl RenderOnce for GToastView {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
-        div()
-            .id("g-toast")
-            .role(Role::Status)
-            .aria_label(self.text.clone())
-            .flex()
-            .flex_none()
-            .items_center()
-            .gap(px(8.))
-            .px(px(spacing::LG))
-            .py(px(spacing::SM))
-            .rounded(px(radius::MD))
-            .bg(colors.primary)
-            .shadow(floating_shadow())
-            .text_color(colors.on_primary)
-            .g_text(text::SUBHEADLINE)
-            .font_weight(gpui::FontWeight::MEDIUM)
-            .child(icon(self.icon, px(13.), colors.on_primary))
-            .child(gpui::Text::new_inaccessible(self.text))
+        crate::glass::glass_on(
+            div(),
+            crate::glass::GMaterial::liquid(),
+            px(radius::PILL),
+            cx,
+        )
+        .id("g-toast")
+        .relative()
+        .role(Role::Status)
+        .aria_label(self.text.clone())
+        .flex()
+        .flex_none()
+        .items_center()
+        .gap(px(8.))
+        .px(px(spacing::LG))
+        .py(px(spacing::SM))
+        .text_color(colors.ink)
+        .g_text(text::SUBHEADLINE)
+        .font_weight(gpui::FontWeight::MEDIUM)
+        .child(icon(self.icon, px(13.), colors.ink).relative())
+        .child(
+            div()
+                .relative()
+                .child(gpui::Text::new_inaccessible(self.text)),
+        )
     }
 }
 
@@ -393,12 +413,19 @@ impl GTooltip {
 impl Render for GTooltip {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let colors = cx.theme().colors;
-        crate::glass::glass_on(div(), crate::glass::GMaterial::liquid(), px(radius::MD), cx)
-            .px(px(9.))
-            .py(px(4.))
-            .g_text(text::CAPTION)
-            .text_color(colors.ink)
-            .child(div().relative().child(self.text.clone()))
+        // One line: a capsule (4.1); a longer text wraps in it.
+        crate::glass::glass_on(
+            div(),
+            crate::glass::GMaterial::liquid(),
+            px(radius::PILL),
+            cx,
+        )
+        .relative()
+        .px(px(10.))
+        .py(px(4.))
+        .g_text(text::CAPTION)
+        .text_color(colors.ink)
+        .child(div().relative().child(self.text.clone()))
     }
 }
 
@@ -415,7 +442,7 @@ impl GSkeleton {
         GSkeleton {
             id: id.into(),
             height,
-            radius: radius::SM,
+            radius: radius::MD,
         }
     }
 
@@ -558,7 +585,7 @@ impl RenderOnce for GEmptyState {
             .gap(px(spacing::XL))
             .size_full()
             .child(
-                card(px(radius::LG), cx)
+                card(px(radius::ROW), cx)
                     .flex()
                     .items_center()
                     .justify_center()

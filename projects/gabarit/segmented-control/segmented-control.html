@@ -7,10 +7,21 @@
   [class.gbt-segmented-control--sm]="size() === 'sm'"
   [class.gbt-segmented-control--wrap]="wrap()"
   [class.gbt-segmented-control--tinted]="tinted()"
+  [class.gbt-segmented-control--lens]="!!lens()"
   role="radiogroup"
   [attr.aria-label]="label() ? null : ariaLabel() || null"
   [attr.aria-labelledby]="label() ? labelId : null"
 >
+  @if (lens(); as box) {
+    <span
+      class="gbt-segmented-control__lens"
+      [class.gbt-segmented-control__lens--glides]="lensGlides()"
+      aria-hidden="true"
+      [style.width.px]="box.width"
+      [style.height.px]="box.height"
+      [style.transform]="'translate(' + box.x + 'px, ' + box.y + 'px)'"
+    ></span>
+  }
   @for (option of options(); track option.value; let i = $index) {
     <button
       type="button"

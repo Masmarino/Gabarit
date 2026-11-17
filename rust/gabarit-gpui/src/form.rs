@@ -202,7 +202,7 @@ impl RenderOnce for GFormRowButton {
                     .bottom(px(5.))
                     .left(px(8.))
                     .right(px(8.))
-                    .rounded(px(radius::MD))
+                    .rounded(px(radius::ROW))
                     .bg(veil)
                     .opacity(if lit { 1. } else { 0. })
                     .when(follows, |this| {
@@ -354,7 +354,7 @@ impl RenderOnce for GFormSection {
                 }),
             ));
         } else if !self.rows.is_empty() {
-            let shape = px(radius::LG);
+            let shape = px(radius::GLASS);
             let card = if self.nested {
                 nested_card(shape, cx)
             } else {

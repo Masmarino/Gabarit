@@ -115,6 +115,7 @@ public enum GColor {
     public static let glassShadow = Color(GColorValues.glassShadow)
     public static let glassShadowNear = Color(GColorValues.glassShadowNear)
     public static let liquidShadow = Color(GColorValues.liquidShadow)
+    public static let glassHollow = Color(GColorValues.glassHollow)
 }
 
 /// The grounds as Gabarit draws them, with no theme.

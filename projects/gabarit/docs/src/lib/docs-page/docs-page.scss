@@ -89,7 +89,7 @@ gbt-card ::ng-deep .gbt-card {
       padding: 0.75rem 1rem;
       border: 1px solid transparent;
       border-left-width: 4px;
-      border-radius: var(--site-border-radius-sm);
+      border-radius: var(--gbt-radius-row);
       color: var(--text-primary);
 
       > :last-child {

@@ -208,7 +208,7 @@ impl RenderOnce for GMessageRow {
             .px(px(16.))
             .pt(px(if self.grouped { 2. } else { 10. }))
             .pb(px(2.))
-            .rounded(px(radius::MD))
+            .rounded(px(radius::ROW))
             .hover(move |style| style.bg(hover))
             .child(div().w(px(36.)).flex_none().when(!self.grouped, |this| {
                 this.child(GAvatar::new(self.author.clone()).size(36.))

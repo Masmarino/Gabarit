@@ -147,6 +147,7 @@ pub struct GColorRoles<C> {
     pub glass_shadow: C,
     pub glass_shadow_near: C,
     pub liquid_shadow: C,
+    pub glass_hollow: C,
 }
 
 impl<C: Copy> GColorRoles<C> {
@@ -210,6 +211,7 @@ impl<C: Copy> GColorRoles<C> {
             glass_shadow: f(self.glass_shadow),
             glass_shadow_near: f(self.glass_shadow_near),
             liquid_shadow: f(self.liquid_shadow),
+            glass_hollow: f(self.glass_hollow),
         }
     }
 }
@@ -274,6 +276,7 @@ pub const LIGHT: GColorValues = GColorRoles {
     glass_shadow: GRgba::hexa(0x182030, 0.22),
     glass_shadow_near: GRgba::hexa(0x182030, 0.06),
     liquid_shadow: GRgba::hexa(0x182030, 0.2),
+    glass_hollow: GRgba::hexa(0x182030, 0.1),
 };
 
 pub const DARK: GColorValues = GColorRoles {
@@ -334,6 +337,7 @@ pub const DARK: GColorValues = GColorRoles {
     glass_shadow: GRgba::hexa(0x000000, 0.6),
     glass_shadow_near: GRgba::hexa(0x000000, 0.3),
     liquid_shadow: GRgba::hexa(0x000000, 0.45),
+    glass_hollow: GRgba::hexa(0x000000, 0.4),
 };
 
 pub mod radius {
@@ -390,6 +394,9 @@ pub mod glass {
     pub const INK_DISCRET: f32 = 0.42;
     pub const INK_SECONDARY_MAX: f32 = 0.8;
     pub const INK_DISCRET_MAX: f32 = 0.64;
+    pub const CONTROL_PRESS_SCALE: f32 = 1.04;
+    pub const CONTROL_PRESS_LIGHT: f32 = 0.14;
+    pub const CONTROL_PROMINENT: f32 = 0.86;
     pub const TEXT_MINIMUM: f32 = 4.5;
     pub const EDGE_MINIMUM: f32 = 3.0;
 }
@@ -421,6 +428,7 @@ pub struct GGlassKindValues {
     pub liquid_rim_top: f32,
     pub liquid_rim_bottom: f32,
     pub liquid_sheen: f32,
+    pub hollow: f32,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -433,9 +441,9 @@ pub enum GGlassKind {
 impl GGlassKind {
     pub const fn values(self) -> GGlassKindValues {
         match self {
-            GGlassKind::Light => GGlassKindValues { thin: 0.46, regular: 0.68, thick: 0.88, liquid: 0.26, rim: 0.85, rim_edge: 0.5, liquid_rim: 0.95, liquid_rim_soft: 0.35, shadow: 0.22, shadow_near: 0.06, liquid_shadow: 0.2, rim_top: 0.55, rim_bottom: 0.32, sheen: 0.18, liquid_rim_top: 0.7, liquid_rim_bottom: 0.45, liquid_sheen: 0.35 },
-            GGlassKind::Dark => GGlassKindValues { thin: 0.42, regular: 0.62, thick: 0.86, liquid: 0.07, rim: 0.09, rim_edge: 0.06, liquid_rim: 0.42, liquid_rim_soft: 0.08, shadow: 0.6, shadow_near: 0.3, liquid_shadow: 0.45, rim_top: 0.16, rim_bottom: 0.09, sheen: 0.05, liquid_rim_top: 0.35, liquid_rim_bottom: 0.22, liquid_sheen: 0.1 },
-            GGlassKind::Tinted => GGlassKindValues { thin: 0.22, regular: 0.34, thick: 0.62, liquid: 0.1, rim: 0.22, rim_edge: 0.12, liquid_rim: 0.6, liquid_rim_soft: 0.12, shadow: 0.55, shadow_near: 0.2, liquid_shadow: 0.4, rim_top: 0.24, rim_bottom: 0.14, sheen: 0.07, liquid_rim_top: 0.45, liquid_rim_bottom: 0.28, liquid_sheen: 0.14 },
+            GGlassKind::Light => GGlassKindValues { thin: 0.46, regular: 0.68, thick: 0.88, liquid: 0.26, rim: 0.85, rim_edge: 0.5, liquid_rim: 0.95, liquid_rim_soft: 0.35, shadow: 0.22, shadow_near: 0.06, liquid_shadow: 0.2, rim_top: 0.55, rim_bottom: 0.32, sheen: 0.18, liquid_rim_top: 0.7, liquid_rim_bottom: 0.45, liquid_sheen: 0.35, hollow: 0.1 },
+            GGlassKind::Dark => GGlassKindValues { thin: 0.42, regular: 0.62, thick: 0.86, liquid: 0.07, rim: 0.09, rim_edge: 0.06, liquid_rim: 0.42, liquid_rim_soft: 0.08, shadow: 0.6, shadow_near: 0.3, liquid_shadow: 0.45, rim_top: 0.16, rim_bottom: 0.09, sheen: 0.05, liquid_rim_top: 0.35, liquid_rim_bottom: 0.22, liquid_sheen: 0.1, hollow: 0.4 },
+            GGlassKind::Tinted => GGlassKindValues { thin: 0.22, regular: 0.34, thick: 0.62, liquid: 0.1, rim: 0.22, rim_edge: 0.12, liquid_rim: 0.6, liquid_rim_soft: 0.12, shadow: 0.55, shadow_near: 0.2, liquid_shadow: 0.4, rim_top: 0.24, rim_bottom: 0.14, sheen: 0.07, liquid_rim_top: 0.45, liquid_rim_bottom: 0.28, liquid_sheen: 0.14, hollow: 0.32 },
         }
     }
 }

@@ -87,7 +87,7 @@ class GalleryTest {
         var value by remember { mutableStateOf(0.6f) }
         var count by remember { mutableStateOf(3) }
         var name by remember { mutableStateOf("Florian") }
-        Column(Modifier.fillMaxWidth().gGlass().padding(20.dp),
+        GGlass(Modifier.fillMaxWidth()) { Column(Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text("Controls", style = G.type.title2, color = G.colors.textPrimary)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -111,7 +111,7 @@ class GalleryTest {
             GSlider(value, { value = it }, label = "Volume")
             GStepper("Reminders", count, { count = it }, 0..10)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { GTone.entries.forEach { GBadge("state", tone = it) } }
-        }
+        } }
     }
 
     /** Each control at rest, held down and disabled, as the Mac's and Linux's galleries show them. */
@@ -127,17 +127,21 @@ class GalleryTest {
             "Menu" to { GMenuFace("Light") },
             "Switch" to { GSwitch(true) },
             "Icon" to { GIconButton("trash", "Delete", {}) },
+            "Prominent" to { GButton("Send", {}, variant = GButtonVariant.GlassProminent) },
+            "Segments" to { GSegmentedControl(listOf("Day", "Week"), "Day", { it }, {}, Modifier.width(150.dp)) },
+            "Slider" to { GSlider(0.5f, {}, Modifier.width(120.dp)) },
         )
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row { Spacer(Modifier.width(90.dp)); listOf("Rest", "Pressed").forEach { Text(it, style = G.type.headline, color = G.colors.textPrimary, modifier = Modifier.width(130.dp)) } }
+            Row { Spacer(Modifier.width(90.dp)); listOf("Rest", "Pressed").forEach { Text(it, style = G.type.headline, color = G.colors.textPrimary, modifier = Modifier.width(160.dp)) } }
             controls.forEach { (name, control) ->
                 Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     Text(name, style = G.type.caption, color = G.colors.textDiscret, modifier = Modifier.width(90.dp))
-                    Box(Modifier.width(130.dp)) { control() }
-                    Box(Modifier.width(130.dp)) {
+                    Box(Modifier.width(160.dp)) { control() }
+                    Box(Modifier.width(160.dp)) {
                         androidx.compose.runtime.CompositionLocalProvider(LocalGPressedPreview provides true) {
                             if (name == "Menu") GMenuFace("Light", pressed = true)
                             else if (name == "Switch") GSwitch(true, pressed = true)
+                            else if (name == "Slider") GSlider(0.5f, {}, Modifier.width(120.dp))
                             else control()
                         }
                     }
@@ -173,7 +177,7 @@ class GalleryTest {
                 GFormRow("Devices", icon = "macbook.and.iphone", divider = true) { Text("3") }
                 GFormRow("Sign out", icon = "rectangle.portrait.and.arrow.right", destructive = true, onClick = {})
             }
-            GFormSection("Profile card", "Fields in a card: a light ground, a 3:1 rim.") {
+            GFormSection("Profile card", "Fields in a card: a hollow of thin glass (4.1).") {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     GTextField("Display name", "Florian", {})
                     GTextField("Pronouns", "", {}, prompt = "they/them")
@@ -252,13 +256,77 @@ class GalleryTest {
                         { GRowButton("Invite people", {}) }, { GRowButton("Leave the space", {}, destructive = true) }))
                 }
             }
-            Box(Modifier.width(260.dp).shadow(8.dp, RoundedCornerShape(GRadius.xxl)).border(gLiquidBorder(), RoundedCornerShape(GRadius.xxl))
-                .clip(RoundedCornerShape(GRadius.xxl))) {
+            Box(Modifier.width(260.dp).shadow(8.dp, RoundedCornerShape(GRadius.glass)).border(gLiquidBorder(), RoundedCornerShape(GRadius.glass))
+                .clip(RoundedCornerShape(GRadius.glass))) {
                 GMenu(listOf(
                     { GMenuItem("Reply", "arrowshape.turn.up.left", {}) },
                     { GMenuItem("Pinned", "pin", {}, checked = true) },
                     { GMenuItem("Delete", "trash", {}, destructive = true) },
                 ))
+            }
+        }
+    }
+
+    /**
+     * 4.1: the controls on liquid glass, on the ground and in a card (a lens there): buttons (glass, prominent, 4.0's
+     * solid look kept by `LocalGButtonLook`), round icon buttons, chips and labels, the segmented control and a page's
+     * tabs, the switch and the slider held down, fields (a hollow of thin glass; an error's rim).
+     */
+    @Test fun liquid() = draw("liquid") {
+        var segment by remember { mutableStateOf("Week") }
+        var tab by remember { mutableStateOf("Chats") }
+        var chip by remember { mutableStateOf(1) }
+        var name by remember { mutableStateOf("Florian") }
+        val label = @Composable { t: String -> Text(t, style = G.type.caption, color = G.colors.ink2) }
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            label("On the ground")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                GButton("Save", {}, variant = GButtonVariant.Primary)
+                GButton("Cancel", {})
+                GButton("Later", {}, variant = GButtonVariant.Ghost)
+                GIconButton("square.and.pencil", "New", {}, tint = G.colors.ink)
+                GCloseButton("Close") {}
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.runtime.CompositionLocalProvider(LocalGPressedPreview provides true) {
+                    GButton("Held", {}, variant = GButtonVariant.Primary)
+                    GButton("Held", {})
+                }
+                GButton("Delete", {}, destructive = true)
+                androidx.compose.runtime.CompositionLocalProvider(LocalGButtonLook provides GButtonLook.Solid) {
+                    GButton("Solid", {}, variant = GButtonVariant.Primary)
+                    GButton("Solid", {})
+                }
+            }
+            GChips(listOf(0, 1, 2), chip, { listOf("All", "Unread", "Mentions")[it] }, { chip = it })
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                GBadge("Article", icon = "doc.text"); GTone.entries.forEach { GBadge(it.name, tone = it) }
+            }
+            GSegmentedControl(listOf("Day", "Week", "Month"), segment, { it }, { segment = it })
+            GNavTabs(listOf("Chats", "Calls", "Files"), tab, { it }, { tab = it })
+            GSearchField("", {}, prompt = "Search")
+            GGlass(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    label("In a card (lenses)")
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        GButton("Save", {}, variant = GButtonVariant.Primary)
+                        GButton("Cancel", {})
+                        GChip("Unread", true) {}
+                        GChip("All", false) {}
+                        GIconButton("trash", "Delete", {})
+                    }
+                    GSegmentedControl(listOf("Day", "Week", "Month"), segment, { it }, { segment = it })
+                    GTextField("Name", name, { name = it })
+                    GTextField("Email", "florian@", {}, isError = true, footer = "Not an address.")
+                    GSearchField("", {}, prompt = "Search", glass = false)
+                    Row(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                        GSwitch(true); GSwitch(true, pressed = true); GSwitch(false, pressed = true)
+                        androidx.compose.runtime.CompositionLocalProvider(LocalGPressedPreview provides true) {
+                            GSlider(0.4f, {}, Modifier.weight(1f))
+                        }
+                    }
+                    GStepper("Reminders", 3, {}, 0..10)
+                }
             }
         }
     }

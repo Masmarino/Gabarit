@@ -46,7 +46,7 @@ private struct GToggleRow: View {
     }
 }
 
-/// A switch's track and knob (a little larger under the finger).
+/// A switch's track and knob; held down, the knob becomes liquid glass (4.1).
 public struct GSwitch: View {
     let isOn: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -57,7 +57,7 @@ public struct GSwitch: View {
     private let size = CGSize(width: 46, height: 28)
     #endif
 
-    /// Under the pointer: its rim stronger, its glow wider. Held down: the knob stretches.
+    /// Under the pointer: its rim stronger, its glow wider. Held down: the knob turns to liquid glass and grows.
     var hovering = false
     var pressed = false
 
@@ -75,14 +75,27 @@ public struct GSwitch: View {
             .frame(width: size.width, height: size.height)
             .gGlow(radius: hovering ? 7 : 5, active: isOn)
             .overlay(alignment: isOn ? .trailing : .leading) {
-                GKnob()
-                    .frame(width: size.height - 4, height: size.height - 4)
-                    .scaleEffect(x: pressed && !reduceMotion ? 1.18 : 1, anchor: isOn ? .trailing : .leading)
-                    .shadow(color: .black.opacity(0.18), radius: 1.5, y: 1)
-                    .padding(2)
+                knob.padding(2)
             }
             .animation(reduceMotion ? nil : .snappy(duration: 0.18), value: isOn)
+            .animation(reduceMotion ? nil : GAnimation.bouncy, value: pressed)
             .accessibilityHidden(true)
+    }
+
+    /// The knob: white at rest; held down, a lens of liquid glass, wider and a little taller than the track's height
+    /// (as iOS's), the track's colour seen through it. Reduced motion: the glass, at the knob's size.
+    @ViewBuilder private var knob: some View {
+        let side = size.height - 4
+        let grown = pressed && !reduceMotion
+        if pressed {
+            Capsule().fill(Color.white.opacity(0.0001))
+                .gLiquidControl(pressed: true)
+                .frame(width: grown ? side * 1.5 : side, height: grown ? side * 1.2 : side)
+        } else {
+            GKnob()
+                .frame(width: side, height: side)
+                .shadow(color: .black.opacity(0.18), radius: 1.5, y: 1)
+        }
     }
 }
 #endif

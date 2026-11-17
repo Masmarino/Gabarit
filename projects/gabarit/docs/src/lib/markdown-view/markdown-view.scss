@@ -80,7 +80,7 @@ gbt-markdown-view {
 
   :where(code) {
     padding: 0.125rem 0.375rem;
-    border-radius: var(--site-border-radius-sm);
+    border-radius: var(--site-border-radius);
     background: var(--bg-hover);
     font-family: var(--gbt-font-mono, ui-monospace, monospace);
     font-size: 0.8125em;
@@ -89,7 +89,7 @@ gbt-markdown-view {
   :where(pre) {
     padding: 0.875rem 1rem;
     overflow-x: auto;
-    border-radius: var(--site-border-radius-lg);
+    border-radius: var(--gbt-radius-row);
     @include glass.glass(thin, $shadow: false);
     line-height: 1.5;
   }

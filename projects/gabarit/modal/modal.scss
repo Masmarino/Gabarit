@@ -11,13 +11,16 @@
   z-index: 1200;
 }
 
-// A sheet of thick glass (4.0) over the dimmed page: its header and its footer are the same material, no line.
+// A sheet of liquid glass (4.1), dense, over the dimmed page: its header and its footer are the same material, no line.
 .gbt-modal__dialog {
   border-radius: var(--gbt-radius-glass);
-  @include glass.glass(thick);
+  @include glass.floating-glass;
+  display: flex;
+  flex-direction: column;
   width: min(90vw, 480px);
   max-height: 90vh;
-  overflow-y: auto;
+  // The body scrolls between the header and the footer (4.1): nothing is laid over the sheet's glass.
+  overflow: hidden;
 
   &:focus {
     outline: none;
@@ -29,6 +32,7 @@
 }
 
 .gbt-modal__header {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -88,11 +92,14 @@
     min-height: 44px;
     margin-block: -0.75rem;
     margin-inline-end: -0.75rem;
-    border-radius: var(--site-border-radius-sm);
+    border-radius: 999px;
   }
 }
 
 .gbt-modal__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -106,15 +113,12 @@
 }
 
 .gbt-modal__footer {
-  position: sticky;
-  bottom: 0;
+  flex: none;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem 1.125rem;
-  // Over the body when it scrolls: the glass again, so the dialog reads as one sheet.
-  background: var(--gbt-glass-thick);
 
   &:empty {
     display: none;

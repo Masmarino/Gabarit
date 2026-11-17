@@ -13,7 +13,7 @@ use gpui::{
 use crate::assets::icon;
 use crate::button::metrics;
 use crate::motion;
-use crate::relief::{GPointer, Live, glow, hollow, knob, raised};
+use crate::relief::{GPointer, Live, glow, hollow, knob};
 use crate::theme::{ActiveTheme, GTextExt, alpha, black};
 use crate::tokens::{opacity, radius, text};
 
@@ -49,22 +49,49 @@ pub(crate) fn row_label(
 }
 
 /// A switch's track and knob (`GSwitch`): a flat track, rust when on, the track's grey when off, a white knob. Under
-/// the pointer, its rim stronger, its glow wider; held down, the knob stretches.
+/// the pointer, its rim stronger, its glow wider; held down, the knob stretches and turns to liquid glass (4.1: it
+/// lights and grows on the bouncy spring, the track showing through it), back to white when released.
 #[derive(IntoElement)]
 pub struct GSwitch {
     id: ElementId,
     on: bool,
     live: Live,
+    held: bool,
 }
 
 impl GSwitch {
-    pub(crate) fn new(id: impl Into<ElementId>, on: bool, live: Live) -> Self {
+    pub(crate) fn new(id: impl Into<ElementId>, on: bool, live: Live, held: bool) -> Self {
         GSwitch {
             id: id.into(),
             on,
             live,
+            held,
         }
     }
+}
+
+/// A knob (a switch's, a slider's) that turns to liquid glass while it is held (4.1): the glass under it, lit and
+/// grown on the bouncy spring, the white knob fading out over it; released, the white comes back.
+fn glass_knob(size: Pixels, held: bool, cx: &App) -> gpui::Div {
+    let radius = size / 2.;
+    div()
+        .relative()
+        .rounded_full()
+        .child(crate::glass::control_glass(
+            "g-knob-glass",
+            crate::glass::GMaterial::liquid().nested(),
+            radius,
+            held,
+            cx,
+        ))
+        .child(motion::spring_to(
+            knob(size).absolute().top_0().left_0().size_full(),
+            "g-knob-white",
+            motion::SNAPPY,
+            held,
+            cx,
+            |white, phase: gpui::AnimationPhase| white.opacity(1. - phase.0.clamp(0., 1.)),
+        ))
 }
 
 pub const SWITCH_WIDTH: f32 = 36.0;
@@ -74,7 +101,7 @@ impl RenderOnce for GSwitch {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
         let reduce_motion = cx.theme().reduce_motion;
-        let (on, live) = (self.on, self.live);
+        let (on, live, held) = (self.on, self.live, self.held);
         let knob_size = SWITCH_HEIGHT - 4.0;
         let travel = SWITCH_WIDTH - 4.0 - knob_size;
         let group = SharedString::new_static(live.group);
@@ -109,16 +136,16 @@ impl RenderOnce for GSwitch {
             });
         }
         let stretch = knob_size * 0.18;
-        let mut thumb = knob(px(knob_size))
+        let mut thumb = glass_knob(px(knob_size), held, cx)
             .id("g-knob")
             .absolute()
             .top(px(1.))
+            .size(px(knob_size))
             .shadow(vec![
-                gpui::BoxShadow::new(px(0.), px(1.), black(0.18)).blur_radius(px(1.5)),
+                gpui::BoxShadow::new(px(0.), px(1.), black(if held { 0.1 } else { 0.18 }))
+                    .blur_radius(px(1.5)),
             ]);
-        if live.follows() && !reduce_motion {
-            thumb = thumb.group_active(group, move |style| style.w(px(knob_size + stretch)));
-        } else if live.pressed() && !reduce_motion {
+        if held && !reduce_motion {
             thumb = thumb.w(px(knob_size + stretch));
         }
         // On, the knob on the right, its stretch towards the left. It slides on a spring that starts where it is: no
@@ -202,8 +229,10 @@ impl GToggle {
 }
 
 impl RenderOnce for GToggle {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let live = Live::new("g-toggle", self.preview, !self.disabled);
+        let (held, press) = motion::use_press(self.id.clone(), window, cx);
+        let held = live.pressed() || (live.follows() && held);
         let on = self.on;
         let mut row = div()
             .id(self.id.clone())
@@ -217,7 +246,7 @@ impl RenderOnce for GToggle {
             .aria_toggled(if on { Toggled::True } else { Toggled::False })
             .when(self.disabled, |this| this.opacity(opacity::DISABLED));
         if live.follows() {
-            row = row
+            row = motion::on_press(row, &press)
                 .cursor(CursorStyle::PointingHand)
                 .focusable()
                 .tab_stop(true);
@@ -227,7 +256,7 @@ impl RenderOnce for GToggle {
         }
         let title = self.title.clone();
         row.child(row_label(title, self.detail.clone(), cx))
-            .child(GSwitch::new("g-switch", on, live))
+            .child(GSwitch::new("g-switch", on, live, held))
     }
 }
 
@@ -290,7 +319,7 @@ impl RenderOnce for GCheckbox {
             .items_center()
             .justify_center()
             .size(px(16.))
-            .rounded(px(radius::XS))
+            .rounded(px(radius::MD))
             .border_1()
             .border_color(if live.hovered() && !checked {
                 colors.border
@@ -451,10 +480,12 @@ impl RenderOnce for GSlider {
             0.
         } as f32;
         let knob_size = 16.0;
-        let held = live.pressed();
+        // Held (pressed or dragged, until the button is released anywhere): the knob turns to liquid glass (4.1).
+        let (held_state, press) = motion::use_press(self.id.clone(), window, cx);
+        let held = live.pressed() || (live.follows() && held_state);
         let lit = live.hovered();
         let knob_rim = if held {
-            colors.accent
+            alpha(colors.border, 0.0)
         } else if lit {
             colors.border
         } else {
@@ -462,7 +493,7 @@ impl RenderOnce for GSlider {
         };
         let knob_shadow = |held: bool, lit: bool| {
             let (color, blur, y) = if held {
-                (alpha(colors.accent, 0.4), 4., 0.)
+                (alpha(colors.accent, 0.3), 4., 0.)
             } else if lit {
                 (black(0.22), 2.5, 1.)
             } else {
@@ -483,37 +514,26 @@ impl RenderOnce for GSlider {
         };
         let knob_px = |held, lit| px(knob_size * scale(held, lit));
         let group = SharedString::new_static(live.group);
-        let mut thumb = knob(knob_px(held, lit))
+        let mut thumb = glass_knob(knob_px(held, lit), held, cx)
             .id("g-slider-knob")
             .absolute()
             .top(relative(0.5))
+            .size(knob_px(held, lit))
             .border_1()
             .border_color(knob_rim)
             .shadow(knob_shadow(held, lit));
-        if live.follows() {
+        if live.follows() && !held {
             let (hover_rim, hover_shadow, hover_size) = (
                 colors.border,
                 knob_shadow(false, true),
                 knob_px(false, true),
             );
-            let (held_rim, held_shadow, held_size) = (
-                colors.accent,
-                knob_shadow(true, false),
-                knob_px(true, false),
-            );
-            thumb = thumb
-                .group_hover(group.clone(), move |style| {
-                    style
-                        .border_color(hover_rim)
-                        .shadow(hover_shadow)
-                        .size(hover_size)
-                })
-                .group_active(group, move |style| {
-                    style
-                        .border_color(held_rim)
-                        .shadow(held_shadow)
-                        .size(held_size)
-                });
+            thumb = thumb.group_hover(group, move |style| {
+                style
+                    .border_color(hover_rim)
+                    .shadow(hover_shadow)
+                    .size(hover_size)
+            });
         }
         // The knob's centre runs from half a knob in from each end.
         let thumb = thumb
@@ -547,7 +567,7 @@ impl RenderOnce for GSlider {
             .aria_value(SharedString::from(spoken))
             .when(self.disabled, |this| this.opacity(opacity::DISABLED));
         if live.follows() {
-            slider = slider
+            slider = motion::on_press(slider, &press)
                 .cursor(CursorStyle::PointingHand)
                 .focusable()
                 .tab_stop(true);
@@ -676,7 +696,7 @@ impl RenderOnce for GStepper {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let colors = cx.theme().colors;
         let (value, min, max) = (self.value, self.min, self.max);
-        let shape = px(radius::SM);
+        let shape = px(radius::PILL);
         let step = |id: &'static str,
                     symbol: &'static str,
                     delta: i64,
@@ -689,8 +709,10 @@ impl RenderOnce for GStepper {
                 .flex()
                 .items_center()
                 .justify_center()
+                .relative()
                 .w(px(metrics::COMPACT + 8.))
                 .h_full()
+                .rounded(shape)
                 .aria_label(if delta > 0 { "Increase" } else { "Decrease" })
                 .role(Role::Button)
                 .when(!enabled, |this| this.opacity(opacity::DISABLED))
@@ -704,47 +726,45 @@ impl RenderOnce for GStepper {
                             })
                         })
                 })
-                .child(icon(symbol, px(12.), colors.text_primary))
+                .child(icon(symbol, px(12.), colors.ink))
         };
-        let hairline = || div().w(px(1.)).h_full().bg(colors.hairline);
+        let hairline = || {
+            div()
+                .relative()
+                .w(px(1.))
+                .h(px(14.))
+                .bg(alpha(colors.ink, 0.14))
+        };
         let increment = self.on_change.clone();
         let decrement = self.on_change.clone();
-        let field = raised(
-            div()
-                .id("g-stepper-field")
-                .relative()
-                .flex()
-                .flex_none()
-                .items_center()
-                .h(px(metrics::COMPACT))
-                .rounded(shape)
-                .overflow_hidden()
-                .bg(colors.background)
-                .border_1()
-                .border_color(colors.hairline),
-            shape,
-            false,
-            Live::new("g-stepper", None, false),
-            cx,
-        )
-        .child(step(
-            "minus",
-            "minus",
-            -1,
-            value > min,
-            self.on_change.clone(),
-        ))
-        .child(hairline())
-        .child(
-            div()
-                .min_w(px(40.))
-                .text_center()
-                .g_text(text::BODY)
-                .text_color(colors.text_primary)
-                .child(value.to_string()),
-        )
-        .child(hairline())
-        .child(step("plus", "plus", 1, value < max, self.on_change.clone()));
+        // 4.1: a capsule of liquid glass, its two halves the buttons.
+        let field = crate::glass::glass_on(div(), crate::glass::GMaterial::liquid(), shape, cx)
+            .id("g-stepper-field")
+            .relative()
+            .flex()
+            .flex_none()
+            .items_center()
+            .h(px(metrics::COMPACT))
+            .text_color(colors.ink)
+            .child(step(
+                "minus",
+                "minus",
+                -1,
+                value > min,
+                self.on_change.clone(),
+            ))
+            .child(hairline())
+            .child(
+                div()
+                    .relative()
+                    .min_w(px(40.))
+                    .text_center()
+                    .g_text(text::BODY)
+                    .text_color(colors.ink)
+                    .child(value.to_string()),
+            )
+            .child(hairline())
+            .child(step("plus", "plus", 1, value < max, self.on_change.clone()));
         div()
             .id(self.id)
             .flex()

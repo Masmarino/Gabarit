@@ -1,5 +1,15 @@
 <div class="gbt-tabs">
-  <div class="gbt-tabs__list" role="tablist">
+  <div #list class="gbt-tabs__list" [class.gbt-tabs__list--lens]="!!lens()" role="tablist">
+    @if (lens(); as box) {
+      <span
+        class="gbt-tabs__lens"
+        [class.gbt-tabs__lens--glides]="lensGlides()"
+        aria-hidden="true"
+        [style.width.px]="box.width"
+        [style.height.px]="box.height"
+        [style.transform]="'translate(' + box.x + 'px, ' + box.y + 'px)'"
+      ></span>
+    }
     @for (tab of tabs(); track tab; let i = $index) {
       <button
         #trigger

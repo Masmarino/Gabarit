@@ -102,11 +102,18 @@ enum class GTone {
 fun Modifier.gSurface(shape: RoundedCornerShape = RoundedCornerShape(GRadius.md), ground: Color, rim: Color): Modifier =
     background(ground, shape).border(1.dp, rim, shape)
 
-/** A small label: a state's tint, or the hover's veil with no state; `icon` (the Mac's name) before it. */
+/**
+ * A small label, a capsule: a state's tint, or the hover's veil with no state; `icon` (the Mac's name) before it. 4.1:
+ * on thin liquid glass, the state's tint over it (under 3.x grounds, the tint alone).
+ */
 @Composable
 fun GBadge(title: String, icon: String? = null, tone: GTone? = null) {
-    val color = tone?.tintText ?: G.colors.textSecondary
-    Row(Modifier.clip(RoundedCornerShape(GRadius.sm)).background(tone?.tint ?: G.colors.hover).padding(horizontal = 8.dp, vertical = 2.dp),
+    val shape = RoundedCornerShape(GRadius.pill)
+    val glass = G.grounds == null
+    // On glass, the ink (it holds on any ground) over the state's colour, a little stronger than its tint.
+    val color = if (glass) (if (tone == null) G.colors.ink2 else G.colors.ink) else tone?.tintText ?: G.colors.textSecondary
+    Row(Modifier.then(if (glass) Modifier.gControlGlass(shape, false, tone?.base?.copy(alpha = 0.24f) ?: Color.Transparent, thin = true, grow = false)
+        else Modifier.background(tone?.tint ?: G.colors.hover, shape)).clip(shape).padding(horizontal = 9.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         if (icon != null) GIcon(icon, size = 10f, color = color)
         Text(title, style = G.type.caption2.copy(fontWeight = FontWeight.SemiBold), color = color)
@@ -120,7 +127,7 @@ fun GEmptyState(icon: String, title: String, message: String, modifier: Modifier
     val colors = G.colors
     Column(modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(Modifier.size(80.dp).gGlass(GGlassDensity.Thin, RoundedCornerShape(GRadius.glass)), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(80.dp).gGlass(GGlassDensity.Thin, RoundedCornerShape(GRadius.row)), contentAlignment = Alignment.Center) {
             GIcon(icon, size = 32f, weight = FontWeight.Light, color = colors.textSecondary)
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -134,7 +141,7 @@ fun GEmptyState(icon: String, title: String, message: String, modifier: Modifier
 
 /** A placeholder while content loads: a soft shape with a slow shimmer (still when motion is reduced). */
 @Composable
-fun GSkeleton(modifier: Modifier = Modifier, height: Dp = 20.dp, cornerRadius: Dp = GRadius.sm) {
+fun GSkeleton(modifier: Modifier = Modifier, height: Dp = 20.dp, cornerRadius: Dp = GRadius.md) {
     val colors = G.colors
     val still = gReduceMotion()
     val shape = RoundedCornerShape(cornerRadius)

@@ -170,7 +170,7 @@ fun GTabBar(tabs: List<GTab>, selection: String, onSelect: (String) -> Unit, mod
                     if (tab.badge > 0) {
                         Text(gBadgeText(tab.badge), style = G.type.caption2.copy(fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
                             color = colors.textPrimary, modifier = Modifier.align(Alignment.TopEnd).offset(16.dp, (-6).dp)
-                                .background(colors.track, RoundedCornerShape(GRadius.xs)).padding(horizontal = 5.dp, vertical = 1.dp))
+                                .background(colors.track, RoundedCornerShape(GRadius.pill)).padding(horizontal = 5.dp, vertical = 1.dp))
                     }
                 }
                 Text(tab.title, style = G.type.caption2.copy(fontWeight = if (current) FontWeight.SemiBold else FontWeight.Medium), color = tint,
@@ -268,7 +268,7 @@ fun GRailItem(title: String, icon: String, current: Boolean, onClick: () -> Unit
     }
     val tint = if (current) GFrameColor.accent else GFrameColor.textDiscret
     Column(
-        Modifier.fillMaxWidth().heightIn(min = 52.dp).clip(RoundedCornerShape(GRadius.sm))
+        Modifier.fillMaxWidth().heightIn(min = 52.dp).clip(RoundedCornerShape(GRadius.row))
             .background(if (current) GFrameColor.selected else Color.Transparent)
             .drawBehind { if (current) drawRect(GFrameColor.accent, Offset(0f, 6.dp.toPx()), Size(2.dp.toPx(), size.height - 12.dp.toPx())) }
             .clickable(role = Role.Tab, onClick = onClick)
@@ -284,7 +284,7 @@ fun GRailItem(title: String, icon: String, current: Boolean, onClick: () -> Unit
             if (badge > 0) {
                 Text(gBadgeText(badge), style = G.type.caption2.copy(fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
                     color = GFrameColor.text, modifier = Modifier.align(Alignment.TopEnd).offset(14.dp, (-6).dp)
-                        .background(GFrameColor.rim, RoundedCornerShape(GRadius.xs)).padding(horizontal = 4.dp, vertical = 1.dp))
+                        .background(GFrameColor.rim, RoundedCornerShape(GRadius.pill)).padding(horizontal = 4.dp, vertical = 1.dp))
             }
         }
         Text(title, style = G.type.caption2.copy(fontWeight = if (current) FontWeight.SemiBold else FontWeight.Medium), color = tint, maxLines = 1)
@@ -325,7 +325,7 @@ fun GPageBand(icon: String, title: String, summary: String, accessory: @Composab
         val colors = G.colors
         Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 18.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            Box(Modifier.size(48.dp).gGlass(GGlassDensity.Thin, RoundedCornerShape(GRadius.xxl), GGlassShadow.Near), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(48.dp).gGlass(GGlassDensity.Thin, RoundedCornerShape(GRadius.row), GGlassShadow.Near), contentAlignment = Alignment.Center) {
                 GIcon(icon, size = 22f, color = colors.ink)
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -340,7 +340,7 @@ fun GPageBand(icon: String, title: String, summary: String, accessory: @Composab
     Row(Modifier.fillMaxWidth().then(if (inSheet) Modifier else Modifier.zIndex(1f).shadow(6.dp).background(gFrameSheen))
         .padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 18.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-        Box(Modifier.size(48.dp).border(1.dp, if (inSheet) G.colors.hairline else GFrameColor.rim, RoundedCornerShape(GRadius.md)),
+        Box(Modifier.size(48.dp).border(1.dp, if (inSheet) G.colors.hairline else GFrameColor.rim, RoundedCornerShape(GRadius.row)),
             contentAlignment = Alignment.Center) {
             GIcon(icon, size = 22f, color = text)
         }
@@ -371,13 +371,13 @@ fun GMenuItem(title: String, icon: String, onClick: () -> Unit, destructive: Boo
 }
 
 /**
- * A bubble menu: liquid glass made dense (a menu is another window: nothing of the page can be blurred under it), its
+ * A bubble menu (the glass's radius, as what contains): liquid glass made dense (a menu is another window: nothing of the page can be blurred under it), its
  * edge of light, a short shadow, a large radius; its lines below the place it opens from.
  */
 @Composable
 fun GDropdownMenu(expanded: Boolean, onDismiss: () -> Unit, modifier: Modifier = Modifier, offset: DpOffset = DpOffset(0.dp, 4.dp),
                   content: @Composable ColumnScope.() -> Unit) {
-    DropdownMenu(expanded, onDismiss, modifier, offset = offset, shape = RoundedCornerShape(GRadius.xxl), containerColor = G.surfaceOpaque,
+    DropdownMenu(expanded, onDismiss, modifier, offset = offset, shape = RoundedCornerShape(GRadius.glass), containerColor = G.surfaceOpaque,
         tonalElevation = 0.dp, shadowElevation = 8.dp, border = gLiquidBorder(), content = content)
 }
 
@@ -417,7 +417,8 @@ fun GSheetTitle(title: String, summary: String? = null, closeTitle: String = "Cl
         if (back != null) {
             Box(Modifier.size(GControlMetrics.touchTarget).clickable(role = Role.Button, onClick = back).semantics { contentDescription = backTitle },
                 contentAlignment = Alignment.Center) {
-                Box(Modifier.size(30.dp).background(colors.track, CircleShape), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(30.dp).then(if (G.grounds == null) Modifier.gControlGlass(CircleShape, false) else Modifier.background(colors.track, CircleShape)),
+                    contentAlignment = Alignment.Center) {
                     GIcon("chevron.left", size = 14f, weight = FontWeight.SemiBold, color = colors.textSecondary)
                 }
             }
@@ -448,7 +449,7 @@ fun GBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier, ground: C
     val stays by rememberUpdatedState(!dismissible)
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = !halfway, confirmValueChange = { !stays || it != SheetValue.Hidden })
     val glass = ground == Color.Unspecified
-    val radius = if (glass) GRadius.glass else GRadius.xl
+    val radius = GRadius.glass
     val shape = RoundedCornerShape(topStart = radius, topEnd = radius)
     val rim = if (glass) G.colors.ink3 else if (ground.luminance() < 0.2f) GFrameColor.rim else G.colors.border
     ModalBottomSheet(onDismissRequest = onDismiss,
@@ -457,7 +458,7 @@ fun GBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier, ground: C
         contentColor = G.colors.textPrimary, tonalElevation = 0.dp, shape = shape,
         contentWindowInsets = contentWindowInsets, sheetGesturesEnabled = dismissible,
         dragHandle = if (!handle) null else ({
-            Box(Modifier.padding(top = 10.dp, bottom = 6.dp).size(width = 36.dp, height = 5.dp).background(rim, RoundedCornerShape(3.dp)))
+            Box(Modifier.padding(top = 10.dp, bottom = 6.dp).size(width = 36.dp, height = 5.dp).background(rim, RoundedCornerShape(GRadius.pill)))
         })) { CompositionLocalProvider(LocalGInSheet provides true) { content() } }
 }
 
@@ -637,7 +638,7 @@ private fun indexOfRow(groups: List<GCommandGroup>, active: Int): Int {
 @Composable
 private fun CommandRow(item: GCommandItem, active: Boolean, onClick: () -> Unit) {
     val colors = G.colors
-    Row(Modifier.fillMaxWidth().heightIn(min = GControlMetrics.touchTarget).clip(RoundedCornerShape(GRadius.sm))
+    Row(Modifier.fillMaxWidth().heightIn(min = GControlMetrics.touchTarget).clip(RoundedCornerShape(GRadius.row))
         .background(if (active) colors.hover else Color.Transparent)
         .drawBehind { if (active) drawRect(colors.accent, Offset(0f, 8.dp.toPx()), Size(2.dp.toPx(), size.height - 16.dp.toPx())) }
         .clickable(role = Role.Button, onClick = onClick)
@@ -765,7 +766,7 @@ private fun GroundFrameButton(icon: String, title: String, isOn: Boolean, onClic
 @Composable
 private fun GroundRailItem(title: String, icon: String, current: Boolean, onClick: () -> Unit, badge: Int) {
     val colors = G.colors
-    val shape = RoundedCornerShape(GRadius.xl)
+    val shape = RoundedCornerShape(GRadius.row)
     Column(
         Modifier.fillMaxWidth().heightIn(min = 56.dp).then(if (current) Modifier.gLiquidGlass(shape) else Modifier).clip(shape)
             .clickable(role = Role.Tab, onClick = onClick)

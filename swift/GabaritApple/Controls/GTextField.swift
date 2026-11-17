@@ -1,7 +1,7 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
-/// Gabarit's text field: the ground, a fine rim, rust when it has the focus; the title as the prompt.
+/// Gabarit's text field: a hollow of thin glass with no rim, rust when it has the focus (4.1); the title as the prompt.
 public struct GTextFieldStyle: TextFieldStyle {
     /// In a Gabarit form, whose rows are in cards: no frame of its own (`GForm` sets it).
     var bare: Bool
@@ -15,17 +15,23 @@ public struct GTextFieldStyle: TextFieldStyle {
     }
 }
 
-/// A field's frame (text, long text): ground, rim, rust when it has the focus. `bare` (a form card's row): none, the
-/// card is its frame (a frame in a frame), the row its room, the text and the cursor what is seen.
+/// A field's frame (4.1): a hollow of thin glass (`gGlassHollow`), with no rim at rest; a capsule for a line of text, a
+/// row's corners (`GRadius.row`) for a long text (`multiline`). The focus draws the accent's rim (3:1); more contrast, a
+/// rim always (`GColor.border`). `bare` (a form card's row): none, the card is its frame (a frame in a frame), the row
+/// its room, the text and the cursor what is seen.
 public struct GFieldFrame: ViewModifier {
     var isBare: Bool
+    var multiline: Bool
     @FocusState private var focused: Bool
     @State private var hovering = false
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.colorSchemeContrast) private var contrast
     @Environment(\.gPointerPreview) private var preview
 
-    public nonisolated init(bare: Bool = false) { isBare = bare }
+    public nonisolated init(bare: Bool = false, multiline: Bool = false) {
+        isBare = bare
+        self.multiline = multiline
+    }
 
     public func body(content: Content) -> some View {
         if isBare { bare(content) } else { framed(content) }
@@ -39,21 +45,37 @@ public struct GFieldFrame: ViewModifier {
     }
 
     private func framed(_ content: Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: GRadius.sm, style: .continuous)
+        let shape = multiline ? AnyInsettableShape(RoundedRectangle(cornerRadius: GRadius.row, style: .continuous)) : AnyInsettableShape(Capsule())
+        let rim = focused ? GColor.accent : contrast == .increased ? GColor.border : hovering || preview != nil ? GColor.border.opacity(0.35) : Color.clear
         return content
             .font(GFont.body)
             .focused($focused)
-            .padding(.horizontal, 10)
+            .padding(.horizontal, multiline ? 12 : 14)
             .padding(.vertical, 6)
             .frame(minHeight: GControlMetrics.height)
             // A click on the padding too puts the cursor in the field (on the ground behind it: the field keeps its own
             // clicks).
-            .background { shape.fill(.gControlGround).onTapGesture { focused = true } }
-            .overlay { shape.strokeBorder(focused ? GColor.accent : hovering || preview != nil ? GColor.border.opacity(0.7) : GColor.controlRim(contrast), lineWidth: focused ? 1.5 : 1) }
+            .background { shape.fill(Color.clear).contentShape(shape).onTapGesture { focused = true } }
+            .gGlassHollow(in: shape)
+            .overlay { shape.strokeBorder(rim, lineWidth: focused ? 1.5 : 1).allowsHitTesting(false) }
             .onHover { hovering = $0 }
             .opacity(isEnabled ? 1 : GOpacity.disabled)
             .animation(GAnimation.hover, value: focused)
     }
+}
+
+/// Any insettable shape (a field's capsule or its rounded rectangle).
+struct AnyInsettableShape: InsettableShape {
+    private let path: @Sendable (CGRect) -> Path
+    private let inset: @Sendable (CGFloat) -> AnyInsettableShape
+
+    init<S: InsettableShape>(_ shape: S) {
+        path = { shape.path(in: $0) }
+        inset = { AnyInsettableShape(shape.inset(by: $0)) }
+    }
+
+    func path(in rect: CGRect) -> Path { path(rect) }
+    func inset(by amount: CGFloat) -> AnyInsettableShape { inset(amount) }
 }
 
 /// A Gabarit text field with its title: the title above (small, discreet) and the field below, full width, `prompt`
@@ -90,7 +112,7 @@ public struct GTextField: View {
             TextField(title, text: $text, prompt: Text(prompt ?? "").foregroundStyle(GColor.textDiscret), axis: axis)
                 .labelsHidden()
                 .textFieldStyle(.plain)
-                .modifier(GFieldFrame())
+                .modifier(GFieldFrame(multiline: axis == .vertical))
         }
         .padding(.vertical, 2)
     }
@@ -102,13 +124,11 @@ public extension View {
         modifier(GEditorFrame())
     }
 
-    /// The frame of a field laid right on a page, like the settings' fields: a soft-cornered rectangle, the surface, a
-    /// fine line.
+    /// The frame of a field laid right on a page, like the settings' fields: a capsule hollowed in thin glass, with no
+    /// rim (4.1).
     func gFieldBox() -> some View {
-        let shape = RoundedRectangle(cornerRadius: GRadius.md, style: .continuous)
-        return textFieldStyle(.plain)
-            .background(.gControlGround, in: shape)
-            .overlay { shape.strokeBorder(GColor.hairline, lineWidth: 1) }
+        textFieldStyle(.plain)
+            .gGlassHollow(in: Capsule())
     }
 }
 
@@ -116,7 +136,7 @@ private struct GEditorFrame: ViewModifier {
     @Environment(\.gSystemControls) private var system
 
     func body(content: Content) -> some View {
-        if system { content } else { content.modifier(GFieldFrame()) }
+        if system { content } else { content.modifier(GFieldFrame(multiline: true)) }
     }
 }
 #endif

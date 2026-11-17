@@ -27,7 +27,7 @@ cd "$here" && cargo build --bin galerie 2>&1 | grep -E "^(error|warning: unused)
 appearances="light dark"; [ -n "$GROUND" ] && appearances="$GROUND"
 for page in $pages; do
     for appearance in $appearances; do
-        extra=""; [ "$page" = sheet ] && extra="--sheet"
+        extra=""; [ "$page" = sheet ] && extra="--sheet"; [ "$page" = states ] && extra="--height 1160"
         if [ -n "$GROUND" ]; then extra="$extra --ground $GROUND"; mode=""; else mode="--$appearance"; fi
         ./target/debug/galerie --page "$page" $mode $extra &
         pid=$!

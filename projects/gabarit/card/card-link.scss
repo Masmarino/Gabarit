@@ -3,7 +3,7 @@
 :host {
   color: inherit;
   text-decoration: none;
-  border-radius: 2px;
+  border-radius: var(--site-border-radius);
 
   &::after {
     content: '';

@@ -167,7 +167,7 @@ public struct GCommandPalette: View {
                             ForEach(group.items) { item in row(item).id(item.id) }
                         }
                     }
-                    .padding(6)
+                    .padding(8)
                 }
                 .frame(maxHeight: 420)
                 .onChange(of: activeID) { _, id in if let id { proxy.scrollTo(id) } }
@@ -195,7 +195,7 @@ public struct GCommandPalette: View {
             }
             .padding(.horizontal, 10)
             .frame(minHeight: 40)
-            .background(active ? GColor.hover : .clear, in: RoundedRectangle(cornerRadius: GRadius.sm, style: .continuous))
+            .background(active ? GColor.hover : .clear, in: RoundedRectangle(cornerRadius: GRadius.row, style: .continuous))
             .overlay(alignment: .leading) {
                 if active { Rectangle().fill(GColor.accent).frame(width: 2).padding(.vertical, 8) }
             }

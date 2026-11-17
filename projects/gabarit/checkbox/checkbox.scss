@@ -24,20 +24,82 @@
     cursor: not-allowed;
     opacity: 0.5;
   }
+}
+
+// The box (4.1): drawn by Gabarit, not the browser, to take the small radius of the four (md, 8: on a 16-pixel box,
+// nearly round, as chosen). The native input lies over it, transparent, and keeps the focus, the keyboard and the
+// state. Its edge holds 3:1 (--border-color); checked, it fills with the ink and its mark is --text-on-primary.
+.gbt-checkbox__box {
+  position: relative;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--gbt-glass-thin, transparent);
+  transition:
+    background-color 0.15s ease-out,
+    border-color 0.15s ease-out;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--text-on-primary);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.4l2.6 2.5L12 5.4' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / 100% no-repeat;
+    opacity: 0;
+  }
+
+  &:has(input:checked) {
+    border-color: var(--primary);
+    background: var(--primary);
+
+    &::after {
+      opacity: 1;
+    }
+  }
+
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--focus-ring, var(--primary));
+    outline-offset: 2px;
+  }
 
   input {
-    flex-shrink: 0;
-    width: 1rem;
-    height: 1rem;
-    accent-color: var(--primary);
+    position: absolute;
+    inset: -1.5px;
+    margin: 0;
+    width: calc(100% + 3px);
+    height: calc(100% + 3px);
+    appearance: none;
+    border-radius: inherit;
+    background: transparent;
+    cursor: inherit;
+    outline: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+
+  @media (forced-colors: active) {
+    border-color: CanvasText;
+
+    &:has(input:checked) {
+      background: Highlight;
+    }
+
+    &::after {
+      background: HighlightText;
+    }
   }
 }
 
-.gbt-checkbox:hover:not(:has(input:disabled)) input {
+.gbt-checkbox:hover:not(:has(input:disabled)) .gbt-checkbox__box {
   box-shadow: 0 0 0 3px var(--bg-hover);
 }
 
-.gbt-checkbox:active:not(:has(input:disabled)) input {
+.gbt-checkbox:active:not(:has(input:disabled)) .gbt-checkbox__box {
   box-shadow: 0 0 0 3px var(--bg-press);
 }
 

@@ -141,13 +141,15 @@ struct GGlassShadow<S: InsettableShape>: View {
 public extension View {
     /// The liquid glass (Liquid Glass): for what commands and floats (a tab bar, a search, a round button, a menu). It
     /// answers the finger and the pointer (`interactive`). In a `GGlassGroup`, neighbouring glasses melt into each other.
-    func gLiquidGlass<S: Shape>(in shape: S, interactive: Bool = true) -> some View {
-        modifier(GLiquidGlass(shape: shape, interactive: interactive))
+    /// `thin` (4.1): the system's clear glass, what is under it seen as it is (a label, a segmented control's track), so
+    /// the text that holds on the ground holds on it.
+    func gLiquidGlass<S: Shape>(in shape: S, interactive: Bool = true, thin: Bool = false) -> some View {
+        modifier(GLiquidGlass(shape: shape, interactive: interactive, thin: thin))
     }
 
     /// The liquid glass in a capsule.
-    func gLiquidGlass(interactive: Bool = true) -> some View {
-        modifier(GLiquidGlass(shape: Capsule(), interactive: interactive))
+    func gLiquidGlass(interactive: Bool = true, thin: Bool = false) -> some View {
+        modifier(GLiquidGlass(shape: Capsule(), interactive: interactive, thin: thin))
     }
 }
 
@@ -156,16 +158,18 @@ public extension View {
 public struct GLiquidGlass<S: Shape>: ViewModifier {
     let shape: S
     let interactive: Bool
+    var thin: Bool
     @Environment(\.gGroundTone) private var tone
     @Environment(\.colorSchemeContrast) private var contrast
 
-    public init(shape: S, interactive: Bool = true) {
+    public init(shape: S, interactive: Bool = true, thin: Bool = false) {
         self.shape = shape
         self.interactive = interactive
+        self.thin = thin
     }
 
     public func body(content: Content) -> some View {
-        let glass = Glass.regular.tint(Color.white.opacity(tone.liquid * 0.5)).interactive(interactive)
+        let glass = (thin ? Glass.clear : Glass.regular.tint(Color.white.opacity(tone.liquid * 0.5))).interactive(interactive)
         content
             .glassEffect(glass, in: shape)
             .overlay {

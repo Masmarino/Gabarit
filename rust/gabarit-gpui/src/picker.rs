@@ -3,6 +3,7 @@
 //! (`GMenu`), the current choice ticked and lit; the arrows move along it, Return chooses, Escape closes.
 
 use std::rc::Rc;
+use std::sync::Arc;
 
 use gpui::{
     App, CursorStyle, ElementId, IntoElement, KeyDownEvent, ParentElement, RenderOnce, Role,
@@ -12,20 +13,22 @@ use gpui::{
 use crate::assets::icon;
 use crate::button::metrics;
 use crate::controls::{ChangeHandler, row_label};
+use crate::glass::{GMaterial, accent_glass, control_glass, hover_light, thin_glass_ink};
 use crate::menu::{
     GMenu, GMenuItem, GMenuPlacement, host_closer, host_open, host_overlay, host_state,
     trigger_probe,
 };
-use crate::relief::{GPointer, Live, glow_through, over, raised, raised_shadow};
-use crate::theme::{ActiveTheme, GTextExt, alpha};
+use crate::motion;
+use crate::relief::{GPointer, Live};
+use crate::theme::{ActiveTheme, GTextExt, alpha, black, white};
 use crate::tokens::{opacity, radius, text};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum GPickerStyle {
-    /// The current choice in a field, the list in a bubble.
+    /// The current choice in a capsule of liquid glass (4.1), the list in a menu.
     #[default]
     Menu,
-    /// Chips side by side: the current one tinted rust.
+    /// Chips side by side (4.1: thin liquid glass), the current one in liquid glass tinted with the accent.
     Chips,
 }
 
@@ -96,7 +99,14 @@ impl GPicker {
         let state = host_state(self.id.clone(), window, cx);
         let open = state.read(cx).is_open();
         let live = Live::new("g-menu-face", self.preview, !self.disabled);
-        let shape = px(radius::SM);
+        // 4.1: a capsule of liquid glass, as a secondary button; open, an accent outline.
+        let shape = px(radius::PILL);
+        let (held, press) = motion::use_press(
+            ElementId::NamedChild(Arc::new(self.id.clone()), "g-menu-face".into()),
+            window,
+            cx,
+        );
+        let pressed = live.pressed() || (live.follows() && held);
         let current = self
             .options
             .get(self.selected)
@@ -104,20 +114,7 @@ impl GPicker {
             .unwrap_or_else(|| "—".into());
         let count = self.options.len();
         let selected = self.selected;
-        let rim = if open {
-            colors.accent
-        } else if live.hovered() {
-            alpha(colors.border, 0.7)
-        } else {
-            colors.hairline
-        };
-        let ground = if live.pressed() {
-            over(colors.background, colors.press)
-        } else if live.hovered() {
-            over(colors.background, colors.hover)
-        } else {
-            colors.background
-        };
+        let veil = hover_light(cx);
         let mut face = div()
             .id("g-menu-face")
             .group("g-menu-face")
@@ -127,38 +124,49 @@ impl GPicker {
             .items_center()
             .gap(px(8.))
             .h(px(metrics::COMPACT))
-            .pl(px(10.))
-            .pr(px(8.))
+            .pl(px(13.))
+            .pr(px(10.))
             .rounded(shape)
-            .bg(ground)
-            .border(px(if open { 1.5 } else { 1. }))
-            .border_color(rim)
+            .when(open, |this| {
+                this.border(px(1.5)).border_color(colors.accent)
+            })
             .role(Role::ComboBox)
             .aria_label(self.title.clone())
             .aria_value(current.clone())
             .aria_expanded(open)
-            .when(self.disabled, |this| this.opacity(opacity::DISABLED));
-        if live.follows() {
-            let (hover, press) = (
-                over(colors.background, colors.hover),
-                over(colors.background, colors.press),
+            .when(self.disabled, |this| this.opacity(opacity::DISABLED))
+            .child(control_glass(
+                "g-menu-face-glass",
+                GMaterial::liquid(),
+                shape,
+                pressed,
+                cx,
+            ))
+            .child(
+                div()
+                    .id("g-menu-face-veil")
+                    .absolute()
+                    .top_0()
+                    .left_0()
+                    .size_full()
+                    .rounded(shape)
+                    .when(live.hovered() && !pressed, |this| this.bg(veil))
+                    .when(live.follows(), |this| {
+                        this.group_hover("g-menu-face", move |style| style.bg(veil))
+                    }),
             );
-            let hover_rim = if open {
-                colors.accent
-            } else {
-                alpha(colors.border, 0.7)
-            };
-            let hover_shadow = raised_shadow(true, cx);
+        if live.follows() {
             let toggle = state.clone();
             let close = host_closer(&state);
             let keys = state.clone();
             let on_change = self.on_change.clone();
-            face = face
+            face = motion::on_press(face, &press)
                 .cursor(CursorStyle::PointingHand)
                 .focusable()
                 .tab_stop(true)
-                .hover(move |style| style.bg(hover).border_color(hover_rim).shadow(hover_shadow))
-                .active(move |style| style.bg(press).shadow(vec![]))
+                .focus_visible(move |style| {
+                    style.border_2().border_color(alpha(colors.accent, 0.8))
+                })
                 .on_click(move |_, window, cx| {
                     if toggle.read(cx).is_open() {
                         close(window, cx);
@@ -192,21 +200,16 @@ impl GPicker {
                     cx.stop_propagation();
                 });
         }
-        let face = if open {
-            face
-        } else {
-            raised(face, shape, false, live, cx)
-        };
         let face = face
             .child(
                 div()
                     .relative()
                     .g_text(text::BODY)
-                    .text_color(colors.text_primary)
+                    .text_color(colors.ink)
                     .whitespace_nowrap()
                     .child(current),
             )
-            .child(icon("caret-up-down", px(12.), colors.text_discret))
+            .child(icon("caret-up-down", px(12.), colors.ink_3).relative())
             .child(trigger_probe(&state, cx));
 
         let list = if state.read(cx).open {
@@ -237,10 +240,15 @@ impl GPicker {
             .children(list)
     }
 
-    fn chip_row(&self, cx: &mut App) -> impl IntoElement + use<> {
+    /// The chips (4.1): capsules of thin liquid glass, the chosen one in liquid glass tinted with the accent; held
+    /// down, a chip lights and grows on the bouncy spring.
+    fn chip_row(&self, window: &mut Window, cx: &mut App) -> impl IntoElement + use<> {
         let colors = cx.theme().colors;
-        let shape = px(radius::SM);
+        let shape = px(radius::PILL);
         let disabled = self.disabled;
+        let (accent, accent_text) = accent_glass(cx);
+        let rest_ink = thin_glass_ink(cx);
+        let id = self.id.clone();
         div()
             .id(self.id.clone())
             .role(Role::RadioGroup)
@@ -252,31 +260,27 @@ impl GPicker {
             .children(self.options.iter().enumerate().map(|(index, title)| {
                 let current = index == self.selected;
                 let live = Live::new("g-chip", self.preview, !disabled);
-                // A chosen chip is a tint only, as on the Mac: the page shows through it.
-                let ground = if current {
-                    colors.selected_fill
+                let (held, press) = motion::use_press(
+                    ElementId::NamedChild(Arc::new(id.clone()), format!("g-chip-{index}").into()),
+                    window,
+                    cx,
+                );
+                let pressed = live.pressed() || (live.follows() && held);
+                let (material, foreground) = if current {
+                    (accent, accent_text)
+                } else if live.hovered() || pressed {
+                    (GMaterial::liquid_thin(), colors.ink)
                 } else {
-                    colors.background
+                    (GMaterial::liquid_thin(), rest_ink)
                 };
-                let pressed_ground = over(ground, colors.press);
-                let hover_ground = if current {
-                    ground
+                let veil = if current {
+                    if accent_text.l > 0.5 {
+                        black(0.1)
+                    } else {
+                        white(0.14)
+                    }
                 } else {
-                    over(ground, colors.hover)
-                };
-                let rim = if current {
-                    alpha(colors.accent, 0.7)
-                } else if live.hovered() {
-                    alpha(colors.border, 0.5)
-                } else {
-                    colors.hairline
-                };
-                let foreground = if current {
-                    colors.accent_text
-                } else if live.hovered() {
-                    colors.text_primary
-                } else {
-                    colors.text_secondary
+                    hover_light(cx)
                 };
                 let mut chip = div()
                     .id(("g-chip", index))
@@ -285,17 +289,8 @@ impl GPicker {
                     .flex()
                     .items_center()
                     .h(px(metrics::COMPACT))
-                    .px(px(12.))
+                    .px(px(13.))
                     .rounded(shape)
-                    .bg(if live.pressed() {
-                        pressed_ground
-                    } else if live.hovered() {
-                        hover_ground
-                    } else {
-                        ground
-                    })
-                    .border_1()
-                    .border_color(rim)
                     .g_text(text::CALLOUT)
                     .font_weight(if current {
                         gpui::FontWeight::SEMIBOLD
@@ -305,42 +300,45 @@ impl GPicker {
                     .text_color(foreground)
                     .role(Role::RadioButton)
                     .aria_label(title.clone())
-                    .aria_selected(current);
-                // The current chip glows a little; the others are raised.
-                let glow_shadow = vec![glow_through(
-                    colors.accent,
-                    if live.hovered() { 5. } else { 3. },
-                    colors.selected_fill,
-                )];
+                    .aria_selected(current)
+                    .child(control_glass(
+                        ("g-chip-glass", index),
+                        material,
+                        shape,
+                        pressed,
+                        cx,
+                    ))
+                    .child(
+                        div()
+                            .id("g-chip-veil")
+                            .absolute()
+                            .top_0()
+                            .left_0()
+                            .size_full()
+                            .rounded(shape)
+                            .when(live.hovered() && !pressed, |this| this.bg(veil))
+                            .when(live.follows(), |this| {
+                                this.group_hover("g-chip", move |style| style.bg(veil))
+                            }),
+                    );
                 if live.follows() {
-                    let (primary, hover_rim) = (colors.text_primary, alpha(colors.border, 0.5));
-                    let hover_shadow = if current {
-                        vec![glow_through(colors.accent, 5., colors.selected_fill)]
-                    } else {
-                        raised_shadow(true, cx)
-                    };
-                    chip = chip
-                        .cursor(CursorStyle::PointingHand)
-                        .focusable()
-                        .tab_stop(true)
-                        .hover(move |style| {
-                            let style = style.bg(hover_ground).shadow(hover_shadow);
-                            if current {
-                                style
-                            } else {
-                                style.text_color(primary).border_color(hover_rim)
-                            }
-                        })
-                        .active(move |style| style.bg(pressed_ground).shadow(vec![]))
-                        .when_some(self.on_change.clone(), |this, handler| {
-                            this.on_click(move |_, window, cx| handler(index, window, cx))
-                        });
+                    let ink = colors.ink;
+                    chip = motion::on_press(
+                        chip.cursor(CursorStyle::PointingHand)
+                            .focusable()
+                            .tab_stop(true)
+                            .when(!current, |this| {
+                                this.hover(move |style| style.text_color(ink))
+                            })
+                            .focus_visible(move |style| {
+                                style.border_2().border_color(alpha(colors.accent, 0.8))
+                            })
+                            .when_some(self.on_change.clone(), |this, handler| {
+                                this.on_click(move |_, window, cx| handler(index, window, cx))
+                            }),
+                        &press,
+                    );
                 }
-                let chip = if current && !live.pressed() {
-                    chip.shadow(glow_shadow)
-                } else {
-                    raised(chip, shape, false, live, cx)
-                };
                 chip.child(div().relative().child(title.clone()))
             }))
     }
@@ -353,7 +351,7 @@ impl RenderOnce for GPicker {
         match self.style {
             // Chips always below their title: the rows of a card line up, whatever their width.
             GPickerStyle::Chips => {
-                let chips = self.chip_row(cx);
+                let chips = self.chip_row(window, cx);
                 div()
                     .flex()
                     .flex_col()

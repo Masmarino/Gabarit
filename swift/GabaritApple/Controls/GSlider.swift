@@ -1,7 +1,7 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
-/// Gabarit's slider: a thin track, the filled part in rust, a white knob with a rim.
+/// Gabarit's slider: a thin track, the filled part in rust, a white knob with a rim, liquid glass while it is held (4.1).
 /// `label`: what a screen reader calls it (the row's title); `format`: how it says the value (a percentage by default).
 public struct GSlider: View {
     @Binding var value: Double
@@ -68,11 +68,8 @@ private struct GSliderTrack: View {
             ZStack(alignment: .leading) {
                 Capsule().fill(GColor.track.gHollow(0.1)).frame(height: 4).padding(.horizontal, knob / 2)
                 Capsule().fill(GColor.accent).frame(width: knob / 2 + width * fraction, height: 4).padding(.leading, knob / 2).gGlow(radius: 3)
-                GKnob()
-                    .overlay { Circle().strokeBorder(held ? GColor.accent : lit ? GColor.border : GColor.border.opacity(0.5), lineWidth: 1) }
-                    .shadow(color: held ? GColor.accent.opacity(0.4) : .black.opacity(lit ? 0.22 : 0.15), radius: held ? 4 : lit ? 2.5 : 1.5, y: held ? 0 : 1)
+                knobView(knob)
                     .frame(width: knob, height: knob)
-                    .scaleEffect(reduceMotion ? 1 : held ? 1.1 : lit ? 1.06 : 1)
                     .offset(x: width * fraction)
             }
             .frame(maxHeight: .infinity)
@@ -87,7 +84,7 @@ private struct GSliderTrack: View {
         }
         .onHover { hovering = $0 }
         .animation(GAnimation.hover, value: lit)
-        .animation(GAnimation.press, value: held)
+        .animation(reduceMotion ? nil : GAnimation.bouncy, value: held)
         .frame(height: GControlMetrics.compact - 8)
         .gTouchTarget(height: GControlMetrics.compact - 8)
         .frame(minWidth: 120)
@@ -102,6 +99,22 @@ private struct GSliderTrack: View {
         .accessibilityLabel(label ?? "")
         .accessibilityValue(format?(value) ?? fraction.formatted(.percent.precision(.fractionLength(0))))
         .accessibilityAdjustableAction { direction in nudge(direction == .increment ? 1 : -1) }
+    }
+
+    /// The knob: white with a rim at rest; held, a lens of liquid glass, wider and taller (as iOS's), the track seen
+    /// through it (4.1). Reduced motion: the glass, at the knob's size.
+    @ViewBuilder private func knobView(_ side: CGFloat) -> some View {
+        if held {
+            let grown = !reduceMotion
+            Capsule().fill(Color.white.opacity(0.0001))
+                .gLiquidControl(pressed: true)
+                .frame(width: grown ? side * 1.7 : side, height: grown ? side * 1.25 : side)
+        } else {
+            GKnob()
+                .overlay { Circle().strokeBorder(lit ? GColor.border : GColor.border.opacity(0.5), lineWidth: 1) }
+                .shadow(color: .black.opacity(lit ? 0.22 : 0.15), radius: lit ? 2.5 : 1.5, y: 1)
+                .scaleEffect(reduceMotion ? 1 : lit ? 1.06 : 1)
+        }
     }
 
     #if os(macOS)
@@ -122,7 +135,7 @@ private struct GSliderTrack: View {
     }
 }
 
-/// A number to raise or lower: two Gabarit buttons on either side of the value.
+/// A number to raise or lower: two halves of a capsule of liquid glass on either side of the value.
 public struct GStepper: View {
     let title: String
     @Binding var value: Int
@@ -149,7 +162,6 @@ public struct GStepper: View {
         HStack(spacing: 12) {
             Text(title).font(GFont.body).foregroundStyle(GColor.textPrimary)
             Spacer(minLength: 12)
-            let shape = RoundedRectangle(cornerRadius: GRadius.sm, style: .continuous)
             HStack(spacing: 0) {
                 step("minus", by: -1).disabled(value <= range.lowerBound)
                 Rectangle().fill(GColor.hairline).frame(width: 1)
@@ -159,10 +171,9 @@ public struct GStepper: View {
                 step("plus", by: 1).disabled(value >= range.upperBound)
             }
             .frame(minHeight: GControlMetrics.compact)
-            .background(.gControlGround, in: shape)
-            .overlay { shape.strokeBorder(GColor.hairline, lineWidth: 1) }
-            .gRaised(shape)
-            .clipShape(shape)
+            // A capsule of liquid glass (4.1); each half lights under the finger.
+            .clipShape(Capsule())
+            .gLiquidControl()
             .fixedSize()
             .gDimmedWhenDisabled()
         }

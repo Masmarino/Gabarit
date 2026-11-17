@@ -161,8 +161,9 @@ public struct GBarTitle: View {
     }
 }
 
-/// Underlined tabs (instead of a segmented control): the text, a rust line under the current tab; no line under the
-/// others (4.0; graphite keeps 3.x's fine line under them all).
+/// A page's tabs (4.1): a track of liquid glass, the current tab under a lens of liquid glass that slides from one tab
+/// to the next (`GSegmentedControl`'s). Graphite keeps 3.x's underlined tabs (a rust line under the current one, a fine
+/// line under them all).
 public struct GNavTabs<Tab: Hashable>: View {
     let tabs: [Tab]
     let title: (Tab) -> String
@@ -177,6 +178,15 @@ public struct GNavTabs<Tab: Hashable>: View {
     }
 
     public var body: some View {
+        if style == .ground {
+            GLensSegments(items: tabs, title: title, selection: $selection)
+                .accessibilityAddTraits(.isTabBar)
+        } else {
+            underlined
+        }
+    }
+
+    private var underlined: some View {
         HStack(spacing: 20) {
             ForEach(tabs, id: \.self) { tab in
                 let current = tab == selection
@@ -202,7 +212,7 @@ public struct GNavTabs<Tab: Hashable>: View {
             }
             Spacer(minLength: 0)
         }
-        .overlay(alignment: .bottom) { if style == .graphite { Rectangle().fill(GColor.hairline).frame(height: 1) } }
+        .overlay(alignment: .bottom) { Rectangle().fill(GColor.hairline).frame(height: 1) }
         .gDimmedWhenDisabled()
         .accessibilityElement(children: .contain)
         .accessibilityAddTraits(.isTabBar)

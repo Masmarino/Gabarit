@@ -1,4 +1,5 @@
 @use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/glass';
 
 :host {
   display: block;
@@ -8,19 +9,48 @@
   display: flex;
   flex-direction: column;
 
+  // A track of thin liquid glass (4.1), as wide as its tabs; the open one is a lens that glides along it.
   &__list {
+    position: relative;
     display: flex;
-    gap: 0.5rem;
-    // No line under the row (4.0): the open tab's own mark is enough.
+    align-self: flex-start;
+    max-width: 100%;
+    gap: 2px;
+    padding: 3px;
+    box-sizing: border-box;
+    border-radius: glass.$radius-pill;
+    @include glass.liquid-thin;
     overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  &__lens {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: glass.$radius-pill;
+    @include glass.liquid-control;
+    background-image: glass.$lens-light;
+    pointer-events: none;
+
+    &--glides {
+      @media (prefers-reduced-motion: no-preference) {
+        transition:
+          transform glass.$bouncy-duration glass.$bouncy,
+          width glass.$bouncy-duration glass.$bouncy,
+          height glass.$bouncy-duration glass.$bouncy;
+      }
+    }
   }
 
   &__trigger {
+    position: relative;
     appearance: none;
     background: none;
     border: none;
-    border-bottom: 2px solid transparent;
-    padding: 0.75rem 1rem;
+    border-radius: glass.$radius-pill;
+    min-height: var(--gbt-control-height-md);
+    padding: 0.5rem 1.125rem;
     font-size: 0.9375rem;
     font-weight: 500;
     color: var(--text-secondary);
@@ -28,25 +58,41 @@
     white-space: nowrap;
     transition:
       color var(--site-transition-fast),
-      border-color var(--site-transition-fast);
+      background-color var(--site-transition-fast);
 
     &:hover {
       color: var(--text-primary);
     }
 
     &:active {
-      color: var(--text-discret);
+      color: var(--text-primary);
+      background: var(--bg-hover);
     }
 
     &:focus-visible {
       @include a11y.focus-ring(-2px);
-      border-radius: var(--site-border-radius-sm);
     }
 
+    // Before the lens is placed (a server render): the open tab is its own glass.
     &--active {
       color: var(--text-primary);
-      border-bottom-color: var(--accent);
-      box-shadow: var(--gbt-glow-line);
+      font-weight: 600;
+      @include glass.liquid-control;
+    }
+  }
+
+  &__list--lens &__trigger--active {
+    &,
+    &:active {
+      background: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      box-shadow: none;
+      transition: color var(--site-transition-fast);
+
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
     }
   }
 

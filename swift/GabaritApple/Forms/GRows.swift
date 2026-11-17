@@ -64,11 +64,11 @@ public struct GSidebarRow: View {
         .background {
             if selected {
                 // The chosen one: thick glass, as an inset list's (GInsetList).
-                Color.clear.gGlass(.thick, in: RoundedRectangle(cornerRadius: GRadius.md, style: .continuous))
+                Color.clear.gGlass(.thick, in: RoundedRectangle(cornerRadius: GRadius.row, style: .continuous))
             }
-            RoundedRectangle(cornerRadius: GRadius.md, style: .continuous)
+            RoundedRectangle(cornerRadius: GRadius.row, style: .continuous)
                 .fill(selected ? Color.clear : (lit && !pressed ? Self.hoverFill : Color.clear))
-                .overlay { if pressed { RoundedRectangle(cornerRadius: GRadius.md, style: .continuous).fill(GColor.press) } }
+                .overlay { if pressed { RoundedRectangle(cornerRadius: GRadius.row, style: .continuous).fill(GColor.press) } }
         }
         .gPressScale(pressed, to: 0.99)
         .gDimmedWhenDisabled()
@@ -157,7 +157,7 @@ public struct GRowHover: ViewModifier {
             #if os(macOS)
             .background {
                 if !inCard {
-                    RoundedRectangle(cornerRadius: GRadius.md, style: .continuous)
+                    RoundedRectangle(cornerRadius: GRadius.row, style: .continuous)
                         .fill(GSidebarRow.hoverFill)
                         .padding(.horizontal, -outset).padding(.vertical, -outset / 2)
                         .opacity(lit ? 1 : 0)
@@ -192,9 +192,10 @@ public struct GFormCardRow<Row: View>: View {
             .environment(\.gFormCardRow, true)
             .onPreferenceChange(GRowLitKey.self) { lit = $0 }
             .background {
-                RoundedRectangle(cornerRadius: GRadius.row - 4, style: .continuous)
+                // Concentric in the card: its corners less the margin (22 − 8 = 14).
+                RoundedRectangle(cornerRadius: GRadius.row, style: .continuous)
                     .fill(GSidebarRow.hoverFill)
-                    .padding(.horizontal, 6).padding(.vertical, 1)
+                    .padding(.horizontal, 8).padding(.vertical, 1)
                     .opacity(lit ? 1 : 0)
             }
             .animation(GAnimation.hover, value: lit)

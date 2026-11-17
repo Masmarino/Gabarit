@@ -1,4 +1,5 @@
 @use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/glass';
 
 :host {
   display: inline-flex;
@@ -12,7 +13,7 @@
   --gbt-badge-py: 0.125rem;
   --gbt-badge-px: 0.5rem;
   padding: var(--gbt-badge-py) var(--gbt-badge-px);
-  border-radius: var(--gbt-radius-badge, var(--site-border-radius-sm));
+  border-radius: var(--gbt-radius-badge, 999px);
   background: var(--bg-hover);
   color: var(--text-secondary);
   font-size: 0.75rem;
@@ -20,10 +21,16 @@
   line-height: 1.4;
   white-space: nowrap;
 
+  // A neutral label (4.1): a capsule of thin liquid glass. A counter keeps its wash, a status its tint.
+  &[data-variant='neutral']:not([data-appearance]):not(.gbt-badge--count):not(.gbt-badge--mono) {
+    @include glass.liquid-thin;
+    color: var(--text-secondary);
+  }
+
   &--mono {
     padding: 0 0.375rem;
     border: 1px solid var(--gbt-hairline);
-    border-radius: var(--gbt-radius-chip, var(--site-border-radius-xs));
+    border-radius: var(--gbt-radius-chip, var(--site-border-radius));
     background: var(--bg-hover);
     color: var(--text-primary);
     font-family: var(--gbt-font-mono);
@@ -128,7 +135,7 @@
   margin-inline-end: -0.25rem;
   padding: 0;
   border: 0;
-  border-radius: 4px;
+  border-radius: 999px;
   background: none;
   color: var(--text-secondary);
   font-size: 0.6875rem;

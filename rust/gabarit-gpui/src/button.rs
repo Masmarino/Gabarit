@@ -1,14 +1,22 @@
-//! Gabarit's buttons (GabaritApple's `GButtonStyle`): ink (primary), fine frame (secondary), no ground (ghost), red
-//! (danger); and the close cross (`GCloseButton`).
+//! Gabarit's buttons (GabaritApple's `GButtonStyle`) and the close cross (`GCloseButton`).
+//!
+//! 4.1: the buttons are liquid glass, capsules. `Glass` (clear liquid glass, the ground's ink) is what a secondary
+//! button draws, and a ghost (tertiary) one on thin liquid glass in the ink's second step; `GlassProminent` (liquid glass
+//! tinted with the accent) and the primary (tinted with the ink) are the main buttons. Held down, the glass lights and
+//! grows a little on the bouncy spring ([`crate::glass::control_glass`]). Danger stays solid red. `solid()`: 4.0's
+//! opaque look (ink, white surface with its fine frame, no ground), for a page that is not on a ground.
 
 use std::rc::Rc;
 
 use gpui::{
-    App, ClickEvent, CursorStyle, ElementId, Hsla, IntoElement, ParentElement, RenderOnce, Role,
-    SharedString, Styled, Window, div, prelude::*, px,
+    AnyElement, App, ClickEvent, CursorStyle, ElementId, Hsla, IntoElement, ParentElement,
+    RenderOnce, Role, SharedString, Styled, Window, div, prelude::*, px,
 };
 
 use crate::assets::icon;
+use crate::glass::{
+    GMaterial, accent_glass, control_glass, ink_glass, legible_on_glass, thin_glass_ink,
+};
 use crate::motion;
 use crate::relief::{GPointer, Live, over, raised, raised_shadow};
 use crate::theme::{ActiveTheme, GTextExt, alpha, black, mix, white};
@@ -27,11 +35,19 @@ pub mod metrics {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum GButtonVariant {
+    /// The main button: liquid glass tinted with the ink (4.1; 4.0: the solid ink, `solid()`).
     Primary,
+    /// Liquid glass, the ground's ink (4.1; 4.0: a white surface with a fine frame, `solid()`).
     #[default]
     Secondary,
+    /// The tertiary button: thin liquid glass, the ink's second step (4.1; 4.0: no ground, `solid()`).
     Ghost,
+    /// Solid red, in 4.1 too.
     Danger,
+    /// Liquid glass, the ground's ink (4.1): what a secondary button draws.
+    Glass,
+    /// Liquid glass tinted with the accent (4.1): a main button in the accent.
+    GlassProminent,
 }
 
 /// A Gabarit button: `GButton::new("save", "Save").primary().on_click(…)`.
@@ -44,6 +60,7 @@ pub struct GButton {
     destructive: bool,
     disabled: bool,
     full_width: bool,
+    solid: bool,
     icon: Option<&'static str>,
     preview: Option<GPointer>,
     on_click: Option<ClickHandler>,
@@ -59,6 +76,7 @@ impl GButton {
             destructive: false,
             disabled: false,
             full_width: false,
+            solid: false,
             icon: None,
             preview: None,
             on_click: None,
@@ -80,6 +98,23 @@ impl GButton {
 
     pub fn danger(self) -> Self {
         self.variant(GButtonVariant::Danger)
+    }
+
+    /// Liquid glass, the ground's ink (4.1): a secondary button's look, said outright.
+    pub fn glass(self) -> Self {
+        self.variant(GButtonVariant::Glass)
+    }
+
+    /// Liquid glass tinted with the accent (4.1): a main button in the accent.
+    pub fn glass_prominent(self) -> Self {
+        self.variant(GButtonVariant::GlassProminent)
+    }
+
+    /// 4.0's opaque look rather than the glass: the primary in solid ink, the secondary a white surface with its fine
+    /// frame and its relief, the ghost without ground (a page not laid on a ground). Capsules too.
+    pub fn solid(mut self) -> Self {
+        self.solid = true;
+        self
     }
 
     /// A destructive action with no solid ground ("Delete", "Leave"): its text in red.
@@ -135,8 +170,10 @@ impl GButton {
             return colors.error_text;
         }
         match self.variant {
-            GButtonVariant::Primary | GButtonVariant::Danger => colors.on_primary,
-            GButtonVariant::Secondary => colors.text_primary,
+            GButtonVariant::Primary | GButtonVariant::Danger | GButtonVariant::GlassProminent => {
+                colors.on_primary
+            }
+            GButtonVariant::Secondary | GButtonVariant::Glass => colors.text_primary,
             GButtonVariant::Ghost => colors.text_secondary,
         }
     }
@@ -145,12 +182,12 @@ impl GButton {
     fn grounds(&self, cx: &App) -> [Hsla; 3] {
         let colors = &cx.theme().colors;
         match self.variant {
-            GButtonVariant::Primary => [
+            GButtonVariant::Primary | GButtonVariant::GlassProminent => [
                 colors.primary,
                 mix(colors.primary, colors.primary_hover, 0.55),
                 colors.primary_hover,
             ],
-            GButtonVariant::Secondary => [
+            GButtonVariant::Secondary | GButtonVariant::Glass => [
                 colors.surface,
                 over(colors.surface, colors.hover),
                 over(colors.surface, colors.press),
@@ -165,10 +202,139 @@ impl GButton {
     }
 }
 
+impl GButton {
+    /// Its glass and its text (4.1), when it is not solid.
+    fn glass_look(&self, cx: &App) -> Option<(GMaterial, Hsla)> {
+        if self.solid {
+            return None;
+        }
+        let colors = &cx.theme().colors;
+        // A destructive action's red, legible on the glass of the ground (lighter on a tinted ambiance).
+        let red = |ink: Hsla, liquid: f32| {
+            if self.destructive {
+                legible_on_glass(colors.error_text, liquid, None, cx)
+            } else {
+                ink
+            }
+        };
+        match self.variant {
+            GButtonVariant::Danger => None,
+            GButtonVariant::Primary => Some(ink_glass(cx)),
+            GButtonVariant::GlassProminent => Some(accent_glass(cx)),
+            GButtonVariant::Secondary | GButtonVariant::Glass => {
+                Some((GMaterial::liquid(), red(colors.ink, 1.)))
+            }
+            GButtonVariant::Ghost => Some((GMaterial::liquid_thin(), red(thin_glass_ink(cx), 0.5))),
+        }
+    }
+
+    fn render_glass(
+        self,
+        material: GMaterial,
+        foreground: Hsla,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> AnyElement {
+        let colors = cx.theme().colors;
+        let shape = px(radius::PILL);
+        let live = Live::new("g-button", self.preview, !self.disabled);
+        let (held, press) = motion::use_press(self.id.clone(), window, cx);
+        let pressed = live.pressed() || (live.follows() && held);
+        // The ghost's text in the ink's second step at rest, in the ink when its glass lights (4.5:1 on it).
+        let ghost = self.variant == GButtonVariant::Ghost && !self.destructive;
+        let foreground = if ghost && (live.hovered() || pressed) {
+            colors.ink
+        } else {
+            foreground
+        };
+        let ink = colors.ink;
+        // Under the pointer, a veil that deepens the contrast: of the ink on the clear glass, white or shade on a
+        // tinted one (away from its text).
+        let veil = match material {
+            GMaterial::Tinted { .. } if foreground.l > 0.5 => black(0.1),
+            GMaterial::Tinted { .. } => white(0.14),
+            _ => crate::glass::hover_light(cx),
+        };
+        let height = if self.compact {
+            metrics::BUTTON
+        } else {
+            metrics::REGULAR
+        };
+        let follows = live.follows();
+        let mut button = div()
+            .id(self.id.clone())
+            .group("g-button")
+            .relative()
+            .flex()
+            .flex_none()
+            .items_center()
+            .justify_center()
+            .gap(px(6.))
+            .h(px(height))
+            .px(px(if self.compact { 14. } else { 18. }))
+            .rounded(shape)
+            .g_text(text::BODY)
+            .font_weight(gpui::FontWeight::SEMIBOLD)
+            .text_color(foreground)
+            .whitespace_nowrap()
+            .role(Role::Button)
+            .aria_label(self.label.clone())
+            .when(self.full_width, |this| this.w_full())
+            .child(control_glass(
+                "g-button-glass",
+                material,
+                shape,
+                pressed,
+                cx,
+            ))
+            .child(
+                div()
+                    .id("g-button-veil")
+                    .absolute()
+                    .top_0()
+                    .left_0()
+                    .size_full()
+                    .rounded(shape)
+                    .when(live.hovered() && !pressed, |this| this.bg(veil))
+                    .when(follows, |this| {
+                        this.group_hover("g-button", move |style| style.bg(veil))
+                    }),
+            );
+        if follows {
+            button = motion::on_press(
+                button
+                    .cursor(CursorStyle::PointingHand)
+                    .focusable()
+                    .tab_stop(true)
+                    .when(ghost, |this| this.hover(move |style| style.text_color(ink)))
+                    .focus_visible(move |style| {
+                        style.border_2().border_color(alpha(colors.accent, 0.8))
+                    }),
+                &press,
+            );
+            if let Some(handler) = self.on_click.clone() {
+                button = button.on_click(move |event, window, cx| handler(event, window, cx));
+            }
+        }
+        if self.disabled {
+            button = button.opacity(opacity::DISABLED);
+        }
+        button
+            .when_some(self.icon, |this, name| {
+                this.child(icon(name, px(14.), foreground).relative())
+            })
+            .child(div().relative().child(self.label))
+            .into_any_element()
+    }
+}
+
 impl RenderOnce for GButton {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        if let Some((material, foreground)) = self.glass_look(cx) {
+            return self.render_glass(material, foreground, window, cx);
+        }
         let colors = cx.theme().colors;
-        let shape = px(radius::SM);
+        let shape = px(radius::PILL);
         let live = Live::new("g-button", self.preview, !self.disabled);
         // Under the pointer, its ground fades to the hover's (GPUI's hover style would jump); held down, it changes at
         // once and sinks.
@@ -181,7 +347,10 @@ impl RenderOnce for GButton {
         } else {
             rest
         };
-        let secondary = self.variant == GButtonVariant::Secondary;
+        let secondary = matches!(
+            self.variant,
+            GButtonVariant::Secondary | GButtonVariant::Glass
+        );
         let rim = |opacity| alpha(colors.border, opacity);
         let height = if self.compact {
             metrics::BUTTON
@@ -257,7 +426,7 @@ impl RenderOnce for GButton {
         } else {
             let on_ink = matches!(
                 self.variant,
-                GButtonVariant::Primary | GButtonVariant::Danger
+                GButtonVariant::Primary | GButtonVariant::Danger | GButtonVariant::GlassProminent
             );
             raised(button, shape, on_ink, live, cx)
         };
@@ -284,13 +453,12 @@ impl RenderOnce for GButton {
     }
 }
 
-/// Gabarit's close button: a cross in a circle, on a bar (4.0: a circle of liquid glass on the ground; with a fine rim on
-/// the dark frame, `framed()`) or on the page. Escape triggers it where the window binds it.
+/// Gabarit's close button: a cross in a circle of liquid glass, in the ground's ink, on a bar or on the page (4.1; 4.0:
+/// an opaque raised circle on the page), held down it lights and grows; a fine rim on the dark frame, `framed()`. Escape triggers it where the window binds it.
 #[derive(IntoElement)]
 pub struct GCloseButton {
     id: ElementId,
     label: SharedString,
-    on_frame: bool,
     framed: bool,
     preview: Option<GPointer>,
     on_click: Option<ClickHandler>,
@@ -301,22 +469,20 @@ impl GCloseButton {
         GCloseButton {
             id: id.into(),
             label: "Close".into(),
-            on_frame: false,
             framed: false,
             preview: None,
             on_click: None,
         }
     }
 
-    /// On a bar (a window's header): on the ground, liquid glass in its ink (4.0).
-    pub fn on_frame(mut self) -> Self {
-        self.on_frame = true;
+    /// On a bar (a window's header). Since 4.1 the same circle of liquid glass as on the page: kept so that 4.0's
+    /// calls still build.
+    pub fn on_frame(self) -> Self {
         self
     }
 
-    /// On the dark frame (a `framed()` header, 3.x's look): implies `on_frame`.
+    /// On the dark frame (a `framed()` header, 3.x's look).
     pub fn framed(mut self) -> Self {
-        self.on_frame = true;
         self.framed = true;
         self
     }
@@ -341,26 +507,26 @@ impl GCloseButton {
 }
 
 impl RenderOnce for GCloseButton {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        let (held, press) = motion::use_press(self.id.clone(), window, cx);
         let theme = cx.theme();
-        let colors = theme.colors;
+        // 4.1: on the page too, a circle of liquid glass in the ground's ink (the bars' colours); the dark frame
+        // (`framed()`) keeps its rim.
         let frame = theme.bar_colors(self.framed);
-        let liquid = self.on_frame && !self.framed;
+        let liquid = !self.framed;
         let live = Live::new("g-close", self.preview, true);
-        let (hover, pressed) = if self.on_frame {
-            (frame.close_hover, frame.selected)
-        } else {
-            (colors.hover, colors.press)
-        };
         let circle = px(28.);
-        // On the page, an opaque ground: GPUI draws a box's shadow under a clear ground too.
-        let (rest, hover, pressed) = if self.on_frame {
-            (alpha(hover, 0.0), hover, pressed)
+        let (rest, hover, pressed) = if liquid {
+            (
+                alpha(frame.close_hover, 0.0),
+                crate::glass::hover_light(cx),
+                frame.selected,
+            )
         } else {
             (
-                colors.background,
-                over(colors.background, hover),
-                over(colors.background, pressed),
+                alpha(frame.close_hover, 0.0),
+                frame.close_hover,
+                frame.selected,
             )
         };
         let ground = if live.pressed() {
@@ -382,26 +548,31 @@ impl RenderOnce for GCloseButton {
                 },
                 live.follows(),
             );
-            crate::glass::glass_on(div(), crate::glass::GMaterial::liquid(), px(14.), cx).child(
-                div()
-                    .id("g-close-veil")
-                    .absolute()
-                    .top_0()
-                    .left_0()
-                    .size_full()
-                    .rounded_full()
-                    .when_some(forced, |this, color| this.bg(color))
-                    .when(follows, |this| {
-                        this.group_hover("g-close", move |style| style.bg(hover))
-                            .group_active("g-close", move |style| style.bg(pressed))
-                    }),
-            )
+            let held = live.pressed() || (live.follows() && held);
+            div()
+                .relative()
+                .child(crate::glass::control_glass(
+                    "g-close-glass",
+                    GMaterial::liquid(),
+                    px(14.),
+                    held,
+                    cx,
+                ))
+                .child(
+                    div()
+                        .id("g-close-veil")
+                        .absolute()
+                        .top_0()
+                        .left_0()
+                        .size_full()
+                        .rounded_full()
+                        .when_some(forced.filter(|_| !held), |this, color| this.bg(color))
+                        .when(follows && !held, |this| {
+                            this.group_hover("g-close", move |style| style.bg(hover))
+                        }),
+                )
         } else {
-            div().border_1().border_color(if self.on_frame {
-                frame.rim
-            } else {
-                colors.hairline
-            })
+            div().border_1().border_color(frame.rim)
         };
         let mut button = base
             .id(self.id)
@@ -413,12 +584,8 @@ impl RenderOnce for GCloseButton {
             .justify_center()
             .size(circle)
             .rounded_full()
-            .bg(ground)
-            .text_color(if self.on_frame {
-                frame.text
-            } else {
-                colors.text_secondary
-            })
+            .when(!liquid, |this| this.bg(ground))
+            .text_color(frame.text)
             .role(Role::Button)
             .aria_label(self.label.clone())
             .tooltip_text(format!("{} (Esc)", self.label));
@@ -426,34 +593,19 @@ impl RenderOnce for GCloseButton {
             button = button
                 .cursor(CursorStyle::PointingHand)
                 .focusable()
-                .tab_stop(true)
-                .hover({
-                    let shadow = raised_shadow(true, cx);
-                    let on_frame = self.on_frame;
-                    move |style| {
-                        if on_frame {
-                            style.bg(hover)
-                        } else {
-                            style.bg(hover).shadow(shadow)
-                        }
-                    }
-                })
-                .active(move |style| style.bg(pressed).shadow(vec![]));
+                .tab_stop(true);
+            if liquid {
+                button = motion::on_press(button, &press);
+            } else {
+                button = button
+                    .hover(move |style| style.bg(hover))
+                    .active(move |style| style.bg(pressed));
+            }
             if let Some(handler) = self.on_click {
                 button = button.on_click(move |event, window, cx| handler(event, window, cx));
             }
         }
-        let button = if self.on_frame {
-            button
-        } else {
-            raised(button, px(14.), false, live, cx)
-        };
-        let cross = if self.on_frame {
-            frame.text
-        } else {
-            colors.text_secondary
-        };
-        button.child(icon("x-bold", px(11.), cross))
+        button.child(icon("x-bold", px(11.), frame.text).relative())
     }
 }
 

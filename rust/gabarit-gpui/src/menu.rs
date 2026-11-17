@@ -1,4 +1,4 @@
-//! Gabarit's menus, as a computer draws them (macOS 27, Windows 11): a card with rounded corners (`radius::LG`) on a
+//! Gabarit's menus, as a computer draws them (macOS 27, Windows 11): a card with rounded corners (`radius::GLASS`) on a
 //! soft shadow (`shadows::FLOATING`), its rows inset from its edges; compact rows (30 points), the outlined icon on the
 //! left in a fixed column, in the discreet text's colour, so that every title starts at the same place; on the right,
 //! aligned, the shortcut in grey or the arrow to a submenu. No line between rows: a fine line only between groups, inset
@@ -51,12 +51,12 @@ pub mod metrics {
 
     /// A row's height: a computer's menu (22 on the Mac, 32 under Windows 11), not a finger's (48 on the iPhone).
     pub const ROW: f32 = 30.;
-    /// The card's corners (`radius::LG`).
-    pub const RADIUS: f32 = radius::LG;
+    /// The card's corners (`radius::GLASS`, 4.1: what contains; 4.0: `radius::LG`).
+    pub const RADIUS: f32 = radius::GLASS;
     /// The rows inside the card's edges: the lit one is a rounded ground in this margin, not a band from edge to edge.
     pub const INSET: f32 = 5.;
-    /// The lit row's corners, within the card's (`radius::SM`).
-    pub const ROW_RADIUS: f32 = radius::SM;
+    /// The lit row's corners, within the card's (`radius::ROW`, 4.1: what lies in a glass; 4.0: `radius::SM`).
+    pub const ROW_RADIUS: f32 = radius::ROW;
     /// The row's content from the lit ground's edges.
     pub const ROW_PADDING: f32 = 9.;
     /// The row's text (Gabarit's body on a computer), its icon, its shortcut.

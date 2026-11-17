@@ -18,7 +18,7 @@ import { Button } from '@masmarino/gabarit'
 
 | Input          | Type                                                                          | Default     | Role                                                                                                                                                                                           |
 | -------------- | ----------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `variant`      | `'primary' \| 'secondary' \| 'danger' \| 'ghost' \| 'ghost-danger' \| 'link'` | `'primary'` | Visual treatment. See [Variants](#variants).                                                                                                                                                   |
+| `variant`      | `ButtonVariant` (below) | `'primary'` | Visual treatment. See [Variants](#variants).                                                                                                                                                   |
 | `size`         | `'small' \| 'medium' \| 'large'`                                              | `'medium'`  | Button size: at least 32 / 38 / 44px tall for `small` / `medium` / `large` (the shared `--gbt-control-height-*` scale, level with a field of the same tier); `large` is the 44px touch target. |
 | `type`         | `'button' \| 'submit'`                                                        | `'button'`  | Native `type` attribute.                                                                                                                                                                       |
 | `text`         | `string`                                                                      | `''`        | Visible label. The text `<span>` is only rendered when this is not empty.                                                                                                                      |
@@ -44,7 +44,7 @@ import { Button } from '@masmarino/gabarit'
 
 | Input      | Type                                                                          | Default     | Role                                                                                                             |
 | ---------- | ----------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------- |
-| `variant`  | `'primary' \| 'secondary' \| 'danger' \| 'ghost' \| 'ghost-danger' \| 'link'` | `'primary'` | Visual treatment (same as `gbt-button`).                                                                         |
+| `variant`  | `ButtonVariant` (below) | `'primary'` | Visual treatment (same as `gbt-button`).                                                                         |
 | `size`     | `'small' \| 'medium' \| 'large'`                                              | `'medium'`  | Size: at least 32 / 38 / 44px tall for `small` / `medium` / `large` (the shared `--gbt-control-height-*` scale). |
 | `iconName` | `string \| null`                                                              | `null`      | Icon shown before the projected text.                                                                            |
 | `block`    | `boolean`                                                                     | `false`     | Stretches the link to the width of its container.                                                                |
@@ -86,11 +86,18 @@ exactly one place that defines "the gbt-button look".
 | Variant        | Use                                                                                                        |
 | -------------- | ---------------------------------------------------------------------------------------------------------- |
 | `primary`      | The main action of a view.                                                                                 |
-| `secondary`    | A neutral action, outlined.                                                                                |
+| `secondary`    | A neutral action, in liquid glass (4.1): clear glass, the ground's ink; held down it lights up and grows.  |
 | `danger`       | A destructive action, filled.                                                                              |
-| `ghost`        | A quiet action: no fill, no border until hovered — toolbars, rows, icon-only buttons.                      |
+| `ghost`        | A quiet action, in liquid glass too (4.1) — toolbars, icon-only buttons (round).                           |
 | `ghost-danger` | A quiet destructive action (delete in a row): looks like `ghost` until hovered or focused, then turns red. |
 | `link`         | A text action inside running content: primary colour, underlined, no box.                                  |
+| `glass`        | The liquid glass by name (what `secondary` and `ghost` are since 4.1).                                     |
+| `glass-prominent` | The main action laid on the ground: glass tinted by the ink, its text in `--text-on-primary`.          |
+| `outline`      | The 4.0 `secondary`: opaque, with its 3:1 edge.                                                            |
+| `plain`        | The 4.0 `ghost`: no fill until hovered.                                                                    |
+
+Every button is a capsule (4.1); an icon-only one is round. The glass variants grow by 1.04 on a spring when held,
+not when less motion is asked for.
 
 ## Icon-only
 

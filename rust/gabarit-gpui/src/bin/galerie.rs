@@ -7,7 +7,8 @@
 //!
 //!     cargo run --bin galerie -- --page glass --ground aurore     on one of the ambiances of `tokens::grounds`
 //!
-//! Pages: glass, controls, states, forms, frame, feedback, sheet, menus, text, list. `--journal <file>`: what it says
+//! Pages: glass, controls, states, forms, frame, feedback, sheet, menus, text, list. `--height <points>`: a taller
+//! window. `--journal <file>`: what it says
 //! goes to that file (under Windows, a release build has no console). Every page lies on the ground (4.0).
 
 // Under Windows, a window of its own, without a console beside it.
@@ -22,7 +23,7 @@ use std::time::{Duration, Instant};
 use gabarit_gpui::feedback::GToastView;
 use gabarit_gpui::text_field::GFieldFrame;
 use gabarit_gpui::*;
-use gabarit_gpui::{form, relief, theme, tokens};
+use gabarit_gpui::{form, glass, relief, theme, tokens};
 use gpui::{
     AnyElement, App, Bounds, Context, Entity, FocusHandle, KeyBinding, ListState, SharedString,
     TitlebarOptions, Window, WindowBounds, WindowOptions, actions, canvas, div, point, prelude::*,
@@ -192,6 +193,7 @@ struct Gallery {
     reminders: i64,
     tab: usize,
     glass_tab: usize,
+    segment: usize,
     chosen_row: usize,
     sheet_open: bool,
     sheet_name: Entity<GTextInput>,
@@ -239,6 +241,7 @@ impl Gallery {
             reminders: 3,
             tab: 0,
             glass_tab: 0,
+            segment: 1,
             chosen_row: 0,
             sheet_open: false,
             sheet_name: input(cx, |field| field.placeholder("Name of the space")),
@@ -414,17 +417,25 @@ impl Gallery {
                     .flex()
                     .items_center()
                     .gap(px(12.))
+                    // A search: a hollow of thin glass (4.1), as a field.
                     .child(
-                        GLiquidGlass::new()
+                        div()
+                            .relative()
                             .flex()
                             .items_center()
                             .gap(px(8.))
                             .w(px(250.))
                             .h(px(34.))
                             .px(px(14.))
-                            .child(icon("magnifying-glass", px(14.), colors.ink_3))
+                            .rounded(px(tokens::radius::PILL))
+                            .child(glass::glass_layer(
+                                GMaterial::hollow(),
+                                px(tokens::radius::PILL),
+                            ))
+                            .child(icon("magnifying-glass", px(14.), colors.ink_3).relative())
                             .child(
                                 div()
+                                    .relative()
                                     .g_text(tokens::text::CALLOUT)
                                     .text_color(colors.ink_3)
                                     .child("Search in Messages"),
@@ -527,7 +538,7 @@ impl Gallery {
                             .child(
                                 div().flex().child(
                                     GLiquidGlass::new()
-                                        .radius(tokens::radius::MD)
+                                        .radius(tokens::radius::PILL)
                                         .px(px(9.))
                                         .py(px(4.))
                                         .g_text(tokens::text::CAPTION)
@@ -542,7 +553,7 @@ impl Gallery {
 
     fn controls(&self, cx: &mut Context<Self>) -> AnyElement {
         let colors = cx.theme().colors;
-        relief::card(px(tokens::radius::LG), cx)
+        relief::card(px(tokens::radius::GLASS), cx)
             .flex()
             .flex_col()
             .gap(px(14.))
@@ -555,11 +566,45 @@ impl Gallery {
                     .items_center()
                     .gap(px(10.))
                     .child(GButton::new("primary", "Primary").primary())
+                    .child(GButton::new("prominent", "Prominent").glass_prominent())
                     .child(GButton::new("secondary", "Secondary"))
                     .child(GButton::new("ghost", "Ghost").ghost())
                     .child(GButton::new("danger", "Danger").danger())
                     .child(GButton::new("delete", "Delete").destructive())
-                    .child(GCloseButton::new("close")),
+                    .child(GCloseButton::new("close"))
+                    .child(GGlassButton::new("controls-more", "dots-three", "More").size(30.)),
+            )
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(10.))
+                    .child(
+                        div()
+                            .w(px(64.))
+                            .g_text(tokens::text::CAPTION)
+                            .text_color(colors.ink_3)
+                            .child("solid()"),
+                    )
+                    .child(GButton::new("primary-solid", "Primary").primary().solid())
+                    .child(GButton::new("secondary-solid", "Secondary").solid())
+                    .child(GButton::new("ghost-solid", "Ghost").ghost().solid()),
+            )
+            .child(
+                div()
+                    .flex()
+                    .items_center()
+                    .gap(px(12.))
+                    .child(
+                        GGlassTabs::new("segment", ["Day", "Week", "Month", "Year"], self.segment)
+                            .on_change(cx.listener(|this, segment, _, cx| {
+                                this.segment = *segment;
+                                cx.notify();
+                            })),
+                    )
+                    .child(GBadge::new("Draft").icon("note-pencil"))
+                    .child(GBadge::new("Synced").tone(GTone::Success))
+                    .child(GUnreadBadge::new(4)),
             )
             .child(
                 GToggle::new("notifications", "Notifications", self.notifications)
@@ -710,6 +755,13 @@ impl Gallery {
                     .disabled(d)
                     .into_any_element()
             }))
+            .child(row("Prominent", &|i, p, d| {
+                GButton::new(("s-prominent", i), "Send")
+                    .glass_prominent()
+                    .preview(p)
+                    .disabled(d)
+                    .into_any_element()
+            }))
             .child(row("Secondary", &|i, p, d| {
                 GButton::new(("s-secondary", i), "Reset")
                     .preview(p)
@@ -735,6 +787,20 @@ impl Gallery {
                     .destructive()
                     .preview(p)
                     .disabled(d)
+                    .into_any_element()
+            }))
+            .child(row("Solid", &|i, p, d| {
+                GButton::new(("s-solid", i), "Save")
+                    .primary()
+                    .solid()
+                    .preview(p)
+                    .disabled(d)
+                    .into_any_element()
+            }))
+            .child(row("Round", &|i, p, _| {
+                GGlassButton::new(("s-round", i), "gear-six", "Settings")
+                    .size(30.)
+                    .preview(p)
                     .into_any_element()
             }))
             .child(row("Close", &|i, p, _| {
@@ -894,7 +960,7 @@ impl Gallery {
                     .gap(px(2.))
                     .w(px(240.))
                     .p(px(8.))
-                    .rounded(px(tokens::radius::LG))
+                    .rounded(px(tokens::radius::GLASS))
                     .child(GSidebarRow::new("profile", "Profile", "user-circle", true))
                     .child(GSidebarRow::new("notif", "Notifications", "bell", false).detail("12"))
                     .child(GSidebarRow::new("privacy", "Privacy", "lock", false).warns()),
@@ -912,7 +978,7 @@ impl Gallery {
             .max_w(px(640.))
             .child(
                 GPageBand::new("bell", "Notifications", "What reaches you, and when.")
-                    .rounded(tokens::radius::LG)
+                    .rounded(tokens::radius::GLASS)
                     .top_padding(18.),
             )
             .child(
@@ -970,7 +1036,7 @@ impl Gallery {
                 GWindowHeader::new("Settings")
                     .subtitle("SkollN")
                     .icon("gear-six")
-                    .rounded(tokens::radius::LG)
+                    .rounded(tokens::radius::GLASS)
                     .trailing(GCloseButton::new("header-close").on_frame()),
             )
             .child(
@@ -993,7 +1059,7 @@ impl Gallery {
                     .subtitle("SkollN")
                     .icon("gear-six")
                     .framed()
-                    .rounded(tokens::radius::LG)
+                    .rounded(tokens::radius::GLASS)
                     .trailing(GCloseButton::new("header-close-framed").framed()),
             )
             .child(
@@ -1002,7 +1068,7 @@ impl Gallery {
                     .gap(px(6.))
                     .w(px(84.))
                     .p(px(8.))
-                    .rounded(px(tokens::radius::LG))
+                    .rounded(px(tokens::radius::GLASS))
                     .bg(frame.ground)
                     .child(
                         GRailItem::new("messages-framed", "Messages", "chats-circle", true)
@@ -1048,7 +1114,7 @@ impl Gallery {
                     .gap(px(8.))
                     .child(div().w(px(260.)).child(GSkeleton::new("sk1", 16.)))
                     .child(div().w(px(200.)).child(GSkeleton::new("sk2", 16.)))
-                    .child(GSkeleton::new("sk3", 60.).radius(tokens::radius::MD)),
+                    .child(GSkeleton::new("sk3", 60.).radius(tokens::radius::ROW)),
             )
             .child(GTypingDots::new("Writing"))
             .child(
@@ -1194,7 +1260,7 @@ impl Gallery {
             )
             .child(GContextMenu::new(
                 "context",
-                relief::card(px(tokens::radius::LG), cx)
+                relief::card(px(tokens::radius::GLASS), cx)
                     .w(px(360.))
                     .h(px(120.))
                     .flex()
@@ -1245,7 +1311,7 @@ impl Gallery {
                 .text_color(colors.text_discret)
                 .child(text)
         };
-        relief::card(px(tokens::radius::LG), cx)
+        relief::card(px(tokens::radius::GLASS), cx)
             .flex()
             .flex_col()
             .gap(px(14.))
@@ -1555,6 +1621,10 @@ fn main() {
         None
     };
     let open_sheet = flag("--sheet");
+    // A taller window (the states page, captured whole).
+    let height = value("--height")
+        .and_then(|height| height.parse::<f32>().ok())
+        .unwrap_or(780.);
     let ground = value("--ground").map(|name| {
         *tokens::grounds::ALL
             .iter()
@@ -1588,7 +1658,7 @@ fn main() {
             KeyBinding::new("tab", FocusNext, None),
             KeyBinding::new("shift-tab", FocusPrevious, None),
         ]);
-        let bounds = Bounds::centered(None, size(px(1100.), px(780.)), cx);
+        let bounds = Bounds::centered(None, size(px(1100.), px(height)), cx);
         let window = cx
             .open_window(
                 WindowOptions {

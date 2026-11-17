@@ -1,5 +1,6 @@
 @use 'sass:string';
 @use '../src/lib/tokens/depth';
+@use '../src/lib/tokens/glass';
 
 @function selector($host, $mods: '', $state: 'any', $pseudo: '') {
   $off: ':disabled';
@@ -34,6 +35,11 @@
   }
 }
 
+// Held down, a liquid glass grows on the spring while its light comes at once.
+@mixin liquid-held {
+  transition-duration: glass.$bouncy-duration, 70ms, 70ms, 70ms, 70ms;
+}
+
 @mixin gbt-button-look($host: false) {
   @include rule($host) {
     display: inline-flex;
@@ -44,7 +50,7 @@
     // A label that wraps (a long one in a block button) stays centred, line by line.
     text-align: center;
     border: none;
-    border-radius: var(--site-border-radius-sm);
+    border-radius: 999px;
     font-family: var(--font-family);
     font-weight: 600;
     cursor: pointer;
@@ -105,13 +111,13 @@
     min-width: var(--gbt-control-height-lg);
   }
 
-  @include rule($host, '.gbt-button--icon-only.gbt-button--secondary.gbt-button--small') {
+  @include rule($host, '.gbt-button--icon-only.gbt-button--outline.gbt-button--small') {
     padding: calc(0.375rem - 1px);
   }
-  @include rule($host, '.gbt-button--icon-only.gbt-button--secondary.gbt-button--medium') {
+  @include rule($host, '.gbt-button--icon-only.gbt-button--outline.gbt-button--medium') {
     padding: calc(0.5rem - 1px);
   }
-  @include rule($host, '.gbt-button--icon-only.gbt-button--secondary.gbt-button--large') {
+  @include rule($host, '.gbt-button--icon-only.gbt-button--outline.gbt-button--large') {
     padding: calc(0.75rem - 1px);
     min-width: var(--gbt-control-height-lg);
     min-height: var(--gbt-control-height-lg);
@@ -133,16 +139,46 @@
     @include depth.sunk($ink: true);
   }
 
-  @include rule($host, '.gbt-button--secondary') {
+  // The liquid glass (4.1): the secondary and tertiary buttons by default, and `glass` by name. Clear glass, the
+  // ground's ink; held down it lights up and grows a little, on the spring.
+  @each $variant in ('glass', 'secondary', 'ghost') {
+    @include rule($host, '.gbt-button--#{$variant}') {
+      @include glass.liquid-control;
+      @include glass.liquid-motion;
+    }
+    @include rule($host, '.gbt-button--#{$variant}' + $not-toggled, 'enabled', ':hover') {
+      background-image: linear-gradient(var(--bg-hover), var(--bg-hover));
+    }
+    @include rule($host, '.gbt-button--#{$variant}' + $not-toggled, 'enabled', ':active') {
+      @include glass.liquid-pressed;
+      @include liquid-held;
+    }
+  }
+
+  // The prominent glass (4.1): tinted by the ink, for the main action laid on the ground.
+  @include rule($host, '.gbt-button--glass-prominent') {
+    @include glass.prominent-glass;
+    @include glass.liquid-motion;
+  }
+  @include rule($host, '.gbt-button--glass-prominent' + $not-toggled, 'enabled', ':hover') {
+    background-color: color-mix(in srgb, var(--primary-hover) #{glass.$prominent}, transparent);
+  }
+  @include rule($host, '.gbt-button--glass-prominent' + $not-toggled, 'enabled', ':active') {
+    @include glass.liquid-pressed;
+    @include liquid-held;
+  }
+
+  // The 4.0 secondary button, opaque with its edge: `outline` keeps it.
+  @include rule($host, '.gbt-button--outline') {
     background: var(--bg-principal);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
     @include depth.raised;
   }
-  @include rule($host, '.gbt-button--secondary' + $not-toggled, 'enabled', ':hover') {
+  @include rule($host, '.gbt-button--outline' + $not-toggled, 'enabled', ':hover') {
     @include depth.surface-hover;
   }
-  @include rule($host, '.gbt-button--secondary' + $not-toggled, 'enabled', ':active') {
+  @include rule($host, '.gbt-button--outline' + $not-toggled, 'enabled', ':active') {
     @include depth.surface-sunk;
   }
 
@@ -160,15 +196,16 @@
     @include depth.sunk($ink: true);
   }
 
-  @include rule($host, '.gbt-button--ghost') {
+  // The 4.0 ghost button, bare until the pointer comes: `plain` keeps it.
+  @include rule($host, '.gbt-button--plain') {
     background: transparent;
     color: var(--text-secondary);
   }
-  @include rule($host, '.gbt-button--ghost', 'enabled', ':hover') {
+  @include rule($host, '.gbt-button--plain', 'enabled', ':hover') {
     background: var(--bg-hover);
     color: var(--text-primary);
   }
-  @include rule($host, '.gbt-button--ghost', 'enabled', ':active') {
+  @include rule($host, '.gbt-button--plain', 'enabled', ':active') {
     background: var(--bg-press);
     color: var(--text-primary);
     @include depth.sink;
@@ -214,6 +251,12 @@
   @include rule($host, "[aria-pressed='true']") {
     background: var(--bg-hover);
     box-shadow: inset 0 0 0 2px var(--primary);
+  }
+  @include rule($host, ".gbt-button--glass-prominent[aria-pressed='true']") {
+    background: var(--primary-hover);
+    box-shadow:
+      inset 0 0 0 2px var(--text-on-primary),
+      var(--gbt-depth-liquid);
   }
   @include rule($host, ".gbt-button--primary[aria-pressed='true']") {
     background: var(--primary-hover);

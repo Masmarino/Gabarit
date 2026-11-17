@@ -28,7 +28,7 @@
   box-sizing: border-box;
   min-width: 0;
   padding: 0.5rem 0.25rem;
-  border-radius: var(--site-border-radius);
+  border-radius: var(--gbt-radius-row);
   @include glass.glass(thin, $shadow: false);
   color: var(--text-primary);
   font-family: var(--gbt-font-mono);

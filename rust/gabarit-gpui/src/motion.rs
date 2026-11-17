@@ -442,6 +442,46 @@ pub fn use_hover(
     })
 }
 
+/// Whether the pointer holds the element `id` down (4.1): a state that lasts across frames, so a glass can grow and
+/// light on a spring while it is held. Give the element [`on_press`] with the returned state. Held until the button is
+/// released anywhere (a drag keeps it held). Redraws when it changes.
+pub fn use_press(
+    id: impl Into<ElementId>,
+    window: &mut Window,
+    cx: &mut App,
+) -> (bool, gpui::Entity<bool>) {
+    let id: ElementId = id.into();
+    let state = window.use_keyed_state(
+        ElementId::NamedChild(Arc::new(id), "g-press".into()),
+        cx,
+        |_, _| false,
+    );
+    (*state.read(cx), state)
+}
+
+/// Follows the press of `element` into `state` (from [`use_press`]).
+pub fn on_press<E: gpui::InteractiveElement>(element: E, state: &gpui::Entity<bool>) -> E {
+    let set = |state: gpui::Entity<bool>, on: bool| {
+        move |_: &dyn std::any::Any, cx: &mut App| {
+            state.update(cx, |held, cx| {
+                if *held != on {
+                    *held = on;
+                    cx.notify();
+                }
+            })
+        }
+    };
+    let (down, up, out) = (
+        set(state.clone(), true),
+        set(state.clone(), false),
+        set(state.clone(), false),
+    );
+    element
+        .on_mouse_down(gpui::MouseButton::Left, move |event, _, cx| down(event, cx))
+        .on_mouse_up(gpui::MouseButton::Left, move |event, _, cx| up(event, cx))
+        .on_mouse_up_out(gpui::MouseButton::Left, move |event, _, cx| out(event, cx))
+}
+
 /// A layer over the whole of its parent (which must be `relative`), in its shape, that fades in as `on` turns true and
 /// out as it turns false, on the snappy spring: a hover's veil, a selection's ground. Put it first among the parent's
 /// children: the rest is drawn over it. Less motion: a colour that comes and goes is no movement, it still fades.

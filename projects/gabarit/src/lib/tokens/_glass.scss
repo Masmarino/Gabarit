@@ -85,3 +85,143 @@
   box-shadow: var(--gbt-depth-liquid), var(--gbt-depth-glass);
   @include edged-when-asked((var(--gbt-depth-liquid), var(--gbt-depth-glass)));
 }
+
+// The four radii of the components (4.1, the rule in tokens/gabarit.json's "radius"): a capsule for what commands, the
+// glass's for what holds, the row's for what lies in a glass, md for the small things; avatars are circles. Inside
+// another shape a radius is the outer one less the gap (concentric), never less than md.
+$radius-pill: 999px;
+$radius-glass: var(--gbt-radius-glass);
+$radius-row: var(--gbt-radius-row);
+$radius-md: var(--site-border-radius);
+
+// The controls on liquid glass (4.1). Three values of tokens/gabarit.json ("controls") have no CSS variable: they are
+// posed here, in Sass. Pressed, a glass lights up (white at `pressLight` over it) and grows by `pressScale`; the
+// prominent glass is its tint at `prominent`.
+$press-scale: 1.04;
+$press-light: 0.14;
+$prominent: 86%;
+
+// The light of a held glass, from above and from below as the rims, never across: `pressLight` at its edges, a trace
+// at its middle where its label sits (white at 0.14 all over would take the ink under 7:1 on the dark ground's light).
+$press-light-core: 0.04;
+$press-glow: linear-gradient(
+  rgba(255, 255, 255, $press-light),
+  rgba(255, 255, 255, $press-light-core) 50%,
+  rgba(255, 255, 255, $press-light)
+);
+
+// The "bouncy" spring (response 0.4 s, damping 0.7), sampled for CSS: it overshoots by 4.5 % and settles in 0.6 s.
+$bouncy: linear(
+  0,
+  0.089,
+  0.28,
+  0.494,
+  0.685,
+  0.834,
+  0.938,
+  1.001,
+  1.034,
+  1.045,
+  1.044,
+  1.036,
+  1.027,
+  1.017,
+  1.01,
+  1.004,
+  1.001,
+  0.999,
+  0.998 85%,
+  1
+);
+$bouncy-duration: 0.6s;
+
+// The lens of a segmented control or of a page's tabs: the liquid glass a step clearer than its track, by the relief's
+// highlight (white at 0.6 in the light theme, at 0.08 in the dark: its label keeps 7:1 on it, contrast.spec.ts).
+$lens-light: linear-gradient(var(--gbt-relief-highlight), var(--gbt-relief-highlight));
+
+// What the chosen glass is tinted with (a chip, a filter): the accent, deepened by the ink so that its text, in
+// `--text-on-primary`, keeps 7:1 (contrast.spec.ts). The ink alone (`--primary`) tints the prominent button.
+$chosen-tint: color-mix(in srgb, var(--accent) 50%, var(--primary));
+
+// The liquid glass's light without its shadow: a rim at the top and at the bottom, never across.
+$liquid-rims:
+  inset 0 1px 0 var(--gbt-liquid-rim-top),
+  inset 0 -1px 0 var(--gbt-liquid-rim-bottom);
+
+// A control in liquid glass (a button, a chip, the lens of a segmented control): the clear glass, the ground's ink.
+@mixin liquid-control {
+  @include liquid-glass;
+  color: var(--text-primary);
+}
+
+// The thin liquid glass of a chip, a label, a segmented control's track: the liquid's fill and light, no shadow under.
+@mixin liquid-thin {
+  @include liquid-glass;
+  box-shadow: $liquid-rims;
+  @include edged-when-asked($liquid-rims);
+}
+
+// The prominent glass: tinted (the ink by default), its text in `--text-on-primary`. Dense when asked: the plain tint.
+@mixin prominent-glass($tint: var(--primary)) {
+  background: color-mix(in srgb, #{$tint} #{$prominent}, transparent);
+  color: var(--text-on-primary);
+  -webkit-backdrop-filter: var(--gbt-liquid-blur);
+  backdrop-filter: var(--gbt-liquid-blur);
+  box-shadow: var(--gbt-depth-liquid);
+  @include edged-when-asked(var(--gbt-depth-liquid));
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: #{$tint};
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+// Held down: the glass lights up and grows a little; with less motion asked, only the light.
+@mixin liquid-pressed {
+  background-image: $press-glow;
+  @media (prefers-reduced-motion: no-preference) {
+    transform: scale($press-scale);
+  }
+}
+
+// The movement of a liquid control: its size on the spring, its colours at the usual pace; none with less motion.
+@mixin liquid-motion {
+  @media (prefers-reduced-motion: no-preference) {
+    transition:
+      transform $bouncy-duration $bouncy,
+      background-color var(--site-transition-fast),
+      color var(--site-transition-fast),
+      box-shadow var(--site-transition-fast),
+      opacity var(--site-transition-fast);
+  }
+}
+
+// A text field: a hollow of thin glass, no edge at rest (its shade falls inside its top edge, a light lines its
+// bottom). With the focus it takes the ink's edge (3:1 at least, contrast.spec.ts) and the focus ring; with more
+// contrast asked, its edge stays. A form's card unsets the hollow (`--gbt-field-*`).
+@mixin glass-hollow {
+  background: var(--gbt-field-ground, var(--gbt-glass-thin));
+  border: 1px solid var(--gbt-field-border, transparent);
+  box-shadow: var(
+    --gbt-field-hollow,
+    inset 0 1px 3px var(--gbt-glass-hollow),
+    inset 0 -1px 0 var(--gbt-glass-rim-bottom)
+  );
+
+  @media (prefers-contrast: more) {
+    border-color: var(--gbt-field-border, var(--border-color));
+  }
+}
+
+@mixin glass-hollow-hover {
+  background: var(--gbt-field-ground, var(--gbt-glass-regular));
+}
+
+@mixin glass-hollow-pressed {
+  background-image: linear-gradient(var(--bg-press), var(--bg-press));
+}
+
+@mixin glass-hollow-focus {
+  border-color: var(--primary);
+}

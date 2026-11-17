@@ -6,3 +6,14 @@
 body {
   padding: 1.5rem;
 }
+
+// The aurore ambiance, for the stories that show the components on a ground of colour: its ground and its glass,
+// and the text in its ink (white, 7:1 at its worst point), as an application laying it would.
+:root[data-ambiance='aurore'] {
+  @include tokens.ambiance-aurore;
+  --text-primary: var(--gbt-ink);
+  --primary: var(--gbt-ink);
+  --text-secondary: var(--gbt-ink-2);
+  --gbt-liquid-text: var(--gbt-ink-2);
+  --gbt-ground-text-discret: var(--gbt-ink-2);
+}

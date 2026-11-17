@@ -10,6 +10,8 @@ struct ControlsSection: View {
     @State private var choice = 1
     @State private var value = 0.6
     @State private var count = 3
+    @State private var segment = "Day"
+    @State private var note = "A long text, on several lines, in a field with a row's corners."
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -30,12 +32,18 @@ struct ControlsSection: View {
             }
             GPicker("Appearance", selection: $choice, options: [(0, "System"), (1, "Light"), (2, "Dark")])
             GPicker("Size", selection: $choice, options: [(0, "Small"), (1, "Medium"), (2, "Large")], style: .chips)
+            GSegmentedControl("Period", selection: $segment, options: [("Day", "Day"), ("Week", "Week"), ("Month", "Month")])
             GSlider(value: $value, in: 0...1)
             GStepper("Reminders", value: $count, in: 0...10)
+            TextField("Note", text: $note, axis: .vertical).lineLimit(2...3).textFieldStyle(.plain).modifier(GFieldFrame(multiline: true))
             HStack {
+                GBadge("Label")
                 ForEach([GTone.success, .warning, .error, .info], id: \.self) { tone in
-                    Text("state").font(GFont.caption).padding(6).foregroundStyle(tone.tintText).background(tone.tint, in: Capsule())
+                    GBadge("state", tone: tone)
                 }
+                Spacer()
+                Button("4.0 solid") {}.buttonStyle(GButtonStyle(material: .solid))
+                Button("4.0 primary") {}.buttonStyle(GButtonStyle(variant: .primary, material: .solid))
             }
         }
         .padding(24)
@@ -239,6 +247,7 @@ struct StatesSection: View {
             row("Destructive") { Button("Leave", role: .destructive) {}.buttonStyle(GButtonStyle(variant: .secondary)) }
             row("Close") { GCloseButton(title: "Close", onFrame: false) {} }
             row("Chips") { GPicker("", selection: .constant(1), options: [(1, "On"), (2, "Off")], style: .chips) }
+            row("Segments") { GSegmentedControl(selection: .constant(1), options: [(1, "Day"), (2, "Week")]) }
             row("Menu") { GPicker("", selection: .constant(1), options: [(1, "Light"), (2, "Dark")]) }
             row("Switch") { Toggle("", isOn: .constant(true)).toggleStyle(GToggleStyle()).frame(width: 60) }
             row("Slider") { GSlider(value: .constant(0.5), in: 0...1).frame(width: 110) }

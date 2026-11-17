@@ -129,8 +129,12 @@ describe('depth', () => {
       'tag-input/tag-input.scss',
     ]) {
       const css = readFileSync(join(LIB, field), 'utf8')
-      expect(css, field).toContain('var(--gbt-field-border, var(--border-color))')
-      expect(css, field).toContain('var(--gbt-field-ground, var(--bg-principal))')
+      expect(css, field).toContain('@include glass.glass-hollow;')
     }
+    // The hollow of thin glass (4.1): no edge at rest, each part through its hook.
+    const glass = readFileSync(join(LIB, 'src/lib/tokens/_glass.scss'), 'utf8')
+    expect(glass).toContain('var(--gbt-field-border, transparent)')
+    expect(glass).toContain('var(--gbt-field-ground, var(--gbt-glass-thin))')
+    expect(glass).toContain('--gbt-field-hollow,')
   })
 })

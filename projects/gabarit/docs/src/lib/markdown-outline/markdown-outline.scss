@@ -35,7 +35,7 @@
   }
 
   &:focus-visible {
-    border-radius: var(--site-border-radius-sm);
+    border-radius: var(--gbt-radius-row);
     @include a11y.focus-ring(-2px);
   }
 }

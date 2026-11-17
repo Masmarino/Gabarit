@@ -751,6 +751,81 @@ describe('the ground and its glasses', () => {
       }
     })
 
+    // The controls on liquid glass (4.1), with the values `_glass.scss` poses: the prominent glass is its tint at 86 %
+    // over the ground, the chosen one's tint the accent mixed half and half with the ink; held down, white at 14 % lights a
+    // glass up at its edges.
+    const over = (top: string, alpha: number, base: string) => {
+      const a = hexChannels(top)
+      const b = hexChannels(base)
+      const out = a.map((c, i) => Math.round(c * alpha + b[i] * (1 - alpha)))
+      return `#${out.map((c) => c.toString(16).padStart(2, '0')).join('')}`
+    }
+    const glassScssValue = (name: string) =>
+      Number(new RegExp(`\\$${name}: ([\\d.]+)`).exec(glassScss)![1])
+
+    it(`the glass values of 4.1 are the tokens' (${theme})`, () => {
+      expect(glassScssValue('press-scale')).toBe(1.04)
+      expect(glassScssValue('press-light')).toBe(0.14)
+      expect(glassScssValue('press-light-core')).toBeLessThan(0.14)
+      expect(glassScssValue('prominent')).toBe(86)
+      expect(glassScss).toContain(
+        '$chosen-tint: color-mix(in srgb, var(--accent) 50%, var(--primary));',
+      )
+    })
+
+    it(`the text on the prominent and on the chosen glass reaches 7:1 at every colour of the ground (${theme})`, () => {
+      const prominent = glassScssValue('prominent') / 100
+      const chosen = over(token('accent', theme), 0.5, token('primary', theme))
+      for (const stop of stops) {
+        for (const [what, tint] of [
+          ['prominent', token('primary', theme)],
+          ['chosen', chosen],
+        ]) {
+          const glass = over(tint, prominent, stop)
+          expect(
+            ratio(token('text-on-primary', theme), glass),
+            `${what} glass ${glass} over ${stop}`,
+          ).toBeGreaterThanOrEqual(7)
+        }
+      }
+    })
+
+    it(`the text on a held liquid glass reaches 7:1 (${theme})`, () => {
+      // Its middle, where the label sits: the light of its edges does not reach it.
+      const light = glassScssValue('press-light-core')
+      for (const stop of stops) {
+        const held = over('#ffffff', light, glassOver('liquid', stop))
+        for (const name of ['text-primary', 'gbt-liquid-text']) {
+          expect(ratio(token(name, theme), held), `${name} on ${held}`).toBeGreaterThanOrEqual(7)
+        }
+      }
+    })
+
+    it(`the label on the lens of a segmented control or of a page's tabs reaches 7:1 (${theme})`, () => {
+      expect(glassScss).toContain(
+        '$lens-light: linear-gradient(var(--gbt-relief-highlight), var(--gbt-relief-highlight));',
+      )
+      for (const stop of stops) {
+        const lens = token('gbt-relief-highlight', theme, glassOver('liquid', stop))
+        expect(
+          ratio(token('text-primary', theme), lens),
+          `label on ${lens}`,
+        ).toBeGreaterThanOrEqual(7)
+      }
+    })
+
+    it(`a field's edge with the focus reaches 3:1 on its hollow of thin glass (${theme})`, () => {
+      expect(mixinBody('glass-hollow-focus')).toContain('border-color: var(--primary);')
+      for (const stop of stops) {
+        for (const surface of [stop, glassOver('thin', stop), glassOver('regular', stop)]) {
+          expect(
+            ratio(token('primary', theme), surface),
+            `focused edge on ${surface}`,
+          ).toBeGreaterThanOrEqual(3)
+        }
+      }
+    })
+
     it(`a field's edge on the ground reaches 3:1, bare and under the liquid glass (${theme})`, () => {
       for (const stop of stops) {
         for (const surface of [stop, glassOver('liquid', stop), glassOver('thin', stop)]) {

@@ -7,7 +7,7 @@
 
   &[data-variant='text'] {
     height: 1em;
-    border-radius: 4px;
+    border-radius: var(--site-border-radius);
   }
 
   &[data-variant='circle'] {
@@ -17,7 +17,7 @@
 
   &[data-variant='rect'] {
     height: 100px;
-    border-radius: var(--site-border-radius-sm);
+    border-radius: var(--gbt-radius-row);
   }
 
   &::after {

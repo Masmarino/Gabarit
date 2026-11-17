@@ -33,7 +33,7 @@ public extension GTone {
     }
 }
 
-/// A small label: a state's tint, or the hover's veil with no state.
+/// A small label (4.1): a capsule of liquid glass, a state's tint over it.
 public struct GBadge: View {
     let title: String
     let systemImage: String?
@@ -50,10 +50,20 @@ public struct GBadge: View {
             if let systemImage { Label(title, systemImage: systemImage) } else { Text(title) }
         }
         .font(GFont.caption2.weight(.semibold))
-        .foregroundStyle(tone?.tintText ?? GColor.textSecondary)
-        .padding(.horizontal, GSpacing.xs)
-        .padding(.vertical, GSpacing.xxs / 2)
-        .background(tone?.tint ?? GColor.hover, in: .rect(cornerRadius: GRadius.sm))
+        .foregroundStyle(tone.map { AnyShapeStyle($0.tintText) } ?? AnyShapeStyle(.gInk2))
+        .padding(.horizontal, GSpacing.xs + 2)
+        .padding(.vertical, GSpacing.xxs / 2 + 1)
+        .background(tone?.tint ?? Color.clear, in: Capsule())
+        // Under the tint, the ground's glass colour: laid right on a bright ambiance, the label still holds 4.5:1.
+        .background(GGlassVeil(), in: Capsule())
+        .gLiquidGlass(interactive: false, thin: true)
+    }
+}
+
+/// The ground's content glass colour at its thick density, as a shape style.
+struct GGlassVeil: ShapeStyle {
+    func resolve(in environment: EnvironmentValues) -> Color.Resolved {
+        environment.gResolvedGround.glassColor(.thick).resolve(in: environment)
     }
 }
 
@@ -84,7 +94,7 @@ public struct GEmptyState: View {
                 .font(.system(size: glyph, weight: .light))
                 .foregroundStyle(GColor.textSecondary)
                 .frame(width: square, height: square)
-                .gSurface(RoundedRectangle(cornerRadius: GRadius.lg, style: .continuous))
+                .gSurface(RoundedRectangle(cornerRadius: GRadius.row, style: .continuous))
                 .accessibilityHidden(true)
             VStack(spacing: GSpacing.xs) {
                 Text(title).font(GFont.title3).foregroundStyle(GColor.textPrimary)
@@ -112,7 +122,7 @@ public struct GSkeleton: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private static let shimmer: TimeInterval = 1.4
 
-    public init(height: CGFloat = 20, cornerRadius: CGFloat = GRadius.sm) {
+    public init(height: CGFloat = 20, cornerRadius: CGFloat = GRadius.md) {
         self.height = height
         self.cornerRadius = cornerRadius
     }
@@ -254,7 +264,7 @@ public struct GToastLabel: View {
             .foregroundStyle(.gInk)
             .padding(.horizontal, GSpacing.lg)
             .padding(.vertical, GSpacing.sm)
-            .gLiquidGlass(interactive: false)
+            .gLiquidGlass(interactive: false, thin: true)
     }
 }
 

@@ -12,7 +12,17 @@ import {
 } from '@angular/core'
 import { Icon } from '@masmarino/gabarit/icon'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'ghost-danger' | 'link'
+export type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'danger'
+  | 'ghost'
+  | 'ghost-danger'
+  | 'link'
+  | 'glass'
+  | 'glass-prominent'
+  | 'outline'
+  | 'plain'
 export type ButtonSize = 'small' | 'medium' | 'large'
 export type ButtonHaspopup = 'menu' | 'listbox' | 'tree' | 'grid' | 'dialog' | 'true' | 'false'
 

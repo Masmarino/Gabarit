@@ -1,3 +1,4 @@
+@use '../src/lib/tokens/glass';
 .gbt-tag-input {
   display: flex;
   flex-direction: column;
@@ -18,18 +19,17 @@
   gap: 0.375rem;
   min-height: var(--gbt-control-height-md);
   padding: 6px 8px;
-  background: var(--gbt-field-ground, var(--bg-principal));
-  border: 1px solid var(--gbt-field-border, var(--border-color));
-  border-radius: var(--site-border-radius-sm);
-  box-shadow: var(--gbt-field-hollow, var(--gbt-depth-hollow));
+  // A hollow of thin glass (4.1), a capsule while it holds one line.
+  border-radius: calc(var(--gbt-control-height-md) / 2);
+  @include glass.glass-hollow;
   cursor: text;
 
   &:hover:not(:focus-within):not(&--disabled) {
-    border-color: var(--gbt-field-border-hover, var(--text-discret));
+    @include glass.glass-hollow-hover;
   }
 
   &:focus-within {
-    border-color: var(--primary);
+    @include glass.glass-hollow-focus;
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent);
   }
 

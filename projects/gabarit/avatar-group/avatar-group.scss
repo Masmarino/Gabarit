@@ -76,7 +76,7 @@
   overflow-y: auto;
   list-style: none;
   // What floats: the liquid glass (4.0), dense enough to be read over the page.
-  border-radius: var(--site-border-radius-lg);
+  border-radius: var(--gbt-radius-glass);
   @include glass.floating-glass;
   animation: gbt-avatar-group-scale-in 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 
@@ -101,7 +101,7 @@
   padding: 6px 10px;
   background: transparent;
   border: none;
-  border-radius: var(--gbt-radius-tile, var(--site-border-radius));
+  border-radius: var(--gbt-radius-tile, var(--gbt-radius-row));
   color: var(--text-primary);
   font-size: 14px;
   text-align: left;

@@ -27,6 +27,7 @@
   --gbt-glass-shadow: rgba(24, 32, 48, 0.22);
   --gbt-glass-shadow-near: rgba(24, 32, 48, 0.06);
   --gbt-liquid-shadow: rgba(24, 32, 48, 0.2);
+  --gbt-glass-hollow: rgba(24, 32, 48, 0.1);
   color-scheme: light;
 }
 
@@ -55,6 +56,7 @@
   --gbt-glass-shadow: rgba(0, 0, 0, 0.6);
   --gbt-glass-shadow-near: rgba(0, 0, 0, 0.3);
   --gbt-liquid-shadow: rgba(0, 0, 0, 0.45);
+  --gbt-glass-hollow: rgba(0, 0, 0, 0.4);
   color-scheme: dark;
 }
 
@@ -83,6 +85,7 @@
   --gbt-glass-shadow: rgba(0, 0, 0, 0.6);
   --gbt-glass-shadow-near: rgba(0, 0, 0, 0.3);
   --gbt-liquid-shadow: rgba(0, 0, 0, 0.45);
+  --gbt-glass-hollow: rgba(0, 0, 0, 0.4);
   color-scheme: dark;
 }
 
@@ -111,6 +114,7 @@
   --gbt-glass-shadow: rgba(11, 16, 33, 0.55);
   --gbt-glass-shadow-near: rgba(11, 16, 33, 0.2);
   --gbt-liquid-shadow: rgba(11, 16, 33, 0.4);
+  --gbt-glass-hollow: rgba(11, 16, 33, 0.32);
   color-scheme: dark;
 }
 
@@ -139,6 +143,7 @@
   --gbt-glass-shadow: rgba(3, 14, 22, 0.55);
   --gbt-glass-shadow-near: rgba(3, 14, 22, 0.2);
   --gbt-liquid-shadow: rgba(3, 14, 22, 0.4);
+  --gbt-glass-hollow: rgba(3, 14, 22, 0.32);
   color-scheme: dark;
 }
 
@@ -167,6 +172,7 @@
   --gbt-glass-shadow: rgba(17, 4, 6, 0.55);
   --gbt-glass-shadow-near: rgba(17, 4, 6, 0.2);
   --gbt-liquid-shadow: rgba(17, 4, 6, 0.4);
+  --gbt-glass-hollow: rgba(17, 4, 6, 0.32);
   color-scheme: dark;
 }
 
@@ -195,6 +201,7 @@
   --gbt-glass-shadow: rgba(3, 7, 14, 0.55);
   --gbt-glass-shadow-near: rgba(3, 7, 14, 0.2);
   --gbt-liquid-shadow: rgba(3, 7, 14, 0.4);
+  --gbt-glass-hollow: rgba(3, 7, 14, 0.32);
   color-scheme: dark;
 }
 
@@ -223,6 +230,7 @@
   --gbt-glass-shadow: rgba(4, 9, 7, 0.55);
   --gbt-glass-shadow-near: rgba(4, 9, 7, 0.2);
   --gbt-liquid-shadow: rgba(4, 9, 7, 0.4);
+  --gbt-glass-hollow: rgba(4, 9, 7, 0.32);
   color-scheme: dark;
 }
 
@@ -251,6 +259,7 @@
   --gbt-glass-shadow: rgba(10, 7, 4, 0.55);
   --gbt-glass-shadow-near: rgba(10, 7, 4, 0.2);
   --gbt-liquid-shadow: rgba(10, 7, 4, 0.4);
+  --gbt-glass-hollow: rgba(10, 7, 4, 0.32);
   color-scheme: dark;
 }
 
@@ -279,5 +288,6 @@
   --gbt-glass-shadow: rgba(70, 68, 74, 0.22);
   --gbt-glass-shadow-near: rgba(70, 68, 74, 0.06);
   --gbt-liquid-shadow: rgba(70, 68, 74, 0.2);
+  --gbt-glass-hollow: rgba(70, 68, 74, 0.1);
   color-scheme: light;
 }

@@ -16,7 +16,7 @@
   padding: 0 8px 0 14px;
   // A capsule of liquid glass, as the search bar: it commands.
   border: none;
-  border-radius: var(--gbt-radius-search, 20px);
+  border-radius: var(--gbt-radius-search, 999px);
   @include glass.liquid-glass;
   color: var(--text-secondary);
   font: inherit;
@@ -54,7 +54,7 @@
   flex: none;
   padding: 2px 6px;
   border: 1px solid var(--border-color);
-  border-radius: var(--gbt-radius-chip, var(--site-border-radius-xs));
+  border-radius: var(--gbt-radius-chip, var(--site-border-radius));
   font-family: inherit;
   font-size: 11px;
   font-weight: 600;

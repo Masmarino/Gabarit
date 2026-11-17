@@ -104,3 +104,4 @@
 @define-color g_glassShadow alpha(#000000, 0.6);
 @define-color g_glassShadowNear alpha(#000000, 0.3);
 @define-color g_liquidShadow alpha(#000000, 0.45);
+@define-color g_glassHollow alpha(#000000, 0.4);

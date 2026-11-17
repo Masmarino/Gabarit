@@ -107,7 +107,7 @@
   gap: 1rem;
   padding: 1rem 1.125rem 1.125rem;
   // A thin glass laid in the card's glass (4.0): no edge, no second shadow.
-  border-radius: var(--site-border-radius-lg);
+  border-radius: var(--gbt-radius-row);
   @include glass.glass(thin, $shadow: false);
 }
 

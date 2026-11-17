@@ -234,7 +234,7 @@ internal fun gColorsOn(base: GColors, spec: GGroundSpec, tone: GGroundTone, cust
         liquidRimTop = white.copy(alpha = k.liquidRimTop), liquidRimBottom = white.copy(alpha = k.liquidRimBottom),
         liquidSheen = white.copy(alpha = k.liquidSheen),
         glassShadow = tone.shade.copy(alpha = k.shadow), glassShadowNear = tone.shade.copy(alpha = k.shadowNear),
-        liquidShadow = tone.shade.copy(alpha = k.liquidShadow),
+        liquidShadow = tone.shade.copy(alpha = k.liquidShadow), glassHollow = tone.shade.copy(alpha = k.hollow),
     )
     return if (!custom) glassed else glassed.copy(textPrimary = ink, textSecondary = ink2, textDiscret = ink3)
 }

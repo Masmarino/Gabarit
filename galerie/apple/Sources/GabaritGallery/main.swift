@@ -72,12 +72,24 @@ let appearances: [(name: String, scheme: ColorScheme, ground: GGroundSpec)] = [
     return window
 }
 
-/// Shows each section in each appearance, captures it, closes it; then quits.
+/// Shows each section in each appearance, captures it; then quits. One window for them all, its content and size changed
+/// for each capture: with Stage Manager, each new window would come in animated, tilted and small, for a while.
 @MainActor func captureAll() async {
     try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    // Shown first with a blank page, then given each page: the first window Stage Manager brings in stays tilted until
+    // its content changes.
+    let shown = window(Color.clear.frame(width: 400, height: 300), scheme: .light)
+    shown.makeKeyAndOrderFront(nil)
+    NSApplication.shared.activate()
+    try? await Task.sleep(for: .seconds(2))
     for section in sections() where wanted.isEmpty || wanted.contains(section.name) {
         for appearance in appearances {
-            let shown = window(page(section, scheme: appearance.scheme, ground: appearance.ground), scheme: appearance.scheme)
+            let root = page(section, scheme: appearance.scheme, ground: appearance.ground)
+            let host = NSHostingView(rootView: root)
+            shown.appearance = NSAppearance(named: appearance.scheme == .dark ? .darkAqua : .aqua)
+            shown.contentView = host
+            shown.setContentSize(host.fittingSize)
+            shown.center()
             shown.makeKeyAndOrderFront(nil)
             NSApplication.shared.activate()
             let file = folder.appendingPathComponent("apple-\(section.name)-\(appearance.name).png")
@@ -85,21 +97,23 @@ let appearances: [(name: String, scheme: ColorScheme, ground: GGroundSpec)] = [
             let scale = shown.backingScaleFactor
             let expected = CGSize(width: shown.frame.width * scale, height: shown.frame.height * scale)
             var done = false
-            for attempt in 1...4 where !done {
+            for attempt in 1...8 where !done {
+                if attempt > 1 { shown.makeKeyAndOrderFront(nil); NSApplication.shared.activate() }
                 // Until the window is on screen and drawn: a few turns of the loop, then time for the glass to settle.
                 for _ in 0..<10 where !shown.isVisible || !shown.occlusionState.contains(.visible) {
                     try? await Task.sleep(for: .milliseconds(100))
                 }
                 shown.displayIfNeeded()
-                try? await Task.sleep(for: .seconds(attempt == 1 ? 1.6 : 1))
+                try? await Task.sleep(for: .seconds(attempt == 1 ? 1.6 : 1.5))
                 try? FileManager.default.removeItem(at: file)
                 let capture = Process()
                 capture.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
                 capture.arguments = ["-o", "-x", "-l", "\(shown.windowNumber)", file.path]
                 try? capture.run()
                 capture.waitUntilExit()
-                // Checked afterwards: the image must have the window's size (within a few pixels).
-                if let image = NSImageRep(contentsOf: file), abs(CGFloat(image.pixelsWide) - expected.width) <= 4,
+                // Checked afterwards: the window was the key one (an inactive window's glass is drawn dimmed), and the
+                // image has the window's size (within a few pixels).
+                if shown.isKeyWindow, NSApplication.shared.isActive, let image = NSImageRep(contentsOf: file), abs(CGFloat(image.pixelsWide) - expected.width) <= 4,
                    abs(CGFloat(image.pixelsHigh) - expected.height) <= 4 {
                     done = true
                 } else {
@@ -107,9 +121,9 @@ let appearances: [(name: String, scheme: ColorScheme, ground: GGroundSpec)] = [
                 }
             }
             print(done ? file.path : "FAILED \(file.path)")
-            shown.close()
         }
     }
+    shown.close()
     NSApplication.shared.terminate(nil)
 }
 

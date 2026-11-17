@@ -42,7 +42,9 @@ public struct GMenuItem: View {
                     .accessibilityHidden(true)
             }
         }
-        .foregroundStyle(role == .destructive ? AnyShapeStyle(GTone.error.text) : AnyShapeStyle(.gInk))
+        // Destructive: red on a light ground; on a dark one, the ink (no red holds 4.5:1 on its liquid glass, 2.3:1 on
+        // Aurore), the word saying it.
+        .foregroundStyle(role == .destructive ? AnyShapeStyle(GDestructiveInk()) : AnyShapeStyle(.gInk))
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .contentShape(Rectangle())
@@ -64,13 +66,14 @@ public struct GMenu<Content: View>: View {
             Group(subviews: content) { rows in
                 // By each line's own identity: a hover stays on its line when lines come and go.
                 ForEach(rows) { row in
-                    row.clipShape(RoundedRectangle(cornerRadius: GRadius.md, style: .continuous))
+                    // Concentric: the bubble's corners less its margin (22 − 8 = 14).
+                    row.clipShape(RoundedRectangle(cornerRadius: GRadius.row, style: .continuous))
                 }
             }
         }
-        .padding(6)
+        .padding(8)
         .frame(minWidth: 240)
-        .gLiquidGlass(in: RoundedRectangle(cornerRadius: GRadius.xxxl, style: .continuous), interactive: false)
+        .gLiquidGlass(in: RoundedRectangle(cornerRadius: GRadius.glass, style: .continuous), interactive: false)
         .presentationCompactAdaptation(.popover)
         .preferredColorScheme(colorScheme)
     }

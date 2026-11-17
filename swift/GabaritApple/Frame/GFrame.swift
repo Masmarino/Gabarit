@@ -32,7 +32,7 @@ public struct GPageBand<Accessory: View>: View {
                 .font(.system(size: 22))
                 .foregroundStyle(.gInk)
                 .frame(width: 48, height: 48)
-                .gGlass(.thin, in: RoundedRectangle(cornerRadius: GRadius.xl, style: .continuous))
+                .gGlass(.thin, in: RoundedRectangle(cornerRadius: GRadius.row, style: .continuous))
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 3) {
                 Text(title).font(GFont.title2).foregroundStyle(.gInk)

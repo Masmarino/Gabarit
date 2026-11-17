@@ -17,8 +17,8 @@
   position: fixed;
   display: flex;
   flex-direction: column;
-  // Thick glass (4.0), rounded on the side that faces the page; no line at its edge.
-  @include glass.glass(thick);
+  // A sheet of liquid glass (4.1), dense, rounded on the side that faces the page; no line at its edge.
+  @include glass.floating-glass;
 
   &:focus {
     outline: none;

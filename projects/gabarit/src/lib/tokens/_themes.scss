@@ -126,6 +126,7 @@
   --gbt-glass-shadow: rgba(24, 32, 48, 0.22);
   --gbt-glass-shadow-near: rgba(24, 32, 48, 0.06);
   --gbt-liquid-shadow: rgba(24, 32, 48, 0.2);
+  --gbt-glass-hollow: rgba(24, 32, 48, 0.1);
   --gbt-glass-blur: blur(28px) saturate(1.5);
   --gbt-liquid-blur: blur(9px) saturate(1.9) brightness(1.06);
   --gbt-radius-glass: 22px;
@@ -263,6 +264,7 @@
   --gbt-glass-shadow: rgba(0, 0, 0, 0.6);
   --gbt-glass-shadow-near: rgba(0, 0, 0, 0.3);
   --gbt-liquid-shadow: rgba(0, 0, 0, 0.45);
+  --gbt-glass-hollow: rgba(0, 0, 0, 0.4);
   --gbt-glass-blur: blur(28px) saturate(1.5);
   --gbt-liquid-blur: blur(9px) saturate(1.9) brightness(1.06);
   --gbt-radius-glass: 22px;

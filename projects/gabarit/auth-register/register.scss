@@ -82,7 +82,7 @@
   max-width: 100%;
   margin: 0 auto 1rem;
   padding: 0.5rem 0.875rem;
-  border-radius: var(--site-border-radius-lg);
+  border-radius: 999px;
   @include glass.glass(thin, $shadow: false);
   color: var(--text-secondary);
   font-size: 0.875rem;

@@ -80,7 +80,8 @@ struct GlassSection: View {
                     }
                     .padding(.horizontal, 14)
                     .frame(height: 36)
-                    .gLiquidGlass()
+                    // A search field: a hollow of thin glass (4.1).
+                    .gGlassHollow(in: Capsule())
                     GGlassGroup(spacing: 10) {
                         HStack(spacing: 10) {
                             GRoundButton(systemImage: "plus", title: "Add") {}

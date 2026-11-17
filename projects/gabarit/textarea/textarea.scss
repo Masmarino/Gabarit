@@ -1,4 +1,5 @@
 @use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/glass';
 
 :host {
   display: block;
@@ -22,20 +23,19 @@
     font-family: var(--font-family);
     font-size: 0.875rem;
     color: var(--text-primary);
-    background: var(--gbt-field-ground, var(--bg-principal));
-    border: 1px solid var(--gbt-field-border, var(--border-color));
-    border-radius: var(--site-border-radius-sm);
-    box-shadow: var(--gbt-field-hollow, var(--gbt-depth-hollow));
+    // A hollow of thin glass (4.1): no edge at rest, the ink's edge with the focus.
+    border-radius: glass.$radius-row;
+    @include glass.glass-hollow;
     resize: vertical;
     transition: border-color var(--site-transition-fast);
 
     &:hover:not(:disabled):not(:focus) {
-      border-color: var(--gbt-field-border-hover, var(--text-discret));
+      @include glass.glass-hollow-hover;
     }
 
     &:focus {
       outline: none;
-      border-color: var(--primary);
+      @include glass.glass-hollow-focus;
     }
 
     &:focus-visible {

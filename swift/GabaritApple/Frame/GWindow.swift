@@ -187,7 +187,7 @@ public struct GRailButton: View {
     public var body: some View {
         Button(action: action) {
             GLive { hovering, pressed in
-                let shape = RoundedRectangle(cornerRadius: style == .ground ? GRadius.lg : GRadius.sm, style: .continuous)
+                let shape = RoundedRectangle(cornerRadius: style == .ground ? GRadius.pill : GRadius.sm, style: .continuous)
                 Image(systemName: symbol)
                     .font(.system(size: 15))
                     .foregroundStyle(isOn ? AnyShapeStyle(GColor.accent) : style == .ground ? AnyShapeStyle(hovering ? .gInk : .gInk2)
@@ -214,7 +214,8 @@ public struct GRailButton: View {
     }
 }
 
-/// The rail's square button (Settings): a symbol in a square of liquid glass (graphite: with a fine rim).
+/// The rail's round button (Settings): a symbol in a circle of liquid glass (4.1; 4.0: a rounded square); graphite: a
+/// square with a fine rim.
 public struct GRailSquareButton: View {
     let symbol: String
     let help: String
@@ -233,7 +234,7 @@ public struct GRailSquareButton: View {
                 Image(systemName: symbol).font(.system(size: 18)).foregroundStyle(.gInk).frame(width: 36, height: 36)
             }
             .buttonStyle(.glass)
-            .buttonBorderShape(.roundedRectangle(radius: GRadius.lg))
+            .buttonBorderShape(.circle)
             .help(help)
             .accessibilityLabel(help)
         } else {
