@@ -332,8 +332,10 @@ impl RenderOnce for GMenuItem {
         let interactive = !self.disabled && self.preview.is_none();
         let handler = self.on_click.clone();
         let (hover, press) = (row_ground(&self, false, cx), row_ground(&self, true, cx));
+        let chosen = handler.is_some();
         row_element(&self, look, None, cx).when(interactive, |this| {
-            this.hover(move |style| style.bg(hover))
+            this.when(chosen, |this| this.cursor(CursorStyle::PointingHand))
+                .hover(move |style| style.bg(hover))
                 .active(move |style| style.bg(press))
                 .when_some(handler, |this, handler| {
                     this.on_click(move |event, window, cx| handler(event, window, cx))
@@ -867,9 +869,9 @@ fn interactive_row(
     let hover_state = state.clone();
     let click_state = state;
     let close = hosted.as_ref().map(|h| h.close.clone());
-    // Lit by the pointer only once it moves: a menu opened under it does not light the row it lands on. The arrow
-    // stays an arrow, as in the system's menus.
-    row.cursor(CursorStyle::Arrow)
+    // Lit by the pointer only once it moves: a menu opened under it does not light the row it lands on. The hand over
+    // what can be chosen, as everywhere in Gabarit (4.1.2); a disabled row never gets here and keeps the arrow.
+    row.cursor(CursorStyle::PointingHand)
         .on_mouse_move(move |_, _, cx| {
             let already = {
                 let state = hover_state.read(cx);
@@ -2030,6 +2032,7 @@ impl RenderOnce for GMenuButton {
             .flex_none()
             .role(Role::Button)
             .aria_expanded(is_open)
+            .cursor(CursorStyle::PointingHand)
             .on_click(move |_, window, cx| {
                 if toggle.read(cx).is_open() {
                     close(window, cx);

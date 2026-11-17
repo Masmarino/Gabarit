@@ -158,3 +158,19 @@ sombre 0,40, teinté 0,32), rôle `glassHollow`. La règle des rayons est dans l
 - Sous les fonds 3.x (`GTheme(grounds = …)`), tout garde l'aspect 4.0.
 - **Ce qui casse :** un `when` exhaustif sur `GButtonVariant` ne compile plus ; pas de réglage pour garder les
   anciennes chips ni les anciens champs.
+
+## 4.1.2 : la main sur ce qui se clique
+
+Correctif, rien à changer dans une app.
+
+- **GPUI :** les rangées de menu et de sous-menu (`GMenu`, `GMenuItem` seul, les choix d'un `GPicker`) et le
+  déclencheur de `GMenuButton` passent de la flèche à la main. Une rangée désactivée garde la flèche, un champ le
+  curseur de texte. Les boutons de la fenêtre (`GWindowHeader`, sous Windows et Linux) gardent la flèche, comme ceux du
+  système. Le reste avait déjà la main : rangées de la barre latérale, onglets, entrées du rail, chips, cases,
+  interrupteurs, curseurs, sélecteurs, boutons, croix de fermeture, liens de formulaire.
+- Essai `tests/curseur.rs` : chaque gestionnaire de clic de `src/` est à côté de la main (ou du curseur de texte), et la
+  flèche n'est demandée que pour les boutons de la fenêtre. GPUI ne laisse pas un essai hors de sa crate lire le curseur
+  qu'il demande au système : l'essai lit les sources.
+- **Web :** la règle était déjà tenue (`cursor: pointer`, `not-allowed` quand c'est désactivé) ; le rond d'un bouton
+  radio prend maintenant le curseur de son option (`cursor: inherit`).
+- **Apple, Android :** rien (pas de curseur, ou le système le gère).

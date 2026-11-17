@@ -558,6 +558,8 @@ impl RenderOnce for GWindowHeader {
                             _ => "Close",
                         })
                         .hover(move |style| style.bg(hover))
+                        // The window's own buttons keep the arrow, as the system draws them (Windows, GNOME).
+                        .cursor(CursorStyle::Arrow)
                         .window_control_area(area)
                         .on_click(move |_, window, _| window_button_click(area, window))
                         .child(icon(symbol, px(14.), frame.text))

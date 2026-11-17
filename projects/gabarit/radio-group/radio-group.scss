@@ -58,6 +58,8 @@
     width: 1rem;
     height: 1rem;
     accent-color: var(--primary);
+    // The option's cursor over the round too: the hand, or `not-allowed` when it is disabled (4.1.2).
+    cursor: inherit;
   }
 }
 
