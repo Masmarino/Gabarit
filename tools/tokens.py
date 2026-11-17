@@ -281,8 +281,9 @@ def css_ground(ambiance: dict) -> str:
     prettier writes it)."""
     light = ambiance["light"]
     stops = ", ".join(ambiance["stops"]).lower()
-    return (f"\n    radial-gradient(circle at {light['x'] * 100:g}% {light['y'] * 100:g}%, "
-            f"{css_rgba(hexa_opacity(light['color'], light['strength']))} 0%, transparent {light['radius'] * 100:g}%),"
+    # The light's radius is a fraction of the window's longer side: vmax, for a ground that covers the window.
+    return (f"\n    radial-gradient(circle {light['radius'] * 100:g}vmax at {light['x'] * 100:g}% {light['y'] * 100:g}%, "
+            f"{css_rgba(hexa_opacity(light['color'], light['strength']))} 0%, transparent 100%),"
             f"\n    linear-gradient({ambiance['angle']:g}deg, {stops})")
 
 

@@ -568,8 +568,11 @@ the native apps) and `web` (this package's roles and names, kept as they are). N
 The Swift packages are at the root (`Package.swift`): add `https://github.com/Masmarino/Gabarit` in
 Xcode or SwiftPM and use `GabaritApple` (call `GFonts.register()` once at launch) or `GabaritCommon`.
 
-`GabaritApple` also holds the native components, SkollN's design being the reference. No Liquid Glass:
-surfaces with a fine border (`gSurface`), a little depth, one light from above. So far, the
+`GabaritApple` also holds the native components, SkollN's design being the reference. Since 4.0, the ground
+and the glass: `.gGround(_:)` lays an ambiance under the window, `.gGlass(.thin/.regular/.thick)` is the content
+glass, `.gLiquidGlass`, `GGlassGroup` and `GRoundButton` are the system's Liquid Glass, `GInsetList` is a list
+without lines; the bars no longer strip the system's glass (`.gFrameStyle(.graphite)` brings the 3.x frame back).
+What breaks from 3.x, on every platform: `PASSAGE-A-LA-4.0.md`. So far, the
 controls: `GButtonStyle` (`GButtonVariant`), `GPressStyle`, `GCloseButton`, `GToggleStyle` and `GSwitch`,
 `GTextFieldStyle`, `GFieldFrame` and `GTextField` (`gEditorFrame()`, `gFieldBox()`), `GPicker` (menu or
 chips), `GSlider`, `GStepper`, `GTone`, `gSurface(_:tint:)`, and `gControls()` to put them on a whole form.

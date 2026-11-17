@@ -4,7 +4,7 @@
 
 @mixin ambiance-light {
   --gbt-ground:
-    radial-gradient(circle at 12% -8%, #ffe6d4 0%, transparent 90%),
+    radial-gradient(circle 90vmax at 12% -8%, #ffe6d4 0%, transparent 100%),
     linear-gradient(160deg, #f2f4f7, #efe6fa, #dce7f7);
   --gbt-ink: #10151c;
   --gbt-ink-2: rgba(16, 21, 28, 0.62);
@@ -26,7 +26,7 @@
 
 @mixin ambiance-dark {
   --gbt-ground:
-    radial-gradient(circle at 8% -10%, #2a2236 0%, transparent 85%),
+    radial-gradient(circle 85vmax at 8% -10%, #2a2236 0%, transparent 100%),
     linear-gradient(160deg, #0d1116, #0f1820, #13283a);
   --gbt-ink: #e7ebf1;
   --gbt-ink-2: rgba(231, 235, 241, 0.62);
@@ -48,7 +48,7 @@
 
 @mixin ambiance-black {
   --gbt-ground:
-    radial-gradient(circle at 8% -10%, #16141f 0%, transparent 80%),
+    radial-gradient(circle 80vmax at 8% -10%, #16141f 0%, transparent 100%),
     linear-gradient(160deg, #000000, #07090d);
   --gbt-ink: #e7ebf1;
   --gbt-ink-2: rgba(231, 235, 241, 0.62);
@@ -70,7 +70,7 @@
 
 @mixin ambiance-aurore {
   --gbt-ground:
-    radial-gradient(circle at 0% 0%, rgba(255, 138, 122, 0.45) 0%, transparent 75%),
+    radial-gradient(circle 75vmax at 0% 0%, rgba(255, 138, 122, 0.45) 0%, transparent 100%),
     linear-gradient(135deg, #4a3392, #5442c0, #24346e, #13707e);
   --gbt-ink: #ffffff;
   --gbt-ink-2: rgba(255, 255, 255, 0.8);
@@ -92,7 +92,7 @@
 
 @mixin ambiance-lagune {
   --gbt-ground:
-    radial-gradient(circle at 90% 5%, rgba(95, 212, 196, 0.35) 0%, transparent 70%),
+    radial-gradient(circle 70vmax at 90% 5%, rgba(95, 212, 196, 0.35) 0%, transparent 100%),
     linear-gradient(150deg, #0b4257, #0d5a66, #0b2e4a);
   --gbt-ink: #ffffff;
   --gbt-ink-2: rgba(255, 255, 255, 0.8);
@@ -114,7 +114,7 @@
 
 @mixin ambiance-braise {
   --gbt-ground:
-    radial-gradient(circle at 15% 0%, rgba(255, 154, 77, 0.45) 0%, transparent 70%),
+    radial-gradient(circle 70vmax at 15% 0%, rgba(255, 154, 77, 0.45) 0%, transparent 100%),
     linear-gradient(160deg, #6a1a10, #8a2e14, #3a0e14);
   --gbt-ink: #ffffff;
   --gbt-ink-2: rgba(255, 255, 255, 0.8);
@@ -136,7 +136,7 @@
 
 @mixin ambiance-nuit-polaire {
   --gbt-ground:
-    radial-gradient(circle at 80% -5%, rgba(92, 225, 185, 0.4) 0%, transparent 70%),
+    radial-gradient(circle 70vmax at 80% -5%, rgba(92, 225, 185, 0.4) 0%, transparent 100%),
     linear-gradient(170deg, #0b1630, #1c2f5e, #0e3b4a);
   --gbt-ink: #ffffff;
   --gbt-ink-2: rgba(255, 255, 255, 0.76);
@@ -158,7 +158,7 @@
 
 @mixin ambiance-sous-bois {
   --gbt-ground:
-    radial-gradient(circle at 10% -5%, rgba(156, 194, 122, 0.4) 0%, transparent 70%),
+    radial-gradient(circle 70vmax at 10% -5%, rgba(156, 194, 122, 0.4) 0%, transparent 100%),
     linear-gradient(160deg, #16301f, #2e4a2a, #0f1f18);
   --gbt-ink: #ffffff;
   --gbt-ink-2: rgba(255, 255, 255, 0.8);
@@ -180,7 +180,7 @@
 
 @mixin ambiance-laiton {
   --gbt-ground:
-    radial-gradient(circle at 20% -5%, rgba(224, 180, 101, 0.45) 0%, transparent 70%),
+    radial-gradient(circle 70vmax at 20% -5%, rgba(224, 180, 101, 0.45) 0%, transparent 100%),
     linear-gradient(150deg, #3a2a12, #6b4e1f, #22180c);
   --gbt-ink: #ffffff;
   --gbt-ink-2: rgba(255, 255, 255, 0.8);
@@ -202,7 +202,7 @@
 
 @mixin ambiance-givre {
   --gbt-ground:
-    radial-gradient(circle at 15% -5%, #ffffff 0%, transparent 80%),
+    radial-gradient(circle 80vmax at 15% -5%, #ffffff 0%, transparent 100%),
     linear-gradient(160deg, #eef3f8, #dde8f3, #e9e4f5);
   --gbt-ink: #10151c;
   --gbt-ink-2: rgba(16, 21, 28, 0.62);

@@ -104,7 +104,7 @@
 
   // The ground and the two glasses (4.0): the light and dark grounds, their glass and their ink.
   --gbt-ground:
-    radial-gradient(circle at 12% -8%, #ffe6d4 0%, transparent 90%),
+    radial-gradient(circle 90vmax at 12% -8%, #ffe6d4 0%, transparent 100%),
     linear-gradient(160deg, #f2f4f7, #efe6fa, #dce7f7);
   --gbt-ink: #10151c;
   --gbt-ink-2: rgba(16, 21, 28, 0.62);
@@ -233,7 +233,7 @@
 
   // The ground and the two glasses (4.0): the light and dark grounds, their glass and their ink.
   --gbt-ground:
-    radial-gradient(circle at 8% -10%, #2a2236 0%, transparent 85%),
+    radial-gradient(circle 85vmax at 8% -10%, #2a2236 0%, transparent 100%),
     linear-gradient(160deg, #0d1116, #0f1820, #13283a);
   --gbt-ink: #e7ebf1;
   --gbt-ink-2: rgba(231, 235, 241, 0.62);
