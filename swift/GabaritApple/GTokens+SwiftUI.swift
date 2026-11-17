@@ -94,6 +94,21 @@ public enum GColor {
     public static let infoText = Color(GColorValues.infoText)
     public static let selectedFill = Color(GColorValues.selectedFill)
     public static let rowHover = Color(GColorValues.rowHover)
+    public static let ink = Color(GColorValues.ink)
+    public static let ink2 = Color(GColorValues.ink2)
+    public static let ink3 = Color(GColorValues.ink3)
+    public static let groundVeil = Color(GColorValues.groundVeil)
+    public static let glassThin = Color(GColorValues.glassThin)
+    public static let glassRegular = Color(GColorValues.glassRegular)
+    public static let glassThick = Color(GColorValues.glassThick)
+    public static let glassLiquid = Color(GColorValues.glassLiquid)
+    public static let glassRim = Color(GColorValues.glassRim)
+    public static let glassRimEdge = Color(GColorValues.glassRimEdge)
+    public static let liquidRim = Color(GColorValues.liquidRim)
+    public static let liquidRimSoft = Color(GColorValues.liquidRimSoft)
+    public static let glassShadow = Color(GColorValues.glassShadow)
+    public static let glassShadowNear = Color(GColorValues.glassShadowNear)
+    public static let liquidShadow = Color(GColorValues.liquidShadow)
 }
 
 /// The grounds as Gabarit draws them, with no theme.
@@ -136,6 +151,7 @@ public enum GFont {
     public static var caption: Font { Font(GTextStyles.caption, size: GTextStyles.caption.desktop) }
     public static var caption2: Font { Font(GTextStyles.caption2, size: GTextStyles.caption2.desktop) }
     public static var mono: Font { Font(GTextStyles.mono, size: GTextStyles.mono.desktop) }
+    public static var display: Font { Font(GTextStyles.display, size: GTextStyles.display.desktop) }
     #else
     public static var largeTitle: Font { Font(GTextStyles.largeTitle, size: GTextStyles.largeTitle.phone) }
     public static var title: Font { Font(GTextStyles.title, size: GTextStyles.title.phone) }
@@ -149,6 +165,7 @@ public enum GFont {
     public static var caption: Font { Font(GTextStyles.caption, size: GTextStyles.caption.phone) }
     public static var caption2: Font { Font(GTextStyles.caption2, size: GTextStyles.caption2.phone) }
     public static var mono: Font { Font(GTextStyles.mono, size: GTextStyles.mono.phone) }
+    public static var display: Font { Font(GTextStyles.display, size: GTextStyles.display.phone) }
     #endif
 }
 
@@ -158,5 +175,8 @@ public enum GAnimation {
     public static let quick = Animation(GAnimationValues.quick)
     public static let pane = Animation(GAnimationValues.pane)
     public static let linear = Animation(GAnimationValues.linear)
+    public static let page = Animation(GAnimationValues.page)
+    public static let ground = Animation(GAnimationValues.ground)
+    public static let shared = Animation(GAnimationValues.shared)
 }
 #endif

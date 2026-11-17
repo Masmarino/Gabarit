@@ -76,6 +76,36 @@
             <SolidColorBrush x:Key="GSelectedFillBrush" Color="#1AC2410C"/>
             <Color x:Key="GRowHoverColor">#0910151C</Color>
             <SolidColorBrush x:Key="GRowHoverBrush" Color="#0910151C"/>
+            <Color x:Key="GInkColor">#FF10151C</Color>
+            <SolidColorBrush x:Key="GInkBrush" Color="#FF10151C"/>
+            <Color x:Key="GInk2Color">#9E10151C</Color>
+            <SolidColorBrush x:Key="GInk2Brush" Color="#9E10151C"/>
+            <Color x:Key="GInk3Color">#7810151C</Color>
+            <SolidColorBrush x:Key="GInk3Brush" Color="#7810151C"/>
+            <Color x:Key="GGroundVeilColor">#00FFFFFF</Color>
+            <SolidColorBrush x:Key="GGroundVeilBrush" Color="#00FFFFFF"/>
+            <Color x:Key="GGlassThinColor">#75FFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassThinBrush" Color="#75FFFFFF"/>
+            <Color x:Key="GGlassRegularColor">#ADFFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassRegularBrush" Color="#ADFFFFFF"/>
+            <Color x:Key="GGlassThickColor">#E0FFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassThickBrush" Color="#E0FFFFFF"/>
+            <Color x:Key="GGlassLiquidColor">#42FFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassLiquidBrush" Color="#42FFFFFF"/>
+            <Color x:Key="GGlassRimColor">#D9FFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassRimBrush" Color="#D9FFFFFF"/>
+            <Color x:Key="GGlassRimEdgeColor">#80FFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassRimEdgeBrush" Color="#80FFFFFF"/>
+            <Color x:Key="GLiquidRimColor">#F2FFFFFF</Color>
+            <SolidColorBrush x:Key="GLiquidRimBrush" Color="#F2FFFFFF"/>
+            <Color x:Key="GLiquidRimSoftColor">#59FFFFFF</Color>
+            <SolidColorBrush x:Key="GLiquidRimSoftBrush" Color="#59FFFFFF"/>
+            <Color x:Key="GGlassShadowColor">#38182030</Color>
+            <SolidColorBrush x:Key="GGlassShadowBrush" Color="#38182030"/>
+            <Color x:Key="GGlassShadowNearColor">#0F182030</Color>
+            <SolidColorBrush x:Key="GGlassShadowNearBrush" Color="#0F182030"/>
+            <Color x:Key="GLiquidShadowColor">#33182030</Color>
+            <SolidColorBrush x:Key="GLiquidShadowBrush" Color="#33182030"/>
             <SolidColorBrush x:Key="GBorderSoftBrush" Color="#997D8794"/>
             <SolidColorBrush x:Key="GBorderStrongBrush" Color="#CC7D8794"/>
             <SolidColorBrush x:Key="GBorderHoverBrush" Color="#807D8794"/>
@@ -154,6 +184,16 @@
             <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#1AC2410C"/>
             <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed" Color="#1AC2410C"/>
             <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="#FFA8360A"/>
+            <!-- The ground (4.0). -->
+            <LinearGradientBrush x:Key="GGroundBrush" StartPoint="0.329,0.030" EndPoint="0.671,0.970">
+                <GradientStop Color="#FFF2F4F7" Offset="0.000"/>
+                <GradientStop Color="#FFEFE6FA" Offset="0.500"/>
+                <GradientStop Color="#FFDCE7F7" Offset="1.000"/>
+            </LinearGradientBrush>
+            <RadialGradientBrush x:Key="GGroundLightBrush" Center="0.12,-0.08" GradientOrigin="0.12,-0.08" RadiusX="0.9" RadiusY="0.9">
+                <GradientStop Color="#FFFFE6D4" Offset="0"/>
+                <GradientStop Color="#00FFE6D4" Offset="1"/>
+            </RadialGradientBrush>
             <Color x:Key="SystemAccentColor">#FFC2410C</Color>
             <Color x:Key="SystemAccentColorLight1">#FFF0622A</Color>
             <Color x:Key="SystemAccentColorLight2">#FFFF9469</Color>
@@ -235,6 +275,36 @@
             <SolidColorBrush x:Key="GSelectedFillBrush" Color="#29F0622A"/>
             <Color x:Key="GRowHoverColor">#0BE7EBF1</Color>
             <SolidColorBrush x:Key="GRowHoverBrush" Color="#0BE7EBF1"/>
+            <Color x:Key="GInkColor">#FFE7EBF1</Color>
+            <SolidColorBrush x:Key="GInkBrush" Color="#FFE7EBF1"/>
+            <Color x:Key="GInk2Color">#9EE7EBF1</Color>
+            <SolidColorBrush x:Key="GInk2Brush" Color="#9EE7EBF1"/>
+            <Color x:Key="GInk3Color">#6BE7EBF1</Color>
+            <SolidColorBrush x:Key="GInk3Brush" Color="#6BE7EBF1"/>
+            <Color x:Key="GGroundVeilColor">#00161C24</Color>
+            <SolidColorBrush x:Key="GGroundVeilBrush" Color="#00161C24"/>
+            <Color x:Key="GGlassThinColor">#6B161C24</Color>
+            <SolidColorBrush x:Key="GGlassThinBrush" Color="#6B161C24"/>
+            <Color x:Key="GGlassRegularColor">#9E161C24</Color>
+            <SolidColorBrush x:Key="GGlassRegularBrush" Color="#9E161C24"/>
+            <Color x:Key="GGlassThickColor">#DB161C24</Color>
+            <SolidColorBrush x:Key="GGlassThickBrush" Color="#DB161C24"/>
+            <Color x:Key="GGlassLiquidColor">#12FFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassLiquidBrush" Color="#12FFFFFF"/>
+            <Color x:Key="GGlassRimColor">#17FFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassRimBrush" Color="#17FFFFFF"/>
+            <Color x:Key="GGlassRimEdgeColor">#0FFFFFFF</Color>
+            <SolidColorBrush x:Key="GGlassRimEdgeBrush" Color="#0FFFFFFF"/>
+            <Color x:Key="GLiquidRimColor">#6BFFFFFF</Color>
+            <SolidColorBrush x:Key="GLiquidRimBrush" Color="#6BFFFFFF"/>
+            <Color x:Key="GLiquidRimSoftColor">#14FFFFFF</Color>
+            <SolidColorBrush x:Key="GLiquidRimSoftBrush" Color="#14FFFFFF"/>
+            <Color x:Key="GGlassShadowColor">#99000000</Color>
+            <SolidColorBrush x:Key="GGlassShadowBrush" Color="#99000000"/>
+            <Color x:Key="GGlassShadowNearColor">#4C000000</Color>
+            <SolidColorBrush x:Key="GGlassShadowNearBrush" Color="#4C000000"/>
+            <Color x:Key="GLiquidShadowColor">#73000000</Color>
+            <SolidColorBrush x:Key="GLiquidShadowBrush" Color="#73000000"/>
             <SolidColorBrush x:Key="GBorderSoftBrush" Color="#99646C77"/>
             <SolidColorBrush x:Key="GBorderStrongBrush" Color="#CC646C77"/>
             <SolidColorBrush x:Key="GBorderHoverBrush" Color="#80646C77"/>
@@ -313,6 +383,16 @@
             <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#29F0622A"/>
             <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPressed" Color="#29F0622A"/>
             <SolidColorBrush x:Key="ListViewItemForegroundSelected" Color="#FFFF9469"/>
+            <!-- The ground (4.0). -->
+            <LinearGradientBrush x:Key="GGroundBrush" StartPoint="0.329,0.030" EndPoint="0.671,0.970">
+                <GradientStop Color="#FF0D1116" Offset="0.000"/>
+                <GradientStop Color="#FF0F1820" Offset="0.500"/>
+                <GradientStop Color="#FF13283A" Offset="1.000"/>
+            </LinearGradientBrush>
+            <RadialGradientBrush x:Key="GGroundLightBrush" Center="0.08,-0.1" GradientOrigin="0.08,-0.1" RadiusX="0.85" RadiusY="0.85">
+                <GradientStop Color="#FF2A2236" Offset="0"/>
+                <GradientStop Color="#002A2236" Offset="1"/>
+            </RadialGradientBrush>
             <Color x:Key="SystemAccentColor">#FFF0622A</Color>
             <Color x:Key="SystemAccentColorLight1">#FFF0622A</Color>
             <Color x:Key="SystemAccentColorLight2">#FFFF9469</Color>
@@ -394,6 +474,36 @@
             <SolidColorBrush x:Key="GSelectedFillBrush" Color="{ThemeResource SystemColorHighlightColor}"/>
             <StaticResource x:Key="GRowHoverColor" ResourceKey="SystemColorWindowColor"/>
             <SolidColorBrush x:Key="GRowHoverBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <StaticResource x:Key="GInkColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GInkBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GInk2Color" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GInk2Brush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GInk3Color" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GInk3Brush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GGroundVeilColor" ResourceKey="SystemColorWindowColor"/>
+            <SolidColorBrush x:Key="GGroundVeilBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <StaticResource x:Key="GGlassThinColor" ResourceKey="SystemColorWindowColor"/>
+            <SolidColorBrush x:Key="GGlassThinBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <StaticResource x:Key="GGlassRegularColor" ResourceKey="SystemColorWindowColor"/>
+            <SolidColorBrush x:Key="GGlassRegularBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <StaticResource x:Key="GGlassThickColor" ResourceKey="SystemColorWindowColor"/>
+            <SolidColorBrush x:Key="GGlassThickBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <StaticResource x:Key="GGlassLiquidColor" ResourceKey="SystemColorWindowColor"/>
+            <SolidColorBrush x:Key="GGlassLiquidBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <StaticResource x:Key="GGlassRimColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GGlassRimBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GGlassRimEdgeColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GGlassRimEdgeBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GLiquidRimColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GLiquidRimBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GLiquidRimSoftColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GLiquidRimSoftBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GGlassShadowColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GGlassShadowBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GGlassShadowNearColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GGlassShadowNearBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
+            <StaticResource x:Key="GLiquidShadowColor" ResourceKey="SystemColorWindowTextColor"/>
+            <SolidColorBrush x:Key="GLiquidShadowBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
             <SolidColorBrush x:Key="GBorderSoftBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
             <SolidColorBrush x:Key="GBorderStrongBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
             <SolidColorBrush x:Key="GBorderHoverBrush" Color="{ThemeResource SystemColorWindowTextColor}"/>
@@ -416,6 +526,8 @@
             <SolidColorBrush x:Key="GFrameCloseHoverBrush" Color="{ThemeResource SystemColorWindowColor}"/>
             <SolidColorBrush x:Key="GFrameCaptionHoverBrush" Color="{ThemeResource SystemColorWindowColor}"/>
             <SolidColorBrush x:Key="GFrameCaptionPressedBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="GGroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
+            <SolidColorBrush x:Key="GGroundLightBrush" Color="Transparent"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     <CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>
@@ -533,6 +645,10 @@
     <CornerRadius x:Key="GCornerRadiusXxl">16</CornerRadius>
     <x:Double x:Key="GRadiusXxxl">20</x:Double>
     <CornerRadius x:Key="GCornerRadiusXxxl">20</CornerRadius>
+    <x:Double x:Key="GRadiusRow">14</x:Double>
+    <CornerRadius x:Key="GCornerRadiusRow">14</CornerRadius>
+    <x:Double x:Key="GRadiusGlass">22</x:Double>
+    <CornerRadius x:Key="GCornerRadiusGlass">22</CornerRadius>
     <x:Double x:Key="GRadiusPill">100</x:Double>
     <CornerRadius x:Key="GCornerRadiusPill">100</CornerRadius>
     <x:Double x:Key="GSpacingXxs">4</x:Double>
@@ -546,6 +662,8 @@
     <x:Double x:Key="GSpacingXxxl">40</x:Double>
     <x:Double x:Key="GSpacingXxxxl">64</x:Double>
     <x:Double x:Key="GSpacingXxxxxl">96</x:Double>
+    <x:Double x:Key="GSpacingPage">20</x:Double>
+    <x:Double x:Key="GSpacingGap">16</x:Double>
     <x:Double x:Key="GOpacityDisabled">0.45</x:Double>
     <FontFamily x:Key="GFontText">ms-appx:///Gabarit/Fonts/IBMPlexSans-Regular.ttf#IBM Plex Sans</FontFamily>
     <FontFamily x:Key="GFontTextMedium">ms-appx:///Gabarit/Fonts/IBMPlexSans-Medium.ttf#IBM Plex Sans</FontFamily>
@@ -613,5 +731,10 @@
         <Setter Property="FontFamily" Value="{StaticResource GFontMono}"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="Normal"/>
+    </Style>
+    <Style x:Key="GTextDisplay" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource GFontDisplay}"/>
+        <Setter Property="FontSize" Value="30"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
 </ResourceDictionary>

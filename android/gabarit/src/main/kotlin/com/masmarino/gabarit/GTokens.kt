@@ -95,6 +95,21 @@ data class GColors(
     val infoText: Color,
     val selectedFill: Color,
     val rowHover: Color,
+    val ink: Color,
+    val ink2: Color,
+    val ink3: Color,
+    val groundVeil: Color,
+    val glassThin: Color,
+    val glassRegular: Color,
+    val glassThick: Color,
+    val glassLiquid: Color,
+    val glassRim: Color,
+    val glassRimEdge: Color,
+    val liquidRim: Color,
+    val liquidRimSoft: Color,
+    val glassShadow: Color,
+    val glassShadowNear: Color,
+    val liquidShadow: Color,
 )
 
 val GLightColors = GColors(
@@ -134,6 +149,21 @@ val GLightColors = GColors(
     infoText = GPalette.indigo800,
     selectedFill = GPalette.rust500.copy(alpha = 0.1f),
     rowHover = GPalette.slate900.copy(alpha = 0.035f),
+    ink = Color(0xFF10151C),
+    ink2 = Color(0xFF10151C).copy(alpha = 0.62f),
+    ink3 = Color(0xFF10151C).copy(alpha = 0.47f),
+    groundVeil = Color(0xFFFFFFFF).copy(alpha = 0.0f),
+    glassThin = Color(0xFFFFFFFF).copy(alpha = 0.46f),
+    glassRegular = Color(0xFFFFFFFF).copy(alpha = 0.68f),
+    glassThick = Color(0xFFFFFFFF).copy(alpha = 0.88f),
+    glassLiquid = Color(0xFFFFFFFF).copy(alpha = 0.26f),
+    glassRim = Color(0xFFFFFFFF).copy(alpha = 0.85f),
+    glassRimEdge = Color(0xFFFFFFFF).copy(alpha = 0.5f),
+    liquidRim = Color(0xFFFFFFFF).copy(alpha = 0.95f),
+    liquidRimSoft = Color(0xFFFFFFFF).copy(alpha = 0.35f),
+    glassShadow = Color(0xFF182030).copy(alpha = 0.22f),
+    glassShadowNear = Color(0xFF182030).copy(alpha = 0.06f),
+    liquidShadow = Color(0xFF182030).copy(alpha = 0.2f),
 )
 
 val GDarkColors = GColors(
@@ -173,6 +203,21 @@ val GDarkColors = GColors(
     infoText = GPalette.indigo200,
     selectedFill = GPalette.rust400.copy(alpha = 0.16f),
     rowHover = GPalette.graphite100.copy(alpha = 0.045f),
+    ink = Color(0xFFE7EBF1),
+    ink2 = Color(0xFFE7EBF1).copy(alpha = 0.62f),
+    ink3 = Color(0xFFE7EBF1).copy(alpha = 0.42f),
+    groundVeil = Color(0xFF161C24).copy(alpha = 0.0f),
+    glassThin = Color(0xFF161C24).copy(alpha = 0.42f),
+    glassRegular = Color(0xFF161C24).copy(alpha = 0.62f),
+    glassThick = Color(0xFF161C24).copy(alpha = 0.86f),
+    glassLiquid = Color(0xFFFFFFFF).copy(alpha = 0.07f),
+    glassRim = Color(0xFFFFFFFF).copy(alpha = 0.09f),
+    glassRimEdge = Color(0xFFFFFFFF).copy(alpha = 0.06f),
+    liquidRim = Color(0xFFFFFFFF).copy(alpha = 0.42f),
+    liquidRimSoft = Color(0xFFFFFFFF).copy(alpha = 0.08f),
+    glassShadow = Color(0xFF000000).copy(alpha = 0.6f),
+    glassShadowNear = Color(0xFF000000).copy(alpha = 0.3f),
+    liquidShadow = Color(0xFF000000).copy(alpha = 0.45f),
 )
 
 object GRadius {
@@ -183,9 +228,12 @@ object GRadius {
     val xl = 14.dp
     val xxl = 16.dp
     val xxxl = 20.dp
+    val row = 14.dp
+    val glass = 22.dp
     val pill = 100.dp
 }
 
+/** The spacing; page and gap at the phone's steps. */
 object GSpacing {
     val xxs = 4.dp
     val xs = 8.dp
@@ -198,8 +246,74 @@ object GSpacing {
     val xxxl = 40.dp
     val xxxxl = 64.dp
     val xxxxxl = 96.dp
+    val page = 12.dp
+    val gap = 12.dp
 }
 
 object GOpacity {
     const val disabled = 0.45f
+}
+
+/** The glass's plain values (4.0): blurs in dp, a shadow's geometry as CSS's (offset, blur, spread). */
+object GGlassValues {
+    const val blurContent = 28f
+    const val blurLiquid = 9f
+    const val saturationContent = 1.5f
+    const val saturationLiquid = 1.9f
+    const val brightnessLiquid = 1.06f
+    const val reduced = 0.94f
+    const val shadowY = 18f
+    const val shadowBlur = 40f
+    const val shadowSpread = -18f
+    const val shadowNearY = 2f
+    const val shadowNearBlur = 6f
+    const val shadowNearSpread = -2f
+    const val shadowLiquidY = 10f
+    const val shadowLiquidBlur = 26f
+    const val shadowLiquidSpread = -12f
+    const val inkSecondary = 0.62f
+    const val inkDiscret = 0.42f
+    const val inkSecondaryMax = 0.8f
+    const val inkDiscretMax = 0.64f
+    const val textMinimum = 4.5f
+    const val edgeMinimum = 3.0f
+}
+
+/** What a kind of glass lays on a ground: its colour's opacities, its rims', its shadows'. */
+@Immutable
+data class GGlassKindValues(val thin: Float, val regular: Float, val thick: Float, val liquid: Float, val rim: Float, val rimEdge: Float, val liquidRim: Float, val liquidRimSoft: Float, val shadow: Float, val shadowNear: Float, val liquidShadow: Float)
+
+enum class GGlassKind(val values: GGlassKindValues) {
+    LIGHT(GGlassKindValues(0.46f, 0.68f, 0.88f, 0.26f, 0.85f, 0.5f, 0.95f, 0.35f, 0.22f, 0.06f, 0.2f)),
+    DARK(GGlassKindValues(0.42f, 0.62f, 0.86f, 0.07f, 0.09f, 0.06f, 0.42f, 0.08f, 0.6f, 0.3f, 0.45f)),
+    TINTED(GGlassKindValues(0.22f, 0.34f, 0.62f, 0.1f, 0.22f, 0.12f, 0.6f, 0.12f, 0.55f, 0.2f, 0.4f)),
+}
+
+/** Gabarit's grounds (light, dark, black) and its sample ambiances (tokens/gabarit.json). */
+object GGrounds {
+    val light = GGroundSpec("light", GGroundMode.LIGHT, GGlassKind.LIGHT, 160f, listOf(Color(0xFFF2F4F7), Color(0xFFEFE6FA), Color(0xFFDCE7F7)), GGroundLight(Color(0xFFFFE6D4), 0.12f, -0.08f, 0.9f, 1f), Color(0xFFFFFFFF), null, Color(0xFF182030))
+    val dark = GGroundSpec("dark", GGroundMode.DARK, GGlassKind.DARK, 160f, listOf(Color(0xFF0D1116), Color(0xFF0F1820), Color(0xFF13283A)), GGroundLight(Color(0xFF2A2236), 0.08f, -0.1f, 0.85f, 1f), Color(0xFF161C24), null, Color(0xFF000000))
+    val black = GGroundSpec("black", GGroundMode.DARK, GGlassKind.DARK, 160f, listOf(Color(0xFF000000), Color(0xFF07090D)), GGroundLight(Color(0xFF16141F), 0.08f, -0.1f, 0.8f, 1f), Color(0xFF0E1217), null, Color(0xFF000000))
+    val aurore = GGroundSpec("aurore", GGroundMode.DARK, GGlassKind.TINTED, 135f, listOf(Color(0xFF4A3392), Color(0xFF5442C0), Color(0xFF24346E), Color(0xFF13707E)), GGroundLight(Color(0xFFFF8A7A), 0f, 0f, 0.75f, 0.45f), Color(0xFF14102C), Color(0xFFFFFFFF), null)
+    val lagune = GGroundSpec("lagune", GGroundMode.DARK, GGlassKind.TINTED, 150f, listOf(Color(0xFF0B4257), Color(0xFF0D5A66), Color(0xFF0B2E4A)), GGroundLight(Color(0xFF5FD4C4), 0.9f, 0.05f, 0.7f, 0.35f), Color(0xFF06222E), Color(0xFFFFFFFF), null)
+    val braise = GGroundSpec("braise", GGroundMode.DARK, GGlassKind.TINTED, 160f, listOf(Color(0xFF6A1A10), Color(0xFF8A2E14), Color(0xFF3A0E14)), GGroundLight(Color(0xFFFF9A4D), 0.15f, 0f, 0.7f, 0.45f), Color(0xFF2A0A0C), Color(0xFFFFFFFF), null)
+    val nuitPolaire = GGroundSpec("nuitPolaire", GGroundMode.DARK, GGlassKind.TINTED, 170f, listOf(Color(0xFF0B1630), Color(0xFF1C2F5E), Color(0xFF0E3B4A)), GGroundLight(Color(0xFF5CE1B9), 0.8f, -0.05f, 0.7f, 0.4f), Color(0xFF081022), Color(0xFFFFFFFF), null)
+    val sousBois = GGroundSpec("sousBois", GGroundMode.DARK, GGlassKind.TINTED, 160f, listOf(Color(0xFF16301F), Color(0xFF2E4A2A), Color(0xFF0F1F18)), GGroundLight(Color(0xFF9CC27A), 0.1f, -0.05f, 0.7f, 0.4f), Color(0xFF0B1A10), Color(0xFFFFFFFF), null)
+    val laiton = GGroundSpec("laiton", GGroundMode.DARK, GGlassKind.TINTED, 150f, listOf(Color(0xFF3A2A12), Color(0xFF6B4E1F), Color(0xFF22180C)), GGroundLight(Color(0xFFE0B465), 0.2f, -0.05f, 0.7f, 0.45f), Color(0xFF1C140A), Color(0xFFFFFFFF), null)
+    val givre = GGroundSpec("givre", GGroundMode.LIGHT, GGlassKind.LIGHT, 160f, listOf(Color(0xFFEEF3F8), Color(0xFFDDE8F3), Color(0xFFE9E4F5)), GGroundLight(Color(0xFFFFFFFF), 0.15f, -0.05f, 0.8f, 1f), Color(0xFFFFFFFF), null, null)
+    val all = listOf(light, dark, black, aurore, lagune, braise, nuitPolaire, sousBois, laiton, givre)
+}
+
+/** The tones tools/tokens.py computed (GGroundSpec.tone() must find the same). */
+object GGroundTones {
+    val light = GGroundTone(0.0f, Color(0xFF10151C), 0.62f, 0.47f, 0.26f, Color(0xFF182030))
+    val dark = GGroundTone(0.0f, Color(0xFFE7EBF1), 0.62f, 0.42f, 0.07f, Color(0xFF000000))
+    val black = GGroundTone(0.0f, Color(0xFFE7EBF1), 0.62f, 0.42f, 0.07f, Color(0xFF000000))
+    val aurore = GGroundTone(0.14f, Color(0xFFFFFFFF), 0.8f, 0.55f, 0.1f, Color(0xFF0B1021))
+    val lagune = GGroundTone(0.25f, Color(0xFFFFFFFF), 0.8f, 0.55f, 0.1f, Color(0xFF030E16))
+    val braise = GGroundTone(0.12f, Color(0xFFFFFFFF), 0.8f, 0.56f, 0.1f, Color(0xFF110406))
+    val nuitPolaire = GGroundTone(0.0f, Color(0xFFFFFFFF), 0.76f, 0.53f, 0.1f, Color(0xFF03070E))
+    val sousBois = GGroundTone(0.0f, Color(0xFFFFFFFF), 0.8f, 0.54f, 0.1f, Color(0xFF040907))
+    val laiton = GGroundTone(0.11f, Color(0xFFFFFFFF), 0.8f, 0.55f, 0.1f, Color(0xFF0A0704))
+    val givre = GGroundTone(0.0f, Color(0xFF10151C), 0.62f, 0.47f, 0.26f, Color(0xFF46444A))
 }

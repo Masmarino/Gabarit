@@ -751,6 +751,35 @@
       }
     }
   },
+  "ground": {
+    "_": "The ground (4.0): what runs under the whole window, rail and bar included. An ambiance is a linear gradient of 2 to 4 stops at an angle (CSS degrees: 180 runs from the top down), plus a light: a radial wash of a colour at (x, y), fractions of the window, its radius a fraction of the window's longer side, its strength the colour's opacity at its centre. \"mode\" sets the ink (light: dark ink, dark: light ink), \"kind\" the glass laid on it (glass.kinds). tools/tokens.py computes each ambiance's tone at its worst point (every stop, and the light at its centre): the veil laid over the whole ground, the ink's opacities, the glass; --check fails when an ambiance cannot reach 4.5:1 for text and 3:1 for edges. light, dark and black are Gabarit's own grounds; the others are samples, for the check and the galleries: an app brings its own and computes their tone at run time (GGroundTone).",
+    "ambiances": {
+      "light": { "mode": "light", "kind": "light", "angle": 160, "stops": ["#F2F4F7", "#EFE6FA", "#DCE7F7"], "light": { "color": "#FFE6D4", "x": 0.12, "y": -0.08, "radius": 0.9, "strength": 1 }, "glass": "#FFFFFF", "shade": "#182030" },
+      "dark": { "mode": "dark", "kind": "dark", "angle": 160, "stops": ["#0D1116", "#0F1820", "#13283A"], "light": { "color": "#2A2236", "x": 0.08, "y": -0.1, "radius": 0.85, "strength": 1 }, "glass": "#161C24", "shade": "#000000" },
+      "black": { "mode": "dark", "kind": "dark", "angle": 160, "stops": ["#000000", "#07090D"], "light": { "color": "#16141F", "x": 0.08, "y": -0.1, "radius": 0.8, "strength": 1 }, "glass": "#0E1217", "shade": "#000000" },
+      "aurore": { "mode": "dark", "kind": "tinted", "ink": "#FFFFFF", "angle": 135, "stops": ["#4A3392", "#5442C0", "#24346E", "#13707E"], "light": { "color": "#FF8A7A", "x": 0, "y": 0, "radius": 0.75, "strength": 0.45 }, "glass": "#14102C" },
+      "lagune": { "mode": "dark", "kind": "tinted", "ink": "#FFFFFF", "angle": 150, "stops": ["#0B4257", "#0D5A66", "#0B2E4A"], "light": { "color": "#5FD4C4", "x": 0.9, "y": 0.05, "radius": 0.7, "strength": 0.35 }, "glass": "#06222E" },
+      "braise": { "mode": "dark", "kind": "tinted", "ink": "#FFFFFF", "angle": 160, "stops": ["#6A1A10", "#8A2E14", "#3A0E14"], "light": { "color": "#FF9A4D", "x": 0.15, "y": 0, "radius": 0.7, "strength": 0.45 }, "glass": "#2A0A0C" },
+      "nuitPolaire": { "mode": "dark", "kind": "tinted", "ink": "#FFFFFF", "angle": 170, "stops": ["#0B1630", "#1C2F5E", "#0E3B4A"], "light": { "color": "#5CE1B9", "x": 0.8, "y": -0.05, "radius": 0.7, "strength": 0.4 }, "glass": "#081022" },
+      "sousBois": { "mode": "dark", "kind": "tinted", "ink": "#FFFFFF", "angle": 160, "stops": ["#16301F", "#2E4A2A", "#0F1F18"], "light": { "color": "#9CC27A", "x": 0.1, "y": -0.05, "radius": 0.7, "strength": 0.4 }, "glass": "#0B1A10" },
+      "laiton": { "mode": "dark", "kind": "tinted", "ink": "#FFFFFF", "angle": 150, "stops": ["#3A2A12", "#6B4E1F", "#22180C"], "light": { "color": "#E0B465", "x": 0.2, "y": -0.05, "radius": 0.7, "strength": 0.45 }, "glass": "#1C140A" },
+      "givre": { "mode": "light", "kind": "light", "angle": 160, "stops": ["#EEF3F8", "#DDE8F3", "#E9E4F5"], "light": { "color": "#FFFFFF", "x": 0.15, "y": -0.05, "radius": 0.8, "strength": 1 }, "glass": "#FFFFFF" }
+    }
+  },
+  "glass": {
+    "_": "The two glasses (4.0). Content glass (thin, regular, thick) for the panels: dense enough for long text. Liquid glass for what commands and floats (tabs, a bar's search and buttons, the composer, menus, sheets, tooltips), never for content: more transparent, a short blur that saturates what lies under it, a brighter rim at the top left, a hollow of light at the bottom, a short shadow. Each kind (an ambiance's \"kind\") gives the nominal opacities of the glass's colour (the ambiance's \"glass\"), the liquid glass's white, the rims and the shadows' strengths; the colour of a shadow is the ambiance's \"shade\" (by default its darkest stop, deepened). \"reduced\": the opacity of every glass when the system asks to reduce transparency.",
+    "kinds": {
+      "light": { "thin": 0.46, "regular": 0.68, "thick": 0.88, "liquid": 0.26, "rim": 0.85, "rimEdge": 0.5, "liquidRim": 0.95, "liquidRimSoft": 0.35, "shadow": 0.22, "shadowNear": 0.06, "liquidShadow": 0.2 },
+      "dark": { "thin": 0.42, "regular": 0.62, "thick": 0.86, "liquid": 0.07, "rim": 0.09, "rimEdge": 0.06, "liquidRim": 0.42, "liquidRimSoft": 0.08, "shadow": 0.6, "shadowNear": 0.3, "liquidShadow": 0.45 },
+      "tinted": { "thin": 0.22, "regular": 0.34, "thick": 0.62, "liquid": 0.1, "rim": 0.22, "rimEdge": 0.12, "liquidRim": 0.6, "liquidRimSoft": 0.12, "shadow": 0.55, "shadowNear": 0.2, "liquidShadow": 0.4 }
+    },
+    "blur": { "content": 28, "liquid": 9 },
+    "saturation": { "content": 1.5, "liquid": 1.9 },
+    "brightness": { "liquid": 1.06 },
+    "reduced": 0.94,
+    "shadow": { "y": 18, "blur": 40, "spread": -18, "nearY": 2, "nearBlur": 6, "nearSpread": -2, "liquidY": 10, "liquidBlur": 26, "liquidSpread": -12 },
+    "ink": { "secondary": 0.62, "discret": 0.42, "secondaryMax": 0.8, "discretMax": 0.64 }
+  },
   "radius": {
     "xs": 4,
     "sm": 6,
@@ -759,6 +788,8 @@
     "xl": 14,
     "xxl": 16,
     "xxxl": 20,
+    "row": 14,
+    "glass": 22,
     "pill": 100
   },
   "spacing": {
@@ -772,7 +803,14 @@
     "xxl": 32,
     "xxxl": 40,
     "xxxxl": 64,
-    "xxxxxl": 96
+    "xxxxxl": 96,
+    "page": 20,
+    "gap": 16
+  },
+  "spacingPhone": {
+    "_": "The steps that are smaller on a phone (iPhone, Android): the margin around the glass and the gap between two glasses.",
+    "page": 12,
+    "gap": 12
   },
   "opacity": {
     "disabled": 0.45
@@ -825,6 +863,24 @@
     "linear": {
       "curve": "linear",
       "duration": 0.1
+    },
+    "page": {
+      "_": "A change of tab (4.0): the page fades in and rises by \"rise\" points; the ground does not move.",
+      "curve": "spring",
+      "response": 0.24,
+      "damping": 0.9,
+      "rise": 8
+    },
+    "ground": {
+      "_": "A change of ground (entering a community, the music's ambiance): a fade.",
+      "curve": "easeInOut",
+      "duration": 0.45
+    },
+    "shared": {
+      "_": "An element shared by two screens (a tile becoming a header, an avatar becoming the thread's).",
+      "curve": "spring",
+      "response": 0.42,
+      "damping": 0.86
     }
   },
   "families": {
@@ -935,6 +991,14 @@
       "phone": 13,
       "desktop": 12,
       "system": "footnote"
+    },
+    "display": {
+      "_": "4.0: the header laid on the ground (\"Bonjour\"), in Plex Condensed (700 asked: semibold until the bold file ships).",
+      "family": "display",
+      "weight": "semibold",
+      "phone": 34,
+      "desktop": 30,
+      "system": "largeTitle"
     }
   }
 }

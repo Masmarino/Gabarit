@@ -12,9 +12,13 @@ Generated, never to be edited by hand:
 - WinUI: swift/GabaritWinUI/Resources/Gabarit.xaml;
 - Compose: android/gabarit/src/main/kotlin/com/masmarino/gabarit/GTokens.kt, GText.kt and GSymbols.kt;
 - Rust (GPUI): rust/gabarit-gpui/src/tokens.rs (plain values, no UI framework; IBM Plex embedded);
+- the ground and the glass (4.0): every ambiance's tone (tone()), in each of the files above, plus the web's
+  _grounds.scss and Compose's GMotion.kt. --check also fails when an ambiance misses 4.5:1 for its text or 3:1 for
+  its edges at its worst point (check_grounds());
 - symbols: swift/GabaritCommon/GSymbols.swift, from tokens/symbols.json (SF Symbols' names → Phosphor's).
 """
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -33,7 +37,12 @@ _bad = sorted(sf for sf in SYMBOLS if not re.fullmatch(r"[a-z0-9]+(\.[a-z0-9]+)*
 if _unknown or _bad:
     sys.exit(f"tokens/symbols.json: Phosphor names unknown {_unknown}; SF names to write without .fill {_bad}")
 PALETTE = {name: hexa for group in TOKENS["palette"] for name, hexa in group["colors"].items()}
-APPS = TOKENS["semantic"]["apps"]
+APPS = dict(TOKENS["semantic"]["apps"])
+AMBIANCES = TOKENS["ground"]["ambiances"]
+GLASS = TOKENS["glass"]
+KINDS = GLASS["kinds"]
+ANIMATIONS = {name: a for name, a in TOKENS["animations"].items() if name != "_"}
+SPACING_PHONE = {name: v for name, v in TOKENS["spacingPhone"].items() if name != "_"}
 
 
 def resolve(value: str) -> tuple[str, float, str | None]:
@@ -43,6 +52,149 @@ def resolve(value: str) -> tuple[str, float, str | None]:
     if name.startswith("#"):
         return name[1:].upper(), opacity, None
     return PALETTE[name][1:], opacity, name
+
+
+# MARK: The ground's tone (4.0)
+#
+# The same computation is written in GabaritCommon (GGroundTone.swift), in the Compose library (GGround.kt) and in
+# gabarit-gpui (tone.rs), for the grounds an app brings at run time; their tests compare it with the tones below.
+
+TEXT_MINIMUM = 4.5
+EDGE_MINIMUM = 3.0
+
+
+def rgb(hexa: str) -> tuple[float, float, float]:
+    hexa = hexa.lstrip("#")
+    return tuple(int(hexa[index:index + 2], 16) / 255 for index in (0, 2, 4))
+
+
+def luminance(colour: tuple[float, float, float]) -> float:
+    """WCAG's relative luminance."""
+    def channel(c: float) -> float:
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (channel(c) for c in colour)
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def contrast(a, b) -> float:
+    la, lb = luminance(a), luminance(b)
+    return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+
+
+def laid(top, opacity: float, under):
+    """`top` at `opacity` on the opaque `under`."""
+    return tuple(t * opacity + u * (1 - opacity) for t, u in zip(top, under))
+
+
+def ambiance_ink(ambiance: dict) -> str:
+    """The ink of an ambiance: its own, or the apps' main text in its mode."""
+    return ambiance.get("ink") or "#" + resolve(APPS["textPrimary"][ambiance["mode"]])[0]
+
+
+def ambiance_shade(ambiance: dict) -> str:
+    """The colour of a glass's shadow: the ambiance's own, or its darkest stop, 70 % of the way to black."""
+    if "shade" in ambiance:
+        return ambiance["shade"]
+    darkest = min(ambiance["stops"], key=lambda stop: luminance(rgb(stop)))
+    return "#" + "".join(f"{round(round(c * 255) * 0.3):02X}" for c in rgb(darkest))
+
+
+def light_stop(ambiance: dict) -> int:
+    """The stop under the light's centre: the light's place projected on the gradient's line (CSS: an angle of 0 runs
+    upwards, 90 to the right; the line spans the window's square), rounded to the nearest stop."""
+    angle = math.radians(ambiance["angle"])
+    dx, dy = math.sin(angle), -math.cos(angle)
+    light = ambiance["light"]
+    reach = (abs(dx) + abs(dy)) / 2
+    along = ((light["x"] - 0.5) * dx + (light["y"] - 0.5) * dy) / reach / 2 + 0.5
+    along = min(max(along, 0.0), 1.0)
+    return round(along * (len(ambiance["stops"]) - 1))
+
+
+def ambiance_points(ambiance: dict) -> list:
+    """Where the ink may land: every stop, and the light at its centre over the stop under it."""
+    stops = [rgb(stop) for stop in ambiance["stops"]]
+    light = ambiance["light"]
+    return stops + [laid(rgb(light["color"]), light["strength"], stops[light_stop(ambiance)])]
+
+
+def tone(ambiance: dict) -> dict:
+    """An ambiance's tone: the veil over the ground (the glass's colour, the least that holds), then the ink's
+    opacities (the least from the nominal ones), the liquid glass's white (the most, down from the nominal), by steps
+    of a hundredth. The veil must let the secondary ink hold at secondaryMax and the discreet one at discretMax at
+    most: past them, the ink would lose its hierarchy."""
+    kind = KINDS[ambiance["kind"]]
+    ink, glass, points = rgb(ambiance_ink(ambiance)), rgb(ambiance["glass"]), ambiance_points(ambiance)
+    inks = GLASS["ink"]
+
+    def holds(veil: float, alpha: float, minimum: float, white: float = 0) -> bool:
+        for point in points:
+            under = laid((1, 1, 1), white, laid(glass, veil, point))
+            if contrast(laid(ink, alpha, under), under) < minimum:
+                return False
+        return True
+
+    steps = [step / 100 for step in range(101)]
+    veil = next((v for v in steps if holds(v, 1, TEXT_MINIMUM) and holds(v, inks["secondaryMax"], TEXT_MINIMUM)
+                 and holds(v, inks["discretMax"], EDGE_MINIMUM)), None)
+    if veil is None:
+        return {"veil": None}
+    ink2 = next(a for a in steps if a >= inks["secondary"] - 1e-9 and holds(veil, a, TEXT_MINIMUM))
+    ink3 = next(a for a in steps if a >= inks["discret"] - 1e-9 and holds(veil, a, EDGE_MINIMUM))
+    # On the liquid glass, text takes the full ink.
+    liquid = next((w for w in reversed(steps) if w <= kind["liquid"] + 1e-9 and holds(veil, 1, TEXT_MINIMUM, w)), 0.0)
+    return {"veil": veil, "ink": ambiance_ink(ambiance), "ink2": ink2, "ink3": ink3, "liquid": liquid,
+            "shade": ambiance_shade(ambiance)}
+
+
+TONES = {name: tone(ambiance) for name, ambiance in AMBIANCES.items()}
+
+
+def hexa_opacity(hexa: str, opacity: float) -> str:
+    return f"{hexa}/{round(opacity, 4):g}"
+
+
+def glass_roles(name: str) -> dict:
+    """The roles of the apps' set an ambiance gives (light and dark: Gabarit's own grounds)."""
+    ambiance, t, kind = AMBIANCES[name], TONES[name], KINDS[AMBIANCES[name]["kind"]]
+    return {
+        "ink": t["ink"], "ink2": hexa_opacity(t["ink"], t["ink2"]), "ink3": hexa_opacity(t["ink"], t["ink3"]),
+        "groundVeil": hexa_opacity(ambiance["glass"], t["veil"]),
+        "glassThin": hexa_opacity(ambiance["glass"], kind["thin"]),
+        "glassRegular": hexa_opacity(ambiance["glass"], kind["regular"]),
+        "glassThick": hexa_opacity(ambiance["glass"], kind["thick"]),
+        "glassLiquid": hexa_opacity("#FFFFFF", t["liquid"]),
+        "glassRim": hexa_opacity("#FFFFFF", kind["rim"]), "glassRimEdge": hexa_opacity("#FFFFFF", kind["rimEdge"]),
+        "liquidRim": hexa_opacity("#FFFFFF", kind["liquidRim"]),
+        "liquidRimSoft": hexa_opacity("#FFFFFF", kind["liquidRimSoft"]),
+        "glassShadow": hexa_opacity(t["shade"], kind["shadow"]),
+        "glassShadowNear": hexa_opacity(t["shade"], kind["shadowNear"]),
+        "liquidShadow": hexa_opacity(t["shade"], kind["liquidShadow"]),
+    }
+
+
+if all(TONES[name]["veil"] is not None for name in ("light", "dark")):
+    _light, _dark = glass_roles("light"), glass_roles("dark")
+    APPS.update({role: {"light": _light[role], "dark": _dark[role]} for role in _light})
+
+
+def ground_light(ambiance: dict) -> dict:
+    return ambiance["light"]
+
+
+def glass_constants() -> list[tuple[str, float]]:
+    """The glass's plain values, by camelCase name."""
+    out = [("blurContent", GLASS["blur"]["content"]), ("blurLiquid", GLASS["blur"]["liquid"]),
+           ("saturationContent", GLASS["saturation"]["content"]), ("saturationLiquid", GLASS["saturation"]["liquid"]),
+           ("brightnessLiquid", GLASS["brightness"]["liquid"]), ("reduced", GLASS["reduced"])]
+    out += [(f"shadow{camel(name)}", value) for name, value in GLASS["shadow"].items()]
+    out += [(f"ink{camel(name)}", value) for name, value in GLASS["ink"].items()]
+    out += [("textMinimum", TEXT_MINIMUM), ("edgeMinimum", EDGE_MINIMUM)]
+    return out
+
+
+KIND_FIELDS = ["thin", "regular", "thick", "liquid", "rim", "rimEdge", "liquidRim", "liquidRimSoft", "shadow",
+               "shadowNear", "liquidShadow"]
 
 
 def css_name(name: str) -> str:
@@ -99,7 +251,7 @@ def css_rgba(value: str) -> str:
     if opacity == 1:
         return f"#{hexa.lower()}"
     channels = ", ".join(str(int(hexa[index:index + 2], 16)) for index in (0, 2, 4))
-    return f"rgba({channels}, {opacity})"
+    return f"rgba({channels}, {opacity:g})"
 
 
 def web_geometry(text: str) -> str:
@@ -124,6 +276,59 @@ def web_depth(key: str) -> list[str]:
     return lines
 
 
+def css_ground(ambiance: dict) -> str:
+    """An ambiance as a CSS background: its light (a radial wash) over its linear gradient, one layer a line (as
+    prettier writes it)."""
+    light = ambiance["light"]
+    stops = ", ".join(ambiance["stops"]).lower()
+    return (f"\n    radial-gradient(circle at {light['x'] * 100:g}% {light['y'] * 100:g}%, "
+            f"{css_rgba(hexa_opacity(light['color'], light['strength']))} 0%, transparent {light['radius'] * 100:g}%),"
+            f"\n    linear-gradient({ambiance['angle']:g}deg, {stops})")
+
+
+def web_ambiance(name: str) -> list[str]:
+    """The ground, the glass and the ink of an ambiance, as CSS custom properties (4.0): offered, not imposed."""
+    roles = glass_roles(name)
+    lines = [f"  --gbt-ground:{css_ground(AMBIANCES[name])};"]
+    lines += [f"  --gbt-{css_role(role)}: {css_rgba(value)};" for role, value in roles.items()]
+    return lines
+
+
+def css_role(role: str) -> str:
+    """glassRimEdge → glass-rim-edge, ink2 → ink-2."""
+    return re.sub(r"([A-Z0-9])", lambda m: "-" + m.group(1).lower(), role)
+
+
+def web_glass(key: str) -> list[str]:
+    g, shadow = GLASS, GLASS["shadow"]
+    lines = ["", "  // The ground and the two glasses (4.0): the light and dark grounds, their glass and their ink."]
+    lines += web_ambiance(key)
+    lines += [f"  --gbt-glass-blur: blur({g['blur']['content']}px) saturate({g['saturation']['content']:g});",
+              f"  --gbt-liquid-blur: blur({g['blur']['liquid']}px) saturate({g['saturation']['liquid']:g}) "
+              f"brightness({g['brightness']['liquid']:g});",
+              f"  --gbt-radius-glass: {TOKENS['radius']['glass']}px;", f"  --gbt-radius-row: {TOKENS['radius']['row']}px;",
+              f"  --gbt-space-page: {TOKENS['spacing']['page']}px;", f"  --gbt-space-gap: {TOKENS['spacing']['gap']}px;",
+              "  --gbt-glass-rim-light:",
+              "    inset 0 1px 0 var(--gbt-glass-rim), inset 0 0 0 0.5px var(--gbt-glass-rim-edge);",
+              "  --gbt-depth-glass:",
+              f"    0 {shadow['y']}px {shadow['blur']}px {shadow['spread']}px var(--gbt-glass-shadow), "
+              f"0 {shadow['nearY']}px {shadow['nearBlur']}px {shadow['nearSpread']}px var(--gbt-glass-shadow-near);",
+              "  --gbt-depth-liquid:",
+              "    inset 0 1px 1.5px var(--gbt-liquid-rim), inset 0 -10px 18px -14px var(--gbt-liquid-rim-soft),",
+              f"    0 {shadow['liquidY']}px {shadow['liquidBlur']}px {shadow['liquidSpread']}px var(--gbt-liquid-shadow);"]
+    return lines
+
+
+def web_grounds() -> str:
+    """Every ambiance as a mixin (`@include ambiance-aurore`), for a page that lays its own ground."""
+    lines = ["// The ambiances (4.0): the ground, the glass and the ink of each, as mixins; light and dark are also in",
+             "// the theme mixins. Nothing includes them: a page picks one.", f"// {HEADER}"]
+    for name in AMBIANCES:
+        lines += ["", f"@mixin ambiance-{css_role(name)} {{"] + web_ambiance(name)
+        lines += [f"  color-scheme: {AMBIANCES[name]['mode']};", "}"]
+    return "\n".join(lines) + "\n"
+
+
 def web_themes() -> str:
     def block(items: list[dict]) -> list[str]:
         out = []
@@ -140,7 +345,8 @@ def web_themes() -> str:
 
     web = TOKENS["semantic"]["web"]
     lines = THEMES_HEAD.split("\n")[:-1] + [f"// {HEADER}", "", "@mixin light-tokens {"] + block(web["light"]) + web_depth("light")
-    lines += ["}", "", "@mixin dark-tokens {"] + block(web["dark"]) + web_depth("dark") + ["}"]
+    lines += web_glass("light")
+    lines += ["}", "", "@mixin dark-tokens {"] + block(web["dark"]) + web_depth("dark") + web_glass("dark") + ["}"]
     radii = {name: step for name, step in web["radius"].items() if name != "_"}
     lines += ["", "// The corners, the same in both themes: the common scale, as on the apps.", "@mixin shape-tokens {"]
     lines += [f"  --{name}: {TOKENS['radius'][step]}px;" for name, step in radii.items()] + ["}"]
@@ -192,7 +398,12 @@ def swift_common() -> str:
     lines += ["}", "", "public enum GRadius {"]
     lines += [f"    public static let {name}: Double = {value}" for name, value in TOKENS["radius"].items()]
     lines += ["}", "", "public enum GSpacing {"]
-    lines += [f"    public static let {name}: Double = {value}" for name, value in TOKENS["spacing"].items()]
+    for name, value in TOKENS["spacing"].items():
+        if name in SPACING_PHONE:
+            lines += ["    #if os(iOS)", f"    public static let {name}: Double = {SPACING_PHONE[name]}", "    #else",
+                      f"    public static let {name}: Double = {value}", "    #endif"]
+        else:
+            lines.append(f"    public static let {name}: Double = {value}")
     lines += ["}", "", "public enum GOpacity {"]
     lines += [f"    public static let {name}: Double = {value}" for name, value in TOKENS["opacity"].items()]
     lines += ["}", "", "public struct GShadowSpec: Sendable, Hashable {",
@@ -208,10 +419,13 @@ def swift_common() -> str:
               "    case easeOut(duration: Double)",
               "    case linear(duration: Double)",
               "}", "", "public enum GAnimationValues {"]
-    for name, a in TOKENS["animations"].items():
+    for name, a in ANIMATIONS.items():
         curve = (f".spring(response: {a['response']}, damping: {a['damping']})" if a["curve"] == "spring"
                  else f".{a['curve']}(duration: {a['duration']})")
         lines.append(f"    public static let {name} = GAnimationCurve{curve}")
+    lines += [f"    /// How far a page rises as it comes in, in points.",
+              f"    public static let pageRise: Double = {ANIMATIONS['page']['rise']}"]
+    lines += swift_grounds()
     lines += ["}", "", "/// The font families, and the files each one ships (in GabaritApple's resources).",
               "public enum GFamily: String, Sendable, CaseIterable {"]
     lines += [f"    case {name} = \"{f['name']}\"" for name, f in TOKENS["families"].items()]
@@ -266,9 +480,45 @@ def swift_apple() -> str:
         for name in TOKENS["text"]:
             lines.append(f"    public static var {name}: Font {{ Font(GTextStyles.{name}, size: GTextStyles.{name}.{key}) }}")
     lines += ["    #endif", "}", "", "public enum GAnimation {"]
-    lines += [f"    public static let {name} = Animation(GAnimationValues.{name})" for name in TOKENS["animations"]]
+    lines += [f"    public static let {name} = Animation(GAnimationValues.{name})" for name in ANIMATIONS]
     lines += ["}", "#endif", ""]
     return "\n".join(lines)
+
+
+def swift_grounds() -> list[str]:
+    def light(a: dict) -> str:
+        l = a["light"]
+        return (f"GGroundLight(color: {swift_rgba(l['color'])}, x: {l['x']}, y: {l['y']}, radius: {l['radius']}, "
+                f"strength: {l['strength']})")
+
+    lines = ["}", "", "/// The glass's plain values (4.0): blurs in points, a shadow's geometry as CSS's (offset, blur, spread).",
+             "public enum GGlassValues {"]
+    lines += [f"    public static let {name}: Double = {value}" for name, value in glass_constants()]
+    lines += ["}", "", "/// What a kind of glass lays on a ground: its colour's opacities, its rims', its shadows'.",
+              "public struct GGlassKindValues: Sendable, Hashable {",
+              "    public let " + ", ".join(KIND_FIELDS) + ": Double", "}", "",
+              "public enum GGlassKind: String, Sendable, Hashable, CaseIterable {"]
+    lines += [f"    case {name}" for name in KINDS]
+    lines += ["", "    public var values: GGlassKindValues {", "        switch self {"]
+    for name, k in KINDS.items():
+        lines.append(f"        case .{name}: GGlassKindValues(" + ", ".join(f"{f}: {k[f]}" for f in KIND_FIELDS) + ")")
+    lines += ["        }", "    }", "}", "",
+              "/// Gabarit's grounds (light, dark, black) and its sample ambiances (tokens/gabarit.json).",
+              "public enum GGroundValues {"]
+    for name, a in AMBIANCES.items():
+        ink = f"{swift_rgba(a['ink'])}" if "ink" in a else "nil"
+        shade = f"{swift_rgba(a['shade'])}" if "shade" in a else "nil"
+        stops = ", ".join(swift_rgba(stop) for stop in a["stops"])
+        lines.append(f"    public static let {name} = GGroundSpec(name: \"{name}\", mode: .{a['mode']}, kind: .{a['kind']}, "
+                     f"angle: {a['angle']}, stops: [{stops}], light: {light(a)}, glass: {swift_rgba(a['glass'])}, "
+                     f"ink: {ink}, shade: {shade})")
+    lines += ["    public static let all = [" + ", ".join(AMBIANCES) + "]", "}", "",
+              "/// The tones tools/tokens.py computed (GGroundSpec.tone() must find the same).",
+              "public enum GGroundTones {"]
+    for name, t in TONES.items():
+        lines.append(f"    public static let {name} = GGroundTone(veil: {t['veil']}, ink: {swift_rgba(t['ink'])}, "
+                     f"ink2: {t['ink2']}, ink3: {t['ink3']}, liquid: {t['liquid']}, shade: {swift_rgba(t['shade'])})")
+    return lines
 
 
 # MARK: GTK
@@ -372,6 +622,9 @@ WINUI_HIGH_CONTRAST = {
     "textSecondary": "WindowText", "textDiscret": "WindowText", "primary": "ButtonText", "primaryHover": "Highlight",
     "onPrimary": "ButtonFace", "accent": "Highlight", "accentText": "Hotlight", "frame": "Window",
     "selectedFill": "Highlight",
+    # The glass (4.0): a ground under text, its rims and shadows drawn as the text.
+    "groundVeil": "Window", "glassThin": "Window", "glassRegular": "Window", "glassThick": "Window",
+    "glassLiquid": "Window", "ink": "WindowText", "ink2": "WindowText", "ink3": "WindowText",
 }
 
 # The accent's shades WinUI's own controls read (Fluent): Gabarit's rust, darker for the light theme's fills.
@@ -412,6 +665,27 @@ def winui_font(family: str, weight: str) -> str:
     return f"GFont{camel(family)}" + ("" if weight == first else camel(weight))
 
 
+def winui_ground(key: str) -> list[str]:
+    """The ground (4.0) as a brush: its linear gradient (WinUI draws the light apart, a RadialGradientBrush)."""
+    a = AMBIANCES[key]
+    angle = math.radians(a["angle"])
+    dx, dy = math.sin(angle) / 2, -math.cos(angle) / 2
+    start, end = f"{0.5 - dx:.3f},{0.5 - dy:.3f}", f"{0.5 + dx:.3f},{0.5 + dy:.3f}"
+    lines = ["            <!-- The ground (4.0). -->",
+             f'            <LinearGradientBrush x:Key="GGroundBrush" StartPoint="{start}" EndPoint="{end}">']
+    count = len(a["stops"])
+    lines += [f'                <GradientStop Color="{xaml_color(stop)}" Offset="{index / (count - 1):.3f}"/>'
+              for index, stop in enumerate(a["stops"])]
+    l = a["light"]
+    lines += ["            </LinearGradientBrush>",
+              f'            <RadialGradientBrush x:Key="GGroundLightBrush" Center="{l["x"]},{l["y"]}" '
+              f'GradientOrigin="{l["x"]},{l["y"]}" RadiusX="{l["radius"]}" RadiusY="{l["radius"]}">',
+              f'                <GradientStop Color="{xaml_color(hexa_opacity(l["color"], l["strength"]))}" Offset="0"/>',
+              f'                <GradientStop Color="{xaml_color(hexa_opacity(l["color"], 0))}" Offset="1"/>',
+              "            </RadialGradientBrush>"]
+    return lines
+
+
 def winui() -> str:
     lines = ['<?xml version="1.0" encoding="utf-8"?>', f"<!-- {HEADER} -->",
              '<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"',
@@ -430,6 +704,7 @@ def winui() -> str:
         lines.append("            <!-- WinUI's own controls in Gabarit's colours (lightweight styling): no template redrawn. -->")
         for control_key, value in WINUI_CONTROLS.items():
             lines.append(f'            <SolidColorBrush x:Key="{control_key}" Color="{winui_brush(value, key)}"/>')
+        lines += winui_ground(key)
         lines.append(f'            <Color x:Key="SystemAccentColor">{xaml_color(APPS["accent"][key])}</Color>')
         lines += [f'            <Color x:Key="SystemAccentColor{shade}">{xaml_color(colour)}</Color>'
                   for shade, colour in WINUI_ACCENT.items()]
@@ -447,6 +722,8 @@ def winui() -> str:
         lines.append(f'            <SolidColorBrush x:Key="{name}Brush" Color="{{ThemeResource {system}}}"/>')
     lines += [f'            <SolidColorBrush x:Key="{name}Brush" Color="{{ThemeResource SystemColor{system}Color}}"/>'
               for name, (_, system) in WINUI_FRAME.items()]
+    lines += ['            <SolidColorBrush x:Key="GGroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>',
+              '            <SolidColorBrush x:Key="GGroundLightBrush" Color="Transparent"/>']
     lines += ["        </ResourceDictionary>", "    </ResourceDictionary.ThemeDictionaries>"]
     text = TOKENS["families"]["text"]
     body = TOKENS["text"]["body"]["desktop"]
@@ -499,9 +776,73 @@ def kotlin() -> str:
         lines.append(f"val G{theme}Colors = GColors(")
         lines += [f"    {name} = {kotlin_color(v[key])}," for name, v in APPS.items()]
         lines += [")", ""]
-    for kind, key in (("GRadius", "radius"), ("GSpacing", "spacing")):
-        lines += [f"object {kind} {{"] + [f"    val {n} = {v}.dp" for n, v in TOKENS[key].items()] + ["}", ""]
+    lines += ["object GRadius {"] + [f"    val {n} = {v}.dp" for n, v in TOKENS["radius"].items()] + ["}", ""]
+    lines += ["/** The spacing; page and gap at the phone's steps. */", "object GSpacing {"]
+    lines += [f"    val {n} = {SPACING_PHONE.get(n, v)}.dp" for n, v in TOKENS["spacing"].items()] + ["}", ""]
     lines += ["object GOpacity {"] + [f"    const val {n} = {v}f" for n, v in TOKENS["opacity"].items()] + ["}", ""]
+    lines += kotlin_grounds()
+    return "\n".join(lines)
+
+
+def kotlin_float(value: float) -> str:
+    return f"{float(value):g}f" if "." in f"{float(value):g}" or "e" in f"{float(value):g}" else f"{value}f"
+
+
+def kotlin_grounds() -> list[str]:
+    lines = ["/** The glass's plain values (4.0): blurs in dp, a shadow's geometry as CSS's (offset, blur, spread). */",
+             "object GGlassValues {"]
+    lines += [f"    const val {name} = {kotlin_float(value)}" for name, value in glass_constants()]
+    lines += ["}", "", "/** What a kind of glass lays on a ground: its colour's opacities, its rims', its shadows'. */",
+              "@Immutable", "data class GGlassKindValues(" + ", ".join(f"val {f}: Float" for f in KIND_FIELDS) + ")", "",
+              "enum class GGlassKind(val values: GGlassKindValues) {"]
+    lines += [f"    {name.upper()}(GGlassKindValues(" + ", ".join(f"{kotlin_float(k[f])}" for f in KIND_FIELDS) + ")),"
+              for name, k in KINDS.items()]
+    lines += ["}", "", "/** Gabarit's grounds (light, dark, black) and its sample ambiances (tokens/gabarit.json). */",
+              "object GGrounds {"]
+    for name, a in AMBIANCES.items():
+        l = a["light"]
+        stops = ", ".join(kotlin_color(stop) for stop in a["stops"])
+        ink = kotlin_color(a["ink"]) if "ink" in a else "null"
+        shade = kotlin_color(a["shade"]) if "shade" in a else "null"
+        lines.append(f"    val {name} = GGroundSpec(\"{name}\", GGroundMode.{a['mode'].upper()}, GGlassKind.{a['kind'].upper()}, "
+                     f"{kotlin_float(a['angle'])}, listOf({stops}), GGroundLight({kotlin_color(l['color'])}, "
+                     f"{kotlin_float(l['x'])}, {kotlin_float(l['y'])}, {kotlin_float(l['radius'])}, {kotlin_float(l['strength'])}), "
+                     f"{kotlin_color(a['glass'])}, {ink}, {shade})")
+    lines += ["    val all = listOf(" + ", ".join(AMBIANCES) + ")", "}", "",
+              "/** The tones tools/tokens.py computed (GGroundSpec.tone() must find the same). */", "object GGroundTones {"]
+    for name, t in TONES.items():
+        lines.append(f"    val {name} = GGroundTone({kotlin_float(t['veil'])}, {kotlin_color(t['ink'])}, {kotlin_float(t['ink2'])}, "
+                     f"{kotlin_float(t['ink3'])}, {kotlin_float(t['liquid'])}, {kotlin_color(t['shade'])})")
+    lines += ["}", ""]
+    return lines
+
+
+def kotlin_motion() -> str:
+    """The animations as Compose's specs (4.0): Android reads the same motion as the Mac and the iPhone. A spring's
+    response (its period, in seconds) becomes a stiffness: (2π / response)² for a mass of 1."""
+    curves = {"easeInOut": "CubicBezierEasing(0.42f, 0f, 0.58f, 1f)", "easeOut": "CubicBezierEasing(0f, 0f, 0.58f, 1f)",
+              "linear": "LinearEasing"}
+    lines = [f"// {HEADER}", "package com.masmarino.gabarit", "",
+             "import androidx.compose.animation.core.AnimationSpec",
+             "import androidx.compose.animation.core.CubicBezierEasing",
+             "import androidx.compose.animation.core.LinearEasing",
+             "import androidx.compose.animation.core.spring",
+             "import androidx.compose.animation.core.tween", "",
+             "/** Gabarit's motion (GAnimation on Apple): `GMotion.smooth()`, `GMotion.pane()`… for any animated type. */",
+             "object GMotion {"]
+    for name, a in ANIMATIONS.items():
+        if a["curve"] == "spring":
+            stiffness = (2 * math.pi / a["response"]) ** 2
+            body = f"spring(dampingRatio = {kotlin_float(a['damping'])}, stiffness = {stiffness:.1f}f)"
+        else:
+            body = f"tween(durationMillis = {round(a['duration'] * 1000)}, easing = {curves[a['curve']]})"
+        lines.append(f"    fun <T> {name}(): AnimationSpec<T> = {body}")
+    lines += [f"", f"    /** How far a page rises as it comes in, in dp. */",
+              f"    const val pageRise = {kotlin_float(ANIMATIONS['page']['rise'])}",
+              f"", f"    /** A tween's length in milliseconds (a spring's response, for a spring). */"]
+    lines.append("    val millis: Map<String, Int> = mapOf(" + ", ".join(
+        f"\"{name}\" to {round((a.get('duration') or a['response']) * 1000)}" for name, a in ANIMATIONS.items()) + ")")
+    lines += ["}", ""]
     return "\n".join(lines)
 
 
@@ -661,7 +1002,9 @@ def rust_rgba(value: str) -> str:
 
 def rust() -> str:
     lines = [f"// {HEADER}", "",
-             "//! Gabarit's tokens as plain values, with no UI framework: `theme` turns them into GPUI's.", "",
+             "//! Gabarit's tokens as plain values, with no UI framework: `theme` turns them into GPUI's. Generated: rustfmt",
+             "//! leaves it as the generator writes it.", "",
+             "#![cfg_attr(rustfmt, rustfmt::skip)]", "",
              "/// A colour as four components from 0 to 1.",
              "#[derive(Clone, Copy, Debug, PartialEq)]",
              "pub struct GRgba {",
@@ -707,6 +1050,7 @@ def rust() -> str:
     for kind in ("radius", "spacing", "opacity"):
         lines += [f"pub mod {kind} {{"] + [f"    pub const {snake(n).upper()}: f32 = {rust_float(v)};"
                                            for n, v in TOKENS[kind].items()] + ["}", ""]
+    lines += rust_grounds()
     lines += ["/// A shadow: its colour, its blur radius (as SwiftUI's: half a CSS blur), its offset.",
               "#[derive(Clone, Copy, Debug, PartialEq)]",
               "pub struct GShadowSpec {",
@@ -723,10 +1067,12 @@ def rust() -> str:
               "    EaseOut { duration: f32 },",
               "    Linear { duration: f32 },",
               "}", "", "pub mod animations {", "    use super::GAnimationCurve;", ""]
-    for name, a in TOKENS["animations"].items():
+    for name, a in ANIMATIONS.items():
         curve = (f"Spring {{ response: {rust_float(a['response'])}, damping: {rust_float(a['damping'])} }}"
                  if a["curve"] == "spring" else f"{camel(a['curve'])} {{ duration: {rust_float(a['duration'])} }}")
         lines.append(f"    pub const {snake(name).upper()}: GAnimationCurve = GAnimationCurve::{curve};")
+    lines += ["    /// How far a page rises as it comes in, in points.",
+              f"    pub const PAGE_RISE: f32 = {rust_float(ANIMATIONS['page']['rise'])};"]
     lines += ["}", "",
               "/// The font families.",
               "#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]",
@@ -760,12 +1106,108 @@ def rust() -> str:
     return "\n".join(lines)
 
 
+def rust_grounds() -> list[str]:
+    lines = ["/// The glass's plain values (4.0): blurs in points, a shadow's geometry as CSS's (offset, blur, spread).",
+             "pub mod glass {"]
+    lines += [f"    pub const {snake(name).upper()}: f32 = {rust_float(value)};" for name, value in glass_constants()]
+    lines += ["}", "",
+              "/// Whether a ground takes dark ink (light) or light ink (dark).",
+              "#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]",
+              "pub enum GGroundMode {", "    Light,", "    Dark,", "}", "",
+              "/// What a kind of glass lays on a ground: its colour's opacities, its rims', its shadows'.",
+              "#[derive(Clone, Copy, Debug, PartialEq)]",
+              "pub struct GGlassKindValues {"]
+    lines += [f"    pub {snake(f)}: f32," for f in KIND_FIELDS]
+    lines += ["}", "", "#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]", "pub enum GGlassKind {"]
+    lines += [f"    {camel(name)}," for name in KINDS]
+    lines += ["}", "", "impl GGlassKind {", "    pub const fn values(self) -> GGlassKindValues {", "        match self {"]
+    for name, k in KINDS.items():
+        lines.append(f"            GGlassKind::{camel(name)} => GGlassKindValues {{ "
+                     + ", ".join(f"{snake(f)}: {rust_float(k[f])}" for f in KIND_FIELDS) + " },")
+    lines += ["        }", "    }", "}", "",
+              "/// A ground's light: a radial wash of `color` at (`x`, `y`), fractions of the window, its radius a fraction",
+              "/// of the window's longer side, `strength` the colour's opacity at its centre.",
+              "#[derive(Clone, Copy, Debug, PartialEq)]",
+              "pub struct GGroundLight {", "    pub color: GRgba,", "    pub x: f32,", "    pub y: f32,",
+              "    pub radius: f32,", "    pub strength: f32,", "}", "",
+              "/// An ambiance: a linear gradient of 2 to 4 stops at `angle` (CSS degrees), plus a light. `ink` and `shade`:",
+              "/// the ambiance's own, or the mode's ink and its darkest stop deepened (see `tone`).",
+              "#[derive(Clone, Copy, Debug, PartialEq)]",
+              "pub struct GGroundSpec {", "    pub name: &'static str,", "    pub mode: GGroundMode,",
+              "    pub kind: GGlassKind,", "    pub angle: f32,", "    pub stops: &'static [GRgba],",
+              "    pub light: GGroundLight,", "    pub glass: GRgba,", "    pub ink: Option<GRgba>,",
+              "    pub shade: Option<GRgba>,", "}", "",
+              "/// Gabarit's grounds (light, dark, black) and its sample ambiances (tokens/gabarit.json).",
+              "pub mod grounds {", "    use super::*;", ""]
+    for name, a in AMBIANCES.items():
+        l = a["light"]
+        opt = lambda key: f"Some({rust_rgba(a[key])})" if key in a else "None"
+        stops = ", ".join(rust_rgba(stop) for stop in a["stops"])
+        lines.append(f"    pub const {snake(name).upper()}: GGroundSpec = GGroundSpec {{ name: \"{name}\", "
+                     f"mode: GGroundMode::{camel(a['mode'])}, kind: GGlassKind::{camel(a['kind'])}, "
+                     f"angle: {rust_float(a['angle'])}, stops: &[{stops}], light: GGroundLight {{ "
+                     f"color: {rust_rgba(l['color'])}, x: {rust_float(l['x'])}, y: {rust_float(l['y'])}, "
+                     f"radius: {rust_float(l['radius'])}, strength: {rust_float(l['strength'])} }}, "
+                     f"glass: {rust_rgba(a['glass'])}, ink: {opt('ink')}, shade: {opt('shade')} }};")
+    lines += ["", "    pub const ALL: &[GGroundSpec] = &[" + ", ".join(snake(n).upper() for n in AMBIANCES) + "];",
+              "}", "",
+              "/// A ground's tone as tools/tokens.py computed it: the veil laid over the ground (the glass's colour, at",
+              "/// `veil`), the ink and the opacities of its secondary and discreet steps, the liquid glass's white.",
+              "#[derive(Clone, Copy, Debug, PartialEq)]",
+              "pub struct GGroundToneValues {", "    pub veil: f32,", "    pub ink: GRgba,", "    pub ink2: f32,",
+              "    pub ink3: f32,", "    pub liquid: f32,", "    pub shade: GRgba,", "}", "",
+              "/// The tones tools/tokens.py computed (`tone::tone` must find the same).",
+              "pub mod tones {", "    use super::*;", ""]
+    for name, t in TONES.items():
+        lines.append(f"    pub const {snake(name).upper()}: GGroundToneValues = GGroundToneValues {{ veil: {rust_float(t['veil'])}, "
+                     f"ink: {rust_rgba(t['ink'])}, ink2: {rust_float(t['ink2'])}, ink3: {rust_float(t['ink3'])}, "
+                     f"liquid: {rust_float(t['liquid'])}, shade: {rust_rgba(t['shade'])} }};")
+    lines += ["}", ""]
+    return lines
+
+
+# MARK: The contrast check (4.0)
+
+def check_grounds() -> list[str]:
+    """Each ambiance holds 4.5:1 for its text and 3:1 for its edges at its worst point, on the bare ground (veiled)
+    and on every glass; a sample that needs a veil past 0.5 is too bright for its ink."""
+    problems = []
+    for name, ambiance in AMBIANCES.items():
+        t = TONES[name]
+        if t["veil"] is None:
+            problems.append(f"{name}: no veil lets its ink reach {TEXT_MINIMUM}:1")
+            continue
+        if t["veil"] > 0.5:
+            problems.append(f"{name}: needs a veil of {t['veil']} (more than 0.5): its ground is too close to its ink")
+        kind = KINDS[ambiance["kind"]]
+        ink, glass = rgb(t["ink"]), rgb(ambiance["glass"])
+        surfaces = {"ground": [], "thin": [kind["thin"]], "regular": [kind["regular"]], "thick": [kind["thick"]]}
+        for point in ambiance_points(ambiance):
+            veiled = laid(glass, t["veil"], point)
+            for surface, layers in surfaces.items():
+                under = veiled
+                for opacity in layers:
+                    under = laid(glass, opacity, under)
+                for step, alpha, minimum in (("ink", 1, TEXT_MINIMUM), ("ink2", t["ink2"], TEXT_MINIMUM),
+                                             ("ink3", t["ink3"], EDGE_MINIMUM)):
+                    value = contrast(laid(ink, alpha, under), under)
+                    if value < minimum - 1e-9:
+                        problems.append(f"{name}: {step} on {surface}, {value:.2f}:1 < {minimum}:1")
+            under = laid((1, 1, 1), t["liquid"], veiled)
+            if contrast(ink, under) < TEXT_MINIMUM - 1e-9:
+                problems.append(f"{name}: ink on the liquid glass, {contrast(ink, under):.2f}:1")
+        if not 2 <= len(ambiance["stops"]) <= 4:
+            problems.append(f"{name}: {len(ambiance['stops'])} stops (2 to 4)")
+    return problems
+
+
 # MARK: Writing
 
 OUTPUTS = {
     "swift/GabaritCommon/GSymbols.swift": swift_symbols,
     "projects/gabarit/src/lib/tokens/_palette.scss": web_palette,
     "projects/gabarit/src/lib/tokens/_themes.scss": web_themes,
+    "projects/gabarit/src/lib/tokens/_grounds.scss": web_grounds,
     "swift/GabaritCommon/GTokens.swift": swift_common,
     "swift/GabaritApple/GTokens+SwiftUI.swift": swift_apple,
     "swift/GabaritGtk/Resources/gabarit-light.css": lambda: gtk_colors("light"),
@@ -776,6 +1218,7 @@ OUTPUTS = {
     "android/gabarit/src/main/kotlin/com/masmarino/gabarit/GTokens.kt": kotlin,
     "android/gabarit/src/main/kotlin/com/masmarino/gabarit/GText.kt": kotlin_text,
     "android/gabarit/src/main/kotlin/com/masmarino/gabarit/GSymbols.kt": kotlin_symbols,
+    "android/gabarit/src/main/kotlin/com/masmarino/gabarit/GMotion.kt": kotlin_motion,
     "rust/gabarit-gpui/src/tokens.rs": rust,
 }
 
@@ -792,10 +1235,15 @@ def main() -> int:
         else:
             file.parent.mkdir(parents=True, exist_ok=True)
             file.write_text(content, encoding="utf-8", newline="\n")
+    problems = check_grounds()
+    if problems:
+        print("The ambiances' contrast (tokens/gabarit.json, ground.ambiances):\n  " + "\n  ".join(problems))
+        return 1
     if stale:
         print("Out of date, run python3 tools/tokens.py:\n  " + "\n  ".join(stale))
         return 1
-    print("Tokens: " + ("up to date" if check else f"{len(OUTPUTS)} files written"))
+    print("Tokens: " + ("up to date" if check else f"{len(OUTPUTS)} files written")
+          + f"; {len(AMBIANCES)} ambiances hold {TEXT_MINIMUM}:1 and {EDGE_MINIMUM}:1")
     return 0
 
 

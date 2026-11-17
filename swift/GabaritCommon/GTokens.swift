@@ -120,6 +120,21 @@ public enum GColorValues {
     public static let infoText = GColorPair(light: GPaletteValues.indigo800, dark: GPaletteValues.indigo200)
     public static let selectedFill = GColorPair(light: GPaletteValues.rust500.opacity(0.1), dark: GPaletteValues.rust400.opacity(0.16))
     public static let rowHover = GColorPair(light: GPaletteValues.slate900.opacity(0.035), dark: GPaletteValues.graphite100.opacity(0.045))
+    public static let ink = GColorPair(light: GRGBA(hex: 0x10151C), dark: GRGBA(hex: 0xE7EBF1))
+    public static let ink2 = GColorPair(light: GRGBA(hex: 0x10151C, alpha: 0.62), dark: GRGBA(hex: 0xE7EBF1, alpha: 0.62))
+    public static let ink3 = GColorPair(light: GRGBA(hex: 0x10151C, alpha: 0.47), dark: GRGBA(hex: 0xE7EBF1, alpha: 0.42))
+    public static let groundVeil = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.0), dark: GRGBA(hex: 0x161C24, alpha: 0.0))
+    public static let glassThin = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.46), dark: GRGBA(hex: 0x161C24, alpha: 0.42))
+    public static let glassRegular = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.68), dark: GRGBA(hex: 0x161C24, alpha: 0.62))
+    public static let glassThick = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.88), dark: GRGBA(hex: 0x161C24, alpha: 0.86))
+    public static let glassLiquid = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.26), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.07))
+    public static let glassRim = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.85), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.09))
+    public static let glassRimEdge = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.5), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.06))
+    public static let liquidRim = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.95), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.42))
+    public static let liquidRimSoft = GColorPair(light: GRGBA(hex: 0xFFFFFF, alpha: 0.35), dark: GRGBA(hex: 0xFFFFFF, alpha: 0.08))
+    public static let glassShadow = GColorPair(light: GRGBA(hex: 0x182030, alpha: 0.22), dark: GRGBA(hex: 0x000000, alpha: 0.6))
+    public static let glassShadowNear = GColorPair(light: GRGBA(hex: 0x182030, alpha: 0.06), dark: GRGBA(hex: 0x000000, alpha: 0.3))
+    public static let liquidShadow = GColorPair(light: GRGBA(hex: 0x182030, alpha: 0.2), dark: GRGBA(hex: 0x000000, alpha: 0.45))
 }
 
 public enum GRadius {
@@ -130,6 +145,8 @@ public enum GRadius {
     public static let xl: Double = 14
     public static let xxl: Double = 16
     public static let xxxl: Double = 20
+    public static let row: Double = 14
+    public static let glass: Double = 22
     public static let pill: Double = 100
 }
 
@@ -145,6 +162,16 @@ public enum GSpacing {
     public static let xxxl: Double = 40
     public static let xxxxl: Double = 64
     public static let xxxxxl: Double = 96
+    #if os(iOS)
+    public static let page: Double = 12
+    #else
+    public static let page: Double = 20
+    #endif
+    #if os(iOS)
+    public static let gap: Double = 12
+    #else
+    public static let gap: Double = 16
+    #endif
 }
 
 public enum GOpacity {
@@ -176,6 +203,84 @@ public enum GAnimationValues {
     public static let quick = GAnimationCurve.easeOut(duration: 0.15)
     public static let pane = GAnimationCurve.spring(response: 0.38, damping: 0.9)
     public static let linear = GAnimationCurve.linear(duration: 0.1)
+    public static let page = GAnimationCurve.spring(response: 0.24, damping: 0.9)
+    public static let ground = GAnimationCurve.easeInOut(duration: 0.45)
+    public static let shared = GAnimationCurve.spring(response: 0.42, damping: 0.86)
+    /// How far a page rises as it comes in, in points.
+    public static let pageRise: Double = 8
+}
+
+/// The glass's plain values (4.0): blurs in points, a shadow's geometry as CSS's (offset, blur, spread).
+public enum GGlassValues {
+    public static let blurContent: Double = 28
+    public static let blurLiquid: Double = 9
+    public static let saturationContent: Double = 1.5
+    public static let saturationLiquid: Double = 1.9
+    public static let brightnessLiquid: Double = 1.06
+    public static let reduced: Double = 0.94
+    public static let shadowY: Double = 18
+    public static let shadowBlur: Double = 40
+    public static let shadowSpread: Double = -18
+    public static let shadowNearY: Double = 2
+    public static let shadowNearBlur: Double = 6
+    public static let shadowNearSpread: Double = -2
+    public static let shadowLiquidY: Double = 10
+    public static let shadowLiquidBlur: Double = 26
+    public static let shadowLiquidSpread: Double = -12
+    public static let inkSecondary: Double = 0.62
+    public static let inkDiscret: Double = 0.42
+    public static let inkSecondaryMax: Double = 0.8
+    public static let inkDiscretMax: Double = 0.64
+    public static let textMinimum: Double = 4.5
+    public static let edgeMinimum: Double = 3.0
+}
+
+/// What a kind of glass lays on a ground: its colour's opacities, its rims', its shadows'.
+public struct GGlassKindValues: Sendable, Hashable {
+    public let thin, regular, thick, liquid, rim, rimEdge, liquidRim, liquidRimSoft, shadow, shadowNear, liquidShadow: Double
+}
+
+public enum GGlassKind: String, Sendable, Hashable, CaseIterable {
+    case light
+    case dark
+    case tinted
+
+    public var values: GGlassKindValues {
+        switch self {
+        case .light: GGlassKindValues(thin: 0.46, regular: 0.68, thick: 0.88, liquid: 0.26, rim: 0.85, rimEdge: 0.5, liquidRim: 0.95, liquidRimSoft: 0.35, shadow: 0.22, shadowNear: 0.06, liquidShadow: 0.2)
+        case .dark: GGlassKindValues(thin: 0.42, regular: 0.62, thick: 0.86, liquid: 0.07, rim: 0.09, rimEdge: 0.06, liquidRim: 0.42, liquidRimSoft: 0.08, shadow: 0.6, shadowNear: 0.3, liquidShadow: 0.45)
+        case .tinted: GGlassKindValues(thin: 0.22, regular: 0.34, thick: 0.62, liquid: 0.1, rim: 0.22, rimEdge: 0.12, liquidRim: 0.6, liquidRimSoft: 0.12, shadow: 0.55, shadowNear: 0.2, liquidShadow: 0.4)
+        }
+    }
+}
+
+/// Gabarit's grounds (light, dark, black) and its sample ambiances (tokens/gabarit.json).
+public enum GGroundValues {
+    public static let light = GGroundSpec(name: "light", mode: .light, kind: .light, angle: 160, stops: [GRGBA(hex: 0xF2F4F7), GRGBA(hex: 0xEFE6FA), GRGBA(hex: 0xDCE7F7)], light: GGroundLight(color: GRGBA(hex: 0xFFE6D4), x: 0.12, y: -0.08, radius: 0.9, strength: 1), glass: GRGBA(hex: 0xFFFFFF), ink: nil, shade: GRGBA(hex: 0x182030))
+    public static let dark = GGroundSpec(name: "dark", mode: .dark, kind: .dark, angle: 160, stops: [GRGBA(hex: 0x0D1116), GRGBA(hex: 0x0F1820), GRGBA(hex: 0x13283A)], light: GGroundLight(color: GRGBA(hex: 0x2A2236), x: 0.08, y: -0.1, radius: 0.85, strength: 1), glass: GRGBA(hex: 0x161C24), ink: nil, shade: GRGBA(hex: 0x000000))
+    public static let black = GGroundSpec(name: "black", mode: .dark, kind: .dark, angle: 160, stops: [GRGBA(hex: 0x000000), GRGBA(hex: 0x07090D)], light: GGroundLight(color: GRGBA(hex: 0x16141F), x: 0.08, y: -0.1, radius: 0.8, strength: 1), glass: GRGBA(hex: 0x0E1217), ink: nil, shade: GRGBA(hex: 0x000000))
+    public static let aurore = GGroundSpec(name: "aurore", mode: .dark, kind: .tinted, angle: 135, stops: [GRGBA(hex: 0x4A3392), GRGBA(hex: 0x5442C0), GRGBA(hex: 0x24346E), GRGBA(hex: 0x13707E)], light: GGroundLight(color: GRGBA(hex: 0xFF8A7A), x: 0, y: 0, radius: 0.75, strength: 0.45), glass: GRGBA(hex: 0x14102C), ink: GRGBA(hex: 0xFFFFFF), shade: nil)
+    public static let lagune = GGroundSpec(name: "lagune", mode: .dark, kind: .tinted, angle: 150, stops: [GRGBA(hex: 0x0B4257), GRGBA(hex: 0x0D5A66), GRGBA(hex: 0x0B2E4A)], light: GGroundLight(color: GRGBA(hex: 0x5FD4C4), x: 0.9, y: 0.05, radius: 0.7, strength: 0.35), glass: GRGBA(hex: 0x06222E), ink: GRGBA(hex: 0xFFFFFF), shade: nil)
+    public static let braise = GGroundSpec(name: "braise", mode: .dark, kind: .tinted, angle: 160, stops: [GRGBA(hex: 0x6A1A10), GRGBA(hex: 0x8A2E14), GRGBA(hex: 0x3A0E14)], light: GGroundLight(color: GRGBA(hex: 0xFF9A4D), x: 0.15, y: 0, radius: 0.7, strength: 0.45), glass: GRGBA(hex: 0x2A0A0C), ink: GRGBA(hex: 0xFFFFFF), shade: nil)
+    public static let nuitPolaire = GGroundSpec(name: "nuitPolaire", mode: .dark, kind: .tinted, angle: 170, stops: [GRGBA(hex: 0x0B1630), GRGBA(hex: 0x1C2F5E), GRGBA(hex: 0x0E3B4A)], light: GGroundLight(color: GRGBA(hex: 0x5CE1B9), x: 0.8, y: -0.05, radius: 0.7, strength: 0.4), glass: GRGBA(hex: 0x081022), ink: GRGBA(hex: 0xFFFFFF), shade: nil)
+    public static let sousBois = GGroundSpec(name: "sousBois", mode: .dark, kind: .tinted, angle: 160, stops: [GRGBA(hex: 0x16301F), GRGBA(hex: 0x2E4A2A), GRGBA(hex: 0x0F1F18)], light: GGroundLight(color: GRGBA(hex: 0x9CC27A), x: 0.1, y: -0.05, radius: 0.7, strength: 0.4), glass: GRGBA(hex: 0x0B1A10), ink: GRGBA(hex: 0xFFFFFF), shade: nil)
+    public static let laiton = GGroundSpec(name: "laiton", mode: .dark, kind: .tinted, angle: 150, stops: [GRGBA(hex: 0x3A2A12), GRGBA(hex: 0x6B4E1F), GRGBA(hex: 0x22180C)], light: GGroundLight(color: GRGBA(hex: 0xE0B465), x: 0.2, y: -0.05, radius: 0.7, strength: 0.45), glass: GRGBA(hex: 0x1C140A), ink: GRGBA(hex: 0xFFFFFF), shade: nil)
+    public static let givre = GGroundSpec(name: "givre", mode: .light, kind: .light, angle: 160, stops: [GRGBA(hex: 0xEEF3F8), GRGBA(hex: 0xDDE8F3), GRGBA(hex: 0xE9E4F5)], light: GGroundLight(color: GRGBA(hex: 0xFFFFFF), x: 0.15, y: -0.05, radius: 0.8, strength: 1), glass: GRGBA(hex: 0xFFFFFF), ink: nil, shade: nil)
+    public static let all = [light, dark, black, aurore, lagune, braise, nuitPolaire, sousBois, laiton, givre]
+}
+
+/// The tones tools/tokens.py computed (GGroundSpec.tone() must find the same).
+public enum GGroundTones {
+    public static let light = GGroundTone(veil: 0.0, ink: GRGBA(hex: 0x10151C), ink2: 0.62, ink3: 0.47, liquid: 0.26, shade: GRGBA(hex: 0x182030))
+    public static let dark = GGroundTone(veil: 0.0, ink: GRGBA(hex: 0xE7EBF1), ink2: 0.62, ink3: 0.42, liquid: 0.07, shade: GRGBA(hex: 0x000000))
+    public static let black = GGroundTone(veil: 0.0, ink: GRGBA(hex: 0xE7EBF1), ink2: 0.62, ink3: 0.42, liquid: 0.07, shade: GRGBA(hex: 0x000000))
+    public static let aurore = GGroundTone(veil: 0.14, ink: GRGBA(hex: 0xFFFFFF), ink2: 0.8, ink3: 0.55, liquid: 0.1, shade: GRGBA(hex: 0x0B1021))
+    public static let lagune = GGroundTone(veil: 0.25, ink: GRGBA(hex: 0xFFFFFF), ink2: 0.8, ink3: 0.55, liquid: 0.1, shade: GRGBA(hex: 0x030E16))
+    public static let braise = GGroundTone(veil: 0.12, ink: GRGBA(hex: 0xFFFFFF), ink2: 0.8, ink3: 0.56, liquid: 0.1, shade: GRGBA(hex: 0x110406))
+    public static let nuitPolaire = GGroundTone(veil: 0.0, ink: GRGBA(hex: 0xFFFFFF), ink2: 0.76, ink3: 0.53, liquid: 0.1, shade: GRGBA(hex: 0x03070E))
+    public static let sousBois = GGroundTone(veil: 0.0, ink: GRGBA(hex: 0xFFFFFF), ink2: 0.8, ink3: 0.54, liquid: 0.1, shade: GRGBA(hex: 0x040907))
+    public static let laiton = GGroundTone(veil: 0.11, ink: GRGBA(hex: 0xFFFFFF), ink2: 0.8, ink3: 0.55, liquid: 0.1, shade: GRGBA(hex: 0x0A0704))
+    public static let givre = GGroundTone(veil: 0.0, ink: GRGBA(hex: 0x10151C), ink2: 0.62, ink3: 0.47, liquid: 0.26, shade: GRGBA(hex: 0x46444A))
 }
 
 /// The font families, and the files each one ships (in GabaritApple's resources).
@@ -212,4 +317,5 @@ public enum GTextStyles {
     public static let caption = GTextStyle(family: .text, weight: .regular, phone: 12, desktop: 10, system: "caption")
     public static let caption2 = GTextStyle(family: .text, weight: .regular, phone: 11, desktop: 10, system: "caption2")
     public static let mono = GTextStyle(family: .mono, weight: .regular, phone: 13, desktop: 12, system: "footnote")
+    public static let display = GTextStyle(family: .display, weight: .semibold, phone: 34, desktop: 30, system: "largeTitle")
 }

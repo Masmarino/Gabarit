@@ -31,4 +31,5 @@ data class GTypography(
     val caption: TextStyle = TextStyle(fontFamily = GFonts.text, fontWeight = FontWeight.Normal, fontSize = 12.sp, lineHeight = 15.6.sp),
     val caption2: TextStyle = TextStyle(fontFamily = GFonts.text, fontWeight = FontWeight.Normal, fontSize = 11.sp, lineHeight = 14.3.sp),
     val mono: TextStyle = TextStyle(fontFamily = GFonts.mono, fontWeight = FontWeight.Normal, fontSize = 13.sp, lineHeight = 16.9.sp),
+    val display: TextStyle = TextStyle(fontFamily = GFonts.display, fontWeight = FontWeight.SemiBold, fontSize = 34.sp, lineHeight = 44.2.sp),
 )

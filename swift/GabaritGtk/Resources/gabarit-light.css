@@ -83,3 +83,18 @@
 @define-color g_infoText #283DA8;
 @define-color g_selectedFill alpha(#C2410C, 0.1);
 @define-color g_rowHover alpha(#10151C, 0.035);
+@define-color g_ink #10151C;
+@define-color g_ink2 alpha(#10151C, 0.62);
+@define-color g_ink3 alpha(#10151C, 0.47);
+@define-color g_groundVeil alpha(#FFFFFF, 0.0);
+@define-color g_glassThin alpha(#FFFFFF, 0.46);
+@define-color g_glassRegular alpha(#FFFFFF, 0.68);
+@define-color g_glassThick alpha(#FFFFFF, 0.88);
+@define-color g_glassLiquid alpha(#FFFFFF, 0.26);
+@define-color g_glassRim alpha(#FFFFFF, 0.85);
+@define-color g_glassRimEdge alpha(#FFFFFF, 0.5);
+@define-color g_liquidRim alpha(#FFFFFF, 0.95);
+@define-color g_liquidRimSoft alpha(#FFFFFF, 0.35);
+@define-color g_glassShadow alpha(#182030, 0.22);
+@define-color g_glassShadowNear alpha(#182030, 0.06);
+@define-color g_liquidShadow alpha(#182030, 0.2);
