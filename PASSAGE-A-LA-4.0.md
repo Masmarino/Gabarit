@@ -8,6 +8,37 @@ champ, 3:1 ; l'anneau du focus).
 
 Cette note dit ce qui casse, plateforme par plateforme, et comment retrouver l'ancien comportement.
 
+## 4.0.1 : le bord du verre, de haut en bas
+
+La lumière du bord court **de haut en bas, jamais en travers** : c'est le verre liquide d'iOS 27, pas le reflet incliné
+d'iOS 26 (un dégradé à 135° sur le bord, que la 4.0.0 dessinait sur Android et en GPUI). Partout où le verre est
+dessiné à la main (GPUI, Android, web) :
+
+- un liseré d'un point en **dégradé vertical** : lumineux en haut, éteint vers le milieu, repris en bas ; les côtés
+  n'ont que le passage entre les deux ;
+- deux **reflets intérieurs** doux, d'environ 8 points sous le haut et 6 au-dessus du bas ;
+- l'ombre reste dessous ; le verre de contenu a la même lumière, plus douce.
+
+| Jeton (par sorte de verre) | clair | sombre | teinté |
+|---|---|---|---|
+| `liquidRimTop`, `liquidRimBottom`, `liquidSheen` | 0,70 ; 0,45 ; 0,35 | 0,35 ; 0,22 ; 0,10 | 0,45 ; 0,28 ; 0,14 |
+| `rimTop`, `rimBottom`, `sheen` (verre de contenu) | 0,55 ; 0,32 ; 0,18 | 0,16 ; 0,09 ; 0,05 | 0,24 ; 0,14 ; 0,07 |
+
+Rôles des apps ajoutés : `glassRimTop`, `glassRimBottom`, `glassSheen`, `liquidRimTop`, `liquidRimBottom`,
+`liquidSheen` (web : `--gbt-glass-rim-top`… ; GPUI : `glass_rim_top`…). `glassRim`, `glassRimEdge`, `liquidRim` et
+`liquidRimSoft` restent, pour qui les lit, mais le verre ne s'en sert plus.
+
+- **GPUI** : `paint_edge_light` (public) dessine ce bord dans des limites et des coins donnés ; `GMaterial` ne donne
+  plus d'ombres intérieures pour la lumière.
+- **Android** : `gGlass`, `gLiquidGlass`, les tranches de `GInsetList` (le haut sur la première, le bas sur la
+  dernière, rien entre deux lignes) et le bord des menus (`GDropdownMenu`) passent au dégradé vertical. Comme en 4.0,
+  `GColors` prend ces rôles en fin de constructeur : un `GColors(...)` construit à la main ne compile plus,
+  `copy(...)` continue de marcher.
+- **Web** : `--gbt-glass-rim-light` et `--gbt-depth-liquid` prennent le liseré du bas et les deux reflets ; le liseré
+  d'un demi-point tout autour disparaît.
+- **Apple** : rien ne change ; le vrai `glassEffect` est la référence, et aucun liseré maison en diagonale ne s'y
+  ajoute.
+
 ## Ce qui s'ajoute, partout (rien ne casse)
 
 Depuis `tokens/gabarit.json`, par `tools/tokens.py` :
