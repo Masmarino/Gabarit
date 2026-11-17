@@ -3,9 +3,10 @@ import AppKit
 import SwiftUI
 
 // Gabarit's windows on the Mac. The main window: `GWindows.main` makes it (transparent title bar, the content up to
-// the top, moved by its ground) and `GAppShell` lays it out (the dark rail, the top band, the page in a sheet with a
-// rounded corner). Secondary windows (settings, history, tools): `GWindow`, with Gabarit's dark header and its cross
-// instead of macOS's title bar and buttons.
+// the top, moved by its ground) and `GAppShell` lays it out (the rail, the top band, the page). On the ground (4.0):
+// one ground under all of it, the page with no plate of its own. Graphite (3.x): the dark rail and band, the page in a
+// sheet with a rounded corner. Secondary windows (settings, history, tools): `GWindow`, with Gabarit's header and its
+// cross instead of macOS's title bar and buttons.
 
 /// A secondary window drawn by the app: no title bar nor red, yellow and green buttons, Gabarit's dark header (an
 /// icon, a title, a subtitle, the cross that closes, Escape and ⌘W), then the content.
@@ -18,6 +19,7 @@ public struct GWindow<Icon: View, Content: View>: View {
     /// The window that holds it: the cross closes this one, not whichever has the keyboard. Held weakly (the window
     /// holds this view).
     @State private var holder = GWindowHolder()
+    @Environment(\.gFrameStyle) private var style
 
     /// `close`: what the cross does; by default, it closes the window.
     public init(title: String, subtitle: String? = nil, close: (() -> Void)? = nil, @ViewBuilder icon: () -> Icon,
@@ -40,6 +42,8 @@ public struct GWindow<Icon: View, Content: View>: View {
         }
         // Up to the top of the window: the title bar, transparent and empty, keeps no room.
         .ignoresSafeArea(.container, edges: .top)
+        // A window of its own: the ground under all of it (4.0).
+        .modifier(GWindowGround(active: style == .ground))
         .gWindowChrome()
         .background(GWindowReader { holder.window = $0 })
     }
@@ -51,7 +55,19 @@ public extension GWindow where Icon == EmptyView {
     }
 }
 
-/// How the page of `GAppShell` is grounded under its rounded corner.
+/// The ground under a window of its own, unless one is laid above already.
+private struct GWindowGround: ViewModifier {
+    let active: Bool
+    @Environment(\.gGroundPainted) private var painted
+    @Environment(\.gGround) private var ground
+
+    func body(content: Content) -> some View {
+        if active && !painted { content.gGround(ground) } else { content }
+    }
+}
+
+/// How the page of `GAppShell` is grounded under its rounded corner (graphite frame only: on the ground, the page has
+/// no plate).
 public enum GShellPageGround: Sendable {
     /// The page's background, cut by the corner (pages that paint no ground of their own).
     case background
@@ -60,8 +76,9 @@ public enum GShellPageGround: Sendable {
     case frame
 }
 
-/// The main window's layout, as on the iPad: always dark (the rail on the left, the top band under the window's
-/// buttons); the page follows the appearance, in a sheet with a rounded top-left corner.
+/// The main window's layout, as on the iPad: the rail on the left, the top band under the window's buttons, the page.
+/// On the ground (4.0): one ground under all three, the page with no plate nor the band's shadow. Graphite (3.x): the
+/// rail and band always dark; the page follows the appearance, in a sheet with a rounded top-left corner.
 public struct GAppShell<Rail: View, Bar: View, Page: View, Over: View>: View {
     var ground: GShellPageGround
     @ViewBuilder var rail: Rail
@@ -69,6 +86,7 @@ public struct GAppShell<Rail: View, Bar: View, Page: View, Over: View>: View {
     @ViewBuilder var page: Page
     /// Over the band and the page, not the rail (an assistant's bubble).
     @ViewBuilder var over: Over
+    @Environment(\.gFrameStyle) private var style
 
     /// The rail's width: enough for a section's name in bold.
     public static var railWidth: CGFloat { 92 }
@@ -85,8 +103,30 @@ public struct GAppShell<Rail: View, Bar: View, Page: View, Over: View>: View {
     }
 
     public var body: some View {
-        let corner = UnevenRoundedRectangle(topLeadingRadius: GRadius.lg, style: .continuous)
+        if style == .ground { onGround } else { graphite }
+    }
+
+    private var onGround: some View {
         HStack(spacing: 0) {
+            VStack(spacing: 4) { rail }
+                .padding(.horizontal, 6)
+                .frame(width: Self.railWidth)
+            VStack(spacing: 0) {
+                HStack(spacing: 12) { bar }
+                    .padding(.horizontal, 16)
+                    .frame(height: Self.barHeight)
+                    .zIndex(1)
+                page.frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .overlay { over }
+        }
+        .ignoresSafeArea(.container, edges: .top)
+        .modifier(GWindowGround(active: true))
+    }
+
+    private var graphite: some View {
+        let corner = UnevenRoundedRectangle(topLeadingRadius: GRadius.lg, style: .continuous)
+        return HStack(spacing: 0) {
             VStack(spacing: 4) { rail }
                 .padding(.horizontal, 6)
                 .frame(width: Self.railWidth)
@@ -126,7 +166,7 @@ public extension GAppShell where Over == EmptyView {
     }
 }
 
-/// A small button at the bottom of the rail: lit in rust. `value`: a setting's state ("on", "off", in the app's words
+/// A small button at the bottom of the rail: lit in rust (on the ground, in liquid glass). `value`: a setting's state ("on", "off", in the app's words
 /// and grammar), added to the tooltip and said to screen readers.
 public struct GRailButton: View {
     let symbol: String
@@ -134,6 +174,7 @@ public struct GRailButton: View {
     let isOn: Bool
     var value: String?
     let action: () -> Void
+    @Environment(\.gFrameStyle) private var style
 
     public init(symbol: String, help: String, isOn: Bool = false, value: String? = nil, action: @escaping () -> Void) {
         self.symbol = symbol
@@ -146,12 +187,20 @@ public struct GRailButton: View {
     public var body: some View {
         Button(action: action) {
             GLive { hovering, pressed in
+                let shape = RoundedRectangle(cornerRadius: style == .ground ? GRadius.lg : GRadius.sm, style: .continuous)
                 Image(systemName: symbol)
                     .font(.system(size: 15))
-                    .foregroundStyle(isOn ? GColor.accent : (hovering ? GFrameColor.text : GFrameColor.textDiscret))
+                    .foregroundStyle(isOn ? AnyShapeStyle(GColor.accent) : style == .ground ? AnyShapeStyle(hovering ? .gInk : .gInk2)
+                                     : AnyShapeStyle(hovering ? GFrameColor.text : GFrameColor.textDiscret))
                     .frame(maxWidth: .infinity, minHeight: 32)
-                    .background(isOn || pressed ? GFrameColor.selected : (hovering ? GFrameColor.hover : .clear),
-                                in: .rect(cornerRadius: GRadius.sm))
+                    .background {
+                        if style == .ground {
+                            if isOn { shape.fill(Color.white.opacity(0.0001)).gLiquidGlass(in: shape, interactive: false) }
+                            else { shape.fill(pressed ? GColor.press : (hovering ? GColor.rowHover : .clear)) }
+                        } else {
+                            shape.fill(isOn || pressed ? GFrameColor.selected : (hovering ? GFrameColor.hover : .clear))
+                        }
+                    }
                     .gPressScale(pressed, to: 0.94)
                     .contentShape(Rectangle())
                     .gTouchTarget(height: 32)
@@ -165,11 +214,12 @@ public struct GRailButton: View {
     }
 }
 
-/// The rail's square button (Settings): a symbol in a square with a fine rim.
+/// The rail's square button (Settings): a symbol in a square of liquid glass (graphite: with a fine rim).
 public struct GRailSquareButton: View {
     let symbol: String
     let help: String
     let action: () -> Void
+    @Environment(\.gFrameStyle) private var style
 
     public init(symbol: String, help: String, action: @escaping () -> Void) {
         self.symbol = symbol
@@ -178,6 +228,20 @@ public struct GRailSquareButton: View {
     }
 
     public var body: some View {
+        if style == .ground {
+            Button(action: action) {
+                Image(systemName: symbol).font(.system(size: 18)).foregroundStyle(.gInk).frame(width: 36, height: 36)
+            }
+            .buttonStyle(.glass)
+            .buttonBorderShape(.roundedRectangle(radius: GRadius.lg))
+            .help(help)
+            .accessibilityLabel(help)
+        } else {
+            graphite
+        }
+    }
+
+    private var graphite: some View {
         Button(action: action) {
             GLive { hovering, pressed in
                 Image(systemName: symbol)

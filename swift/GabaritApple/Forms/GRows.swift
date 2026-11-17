@@ -2,7 +2,7 @@
 import SwiftUI
 
 /// A section in a column (the Mac's left column, an iPhone list): a monochrome icon and its name, at a constant height;
-/// the chosen section on a soft ground, in rust; the others, the veil on hover. `warns`: a warning dot on the right.
+/// the chosen section in thick glass (4.0; 3.x: a soft rust ground), its icon in rust; the others, the veil on hover. `warns`: a warning dot on the right.
 public struct GSidebarRow: View {
     let title: String
     let symbol: String
@@ -47,12 +47,12 @@ public struct GSidebarRow: View {
             GSidebarIcon(symbol: symbol, selected: selected)
             Text(title)
                 .font(GFont.body.weight(selected ? .semibold : .regular))
-                .foregroundStyle(selected ? GColor.accentText : Self.text)
+                .foregroundStyle(selected ? AnyShapeStyle(.gInk) : AnyShapeStyle(Self.text))
                 .lineLimit(1)
             Spacer(minLength: 4)
             if let detail {
                 Text(detail).font(GFont.callout.monospacedDigit())
-                    .foregroundStyle(selected ? GColor.accentText : GColor.textDiscret)
+                    .foregroundStyle(.gInk2)
             }
             if warns { Circle().fill(GColor.warning).frame(width: 6, height: 6).accessibilityLabel(gText("Needs attention")) }
         }
@@ -62,10 +62,13 @@ public struct GSidebarRow: View {
         .contentShape(Rectangle())
         .gTouchTarget(height: GSidebarRow.height)
         .background {
+            if selected {
+                // The chosen one: thick glass, as an inset list's (GInsetList).
+                Color.clear.gGlass(.thick, in: RoundedRectangle(cornerRadius: GRadius.md, style: .continuous))
+            }
             RoundedRectangle(cornerRadius: GRadius.md, style: .continuous)
-                .fill(selected ? Self.selectedFill : (lit && !pressed ? Self.hoverFill : Color.clear))
+                .fill(selected ? Color.clear : (lit && !pressed ? Self.hoverFill : Color.clear))
                 .overlay { if pressed { RoundedRectangle(cornerRadius: GRadius.md, style: .continuous).fill(GColor.press) } }
-                .gGlow(radius: lit ? 6 : 4, active: selected && !pressed)
         }
         .gPressScale(pressed, to: 0.99)
         .gDimmedWhenDisabled()
@@ -189,9 +192,9 @@ public struct GFormCardRow<Row: View>: View {
             .environment(\.gFormCardRow, true)
             .onPreferenceChange(GRowLitKey.self) { lit = $0 }
             .background {
-                RoundedRectangle(cornerRadius: GRadius.md, style: .continuous)
+                RoundedRectangle(cornerRadius: GRadius.row - 4, style: .continuous)
                     .fill(GSidebarRow.hoverFill)
-                    .padding(.horizontal, 8).padding(.vertical, 5)
+                    .padding(.horizontal, 6).padding(.vertical, 1)
                     .opacity(lit ? 1 : 0)
             }
             .animation(GAnimation.hover, value: lit)

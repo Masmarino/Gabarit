@@ -42,15 +42,15 @@ public struct GMenuItem: View {
                     .accessibilityHidden(true)
             }
         }
-        .foregroundStyle(role == .destructive ? GTone.error.text : GColor.textPrimary)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .foregroundStyle(role == .destructive ? AnyShapeStyle(GTone.error.text) : AnyShapeStyle(.gInk))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
         .contentShape(Rectangle())
     }
 }
 
-/// A Gabarit bubble menu: flat lines on the surface, split by a fine line. The bubble takes the appearance of the
-/// view that opens it.
+/// A Gabarit bubble menu: lines of liquid glass, with no line between them (4.0; 3.x: on the opaque surface, split by
+/// a fine line). The bubble takes the appearance and the ground of the view that opens it.
 public struct GMenu<Content: View>: View {
     @ViewBuilder let content: Content
     @Environment(\.colorScheme) private var colorScheme
@@ -60,17 +60,17 @@ public struct GMenu<Content: View>: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 2) {
             Group(subviews: content) { rows in
                 // By each line's own identity: a hover stays on its line when lines come and go.
                 ForEach(rows) { row in
-                    if row.id != rows.first?.id { Rectangle().fill(GColor.hairline).frame(height: 1) }
-                    row
+                    row.clipShape(RoundedRectangle(cornerRadius: GRadius.md, style: .continuous))
                 }
             }
         }
+        .padding(6)
         .frame(minWidth: 240)
-        .background(GColor.surfaceOpaque)
+        .gLiquidGlass(in: RoundedRectangle(cornerRadius: GRadius.xxxl, style: .continuous), interactive: false)
         .presentationCompactAdaptation(.popover)
         .preferredColorScheme(colorScheme)
     }

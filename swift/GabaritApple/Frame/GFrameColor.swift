@@ -1,8 +1,9 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
-/// The dark frame's colours (the rail, the bands, a window's header, the "⌘ + K" button): the same in both
-/// appearances, as GTK's and WinUI's (GFrame…, GOnFrame…).
+/// The graphite frame's colours (`gFrameStyle(.graphite)`, 3.x's frame: the rail, the bands, a window's header, the
+/// "⌘ + K" button): the same in both appearances, as GTK's and WinUI's (GFrame…, GOnFrame…). The frame on the ground
+/// (4.0's default) takes the ground's ink instead (`.gInk`).
 public enum GFrameColor {
     public static var ground: Color { GPalette.graphite950 }
     public static var text: Color { GPalette.graphite100 }

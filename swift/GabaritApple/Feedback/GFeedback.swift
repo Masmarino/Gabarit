@@ -104,7 +104,8 @@ public struct GEmptyState: View {
     }
 }
 
-/// A placeholder while content loads: a soft shape with a slow shimmer (still when motion is reduced).
+/// A placeholder while content loads: a soft veil of the ink (4.0; 3.x: the track's grey) with a slow shimmer (still when
+/// motion is reduced).
 public struct GSkeleton: View {
     var height: CGFloat
     var cornerRadius: CGFloat
@@ -119,13 +120,13 @@ public struct GSkeleton: View {
     public var body: some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
         shape
-            .fill(GColor.track)
+            .fill(GColor.textPrimary.opacity(0.09))
             .overlay {
                 if !reduceMotion {
                     // 30 frames a second are enough for a slow shimmer (not the screen's 120).
                     TimelineView(.animation(minimumInterval: 1 / 30)) { timeline in
                         GeometryReader { geometry in
-                            LinearGradient(colors: [.clear, GColor.surface.opacity(0.6), .clear], startPoint: .leading, endPoint: .trailing)
+                            LinearGradient(colors: [.clear, Color.white.opacity(0.22), .clear], startPoint: .leading, endPoint: .trailing)
                                 .frame(width: geometry.size.width * 0.6)
                                 .offset(x: Self.phase(at: timeline.date) * geometry.size.width * 1.4)
                         }
@@ -213,7 +214,8 @@ public final class GToastCenter {
 }
 
 public extension View {
-    /// The center's passing message, at the bottom of this view: the ink of a primary button, a floating shadow.
+    /// The center's passing message, at the bottom of this view: a capsule of liquid glass that floats, in the ground's
+    /// ink (4.0; 3.x: the ink of a primary button, a floating shadow).
     func gToastOverlay(_ center: GToastCenter) -> some View {
         modifier(GToastOverlay(center: center))
     }
@@ -227,18 +229,32 @@ private struct GToastOverlay: ViewModifier {
         content
             .overlay(alignment: .bottom) {
                 if let toast = center.current {
-                    Label(toast.text, systemImage: toast.systemImage)
-                        .font(GFont.subheadline.weight(.medium))
-                        .foregroundStyle(GColor.onPrimary)
-                        .padding(.horizontal, GSpacing.lg)
-                        .padding(.vertical, GSpacing.sm)
-                        .background(GColor.primary, in: .rect(cornerRadius: GRadius.md))
-                        .gShadow(GShadowValues.floating)
+                    GToastLabel(text: toast.text, systemImage: toast.systemImage)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                         .padding(.bottom, GSpacing.xxl)
                 }
             }
             .animation(reduceMotion ? nil : GAnimation.bouncy, value: center.current)
+    }
+}
+
+/// A passing message's face: a capsule of liquid glass, in the ground's ink.
+public struct GToastLabel: View {
+    let text: String
+    let systemImage: String
+
+    public init(text: String, systemImage: String) {
+        self.text = text
+        self.systemImage = systemImage
+    }
+
+    public var body: some View {
+        Label(text, systemImage: systemImage)
+            .font(GFont.subheadline.weight(.medium))
+            .foregroundStyle(.gInk)
+            .padding(.horizontal, GSpacing.lg)
+            .padding(.vertical, GSpacing.sm)
+            .gLiquidGlass(interactive: false)
     }
 }
 
@@ -289,8 +305,8 @@ private struct GSideDrawer<Drawer: View>: ViewModifier {
                     drawer
                         .frame(width: width)
                         .frame(maxHeight: .infinity)
-                        .background(GColor.surface)
-                        .overlay(alignment: .trailing) { Rectangle().fill(GColor.hairline).frame(width: 1) }
+                        // Content: thick glass, no line at its edge (4.0).
+                        .gGlass(.thick, in: UnevenRoundedRectangle(bottomTrailingRadius: GRadius.glass, topTrailingRadius: GRadius.glass, style: .continuous))
                         .offset(x: offset)
                         // Horizontal drags only: a list in the drawer keeps its vertical scroll.
                         .simultaneousGesture(DragGesture(minimumDistance: 10)

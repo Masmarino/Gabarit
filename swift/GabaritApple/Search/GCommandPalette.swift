@@ -107,17 +107,15 @@ public struct GCommandPalette: View {
     }
 
     private var palette: some View {
-        let shape = RoundedRectangle(cornerRadius: GRadius.lg, style: .continuous)
+        // Content (its results): thick glass, no rim, no line under the field (4.0).
+        let shape = RoundedRectangle(cornerRadius: GRadius.glass, style: .continuous)
         return VStack(spacing: 0) {
             field
-            Rectangle().fill(GColor.hairline).frame(height: 1)
             results
         }
         .frame(maxWidth: 620)
-        .background(GColor.surface, in: shape)
-        .overlay { shape.strokeBorder(GColor.border.opacity(0.6), lineWidth: 1) }
         .clipShape(shape)
-        .shadow(color: .black.opacity(0.25), radius: 24, y: 10)
+        .gGlass(.thick, in: shape)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(gText("Quick search"))
         .accessibilityAddTraits(.isModal)

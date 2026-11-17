@@ -16,12 +16,12 @@ public extension GTone {
 }
 
 public extension View {
-    /// A Gabarit surface: flat, with a fine border. `tint`: a tinted surface (selection, state).
+    /// A Gabarit surface: a card of content glass, with no line (4.0; 3.x drew a fine border). `tint`: a tinted surface
+    /// (selection, state), the tint over the glass.
     func gSurface<S: InsettableShape>(_ shape: S, tint: Color? = nil) -> some View {
-        // A card, whatever it holds: it rests on the page (`gCardDepth`), tinted or not.
+        // A card, whatever it holds: it rests on the ground (`gCardDepth`), tinted or not.
         background(tint?.opacity(0.12) ?? .clear, in: shape)
             .gCardDepth(shape)
-            .overlay { shape.strokeBorder(tint?.opacity(0.4) ?? GColor.hairline, lineWidth: 1) }
     }
 }
 
@@ -47,7 +47,7 @@ public struct GButtonStyle: ButtonStyle {
                 .padding(.horizontal, compact ? 12 : 16)
                 .frame(minHeight: compact ? GControlMetrics.button : 44)
                 .background(background(pressed: pressed, hovering: hovering), in: shape)
-                .background(variant == .secondary ? GColor.surface : .clear, in: shape)
+                .background(variant == .secondary ? AnyShapeStyle(.gControlGround) : AnyShapeStyle(Color.clear), in: shape)
                 .overlay { if variant == .secondary { shape.strokeBorder(GColor.border.opacity(hovering ? 0.8 : 0.6), lineWidth: 1) } }
                 .gRaised(shape, hovering: hovering, pressed: pressed, onInk: variant == .primary || variant == .danger, active: variant != .ghost)
                 .opacity(isEnabled ? 1 : GOpacity.disabled)
@@ -98,7 +98,8 @@ public struct GPressStyle: ButtonStyle {
     }
 }
 
-/// Gabarit's close button: a cross in a circle with a fine rim, on the dark frame. Escape triggers it.
+/// Gabarit's close button: a cross in a circle of liquid glass (4.0); graphite: a fine rim, on the dark frame. Escape
+/// triggers it.
 public struct GCloseButton: View {
     var title: String
     /// On the dark frame (a window's header); otherwise on the page's ground, in the appearance's colours.
@@ -107,6 +108,7 @@ public struct GCloseButton: View {
     /// The cross and its circle grow with the text size (iPhone, iPad).
     @ScaledMetric(relativeTo: .caption) private var glyph: CGFloat = 11
     @ScaledMetric(relativeTo: .caption) private var circle: CGFloat = 28
+    @Environment(\.gFrameStyle) private var style
 
     public init(title: String? = nil, onFrame: Bool = true, action: @escaping () -> Void) {
         self.title = title ?? gText("Close")
@@ -127,7 +129,28 @@ public struct GCloseButton: View {
         .accessibilityLabel(title)
     }
 
-    private func cross(_ hovering: Bool, _ pressed: Bool) -> some View {
+    @ViewBuilder private func cross(_ hovering: Bool, _ pressed: Bool) -> some View {
+        if style == .ground { glassCross(hovering, pressed) } else { graphiteCross(hovering, pressed) }
+    }
+
+    private func glassCross(_ hovering: Bool, _ pressed: Bool) -> some View {
+        Image(systemName: "xmark")
+            .font(.system(size: glyph, weight: .bold))
+            .foregroundStyle(hovering ? AnyShapeStyle(.gInk) : AnyShapeStyle(.gInk2))
+            .frame(width: circle, height: circle)
+            .background(pressed ? GColor.press : Color.clear, in: Circle())
+            .gLiquidGlass(in: Circle())
+            .gPressScale(pressed, to: 0.94)
+            #if os(iOS)
+            .padding(8)
+            .contentShape(Rectangle())
+            .padding(-8)
+            #else
+            .contentShape(Circle())
+            #endif
+    }
+
+    private func graphiteCross(_ hovering: Bool, _ pressed: Bool) -> some View {
         Image(systemName: "xmark")
             .font(.system(size: glyph, weight: .bold))
             .foregroundStyle(onFrame ? GFrameColor.text : GColor.textSecondary)

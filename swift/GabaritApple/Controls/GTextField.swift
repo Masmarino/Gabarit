@@ -48,7 +48,7 @@ public struct GFieldFrame: ViewModifier {
             .frame(minHeight: GControlMetrics.height)
             // A click on the padding too puts the cursor in the field (on the ground behind it: the field keeps its own
             // clicks).
-            .background { shape.fill(GColor.background.gHollow(0.06)).onTapGesture { focused = true } }
+            .background { shape.fill(.gControlGround).onTapGesture { focused = true } }
             .overlay { shape.strokeBorder(focused ? GColor.accent : hovering || preview != nil ? GColor.border.opacity(0.7) : GColor.controlRim(contrast), lineWidth: focused ? 1.5 : 1) }
             .onHover { hovering = $0 }
             .opacity(isEnabled ? 1 : GOpacity.disabled)
@@ -107,7 +107,7 @@ public extension View {
     func gFieldBox() -> some View {
         let shape = RoundedRectangle(cornerRadius: GRadius.md, style: .continuous)
         return textFieldStyle(.plain)
-            .background(GColor.surface, in: shape)
+            .background(.gControlGround, in: shape)
             .overlay { shape.strokeBorder(GColor.hairline, lineWidth: 1) }
     }
 }

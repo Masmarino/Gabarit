@@ -159,7 +159,7 @@ public struct GStepper: View {
                 step("plus", by: 1).disabled(value >= range.upperBound)
             }
             .frame(minHeight: GControlMetrics.compact)
-            .background(GColor.background, in: shape)
+            .background(.gControlGround, in: shape)
             .overlay { shape.strokeBorder(GColor.hairline, lineWidth: 1) }
             .gRaised(shape)
             .clipShape(shape)

@@ -1,9 +1,10 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
-/// The dark band under a settings page's bar: the icon ringed by a fine line, the title and the sentence that says what
-/// the page is for. It extends the frame, whatever the appearance. `accessory`: on the right, at the top (a Mac sheet's
-/// close button); `top`: the top margin.
+/// The band under a settings page's bar: the icon, the title and the sentence that says what the page is for. On the
+/// ground (4.0): no band of its own, the icon in thin glass, the ground's ink. Graphite (3.x): a dark band that extends
+/// the frame, the icon ringed by a fine line. `accessory`: on the right, at the top (a Mac sheet's close button); `top`:
+/// the top margin.
 public struct GPageBand<Accessory: View>: View {
     let symbol: String
     let title: String
@@ -11,6 +12,7 @@ public struct GPageBand<Accessory: View>: View {
     var top: CGFloat
     @ViewBuilder var accessory: Accessory
     @Environment(\.gInSheet) private var inSheet
+    @Environment(\.gFrameStyle) private var style
 
     public init(symbol: String, title: String, summary: String, top: CGFloat = 6, @ViewBuilder accessory: () -> Accessory) {
         self.symbol = symbol
@@ -21,6 +23,33 @@ public struct GPageBand<Accessory: View>: View {
     }
 
     public var body: some View {
+        if style == .ground { onGround } else { graphite }
+    }
+
+    private var onGround: some View {
+        HStack(spacing: 14) {
+            Image(systemName: symbol)
+                .font(.system(size: 22))
+                .foregroundStyle(.gInk)
+                .frame(width: 48, height: 48)
+                .gGlass(.thin, in: RoundedRectangle(cornerRadius: GRadius.xl, style: .continuous))
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(GFont.title2).foregroundStyle(.gInk)
+                    .accessibilityAddTraits(.isHeader)
+                Text(summary).font(GFont.subheadline).foregroundStyle(.gInk2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+            accessory
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, top)
+        .padding(.bottom, 18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var graphite: some View {
         HStack(spacing: 14) {
             Image(systemName: symbol)
                 .font(.system(size: 22))
@@ -52,8 +81,9 @@ public extension GPageBand where Accessory == EmptyView {
     }
 }
 
-/// A page of the dark rail (Mac, iPad): the icon and its name; the current page in rust, on a slight ground, with a
-/// line on the left.
+/// A page of the rail (Mac, iPad): the icon and its name. On the ground (4.0): the current page in liquid glass, its icon
+/// in rust, the others in the ground's secondary ink. Graphite (3.x): the dark rail, the current page in rust on a slight
+/// ground, with a line on the left.
 public struct GRailItem: View {
     let title: String
     var systemImage: String?
@@ -62,6 +92,8 @@ public struct GRailItem: View {
     let current: Bool
     var badge: Int
     let action: () -> Void
+    @Environment(\.gFrameStyle) private var style
+    @Environment(\.colorScheme) private var scheme
 
     public init(title: String, systemImage: String? = nil, image: String? = nil, current: Bool, badge: Int = 0,
                 action: @escaping () -> Void) {
@@ -79,13 +111,49 @@ public struct GRailItem: View {
         }
         .buttonStyle(GLiveStyle())
         .gDimmedWhenDisabled()
-        .environment(\.colorScheme, .dark)
+        .environment(\.colorScheme, style == .graphite ? .dark : scheme)
         .accessibilityLabel(title)
         .accessibilityValue(badge > 0 ? gBadgeText(badge) : "")
         .accessibilityAddTraits(current ? .isSelected : [])
     }
 
-    private func item(hovering: Bool, pressed: Bool) -> some View {
+    @ViewBuilder private func item(hovering: Bool, pressed: Bool) -> some View {
+        if style == .ground { glassItem(hovering: hovering, pressed: pressed) } else { graphiteItem(hovering: hovering, pressed: pressed) }
+    }
+
+    private func glassItem(hovering: Bool, pressed: Bool) -> some View {
+        let shape = RoundedRectangle(cornerRadius: GRadius.row, style: .continuous)
+        return VStack(spacing: 3) {
+            icon
+                .foregroundStyle(current ? AnyShapeStyle(GColor.accent) : AnyShapeStyle(hovering ? .gInk : .gInk2))
+                .frame(height: 22)
+                .overlay(alignment: .topTrailing) {
+                    if badge > 0 {
+                        Text(gBadgeText(badge))
+                            .font(GFont.caption2.weight(.semibold).monospacedDigit())
+                            .foregroundStyle(GColor.onPrimary)
+                            .padding(.horizontal, 4).padding(.vertical, 1)
+                            .background(GColor.accent, in: .capsule)
+                            .fixedSize()
+                            .offset(x: 14, y: -6)
+                    }
+                }
+            Text(title).font(GFont.caption2.weight(current ? .semibold : .medium)).lineLimit(1).minimumScaleFactor(0.8)
+                .foregroundStyle(current || hovering ? AnyShapeStyle(.gInk) : AnyShapeStyle(.gInk2))
+        }
+        .frame(maxWidth: .infinity, minHeight: 52)
+        .background {
+            if current {
+                shape.fill(Color.white.opacity(0.0001)).gLiquidGlass(in: shape, interactive: false)
+            } else {
+                shape.fill(pressed ? GColor.press : (hovering ? GColor.rowHover : .clear))
+            }
+        }
+        .gPressScale(pressed)
+        .contentShape(Rectangle())
+    }
+
+    private func graphiteItem(hovering: Bool, pressed: Bool) -> some View {
         VStack(spacing: 3) {
             icon
                 .frame(height: 22)
@@ -123,8 +191,9 @@ public struct GRailItem: View {
 }
 
 #if os(macOS)
-/// The header of a window drawn by the app (settings windows): Gabarit's dark frame, an icon, a title and a subtitle,
-/// and on the right what one puts there (the close cross). A fine line borders it at the bottom.
+/// The header of a window drawn by the app (settings windows): an icon, a title and a subtitle, and on the right what
+/// one puts there (the close cross). On the ground (4.0): transparent, in the ground's ink, no line. Graphite (3.x):
+/// Gabarit's dark frame, a fine line at the bottom.
 public struct GWindowHeader<Icon: View, Trailing: View>: View {
     let title: String
     var subtitle: String?
@@ -132,6 +201,7 @@ public struct GWindowHeader<Icon: View, Trailing: View>: View {
     var leading: CGFloat
     @ViewBuilder var icon: Icon
     @ViewBuilder var trailing: Trailing
+    @Environment(\.gFrameStyle) private var style
 
     public init(title: String, subtitle: String? = nil, leading: CGFloat = 16, @ViewBuilder icon: () -> Icon,
                 @ViewBuilder trailing: () -> Trailing) {
@@ -143,6 +213,30 @@ public struct GWindowHeader<Icon: View, Trailing: View>: View {
     }
 
     public var body: some View {
+        if style == .ground { onGround } else { graphite }
+    }
+
+    private var onGround: some View {
+        HStack(spacing: 10) {
+            icon
+            VStack(alignment: .leading, spacing: 0) {
+                Text(title).font(GFont.headline).foregroundStyle(.gInk).lineLimit(1)
+                if let subtitle {
+                    Text(subtitle).font(GFont.caption).foregroundStyle(.gInk2).lineLimit(1)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isHeader)
+            Spacer(minLength: 12)
+            trailing
+        }
+        .padding(.leading, leading).padding(.trailing, 14)
+        .frame(height: 52)
+        .frame(maxWidth: .infinity)
+        .zIndex(1)
+    }
+
+    private var graphite: some View {
         HStack(spacing: 10) {
             icon
             VStack(alignment: .leading, spacing: 0) {

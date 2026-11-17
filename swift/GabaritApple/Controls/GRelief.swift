@@ -1,11 +1,12 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
-// Gabarit's depth, a little of it. Three levels: the page; what rests on it (a card, a soft shadow and the light on its
-// top edge); what can be pressed (a button, a chip: a little volume, a tighter shadow, and it sinks when pressed). What
-// holds a value (a switch's track, a slider's, a field) is slightly hollow, and the frame's bars cast a shadow on the page.
-// One light, from above: top edges catch it, bottom edges fall into shade, the page is lit at its top, and what is on (a
-// switch, the current tab, a selection) glows a little. A hairline stays the edge of things: all this only adds to it.
+// Gabarit's depth, a little of it. Three levels: the ground (an ambiance under the whole window); what rests on it (a
+// panel, a card: content glass, its light on the top edge and a wide soft shadow); what can be pressed (a button, a chip:
+// a little volume, a tighter shadow, and it sinks when pressed). What holds a value (a switch's track, a slider's, a
+// field) is slightly hollow. One light, from above: top edges catch it, bottom edges fall into shade, what is on (a
+// switch, the current tab, a selection) glows a little. Light is the edge of things: a panel has no line around it; a
+// line stays only on controls (a field's 3:1 rim, the focus ring).
 
 public extension View {
     /// Raised: a soft shadow and the light on the top edge. `hovering`: it rises towards the pointer (a wider shadow,
@@ -40,17 +41,23 @@ public extension ShapeStyle where Self == Color {
 }
 
 public extension View {
-    /// Rests on the page (a card): behind the view, its surface and a soft shadow; on it, the light on the top edge.
-    func gCardDepth<S: InsettableShape>(_ shape: S, fill: Color = GColor.surface) -> some View {
-        background { shape.fill(fill).shadow(color: GColor.cardShadow, radius: GShadowValues.card.radius, x: GShadowValues.card.x, y: GShadowValues.card.y) }
-            .overlay {
-                // Light on the top edge, shade on the bottom one.
-                shape.inset(by: 1).strokeBorder(LinearGradient(stops: [.init(color: GColor.reliefHighlight, location: 0), .init(color: .clear, location: 0.2),
-                                                                       .init(color: .clear, location: 0.85), .init(color: GColor.reliefShade, location: 1)],
-                                                               startPoint: .top, endPoint: .bottom), lineWidth: 1)
-                    .allowsHitTesting(false)
-                    .accessibilityHidden(true)
-            }
+    /// Rests on the ground (a card): by default (4.0), the content glass at its regular density, with no line (`gGlass`).
+    /// `fill`: an opaque surface of one's own instead, with 3.x's soft shadow and the light on its top edge
+    /// (`fill: GColor.surface` gives 3.x's card back).
+    @ViewBuilder func gCardDepth<S: InsettableShape>(_ shape: S, fill: Color? = nil) -> some View {
+        if let fill {
+            background { shape.fill(fill).shadow(color: GColor.cardShadow, radius: GShadowValues.card.radius, x: GShadowValues.card.x, y: GShadowValues.card.y) }
+                .overlay {
+                    // Light on the top edge, shade on the bottom one.
+                    shape.inset(by: 1).strokeBorder(LinearGradient(stops: [.init(color: GColor.reliefHighlight, location: 0), .init(color: .clear, location: 0.2),
+                                                                           .init(color: .clear, location: 0.85), .init(color: GColor.reliefShade, location: 1)],
+                                                                   startPoint: .top, endPoint: .bottom), lineWidth: 1)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
+        } else {
+            gGlass(.regular, in: shape)
+        }
     }
 
     /// What is on glows a little, in its colour (a switch, the current tab, a selection). `active` false: nothing.

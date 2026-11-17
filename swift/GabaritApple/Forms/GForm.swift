@@ -1,9 +1,9 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
-// Gabarit's settings pages, like Discord's or the Mac's System Settings: the page's title large in the page (no band),
-// its sections as crisp cards on the ground, a reading width aligned left, rows of a constant height split by a fine
-// line, a section's sentence discreet below. `GForm` draws them so everywhere (Mac, iPhone, iPad); `gFormLayout` false
+// Gabarit's settings pages, like the Mac's System Settings: the page's title large in the page (no band), its sections
+// as panels of content glass on the ground, a reading width aligned left, rows of a constant height with no line between
+// them (4.0; `gSeparated()` keeps 3.x's lines), a section's sentence discreet below. `GForm` draws them so everywhere (Mac, iPhone, iPad); `gFormLayout` false
 // gives the system's `Form`.
 
 /// The settings pages' measures: a 4-point grid.
@@ -64,6 +64,21 @@ public extension EnvironmentValues {
     @Entry var gPageContainer: CGFloat?
     /// In a form card's row: the card draws the hover over the whole row.
     @Entry var gFormCardRow = false
+    /// A form's cards split their rows by a fine line (3.x). By default (4.0), no line: rows 2 points apart.
+    @Entry var gFormSeparated = false
+}
+
+public extension ContainerValues {
+    /// This section's card splits its rows by a fine line (3.x), whatever the form's (`gSeparated` on a `Section`).
+    @Entry var gFormSeparated: Bool?
+}
+
+public extension View {
+    /// Splits the cards' rows by a fine line, as in 3.x (4.0 draws none): on a `GForm`, all its sections; on a
+    /// `Section`, that one.
+    func gSeparated(_ separated: Bool = true) -> some View {
+        environment(\.gFormSeparated, separated).containerValue(\.gFormSeparated, separated)
+    }
 }
 
 public extension ContainerValues {
@@ -100,14 +115,21 @@ public struct GForm<Content: View>: View {
     private var systemForm: some View {
         Form {
             Group { content }
-                // A flat ground: a gradient, redrawn row by row, made bands.
-                .listRowBackground(GColor.surface)
+                // A flat ground: a gradient, redrawn row by row, made bands. The ground's regular glass colour.
+                .listRowBackground(GSystemFormRow())
         }
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
         .gControls()
         .gPageGround()
     }
+}
+
+/// A system form's row ground: the ground's regular glass colour, flat.
+private struct GSystemFormRow: View {
+    @Environment(\.gResolvedGround) private var spec
+
+    var body: some View { spec.glassColor(.regular) }
 }
 
 /// A wide page's container (Mac): like a CSS container (`max-width` and `margin: 0 auto`), a maximum width centred in
@@ -148,10 +170,10 @@ public struct GPageTitle: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(Self.font).foregroundStyle(GColor.textPrimary)
+            Text(title).font(Self.font).foregroundStyle(.gInk)
                 .accessibilityAddTraits(.isHeader)
             if !summary.isEmpty {
-                Text(summary).font(GFont.body).foregroundStyle(GColor.textDiscret)
+                Text(summary).font(GFont.body).foregroundStyle(.gInk2)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -219,9 +241,11 @@ public struct GFormLayout<Content: View>: View {
     }
 }
 
-/// A section: its title, its rows in a card (or right on the ground), its sentence discreet below.
+/// A section: its title, its rows in a card of glass (or right on the ground), its sentence discreet below.
 private struct GFormSection: View {
     let section: SectionConfiguration
+    @Environment(\.gFormSeparated) private var formSeparated
+    private var separated: Bool { section.containerValues.gFormSeparated ?? formSeparated }
 
     var body: some View {
         let rows = section.content
@@ -231,7 +255,7 @@ private struct GFormSection: View {
                 if !section.header.isEmpty {
                     section.header
                         .font(GFont.headline)
-                        .foregroundStyle(GColor.textPrimary)
+                        .foregroundStyle(.gInk)
                         .labelStyle(GHeaderLabelStyle())
                         .accessibilityAddTraits(.isHeader)
                         .padding(.bottom, 4)
@@ -246,7 +270,7 @@ private struct GFormSection: View {
                 if !section.footer.isEmpty {
                     section.footer
                         .font(GFont.callout)
-                        .foregroundStyle(GColor.textDiscret)
+                        .foregroundStyle(.gInk2)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 2)
                 }
@@ -255,10 +279,10 @@ private struct GFormSection: View {
     }
 
     private func card(_ rows: SubviewsCollection) -> some View {
-        let shape = RoundedRectangle(cornerRadius: GRadius.lg, style: .continuous)
-        return VStack(spacing: 0) {
+        let shape = RoundedRectangle(cornerRadius: separated ? GRadius.lg : GRadius.glass, style: .continuous)
+        return VStack(spacing: separated ? 0 : 2) {
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
-                if index > 0 { Rectangle().fill(GColor.hairline).frame(height: 1).padding(.leading, 16) }
+                if separated, index > 0 { Rectangle().fill(GColor.hairline).frame(height: 1).padding(.leading, 16) }
                 if row.containerValues.gFormBare {
                     row.frame(maxWidth: .infinity, alignment: .leading).padding(12)
                 } else {
@@ -273,9 +297,23 @@ private struct GFormSection: View {
                 }
             }
         }
-        // The card rests on the page.
-        .gCardDepth(shape)
-        .overlay { shape.strokeBorder(GColor.hairline, lineWidth: 1) }
+        .padding(.vertical, separated ? 0 : 4)
+        // The card rests on the ground: content glass (4.0); with its lines, 3.x's card and its fine border.
+        .modifier(GFormCard(shape: shape, separated: separated))
+    }
+}
+
+/// A form's card: content glass with no line (4.0), or 3.x's surface and fine border when its rows are separated.
+private struct GFormCard<S: InsettableShape>: ViewModifier {
+    let shape: S
+    let separated: Bool
+
+    func body(content: Content) -> some View {
+        if separated {
+            content.gCardDepth(shape, fill: GColor.surface).overlay { shape.strokeBorder(GColor.hairline, lineWidth: 1) }
+        } else {
+            content.gCardDepth(shape)
+        }
     }
 }
 
@@ -336,7 +374,7 @@ private struct GFormRowLabelStyle: LabelStyle {
 private struct GHeaderLabelStyle: LabelStyle {
     func makeBody(configuration: Configuration) -> some View {
         HStack(spacing: 6) {
-            configuration.icon.foregroundStyle(GColor.textDiscret).imageScale(.small)
+            configuration.icon.foregroundStyle(.gInk2).imageScale(.small)
             configuration.title
         }
     }
@@ -358,12 +396,12 @@ public struct GLabeledContentStyle: LabeledContentStyle {
 
     public func makeBody(configuration: Configuration) -> some View {
         HStack(alignment: .center, spacing: 12) {
-            configuration.label.font(GFont.body).foregroundStyle(GColor.textPrimary)
+            configuration.label.font(GFont.body).foregroundStyle(.gInk)
             Spacer(minLength: 12)
             configuration.content
                 .gCompactRowButton()
                 .font(GFont.body.monospacedDigit())
-                .foregroundStyle(GColor.textSecondary)
+                .foregroundStyle(.gInk2)
                 .multilineTextAlignment(.trailing)
         }
     }
@@ -467,9 +505,9 @@ public struct GSheetTitle: View {
                 .padding(.top, 4)
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(Self.font).foregroundStyle(GColor.textPrimary).lineLimit(2)
+                Text(title).font(Self.font).foregroundStyle(.gInk).lineLimit(2)
                     .accessibilityAddTraits(.isHeader)
-                Text(summary).font(GFont.callout).foregroundStyle(GColor.textDiscret)
+                Text(summary).font(GFont.callout).foregroundStyle(.gInk2)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)

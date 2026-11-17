@@ -104,7 +104,7 @@ private struct GMenuFace: View {
         .padding(.leading, 10).padding(.trailing, 8)
         .frame(minHeight: GControlMetrics.compact)
         .background(pressed ? GColor.press : hovering ? GColor.hover : Color.clear, in: shape)
-        .background(GColor.background, in: shape)
+        .background(.gControlGround, in: shape)
         .overlay { shape.strokeBorder(open ? GColor.accent : hovering ? GColor.border.opacity(0.7) : GColor.controlRim(contrast), lineWidth: open ? 1.5 : 1) }
         .gRaised(shape, hovering: hovering, pressed: pressed, active: !open)
         .contentShape(shape)
@@ -161,7 +161,6 @@ private struct GMenuField<Value: Hashable>: View {
             ScrollView {
                 VStack(spacing: 0) {
                     ForEach(Array(options.enumerated()), id: \.element.value) { index, option in
-                        if index > 0 { Rectangle().fill(GColor.hairline).frame(height: 1) }
                         GMenuRow(title: option.title, checked: option.value == selection, highlighted: highlighted == index) {
                             choose(option.value)
                         }
@@ -261,7 +260,7 @@ private struct GChips<Value: Hashable>: View {
                             .frame(minHeight: GControlMetrics.compact)
                             // The veil on what it is laid on: a chosen chip keeps its tint under the finger.
                             .background(pressed ? GColor.press : (hovering && !current ? GColor.hover : .clear), in: shape)
-                            .background(current ? GColor.selectedFill : GColor.background, in: shape)
+                            .background(current ? AnyShapeStyle(GColor.selectedFill) : AnyShapeStyle(.gControlGround), in: shape)
                             .overlay { shape.strokeBorder(current ? GColor.accent.opacity(0.7) : (hovering ? GColor.border.opacity(0.5) : GColor.hairline), lineWidth: 1) }
                             .gRaised(shape, hovering: hovering, pressed: pressed, active: !current || pressed)
                             .gGlow(radius: hovering ? 5 : 3, active: current && !pressed)

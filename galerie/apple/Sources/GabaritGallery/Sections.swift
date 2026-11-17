@@ -1,8 +1,8 @@
 import GabaritApple
 import SwiftUI
 
-// The gallery's sections. Text fields are shown through their frame on a plain text: the renderer cannot draw the
-// AppKit view behind a `TextField`.
+// The gallery's sections, on the ground (the window's: main.swift), with 4.0's defaults: cards of content glass with no
+// line, rows with no line between them, the frame on the ground.
 
 struct ControlsSection: View {
     @State private var on = true
@@ -13,7 +13,7 @@ struct ControlsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Controls").font(GFont.title2).foregroundStyle(GColor.textPrimary)
+            Text("Controls").font(GFont.title2).foregroundStyle(.gInk)
             HStack(spacing: 10) {
                 Button("Primary") {}.buttonStyle(GButtonStyle(variant: .primary))
                 Button("Secondary") {}.buttonStyle(GButtonStyle())
@@ -39,57 +39,48 @@ struct ControlsSection: View {
             }
         }
         .padding(24)
-        .gSurface(RoundedRectangle(cornerRadius: GRadius.lg))
+        .gSurface(RoundedRectangle(cornerRadius: GRadius.glass, style: .continuous))
     }
 }
 
 struct FormsSection: View {
     @State private var on = true
+    @State private var name = "Florian"
 
     var body: some View {
-        VStack(alignment: .leading, spacing: GFormMetrics.sectionSpacing) {
-            GPageTitle(title: "Notifications", summary: "What reaches you, and when.")
-            Self.card(header: "Messages", footer: "Muted conversations never ring.") {
-                Toggle(isOn: $on) { Text("Show previews"); Text("The first words of a message.") }.toggleStyle(GToggleStyle())
-                LabeledContent("Devices", value: "3").labeledContentStyle(GLabeledContentStyle())
-                GFormButtons {
-                    Button("Reset") {}.buttonStyle(GButtonStyle())
-                    Button("Save") {}.buttonStyle(GButtonStyle(variant: .primary))
+        VStack(alignment: .leading, spacing: 18) {
+            GForm {
+                Section {
+                    Toggle(isOn: $on) { Text("Show previews"); Text("The first words of a message.") }
+                    LabeledContent("Devices", value: "3")
+                    TextField("Name", text: $name)
+                    GFormButtons {
+                        Button("Reset") {}.buttonStyle(GButtonStyle())
+                        Button("Save") {}.buttonStyle(GButtonStyle(variant: .primary))
+                    }
+                } header: {
+                    Text("Messages")
+                } footer: {
+                    Text("Muted conversations never ring.")
+                }
+                Section("With lines (gSeparated, 3.x)") {
+                    Toggle("Sounds", isOn: $on)
+                    LabeledContent("Ringtone", value: "Pebble")
+                }
+                .gSeparated()
+                Section {
+                    GSheetButton(title: "Create") {}
                 }
             }
+            .environment(\.gFormTitle, GFormTitle(title: "Notifications", summary: "What reaches you, and when."))
+            .frame(height: 640)
             VStack(alignment: .leading, spacing: 2) {
                 GSidebarRow(title: "Profile", symbol: "person.crop.circle", selected: true)
                 GSidebarRow(title: "Notifications", symbol: "bell", selected: false, detail: "12")
                 GSidebarRow(title: "Privacy", symbol: "lock", selected: false, warns: true)
             }
             .frame(width: 240)
-            .padding(8)
-            .background(GColor.sidebar, in: RoundedRectangle(cornerRadius: GRadius.lg))
-            GSheetButton(title: "Create") {}
-        }
-        .padding(24)
-        .background(GColor.background)
-    }
-
-    /// A section as GFormLayout draws it (the renderer cannot draw the layout's scroll view).
-    static func card<Rows: View>(header: String, footer: String, @ViewBuilder rows: () -> Rows) -> some View {
-        let shape = RoundedRectangle(cornerRadius: GRadius.lg, style: .continuous)
-        return VStack(alignment: .leading, spacing: 8) {
-            Text(header).font(GFont.headline).foregroundStyle(GColor.textPrimary).padding(.bottom, 4)
-            VStack(spacing: 0) {
-                Group(subviews: rows()) { subviews in
-                    ForEach(Array(subviews.enumerated()), id: \.element.id) { index, row in
-                        if index > 0 { Rectangle().fill(GColor.hairline).frame(height: 1).padding(.leading, 16) }
-                        GFormCardRow {
-                            row.frame(maxWidth: .infinity, minHeight: GFormMetrics.rowHeight - 16, alignment: .leading)
-                                .padding(.horizontal, 16).padding(.vertical, 8)
-                        }
-                    }
-                }
-            }
-            .background(GColor.surface, in: shape)
-            .overlay { shape.strokeBorder(GColor.hairline, lineWidth: 1) }
-            Text(footer).font(GFont.callout).foregroundStyle(GColor.textDiscret).padding(.horizontal, 2)
+            .padding(.horizontal, 40)
         }
     }
 }
@@ -109,7 +100,6 @@ struct FrameSection: View {
                 }
                 .frame(width: 84)
                 .padding(8)
-                .background(GPalette.graphite950, in: RoundedRectangle(cornerRadius: GRadius.lg))
                 VStack(alignment: .leading, spacing: 18) {
                     GNavTabs(tabs: ["Overview", "Members", "Roles"], title: { $0 }, selection: $tab)
                     GMenu {
@@ -117,19 +107,32 @@ struct FrameSection: View {
                         GMenuItem(title: "Mute", systemImage: "bell.slash", checked: true) {}
                         GMenuItem(title: "Leave", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) {}
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: GRadius.md))
-                    .overlay { RoundedRectangle(cornerRadius: GRadius.md).strokeBorder(GColor.hairline) }
+                    .fixedSize()
                 }
             }
             GWindowHeader(title: "Settings", subtitle: "SkollN") {
-                Image(systemName: "gearshape").foregroundStyle(GPalette.graphite100)
+                Image(systemName: "gearshape").foregroundStyle(.gInk2)
             } trailing: {
                 GCloseButton {}
             }
-            .clipShape(RoundedRectangle(cornerRadius: GRadius.lg))
+            Text("Graphite frame (gFrameStyle(.graphite), 3.x)").font(GFont.caption.weight(.semibold)).foregroundStyle(.gInk2)
+            HStack(alignment: .top, spacing: 18) {
+                VStack(spacing: 6) {
+                    GRailItem(title: "Today", systemImage: "sun.max", current: false) {}
+                    GRailItem(title: "Messages", systemImage: "bubble.left.and.bubble.right", current: true, badge: 4) {}
+                }
+                .frame(width: 84)
+                .padding(8)
+                .background(GFrameColor.ground, in: RoundedRectangle(cornerRadius: GRadius.lg))
+                GWindowHeader(title: "Settings", subtitle: "SkollN") {
+                    Image(systemName: "gearshape").foregroundStyle(GPalette.graphite100)
+                } trailing: {
+                    GCloseButton {}
+                }
+                .clipShape(RoundedRectangle(cornerRadius: GRadius.lg))
+            }
+            .gFrameStyle(.graphite)
         }
-        .padding(24)
-        .background(GColor.background)
     }
 }
 
@@ -149,33 +152,32 @@ struct FeedbackSection: View {
                 GSkeleton(height: 60, cornerRadius: GRadius.md)
             }
             GTypingDots(label: "Writing")
-            Label("Link copied", systemImage: "link")
-                .font(GFont.subheadline.weight(.medium))
-                .foregroundStyle(GColor.onPrimary)
-                .padding(.horizontal, GSpacing.lg).padding(.vertical, GSpacing.sm)
-                .background(GColor.primary, in: .rect(cornerRadius: GRadius.md))
-                .gShadow(GShadowValues.floating)
+            GToastLabel(text: "Link copied", systemImage: "link")
             GEmptyState(systemImage: "tray", title: "No messages yet", message: "Start a conversation with a contact.",
                         actionTitle: "New conversation", actionSystemImage: "square.and.pencil") {}
                 .frame(height: 260)
         }
-        .padding(24)
-        .background(GColor.background)
     }
 }
 
 struct OverlaysSection: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 0) {
             GSheetTitle(title: "New space", summary: "A place to share with a few people.", back: {}) {}
-                .padding(.horizontal, -GFormMetrics.sheetMargin)
-            FormsSection.card(header: "Members", footer: "They can leave at any time.") {
-                Button("Invite people") {}.buttonStyle(GFormRowButtonStyle())
-                Button("Leave the space", role: .destructive) {}.buttonStyle(GFormRowButtonStyle())
+            GForm {
+                Section {
+                    Button("Invite people") {}
+                    Button("Leave the space", role: .destructive) {}
+                } header: {
+                    Text("Members")
+                } footer: {
+                    Text("They can leave at any time.")
+                }
             }
+            .frame(height: 220)
         }
-        .padding(24)
-        .background(GColor.background)
+        .gSheetGround()
+        .clipShape(RoundedRectangle(cornerRadius: GRadius.glass, style: .continuous))
     }
 }
 
@@ -216,7 +218,7 @@ struct WindowSection: View {
 struct StatesSection: View {
     private func row<V: View>(_ name: String, @ViewBuilder _ control: @escaping () -> V) -> some View {
         GridRow {
-            Text(name).font(GFont.caption).foregroundStyle(GColor.textDiscret).gridColumnAlignment(.leading)
+            Text(name).font(GFont.caption).foregroundStyle(.gInk2).gridColumnAlignment(.leading)
             control()
             control().environment(\.gPointerPreview, .hover)
             control().environment(\.gPointerPreview, .pressed)
@@ -228,7 +230,7 @@ struct StatesSection: View {
         Grid(alignment: .center, horizontalSpacing: 14, verticalSpacing: 14) {
             GridRow {
                 Color.clear.frame(width: 1, height: 1)
-                ForEach(["Rest", "Hover", "Pressed", "Disabled"], id: \.self) { Text($0).font(GFont.headline).foregroundStyle(GColor.textPrimary) }
+                ForEach(["Rest", "Hover", "Pressed", "Disabled"], id: \.self) { Text($0).font(GFont.headline).foregroundStyle(.gInk) }
             }
             row("Primary") { Button("Save") {}.buttonStyle(GButtonStyle(variant: .primary)) }
             row("Secondary") { Button("Reset") {}.buttonStyle(GButtonStyle(variant: .secondary)) }
@@ -268,7 +270,7 @@ struct LiveSection: View {
                 }
                 Spacer()
             }
-            .padding(8).frame(width: 92).background(GFrameColor.ground)
+            .padding(8).frame(width: 92)
             GForm {
                 Section("Buttons") {
                     HStack {
