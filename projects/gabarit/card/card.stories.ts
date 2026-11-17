@@ -298,3 +298,31 @@ export const DarkNew: Story = {
   }),
   decorators: [darkTheme],
 }
+
+// ---- 4.0: bordered (outlined's new name) and the content glass, on the ground --------------------
+
+export const Bordered: Story = {
+  render: () => ({
+    template: `<gbt-card variant="bordered" heading="Serveur mail" icon="check">Contenu de la carte.</gbt-card>`,
+    moduleMetadata: { imports: [Card] },
+  }),
+}
+
+const GROUND = 'padding:2rem;border-radius:16px;min-height:16rem;' + GRID
+
+export const Glass: Story = {
+  render: () => ({
+    template: `
+      <div class="gbt-ground" style="${GROUND}">
+        <gbt-card variant="glass" heading="Agenda" icon="calendar">Réunion à 10 h, déjeuner à 12 h 30.</gbt-card>
+        <gbt-card variant="glass">Une carte de verre, sans bordure : la lumière en est le bord.</gbt-card>
+      </div>
+    `,
+    moduleMetadata: { imports: [Card] },
+  }),
+}
+
+export const GlassDark: Story = {
+  ...Glass,
+  decorators: [darkTheme],
+}

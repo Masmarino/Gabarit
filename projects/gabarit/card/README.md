@@ -1,7 +1,9 @@
 # Card
 
-Titled container: an optional heading over a box. Two looks for the box —
-`elevated` (a shadow) and `outlined` (a quiet 1px edge) —, an optional
+Titled container: an optional heading over a box. Three looks for the box —
+`elevated` (a shadow), `bordered` (a quiet 1px edge; `outlined` in 3.x, still
+accepted) and `glass` (4.0: the apps' content glass, for a page laid on the
+ground) —, an optional
 description and counter under / after the heading, a flush body for rows, a
 tone and a selected state, and a link mode that makes the whole box
 clickable.
@@ -17,7 +19,7 @@ component, see below)
 | `heading`       | `string`                                         | `''`         | Header title. Empty by default: no header is rendered without it (or a `[card-header]` slot).                                                                                         |
 | `icon`          | `string`                                         | `''`         | Icon shown beside the title, in the header. A toned header without one shows the tone's icon.                                                                                         |
 | `headingLevel`  | `1 \| 2 \| 3 \| 4 \| 5 \| 6`                     | `2`          | Level of the rendered heading — choose it based on the block's place in the page hierarchy (RGAA 9.1).                                                                                |
-| `variant`       | `'elevated' \| 'outlined'`                       | `'elevated'` | `outlined` swaps the box's shadow for a border.                                                                                                                                       |
+| `variant`       | `'elevated' \| 'bordered' \| 'outlined' \| 'glass'` | `'elevated'` | `bordered` (or `outlined`, its 3.x name) swaps the box's shadow for a border; `glass` lays the apps' regular content glass (translucent, blurred, rim of light, soft shadow, no edge) on a ground (`.gbt-ground`). |
 | `description`   | `string`                                         | `''`         | One-line help text under the heading (built-in header only).                                                                                                                          |
 | `count`         | `number \| null`                                 | `null`       | Counter pill after the heading, `0` included.                                                                                                                                          |
 | `flush`         | `boolean`                                        | `false`      | No padding inside the box: rows and tables reach its edges (clipped to its rounded corners).                                                                                          |

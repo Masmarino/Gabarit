@@ -771,3 +771,16 @@ describe('Card — the selection ring follows the inner corners of the box', () 
     )
   })
 })
+
+describe('Card — 4.0 looks', () => {
+  it('draws bordered as outlined, and marks glass on the box', () => {
+    const fixture = mount({ heading: 'X' })
+    const root = cardRoot(fixture)
+    fixture.componentRef.setInput('variant', 'bordered')
+    fixture.detectChanges()
+    expect(root.getAttribute('data-variant')).toBe('outlined')
+    fixture.componentRef.setInput('variant', 'glass')
+    fixture.detectChanges()
+    expect(root.getAttribute('data-variant')).toBe('glass')
+  })
+})

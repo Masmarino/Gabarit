@@ -301,3 +301,45 @@
     transition: none;
   }
 }
+
+// The ground and the glasses (4.0), offered and never imposed: a page that wants the apps' immersive look lays
+// `.gbt-ground` under itself and its panels in `.gbt-glass`; what commands and floats may take `.gbt-liquid-glass`
+// (never the content). The tokens are in the theme mixins (light and dark); the other ambiances are mixins of
+// `_grounds.scss` (`@include grounds.ambiance-aurore`).
+// The web keeps its own text tokens on the ground and the glass (7:1, contrast.spec.ts); --gbt-ink, -2, -3 are the
+// apps' ink (4.5:1 at the worst point of each ambiance, tools/tokens.py --check), for what mirrors an app.
+.gbt-ground {
+  background: var(--gbt-ground);
+}
+
+.gbt-glass {
+  border-radius: var(--gbt-radius-glass);
+  background: var(--gbt-glass-regular);
+  -webkit-backdrop-filter: var(--gbt-glass-blur);
+  backdrop-filter: var(--gbt-glass-blur);
+  box-shadow: var(--gbt-glass-rim-light), var(--gbt-depth-glass);
+
+  &--thin {
+    background: var(--gbt-glass-thin);
+  }
+
+  &--thick {
+    background: var(--gbt-glass-thick);
+  }
+}
+
+.gbt-liquid-glass {
+  background: var(--gbt-glass-liquid);
+  -webkit-backdrop-filter: var(--gbt-liquid-blur);
+  backdrop-filter: var(--gbt-liquid-blur);
+  box-shadow: var(--gbt-depth-liquid);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .gbt-glass,
+  .gbt-liquid-glass {
+    background: var(--gbt-glass-thick);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}

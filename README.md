@@ -413,6 +413,26 @@ grey, the graphite is for the frame. In `<gbt-card form>` the card is the fields
 `gbt-textarea` and `gbt-tag-input` lose theirs, a focused field keeps its ring; it is opt-in, a field with no
 edge of its own does not meet WCAG 1.4.11 by itself, so check it with the row's label and line.
 
+### The ground and the glass (4.0)
+
+The apps of 4.0 lay one **ground** under the whole window (an ambiance: a gradient of 2 to 4 stops and a light)
+and **two glasses** on it: the content glass (`thin`, `regular`, `thick`) for the panels, the liquid glass for
+what commands and floats, never for the content. Light is the edge of things: a rim at the top and a soft
+shadow instead of a hairline; a line stays only on the controls (a field's edge, 3:1; the focus ring).
+
+The web gets the same tokens **without being made to use them**: nothing of the web changes its look by itself,
+`gbt-table` and the forms are untouched.
+
+- The theme mixins set `--gbt-ground`, `--gbt-glass-thin` / `-regular` / `-thick` / `-liquid`, `--gbt-glass-blur`,
+  `--gbt-liquid-blur`, `--gbt-glass-rim-light`, `--gbt-depth-glass`, `--gbt-depth-liquid`, `--gbt-radius-glass`
+  (22px), `--gbt-radius-row` (14px), `--gbt-space-page`, `--gbt-space-gap`, and the apps' ink (`--gbt-ink`, `-2`,
+  `-3`, held at 4.5:1; the web's own text tokens stay at 7:1).
+- `_grounds.scss` has every ambiance of `tokens/gabarit.json` as a mixin (`@include tokens.ambiance-aurore`).
+- Utility classes: `.gbt-ground` under a page, `.gbt-glass` (`--thin`, `--thick`) for a panel, `.gbt-liquid-glass`
+  for what floats. They turn dense where the system asks to reduce transparency.
+- `<gbt-card variant="glass">` is a card of regular content glass, with no edge; `variant="bordered"` is the 1px
+  edge (`outlined`, its 3.x name, still works).
+
 ### Theming hooks
 
 A few more tokens are not set on `:root`: each component falls back to the value in the last column,
@@ -522,6 +542,14 @@ Gabarit 3 is no longer only for the web. Its tokens have one source, `tokens/gab
 `npm run tokens` (`python3 tools/tokens.py`) writes them for every platform; `--check` fails when a
 generated file is out of date (CI). Never edit a generated file.
 
+In 4.0, `--check` also holds the contrast of every ambiance (`ground.ambiances`): for each one the
+generator computes its tone at its worst point (every stop, and the light at its centre over the stop under it):
+the least veil laid over the ground, then the opacities of the ink's secondary and discreet steps, then the
+liquid glass's white. It fails when an ambiance's text cannot reach 4.5:1, or its edges 3:1, without a veil
+past 0.5 or an ink that loses its hierarchy (`glass.ink`). The same computation is in each native package
+(`GGroundSpec.tone()` in GabaritCommon and Compose, `tone::tone` in gabarit-gpui), for the grounds an app
+brings at run time; their tests compare it with the generator's.
+
 | Generated file                                                    | For                                     |
 | ----------------------------------------------------------------- | --------------------------------------- |
 | `projects/gabarit/src/lib/tokens/_palette.scss`, `_themes.scss`   | the web (its own set of roles, `web`)   |
@@ -529,7 +557,9 @@ generated file is out of date (CI). Never edit a generated file.
 | `swift/GabaritApple/GTokens+SwiftUI.swift`                        | SwiftUI: `GColor`, `GFont`, `GAnimation` |
 | `swift/GabaritGtk/Resources/gabarit-light.css`, `-dark.css`, `gabarit.css` | GTK 4                          |
 | `swift/GabaritWinUI/Resources/Gabarit.xaml`                       | WinUI 3                                 |
-| `android/gabarit/src/main/kotlin/com/masmarino/gabarit/GTokens.kt`, `GText.kt`, `GSymbols.kt` | Jetpack Compose |
+| `projects/gabarit/src/lib/tokens/_grounds.scss`                    | the web: every ambiance, as a mixin     |
+| `android/gabarit/src/main/kotlin/com/masmarino/gabarit/GTokens.kt`, `GText.kt`, `GSymbols.kt`, `GMotion.kt` | Jetpack Compose |
+| `rust/gabarit-gpui/src/tokens.rs`                                 | GPUI (gabarit-gpui)                     |
 
 The palette is shared. The colours by role come in two sets: `apps` (SkollN's design, the reference for
 the native apps) and `web` (this package's roles and names, kept as they are). Native names take the
