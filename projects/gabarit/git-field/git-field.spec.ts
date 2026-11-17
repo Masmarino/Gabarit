@@ -132,8 +132,11 @@ describe('GitField stylesheet', () => {
     'utf8',
   )
 
-  it('reads the frame colours, since it is drawn on the graphite in both themes', () => {
-    expect(scss).toMatch(/:host \{\s*@include themes\.frame-tokens;/)
+  it('reads the page’s colours on the ground, the frame’s on a framed sign-in page', () => {
+    expect(scss).toMatch(
+      /:host-context\(\.gbt-auth-panel--framed\) \{\s*@include themes\.frame-tokens;\s*\}/,
+    )
+    expect(scss).not.toMatch(/:host \{[^}]*frame-tokens/)
   })
 
   it('stands still when reduced motion is asked for', () => {

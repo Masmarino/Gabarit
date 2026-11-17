@@ -1,9 +1,11 @@
+@use '../../src/lib/tokens/glass';
+
 :host {
   display: block;
 }
 
-// A graphite page in both themes, like the shell's frame; the panel keeps the page's theme, so it stays
-// a white sheet in light mode.
+// The ground under the page (4.0), the panel a thick glass laid on it. `framed`: the graphite page of 3.x in both
+// themes, like the shell's frame, the panel an opaque sheet of the page's theme.
 .gbt-auth-panel {
   display: flex;
   box-sizing: border-box;
@@ -12,10 +14,16 @@
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
-  background: var(--gbt-auth-panel-backdrop, var(--frame));
+  @include glass.ground;
+  background: var(--gbt-auth-panel-backdrop, var(--gbt-ground));
+  background-attachment: fixed;
   // The [auth-backdrop] slot (gbt-git-field) is drawn on this ground, under the panel.
   position: relative;
   isolation: isolate;
+
+  &--framed {
+    background: var(--gbt-auth-panel-backdrop, var(--frame));
+  }
 }
 
 .gbt-auth-panel__panel {
@@ -25,10 +33,17 @@
   width: 100%;
   max-width: 25rem;
   padding: 2rem 2rem 2.25rem;
-  border: 1px solid var(--gbt-card-border);
-  border-radius: var(--gbt-auth-panel-radius, var(--site-border-radius-lg));
-  background: var(--bg-principal);
-  box-shadow: var(--site-shadow-md);
+  border-radius: var(--gbt-auth-panel-radius, var(--gbt-radius-glass));
+  @include glass.glass(thick);
+
+  .gbt-auth-panel--framed & {
+    border: 1px solid var(--gbt-card-border);
+    border-radius: var(--gbt-auth-panel-radius, var(--site-border-radius-lg));
+    background: var(--bg-principal);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: var(--site-shadow-md);
+  }
 }
 
 .gbt-auth-panel__panel--wide {

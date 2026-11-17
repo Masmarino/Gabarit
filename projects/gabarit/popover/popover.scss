@@ -1,3 +1,5 @@
+@use '../src/lib/tokens/glass';
+
 :host {
   position: relative;
   display: inline-block;
@@ -14,10 +16,9 @@
   z-index: 1000;
   min-width: 200px;
   padding: 1rem;
-  background: var(--bg-principal);
-  border: 1px solid var(--border-color);
-  border-radius: var(--site-border-radius-sm);
-  box-shadow: var(--site-shadow-lg);
+  // What floats: the liquid glass, dense enough to be read over the page.
+  border-radius: var(--site-border-radius-lg);
+  @include glass.floating-glass;
   color: var(--text-primary);
   animation: gbt-popover-scale-in 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }

@@ -43,9 +43,11 @@
 
 @media (min-width: 769px) {
   :host-context(.gbt-app-shell__nav--collapsed) {
+    // The open group in the narrow rail: a thin glass gathers its links, lit at its top edge.
     .gbt-app-shell-nav-group[data-expanded] {
-      border-radius: var(--site-border-radius-sm);
-      box-shadow: inset 0 0 0 1px var(--gbt-hairline);
+      border-radius: var(--gbt-radius-row);
+      background: var(--gbt-glass-thin);
+      box-shadow: var(--gbt-glass-rim-light);
     }
 
     .gbt-app-shell-nav-group__chevron {

@@ -1,4 +1,5 @@
 @use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/glass';
 
 .gbt-drawer__backdrop {
   position: fixed;
@@ -16,8 +17,8 @@
   position: fixed;
   display: flex;
   flex-direction: column;
-  background: var(--bg-principal);
-  box-shadow: var(--site-shadow-lg);
+  // Thick glass (4.0), rounded on the side that faces the page; no line at its edge.
+  @include glass.glass(thick);
 
   &:focus {
     outline: none;
@@ -32,6 +33,7 @@
     right: 0;
     bottom: 0;
     width: min(90vw, 400px);
+    border-radius: var(--gbt-radius-glass) 0 0 var(--gbt-radius-glass);
     animation: gbt-drawer-slide-in-right 0.2s ease-out;
 
     &.gbt-drawer__panel--closing {
@@ -44,6 +46,7 @@
     left: 0;
     bottom: 0;
     width: min(90vw, 400px);
+    border-radius: 0 var(--gbt-radius-glass) var(--gbt-radius-glass) 0;
     animation: gbt-drawer-slide-in-left 0.2s ease-out;
 
     &.gbt-drawer__panel--closing {
@@ -56,6 +59,7 @@
     left: 0;
     right: 0;
     height: min(90vh, 400px);
+    border-radius: 0 0 var(--gbt-radius-glass) var(--gbt-radius-glass);
     animation: gbt-drawer-slide-in-top 0.2s ease-out;
 
     &.gbt-drawer__panel--closing {
@@ -68,6 +72,7 @@
     left: 0;
     right: 0;
     height: min(90vh, 400px);
+    border-radius: var(--gbt-radius-glass) var(--gbt-radius-glass) 0 0;
     animation: gbt-drawer-slide-in-bottom 0.2s ease-out;
 
     &.gbt-drawer__panel--closing {
@@ -81,10 +86,7 @@
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--gbt-hairline);
-  background: var(--bg-panel);
-  background-image: var(--gbt-page-ground);
+  padding: 1.125rem 1.25rem 0.25rem;
 
   .gbt-drawer__title {
     font-family: var(--gbt-font-display, var(--font-display));

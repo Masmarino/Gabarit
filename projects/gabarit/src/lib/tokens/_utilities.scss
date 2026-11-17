@@ -1,4 +1,5 @@
 @use 'a11y';
+@use 'glass';
 
 .gbt-form-error {
   margin: 0 0 0.75rem;
@@ -48,11 +49,11 @@
   left: 0;
   margin-bottom: 0.25rem;
   padding: 0.25rem 0.5rem;
-  background: var(--text-primary);
-  color: var(--bg-principal);
+  @include glass.floating-glass;
+  color: var(--text-primary);
   font-size: 0.75rem;
   line-height: 1.4;
-  border-radius: var(--site-border-radius-sm);
+  border-radius: var(--site-border-radius);
   white-space: normal;
   width: max-content;
   max-width: 320px;
@@ -99,7 +100,7 @@
   gap: 0.625rem;
   min-width: 0;
   padding: 0.5rem 0.75rem;
-  border-radius: var(--site-border-radius-sm);
+  border-radius: var(--gbt-radius-row);
   color: var(--text-secondary);
   font-size: 0.875rem;
   font-weight: 500;
@@ -128,14 +129,44 @@
     @include a11y.focus-ring(-2px);
   }
 
-  // An app can tone the current page down to a tint with a mark on its edge (--gbt-nav-active-*).
+  // The current page is liquid glass on the ground, its icon in the accent (4.0). An app can tone it otherwise
+  // (--gbt-nav-active-bg, --gbt-nav-active-text, --gbt-nav-active-mark: a mark on its edge).
   &[aria-current] {
-    background: var(--gbt-nav-active-bg, color-mix(in srgb, var(--text-primary) 9%, transparent));
+    @include glass.liquid-glass;
+    background: var(--gbt-nav-active-bg, var(--gbt-glass-liquid));
     color: var(--gbt-nav-active-text, var(--text-primary));
     font-weight: 600;
     box-shadow:
+      inset 2px 0 0 var(--gbt-nav-active-mark, transparent),
+      var(--gbt-depth-liquid);
+
+    > gbt-icon {
+      color: var(--accent);
+    }
+
+    &:hover {
+      background:
+        linear-gradient(var(--bg-hover), var(--bg-hover)),
+        var(--gbt-nav-active-bg, var(--gbt-glass-liquid));
+    }
+  }
+}
+
+// The graphite frame of 3.x (`<gbt-app-shell framed>`): the current page a tint with a mark on its edge, glowing.
+.gbt-app-shell--framed .gbt-app-shell__link {
+  border-radius: var(--site-border-radius-sm);
+
+  &[aria-current] {
+    background: var(--gbt-nav-active-bg, color-mix(in srgb, var(--text-primary) 9%, transparent));
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow:
       inset 2px 0 0 var(--gbt-nav-active-mark, var(--accent)),
       var(--gbt-glow-soft);
+
+    > gbt-icon {
+      color: inherit;
+    }
   }
 }
 
@@ -149,11 +180,9 @@
   opacity: 1;
   z-index: 1015;
   padding: 0.375rem 0.625rem;
-  background: var(--bg-principal);
+  @include glass.floating-glass;
   color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--site-border-radius-sm);
-  box-shadow: var(--site-shadow-md);
+  border-radius: var(--site-border-radius);
 
   &::before {
     content: '';
@@ -231,7 +260,7 @@
   gap: 0.5rem;
   width: 100%;
   padding: 8px 10px;
-  border-radius: var(--gbt-radius-menu, var(--site-border-radius-sm));
+  border-radius: var(--gbt-radius-menu, var(--site-border-radius));
   color: var(--text-primary);
   font-size: 14px;
   text-align: left;
@@ -302,22 +331,19 @@
   }
 }
 
-// The ground and the glasses (4.0), offered and never imposed: a page that wants the apps' immersive look lays
-// `.gbt-ground` under itself and its panels in `.gbt-glass`; what commands and floats may take `.gbt-liquid-glass`
-// (never the content). The tokens are in the theme mixins (light and dark); the other ambiances are mixins of
+// The ground and the glasses (4.0), the components' recipes (`_glass.scss`) as classes, for an application's own
+// markup: `.gbt-ground` under a window, its panels in `.gbt-glass`, what commands and floats in `.gbt-liquid-glass`
+// (never the content). The light and dark grounds are in the theme mixins; the other ambiances are mixins of
 // `_grounds.scss` (`@include grounds.ambiance-aurore`).
 // The web keeps its own text tokens on the ground and the glass (7:1, contrast.spec.ts); --gbt-ink, -2, -3 are the
 // apps' ink (4.5:1 at the worst point of each ambiance, tools/tokens.py --check), for what mirrors an app.
 .gbt-ground {
-  background: var(--gbt-ground);
+  @include glass.ground;
 }
 
 .gbt-glass {
   border-radius: var(--gbt-radius-glass);
-  background: var(--gbt-glass-regular);
-  -webkit-backdrop-filter: var(--gbt-glass-blur);
-  backdrop-filter: var(--gbt-glass-blur);
-  box-shadow: var(--gbt-glass-rim-light), var(--gbt-depth-glass);
+  @include glass.glass;
 
   &--thin {
     background: var(--gbt-glass-thin);
@@ -326,20 +352,10 @@
   &--thick {
     background: var(--gbt-glass-thick);
   }
+
+  @include glass.dense-when-asked;
 }
 
 .gbt-liquid-glass {
-  background: var(--gbt-glass-liquid);
-  -webkit-backdrop-filter: var(--gbt-liquid-blur);
-  backdrop-filter: var(--gbt-liquid-blur);
-  box-shadow: var(--gbt-depth-liquid);
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  .gbt-glass,
-  .gbt-liquid-glass {
-    background: var(--gbt-glass-thick);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
+  @include glass.liquid-glass;
 }

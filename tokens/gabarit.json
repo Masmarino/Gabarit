@@ -469,6 +469,24 @@
         {
           "name": "site-shadow-lg",
           "value": "0 0 0 1px var(--slate-400), 0 12px 32px rgba(16, 21, 28, 0.16)"
+        },
+        {
+          "blank": true
+        },
+        {
+          "comment": "On the ground and its glasses (4.0): the shades that keep 7:1 for text and 3:1 for an edge at the ground's worst point."
+        },
+        {
+          "name": "gbt-ground-text-discret",
+          "value": "slate700"
+        },
+        {
+          "name": "gbt-ground-border",
+          "value": "#78828f"
+        },
+        {
+          "name": "gbt-liquid-text",
+          "value": "slate700"
         }
       ],
       "dark": [
@@ -702,6 +720,24 @@
         {
           "name": "site-shadow-lg",
           "value": "0 0 0 1px rgba(205, 215, 230, 0.26), 0 12px 32px rgba(0, 0, 0, 0.4)"
+        },
+        {
+          "blank": true
+        },
+        {
+          "comment": "On the ground and its glasses (4.0): the shades that keep 7:1 for text and 3:1 for an edge at the ground's worst point."
+        },
+        {
+          "name": "gbt-ground-text-discret",
+          "value": "graphite300"
+        },
+        {
+          "name": "gbt-ground-border",
+          "value": "#7a828e"
+        },
+        {
+          "name": "gbt-liquid-text",
+          "value": "graphite200"
         }
       ],
       "radius": {

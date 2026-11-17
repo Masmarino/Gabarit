@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core'
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  output,
+} from '@angular/core'
 import { Button } from '@masmarino/gabarit/button'
 import { Skeleton } from '@masmarino/gabarit/skeleton'
 import { EmptyState, EmptyStateIllustration } from '@masmarino/gabarit/empty-state'
@@ -18,6 +25,8 @@ const SKELETON_WIDTHS = ['62%', '48%', '70%', '55%', '66%', '44%']
 export class ListCard {
   state = input<ListCardState>('ready')
   ariaLabel = input<string | null>(null)
+  /** A fine line between the rows, as before the ground (none by default: the rows are set apart by their space). */
+  separated = input(false, { transform: booleanAttribute })
 
   loadingLabel = input('Loading…')
   skeletonRows = input(4)

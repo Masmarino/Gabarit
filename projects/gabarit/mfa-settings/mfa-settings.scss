@@ -1,4 +1,5 @@
 @use '../auth/shared/settings-card';
+@use '../src/lib/tokens/glass';
 
 :host {
   display: block;
@@ -109,9 +110,9 @@
   @include settings-card.form;
   gap: 1rem;
   padding: 1rem 1.125rem 1.125rem;
-  border: 1px solid var(--gbt-card-border);
-  border-radius: var(--site-border-radius-sm);
-  background: var(--bg-panel);
+  // A thin glass laid in the card's glass (4.0): no edge, no second shadow.
+  border-radius: var(--site-border-radius-lg);
+  @include glass.glass(thin, $shadow: false);
 }
 
 .gbt-mfa-settings__prompt-lead {

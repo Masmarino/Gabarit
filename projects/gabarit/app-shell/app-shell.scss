@@ -1,5 +1,6 @@
 @use '../src/lib/tokens/a11y';
 @use '../src/lib/tokens/depth';
+@use '../src/lib/tokens/glass';
 @use '../src/lib/tokens/themes';
 
 $drawer-breakpoint: 768px;
@@ -20,14 +21,15 @@ $corner: var(--site-border-radius-lg);
   display: block;
 }
 
-// One graphite frame in both themes, an L made of the rail and the bar; the pages sit inside it on the
-// theme's paper, a sheet whose corner is rounded where the rail meets the bar. On a wide screen the frame
-// holds still and the sheet scrolls its own content, under its corner; below the drawer breakpoint the
-// window scrolls, under a sticky bar, and the sheet has no corner.
+// The ground under the whole window (4.0): the rail, the bar and the page are one material, with nothing of their
+// own; the page's panels are glass laid on it, the current page in the rail is liquid glass. On a wide screen the rail
+// and the bar hold still and the page scrolls its own content; below the drawer breakpoint the window scrolls, under a
+// sticky bar. `framed` brings back the graphite frame of 3.x: an L made of the rail and the bar, the pages inside it on
+// the theme's paper, a sheet whose corner is rounded where the rail meets the bar.
 .gbt-app-shell {
   display: flex;
   min-height: 100vh;
-  background: var(--frame);
+  @include glass.ground;
 
   @media (min-width: $drawer-breakpoint + 1) {
     height: 100vh;
@@ -76,9 +78,6 @@ $corner: var(--site-border-radius-lg);
     height: 100vh;
     height: 100dvh;
     padding: 1rem 0.75rem;
-    @include themes.frame-tokens;
-    background: var(--bg-panel);
-    @include frame-sheen;
     border-right: 1px solid var(--gbt-shell-border, transparent);
     overflow-x: hidden;
     overflow-y: auto;
@@ -112,7 +111,8 @@ $corner: var(--site-border-radius-lg);
     padding: 0;
   }
 
-  // Sticks to the foot of the rail when its links scroll, on the rail's colour so they pass under it.
+  // Sticks to the foot of the rail when its links scroll, on the ground (held still, so it meets the ground around
+  // it) so they pass under it.
   &__bottom {
     position: sticky;
     bottom: 0;
@@ -122,8 +122,8 @@ $corner: var(--site-border-radius-lg);
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    // Its own colour, not the rail's sheen again.
-    background: var(--bg-panel);
+    background: var(--gbt-ground);
+    background-attachment: fixed;
   }
 
   &__collapse-toggle {
@@ -176,28 +176,10 @@ $corner: var(--site-border-radius-lg);
     flex-direction: column;
     flex: 1;
     min-width: 0;
-
-    // The shadow the rail casts on the page: painted, the rail lies under the page in the stacking order.
-    @media (min-width: $drawer-breakpoint + 1) {
-      &::after {
-        content: '';
-        position: absolute;
-        inset: $bar auto 0 0;
-        z-index: 1;
-        width: 0.5rem;
-        background: linear-gradient(to right, var(--gbt-bar-shade), transparent);
-        pointer-events: none;
-      }
-    }
-
-    @media print {
-      &::after {
-        display: none;
-      }
-    }
   }
 
-  // Sticky, with a background of its own so the page doesn't show through.
+  // Sticky, on the ground (held still, it meets the ground around it) so the page doesn't show through when the
+  // window scrolls.
   &__header {
     position: sticky;
     top: 0;
@@ -208,46 +190,30 @@ $corner: var(--site-border-radius-lg);
     box-sizing: border-box;
     height: $bar;
     padding: 0 var(--gbt-shell-content-padding, clamp(1rem, 0.25rem + 2vw, 2rem));
-    @include themes.frame-tokens;
-    background: var(--gbt-shell-header-bg, var(--bg-panel));
-    @include frame-sheen;
+    background: var(--gbt-shell-header-bg, var(--gbt-ground));
+    background-attachment: fixed;
     border-bottom: 1px solid var(--gbt-shell-border, transparent);
-
-    // The shadow it casts on the page: painted below it, a real one would darken the rail beside it too.
-    &::after {
-      content: '';
-      position: absolute;
-      inset: 100% 0 auto;
-      height: 0.5rem;
-      background: linear-gradient(to bottom, var(--gbt-bar-shade), transparent);
-      pointer-events: none;
-    }
-
-    @media print {
-      &::after {
-        display: none;
-      }
-    }
   }
 
+  // A round button of liquid glass: what commands, over the ground.
   &__toggle {
     display: none;
     flex-shrink: 0;
     width: 2.25rem;
     height: 2.25rem;
     padding: 0;
-    border: 1px solid var(--border-color);
-    border-radius: var(--site-border-radius-sm);
-    background: transparent;
+    border: none;
+    border-radius: 50%;
+    @include glass.liquid-glass;
     cursor: pointer;
     transition: background var(--site-transition-fast);
 
     &:hover {
-      background: var(--bg-hover);
+      background: linear-gradient(var(--bg-hover), var(--bg-hover)), var(--gbt-glass-liquid);
     }
 
     &:active {
-      background: var(--bg-press);
+      background: linear-gradient(var(--bg-press), var(--bg-press)), var(--gbt-glass-liquid);
       color: var(--text-primary);
     }
 
@@ -287,11 +253,7 @@ $corner: var(--site-border-radius-lg);
     flex: 1;
     min-width: 0;
     padding: var(--gbt-shell-content-padding, clamp(1rem, 0.25rem + 2vw, 2rem));
-    background: var(--bg-panel);
-    background-image: var(--gbt-page-ground);
-    background-repeat: no-repeat;
-    background-size: 100% 40vh;
-    border-top-left-radius: $corner;
+    padding-top: var(--gbt-space-gap);
 
     // The sheet is the scroller: what scrolls stays inside its rounded corner.
     @media (min-width: $drawer-breakpoint + 1) {
@@ -326,10 +288,17 @@ $corner: var(--site-border-radius-lg);
         transition: none;
       }
 
+      // The drawer is a thick glass over the page.
+      border-radius: 0 var(--gbt-radius-glass) var(--gbt-radius-glass) 0;
+      @include glass.glass(thick);
+
       &--open {
         transform: translateX(0);
-        box-shadow: var(--gbt-depth-bar);
       }
+    }
+
+    &__bottom {
+      background: none;
     }
 
     &__scrim {
@@ -342,10 +311,6 @@ $corner: var(--site-border-radius-lg);
     &__collapse-toggle {
       display: none;
     }
-
-    &__content {
-      border-top-left-radius: 0;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -356,6 +321,106 @@ $corner: var(--site-border-radius-lg);
 
     &__collapse-toggle gbt-icon {
       transition: none;
+    }
+  }
+}
+
+// The graphite frame of 3.x (`framed`): the rail and the bar in graphite 950 in both themes, lit from the window's
+// top; the page a sheet of the theme's paper inside it, its corner rounded where the rail meets the bar.
+.gbt-app-shell--framed {
+  background: var(--frame);
+  color: inherit;
+
+  .gbt-app-shell__nav {
+    @include themes.frame-tokens;
+    background: var(--bg-panel);
+    @include frame-sheen;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .gbt-app-shell__bottom {
+    background: var(--bg-panel);
+  }
+
+  @media (min-width: $drawer-breakpoint + 1) {
+    // The shadow the rail casts on the page: painted, the rail lies under the page in the stacking order.
+    .gbt-app-shell__body::after {
+      content: '';
+      position: absolute;
+      inset: $bar auto 0 0;
+      z-index: 1;
+      width: 0.5rem;
+      background: linear-gradient(to right, var(--gbt-bar-shade), transparent);
+      pointer-events: none;
+    }
+  }
+
+  .gbt-app-shell__header {
+    @include themes.frame-tokens;
+    background: var(--gbt-shell-header-bg, var(--bg-panel));
+    @include frame-sheen;
+
+    // The shadow it casts on the page: painted below it, a real one would darken the rail beside it too.
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 100% 0 auto;
+      height: 0.5rem;
+      background: linear-gradient(to bottom, var(--gbt-bar-shade), transparent);
+      pointer-events: none;
+    }
+  }
+
+  .gbt-app-shell__toggle {
+    border: 1px solid var(--border-color);
+    border-radius: var(--site-border-radius-sm);
+    background: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+
+    &:hover {
+      background: var(--bg-hover);
+    }
+
+    &:active {
+      background: var(--bg-press);
+    }
+  }
+
+  .gbt-app-shell__content {
+    padding-top: var(--gbt-shell-content-padding, clamp(1rem, 0.25rem + 2vw, 2rem));
+    background: var(--bg-panel);
+    background-image: var(--gbt-page-ground);
+    background-repeat: no-repeat;
+    background-size: 100% 40vh;
+    border-top-left-radius: $corner;
+  }
+
+  @media (max-width: $drawer-breakpoint) {
+    .gbt-app-shell__nav {
+      border-radius: 0;
+
+      &--open {
+        box-shadow: var(--gbt-depth-bar);
+      }
+    }
+
+    .gbt-app-shell__bottom {
+      background: var(--bg-panel);
+    }
+
+    .gbt-app-shell__content {
+      border-top-left-radius: 0;
+    }
+  }
+
+  @media print {
+    .gbt-app-shell__body::after,
+    .gbt-app-shell__header::after {
+      display: none;
     }
   }
 }

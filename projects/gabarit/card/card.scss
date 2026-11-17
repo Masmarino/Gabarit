@@ -1,8 +1,9 @@
 @use '../src/lib/tokens/a11y';
 @use '../src/lib/tokens/depth';
+@use '../src/lib/tokens/glass';
 
 :host {
-  --gbt-card-radius: var(--site-border-radius-lg);
+  --gbt-card-radius: var(--gbt-radius-glass);
   --gbt-card-focus-offset: -2px;
 
   position: relative;
@@ -12,6 +13,10 @@
     'gbt-card-box';
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto 1fr;
+}
+
+:host:has(> .gbt-card:is([data-variant='elevated'], [data-variant='outlined'])) {
+  --gbt-card-radius: var(--site-border-radius-lg);
 }
 
 :host:has(> .gbt-card[data-selected]) {
@@ -113,8 +118,11 @@
   }
 }
 
+// The content glass (4.0), by default: the apps' regular glass, laid on the ground (`--gbt-ground`). Light is its
+// edge: a rim at the top and a soft shadow, no border. Under the pointer it thickens. Where the system asks to reduce
+// transparency it is dense, and where it asks for more contrast it has an edge again (`_glass.scss`).
 .gbt-card {
-  --gbt-card-radius: var(--site-border-radius-lg);
+  --gbt-card-radius: var(--gbt-radius-glass);
   --gbt-card-inner-radius: var(--gbt-card-radius);
   --gbt-card-edge: var(--gbt-card-border);
   --gbt-card-focus-offset: -2px;
@@ -123,10 +131,11 @@
   position: relative;
   padding: 1.25rem 1.5rem;
   border-radius: var(--gbt-card-radius);
-  background: var(--bg-principal);
-  box-shadow: var(--site-shadow-sm);
+  @include glass.glass;
   overflow: hidden;
-  transition: box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.18s cubic-bezier(0.4, 0, 0.2, 1);
   color: var(--text-secondary);
   font-size: 0.9rem;
   line-height: 1.65;
@@ -136,31 +145,29 @@
     user-select: none;
 
     &:hover {
-      box-shadow: var(--site-shadow-lg);
+      background: var(--gbt-glass-thick);
     }
 
     &:active {
-      box-shadow: var(--gbt-depth-hollow);
+      box-shadow: var(--gbt-glass-rim-light);
       @include depth.sink;
     }
   }
 }
 
-.gbt-card__body {
-  display: contents;
-}
+// `elevated` (the default of 3.x): an opaque sheet of the theme's paper, a shadow under it.
+.gbt-card[data-variant='elevated'] {
+  --gbt-card-radius: var(--site-border-radius-lg);
 
-.gbt-card[data-variant='outlined'] {
-  --gbt-card-inner-radius: calc(var(--site-border-radius-lg) - 1px);
-
-  border: 1px solid var(--gbt-card-edge);
+  background: var(--bg-principal);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   box-shadow: var(--site-shadow-sm);
-  overflow: visible;
 
   &.gbt-card--hoverable:hover,
   &[data-link]:hover {
-    border-color: var(--border-color);
-    box-shadow: var(--site-shadow-sm);
+    background: var(--bg-principal);
+    box-shadow: var(--site-shadow-lg);
   }
 
   &.gbt-card--hoverable:active,
@@ -169,34 +176,32 @@
   }
 }
 
-// The content glass (4.0): the apps' regular glass, for a page laid on the ground. Light is its edge: a rim at the top
-// and a soft shadow, no border. Where the system asks to reduce transparency, it is dense.
-.gbt-card[data-variant='glass'] {
-  --gbt-card-radius: var(--gbt-radius-glass);
-  --gbt-card-inner-radius: var(--gbt-radius-glass);
+.gbt-card__body {
+  display: contents;
+}
 
-  background: var(--gbt-glass-regular);
-  -webkit-backdrop-filter: var(--gbt-glass-blur);
-  backdrop-filter: var(--gbt-glass-blur);
-  box-shadow: var(--gbt-glass-rim-light), var(--gbt-depth-glass);
-  color: var(--text-secondary);
+// `bordered` (`outlined`): the opaque sheet with a quiet 1px edge.
+.gbt-card[data-variant='outlined'] {
+  --gbt-card-radius: var(--site-border-radius-lg);
+  --gbt-card-inner-radius: calc(var(--site-border-radius-lg) - 1px);
+
+  border: 1px solid var(--gbt-card-edge);
+  background: var(--bg-principal);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: var(--site-shadow-sm);
+  overflow: visible;
 
   &.gbt-card--hoverable:hover,
   &[data-link]:hover {
-    box-shadow: var(--gbt-glass-rim-light), var(--gbt-depth-glass);
-    background: var(--gbt-glass-thick);
+    border-color: var(--border-color);
+    background: var(--bg-principal);
+    box-shadow: var(--site-shadow-sm);
   }
 
-  @media (prefers-reduced-transparency: reduce) {
-    background: var(--gbt-glass-thick);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-
-  @media (prefers-contrast: more) {
-    box-shadow:
-      inset 0 0 0 1px var(--border-color),
-      var(--gbt-depth-glass);
+  &.gbt-card--hoverable:active,
+  &[data-link]:active {
+    box-shadow: var(--gbt-depth-hollow);
   }
 }
 
@@ -224,7 +229,11 @@
   --gbt-card-edge: var(--primary);
   --gbt-card-focus-offset: -5px;
 
-  background: color-mix(in srgb, var(--primary) 4%, var(--bg-principal));
+  background: color-mix(in srgb, var(--primary) 4%, var(--gbt-glass-thick));
+
+  &:is([data-variant='elevated'], [data-variant='outlined']) {
+    background: color-mix(in srgb, var(--primary) 4%, var(--bg-principal));
+  }
 
   &[data-variant='outlined']::before {
     border-width: 1px;
@@ -241,27 +250,37 @@
     box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 
-  &:not([data-variant='outlined'], [data-variant='glass']):hover {
-    box-shadow: var(--site-shadow-lg);
+  &:not([data-variant]):hover {
+    background: var(--gbt-glass-thick);
   }
 
   &:active {
-    box-shadow: var(--gbt-depth-hollow);
+    box-shadow: var(--gbt-glass-rim-light);
     @include depth.sink;
   }
 }
 
 :host:has(> .gbt-card__header .gbt-card__link:hover) > .gbt-card[data-link] {
-  box-shadow: var(--site-shadow-lg);
+  background: var(--gbt-glass-thick);
+
+  &[data-variant='elevated'] {
+    background: var(--bg-principal);
+    box-shadow: var(--site-shadow-lg);
+  }
 
   &[data-variant='outlined'] {
+    background: var(--bg-principal);
     border-color: var(--border-color);
     box-shadow: var(--site-shadow-sm);
   }
 }
 
 :host:has(> .gbt-card__header .gbt-card__link:active) > .gbt-card[data-link] {
-  box-shadow: var(--gbt-depth-hollow);
+  box-shadow: var(--gbt-glass-rim-light);
+
+  &:is([data-variant='elevated'], [data-variant='outlined']) {
+    box-shadow: var(--gbt-depth-hollow);
+  }
 }
 
 // A form's card: it is the fields' frame, a frame in a frame would be one too many. Its fields lose theirs (a focused

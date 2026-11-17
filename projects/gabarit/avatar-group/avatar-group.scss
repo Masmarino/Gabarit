@@ -1,4 +1,5 @@
 @use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/glass';
 
 :host {
   display: inline-flex;
@@ -74,10 +75,9 @@
   max-height: 280px;
   overflow-y: auto;
   list-style: none;
-  background: var(--bg-principal);
-  border: 1px solid var(--border-color);
-  border-radius: var(--site-border-radius-sm);
-  box-shadow: var(--site-shadow-lg);
+  // What floats: the liquid glass (4.0), dense enough to be read over the page.
+  border-radius: var(--site-border-radius-lg);
+  @include glass.floating-glass;
   animation: gbt-avatar-group-scale-in 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 
   &::-webkit-scrollbar {

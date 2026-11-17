@@ -1,3 +1,5 @@
+@use '../src/lib/tokens/glass';
+
 :host {
   display: block;
   min-width: 0;
@@ -19,22 +21,20 @@
   height: 100%;
   min-width: 0;
   padding: 0.875rem 1rem 0.9375rem;
-  border: 1px solid var(--gbt-card-border);
-  border-radius: var(--site-border-radius-lg);
-  background: var(--bg-principal);
-  box-shadow: var(--site-shadow-sm);
+  border-radius: var(--gbt-radius-glass);
+  @include glass.glass;
   transition:
-    border-color var(--site-transition-fast),
+    background-color var(--site-transition-fast),
     box-shadow var(--site-transition-fast);
 }
 
+// A tile that leads somewhere thickens under the pointer, and loses its shadow when pressed.
 :host([data-link]) .gbt-stat-tile:hover {
-  border-color: var(--border-color);
-  box-shadow: var(--site-shadow-lg);
+  background: var(--gbt-glass-thick);
 }
 
 :host([data-link]) .gbt-stat-tile:active {
-  box-shadow: var(--gbt-depth-hollow);
+  box-shadow: var(--gbt-glass-rim-light);
 }
 
 .gbt-stat-tile__label {

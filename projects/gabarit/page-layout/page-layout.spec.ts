@@ -236,8 +236,9 @@ describe('PageLayout', () => {
       expect(scss).toContain('var(--gbt-page-nav-width)')
     })
 
-    it('draws the stacked aside separator with the shared hairline token', () => {
-      expect(scss).toContain('var(--gbt-hairline)')
+    it('sets the stacked aside apart by space, with no line (4.0)', () => {
+      expect(scss).not.toContain('var(--gbt-hairline)')
+      expect(scss.replace(/\s+/g, ' ')).toContain('.gbt-page-layout__aside { padding-top: 1rem; }')
     })
   })
 

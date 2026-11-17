@@ -1,4 +1,5 @@
 @use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/glass';
 
 .gbt-modal__backdrop {
   position: fixed;
@@ -10,10 +11,10 @@
   z-index: 1200;
 }
 
+// A sheet of thick glass (4.0) over the dimmed page: its header and its footer are the same material, no line.
 .gbt-modal__dialog {
-  background: var(--bg-principal);
-  border-radius: var(--site-border-radius-lg);
-  box-shadow: var(--site-shadow-lg);
+  border-radius: var(--gbt-radius-glass);
+  @include glass.glass(thick);
   width: min(90vw, 480px);
   max-height: 90vh;
   overflow-y: auto;
@@ -31,10 +32,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--gbt-hairline);
-  background: var(--bg-panel);
-  background-image: var(--gbt-page-ground);
+  padding: 1.125rem 1.25rem 0.25rem;
 
   .gbt-modal__title {
     font-family: var(--gbt-font-display, var(--font-display));
@@ -114,9 +112,9 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.5rem;
-  padding: 1rem 1.25rem;
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-principal);
+  padding: 0.75rem 1.25rem 1.125rem;
+  // Over the body when it scrolls: the glass again, so the dialog reads as one sheet.
+  background: var(--gbt-glass-thick);
 
   &:empty {
     display: none;

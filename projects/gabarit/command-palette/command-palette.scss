@@ -1,4 +1,5 @@
 @use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/glass';
 
 $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -20,12 +21,9 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   width: min(640px, 100%);
   max-height: min(560px, 76vh);
   overflow: hidden;
-  background: var(--bg-principal);
-  border: 1px solid var(--border-color);
-  border-radius: var(--site-border-radius-lg);
-  box-shadow:
-    0 16px 48px rgba(0, 0, 0, 0.18),
-    0 4px 12px rgba(0, 0, 0, 0.08);
+  // Thick glass with the liquid's light (4.0): the field and the results are one sheet, no line between them.
+  border-radius: var(--gbt-radius-glass);
+  @include glass.floating-glass;
   animation: gbt-cp-rise 0.18s $easing-std both;
 }
 
@@ -35,7 +33,6 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   align-items: center;
   gap: 10px;
   padding: 0 16px;
-  border-bottom: 1px solid var(--border-color);
 }
 
 .gbt-cp__field-icon {
@@ -213,8 +210,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   flex: none;
   flex-wrap: wrap;
   gap: 4px 16px;
-  padding: 8px 16px;
-  border-top: 1px solid var(--border-color);
+  padding: 8px 16px 12px;
   color: var(--text-secondary);
   font-size: 12px;
 }

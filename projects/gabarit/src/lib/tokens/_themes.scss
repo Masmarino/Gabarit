@@ -69,6 +69,11 @@
   --site-shadow-md: 0 0 0 1px var(--slate-400), 0px 2px 12px var(--gbt-card-shadow);
   --site-shadow-lg: 0 0 0 1px var(--slate-400), 0 12px 32px rgba(16, 21, 28, 0.16);
 
+  // On the ground and its glasses (4.0): the shades that keep 7:1 for text and 3:1 for an edge at the ground's worst point.
+  --gbt-ground-text-discret: var(--slate-700);
+  --gbt-ground-border: #78828f;
+  --gbt-liquid-text: var(--slate-700);
+
   // Volume and light: the apps' roles and the common shadows, composed for CSS.
   --bg-press: rgba(16, 21, 28, 0.14);
   --gbt-relief-highlight: rgba(255, 255, 255, 0.6);
@@ -197,6 +202,11 @@
   --site-shadow-sm: var(--gbt-depth-card);
   --site-shadow-md: 0 0 0 1px rgba(205, 215, 230, 0.26), 0px 2px 12px var(--gbt-card-shadow);
   --site-shadow-lg: 0 0 0 1px rgba(205, 215, 230, 0.26), 0 12px 32px rgba(0, 0, 0, 0.4);
+
+  // On the ground and its glasses (4.0): the shades that keep 7:1 for text and 3:1 for an edge at the ground's worst point.
+  --gbt-ground-text-discret: var(--graphite-300);
+  --gbt-ground-border: #7a828e;
+  --gbt-liquid-text: var(--graphite-200);
 
   // Volume and light: the apps' roles and the common shadows, composed for CSS.
   --bg-press: rgba(231, 235, 241, 0.14);

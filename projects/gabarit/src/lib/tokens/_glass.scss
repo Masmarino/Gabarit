@@ -1,0 +1,87 @@
+// The ground and the two glasses (4.0), as the components' recipes: one ground under the whole window, the content
+// glass for the panels, the liquid glass for what commands and floats. Light is the edge of things: a rim at the top
+// and a soft shadow stand where a hairline used to; the line stays on the controls (a field's 3:1 edge, the focus
+// ring) and on the tables.
+//
+// The colours are tokens (`_themes.scss`, generated): these mixins only compose them.
+
+// On the ground, and on the glass laid on it: the text keeps 7:1 and an edge 3:1 at the ground's worst point
+// (contrast.spec.ts). The discreet text takes a deeper shade, the status texts the one they have on their tint.
+@mixin on-ground {
+  --text-discret: var(--gbt-ground-text-discret);
+  --border-color: var(--gbt-ground-border);
+  --color-success-text: var(--color-success-bg-text);
+  --color-warning-text: var(--color-warning-bg-text);
+  --color-error-text: var(--color-error-bg-text);
+}
+
+// On the liquid glass, clearer than the ground it lets through: the secondary text is one more step up. What commands
+// holds no status text (a status read over the page floats, in the thick fill: `floating-glass`).
+@mixin on-liquid {
+  @include on-ground;
+  --text-secondary: var(--gbt-liquid-text);
+  --text-discret: var(--gbt-liquid-text);
+}
+
+// The ground: under a whole window (the body, the shell, a sign-in page). It holds still while the page scrolls.
+@mixin ground {
+  background: var(--gbt-ground);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  @include on-ground;
+}
+
+// Asked by the system: the glass is dense and opaque (no blur), or it has an edge again.
+@mixin dense-when-asked {
+  @media (prefers-reduced-transparency: reduce) {
+    background:
+      linear-gradient(var(--gbt-glass-thick), var(--gbt-glass-thick)), var(--bg-principal);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@mixin edged-when-asked($shadow) {
+  @media (prefers-contrast: more) {
+    box-shadow:
+      inset 0 0 0 1px var(--border-color),
+      $shadow;
+  }
+}
+
+// The content glass: a panel, a card, a sheet. `$density`: thin, regular or thick (a sheet, a drawer).
+// `$shadow: false` for a glass laid in another glass (no second shadow under it).
+@mixin glass($density: regular, $shadow: true) {
+  $depth: 0 0 transparent;
+  @if $shadow {
+    $depth: var(--gbt-depth-glass);
+  }
+  background: var(--gbt-glass-#{$density});
+  -webkit-backdrop-filter: var(--gbt-glass-blur);
+  backdrop-filter: var(--gbt-glass-blur);
+  box-shadow: var(--gbt-glass-rim-light), $depth;
+  @include on-ground;
+  @include dense-when-asked;
+  @include edged-when-asked($depth);
+}
+
+// The liquid glass: what commands (the current page in a rail, a search bar, a round button) and what floats (a
+// menu, a popover, a tooltip, a toast). Never the content. `$fill: thick` for what floats over the page and holds
+// text to be read (a menu, a list of options): it keeps the liquid's light and blur, with the dense fill.
+@mixin liquid-glass($fill: liquid) {
+  background: var(--gbt-glass-#{$fill});
+  -webkit-backdrop-filter: var(--gbt-liquid-blur);
+  backdrop-filter: var(--gbt-liquid-blur);
+  box-shadow: var(--gbt-depth-liquid);
+  @include on-liquid;
+  @include dense-when-asked;
+  @include edged-when-asked(var(--gbt-depth-liquid));
+}
+
+// What floats over the page and is read: the liquid glass, dense, with the content glass's shadow under it so it
+// rises above the panels.
+@mixin floating-glass {
+  @include liquid-glass(thick);
+  box-shadow: var(--gbt-depth-liquid), var(--gbt-depth-glass);
+  @include edged-when-asked((var(--gbt-depth-liquid), var(--gbt-depth-glass)));
+}

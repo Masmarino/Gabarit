@@ -1,5 +1,6 @@
 @use '../src/lib/tokens/a11y';
 @use '../src/lib/tokens/depth';
+@use '../src/lib/tokens/glass';
 
 $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -125,10 +126,9 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   position: fixed;
   z-index: 1000;
   padding: 0.75rem;
-  background: var(--bg-principal);
-  border: 1px solid var(--border-color);
-  border-radius: var(--site-border-radius-sm);
-  box-shadow: var(--site-shadow-lg);
+  // What floats: the liquid glass (4.0), dense enough to be read over the page.
+  border-radius: var(--site-border-radius-lg);
+  @include glass.floating-glass;
   animation: gbt-date-picker-scale-in 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 

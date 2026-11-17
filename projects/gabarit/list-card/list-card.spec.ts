@@ -353,14 +353,17 @@ describe('ListCard', () => {
       )
     })
 
-    it('draws the edge on the box, in the shared card tokens, and clips the rows to its corners', () => {
+    it('lays the box in the content glass, with no edge, and clips the rows to its corners', () => {
       const box = ruleBody(scss, '.gbt-list-card__box') ?? ''
       expect(box).toContain('position: relative;')
       expect(box).toContain('overflow: hidden;')
-      expect(box).toContain('border: 1px solid var(--gbt-card-border);')
-      expect(box).toContain('border-radius: var(--site-border-radius-lg);')
-      expect(box).toContain('background: var(--bg-principal);')
-      expect(scss).toContain('var(--gbt-hairline)')
+      expect(box).toContain('border-radius: var(--gbt-radius-glass);')
+      expect(box).toContain('@include glass.glass;')
+      expect(box).not.toContain('border:')
+      // The lines between the rows only when asked (`separated`).
+      expect(scss.replace(/\s+/g, ' ')).toContain(
+        '.gbt-separated & + & { border-top: 1px solid var(--gbt-hairline); }',
+      )
       // Only the box clips: the header above it is never cut.
       expect(code.match(/overflow:/g)?.length).toBe(1)
     })

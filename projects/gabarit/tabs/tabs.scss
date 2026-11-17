@@ -11,7 +11,7 @@
   &__list {
     display: flex;
     gap: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
+    // No line under the row (4.0): the open tab's own mark is enough.
     overflow-x: auto;
   }
 

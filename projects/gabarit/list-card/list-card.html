@@ -10,7 +10,7 @@
       <div class="gbt-list-card__header"><ng-content select="[list-card-header]" /></div>
     }
   }
-  <div class="gbt-list-card__box">
+  <div class="gbt-list-card__box" [class.gbt-separated]="separated()">
     @switch (state()) {
       @case ('loading') {
         <div class="gbt-list-card__loading" aria-busy="true">

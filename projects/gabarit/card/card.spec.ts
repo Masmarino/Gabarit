@@ -243,7 +243,8 @@ describe('Card — the header sits above the box, outside it', () => {
     }
     // No other rule reaches into the header to paint it (the band is gone).
     expect(CARD_SCSS).not.toMatch(/data-header-style|--bg-hover|gbt-card__tile/)
-    expect(CARD_SCSS.replace(/\s+/g, ' ')).not.toMatch(/\.gbt-card__header[^{]*\{[^}]*background/)
+    // (A rule that reads the header's state to paint the box, `… .gbt-card__header … > .gbt-card`, is not one.)
+    expect(CARD_SCSS.replace(/\s+/g, ' ')).not.toMatch(/\.gbt-card__header[^{>]*\{[^}]*background/)
   })
 
   it('places the header then the box in the host grid, with a gap under the header', () => {
@@ -436,13 +437,16 @@ describe('Card — link mode', () => {
     )
     // The box's radius and the selected focus offset are mirrored on the host for a header link.
     const card = CARD_SCSS.replace(/\s+/g, ' ')
-    expect(card).toMatch(/:host \{ --gbt-card-radius: var\(--site-border-radius-lg\);/)
+    expect(card).toMatch(/:host \{ --gbt-card-radius: var\(--gbt-radius-glass\);/)
+    expect(card).toContain(
+      ":host:has(> .gbt-card:is([data-variant='elevated'], [data-variant='outlined'])) { --gbt-card-radius: var(--site-border-radius-lg); }",
+    )
     expect(card).toMatch(
       /:host:has\(> \.gbt-card\[data-selected\]\) \{ --gbt-card-focus-offset: -5px; \}/,
     )
     // Hovering the header link's overlay gives the box its hover look.
     expect(card).toContain(
-      ':host:has(> .gbt-card__header .gbt-card__link:hover) > .gbt-card[data-link] { box-shadow: var(--site-shadow-lg);',
+      ':host:has(> .gbt-card__header .gbt-card__link:hover) > .gbt-card[data-link] { background: var(--gbt-glass-thick);',
     )
   })
 
@@ -773,14 +777,27 @@ describe('Card — the selection ring follows the inner corners of the box', () 
 })
 
 describe('Card — 4.0 looks', () => {
-  it('draws bordered as outlined, and marks glass on the box', () => {
+  it('draws bordered as outlined, and marks elevated on the box (the glass is the box’s own)', () => {
     const fixture = mount({ heading: 'X' })
     const root = cardRoot(fixture)
     fixture.componentRef.setInput('variant', 'bordered')
     fixture.detectChanges()
     expect(root.getAttribute('data-variant')).toBe('outlined')
+    fixture.componentRef.setInput('variant', 'elevated')
+    fixture.detectChanges()
+    expect(root.getAttribute('data-variant')).toBe('elevated')
     fixture.componentRef.setInput('variant', 'glass')
     fixture.detectChanges()
-    expect(root.getAttribute('data-variant')).toBe('glass')
+    expect(root.hasAttribute('data-variant')).toBe(false)
+  })
+
+  it('is glass by default: the content glass, its rim of light and its shadow, no border', () => {
+    const box = ruleBody(CARD_SCSS, '.gbt-card') ?? ''
+    expect(box).toContain('@include glass.glass;')
+    expect(box).not.toMatch(/(^|[; ])border\s*:/)
+    const elevated = ruleBody(CARD_SCSS, ".gbt-card[data-variant='elevated']") ?? ''
+    expect(elevated).toContain('background: var(--bg-principal);')
+    expect(elevated).toContain('box-shadow: var(--site-shadow-sm);')
+    expect(elevated).toContain('backdrop-filter: none;')
   })
 })

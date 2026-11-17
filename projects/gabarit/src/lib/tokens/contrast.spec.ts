@@ -685,3 +685,81 @@ describe('series palette', () => {
     }
   })
 })
+
+// The ground and its glasses (4.0): the page is the ground, the panels glass laid on it. Measured at every colour of
+// the ground (the stops of its gradient and its light), bare, under each density of the content glass and under the
+// liquid glass, with the shades `_glass.scss` gives the text and the edges there (`on-ground`, `on-liquid`).
+describe('the ground and its glasses', () => {
+  const glassScss = readFileSync(join(DIR, '_glass.scss'), 'utf8')
+  const mixinBody = (name: string) =>
+    new RegExp(`@mixin ${name}(?:\\([^)]*\\))? \\{([\\s\\S]*?)\\n\\}`).exec(glassScss)![1]
+
+  it('on-ground and on-liquid give the text and the edges their shades on the ground', () => {
+    const onGround = mixinBody('on-ground')
+    expect(onGround).toContain('--text-discret: var(--gbt-ground-text-discret);')
+    expect(onGround).toContain('--border-color: var(--gbt-ground-border);')
+    for (const tone of ['success', 'warning', 'error']) {
+      expect(onGround).toContain(`--color-${tone}-text: var(--color-${tone}-bg-text);`)
+    }
+    const onLiquid = mixinBody('on-liquid')
+    expect(onLiquid).toContain('@include on-ground;')
+    expect(onLiquid).toContain('--text-secondary: var(--gbt-liquid-text);')
+    expect(onLiquid).toContain('--text-discret: var(--gbt-liquid-text);')
+    // The ground and both glasses take them.
+    expect(mixinBody('ground')).toContain('@include on-ground;')
+    expect(mixinBody('glass')).toContain('@include on-ground;')
+    expect(mixinBody('liquid-glass')).toContain('@include on-liquid;')
+  })
+
+  for (const theme of ['light', 'dark'] as const) {
+    const scope = theme === 'light' ? LIGHT_SCOPE : DARK_SCOPE
+    const ground = /--gbt-ground:\s*([^;]+);/.exec(scope)![1]
+    const stops = [...ground.matchAll(/#[0-9a-f]{6}/gi)].map((m) => m[0])
+    const glassOver = (density: string, stop: string) => token(`gbt-glass-${density}`, theme, stop)
+
+    // The text on the ground and on the content glass: the discreet text takes its ground shade.
+    const TEXT = ['text-primary', 'text-secondary', 'gbt-ground-text-discret', 'primary']
+    const STATUS = ['color-success-bg-text', 'color-warning-bg-text', 'color-error-bg-text']
+
+    it(`finds the ground's colours (${theme})`, () => {
+      expect(stops.length).toBeGreaterThanOrEqual(3)
+    })
+
+    for (const name of [...TEXT, ...STATUS, 'color-info-bg-text']) {
+      it(`--${name} reaches 7:1 on the bare ground and under thin, regular and thick glass (${theme})`, () => {
+        for (const stop of stops) {
+          const surfaces = [stop, ...['thin', 'regular', 'thick'].map((d) => glassOver(d, stop))]
+          for (const surface of surfaces) {
+            expect(
+              ratio(token(name, theme), surface),
+              `${name} on ${surface}`,
+            ).toBeGreaterThanOrEqual(7)
+          }
+        }
+      })
+    }
+
+    // What commands holds no status text; what floats and is read takes the thick fill, measured above.
+    it(`the text on the liquid glass reaches 7:1 at every colour of the ground (${theme})`, () => {
+      for (const stop of stops) {
+        const liquid = glassOver('liquid', stop)
+        for (const name of ['text-primary', 'gbt-liquid-text']) {
+          expect(ratio(token(name, theme), liquid), `${name} on ${liquid}`).toBeGreaterThanOrEqual(
+            7,
+          )
+        }
+      }
+    })
+
+    it(`a field's edge on the ground reaches 3:1, bare and under the liquid glass (${theme})`, () => {
+      for (const stop of stops) {
+        for (const surface of [stop, glassOver('liquid', stop), glassOver('thin', stop)]) {
+          expect(
+            ratio(token('gbt-ground-border', theme), surface),
+            `edge on ${surface}`,
+          ).toBeGreaterThanOrEqual(3)
+        }
+      }
+    })
+  }
+})

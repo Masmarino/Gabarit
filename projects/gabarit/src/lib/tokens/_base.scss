@@ -1,3 +1,5 @@
+@use 'glass';
+
 // The document's own elements, for an application that wants them in the family's type: include once,
 // at the root of its global styles (`@include tokens.document-base;`).
 @mixin document-base {
@@ -5,12 +7,9 @@
     margin: 0;
     font-family: var(--font-family);
     font-feature-settings: 'kern', 'liga';
-    background: var(--bg-panel);
-    // One light, from above: the page is lit at its top.
-    background-image: var(--gbt-page-ground);
-    background-repeat: no-repeat;
-    background-size: 100% 40vh;
-    color: var(--text-primary);
+    // The ground (4.0): one under the whole window, its light from above; the panels are glass laid on it.
+    @include glass.ground;
+    min-height: 100vh;
     -webkit-font-smoothing: antialiased;
   }
 

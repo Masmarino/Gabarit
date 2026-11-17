@@ -1,8 +1,12 @@
 @use '../src/lib/tokens/themes';
 
-// The field is drawn on the graphite frame in both themes, so it reads the frame's (dark) colours.
-:host {
+// The field is drawn on the page's ground, in its colours; on the graphite frame (a `framed` sign-in page), it reads
+// the frame's (dark) colours.
+:host-context(.gbt-auth-panel--framed) {
   @include themes.frame-tokens;
+}
+
+:host {
   position: absolute;
   inset: 0;
   z-index: 0;

@@ -1,4 +1,4 @@
-<main class="gbt-auth-panel">
+<main class="gbt-auth-panel" [class.gbt-auth-panel--framed]="framed()">
   <ng-content select="[auth-backdrop]" />
   <div class="gbt-auth-panel__panel" [class.gbt-auth-panel__panel--wide]="wide()">
     <div class="gbt-auth-panel__logo"><ng-content select="[auth-logo]" /></div>

@@ -2,7 +2,13 @@
   display: block;
 }
 
+// Panels in a row are set apart by space, not by a line (4.0). `.gbt-separated` on their container brings the line
+// back.
 ::ng-deep gbt-panel + gbt-panel {
+  margin-top: 1.5rem;
+}
+
+::ng-deep .gbt-separated > gbt-panel + gbt-panel {
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid var(--gbt-hairline);

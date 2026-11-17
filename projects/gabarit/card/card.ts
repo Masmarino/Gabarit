@@ -12,9 +12,9 @@ import { Icon } from '@masmarino/gabarit/icon'
 import { CardLink } from './card-link'
 
 /**
- * `elevated`: a shadow. `bordered` (4.0; `outlined`, its name in 3.x, is kept): a quiet 1px edge. `glass` (4.0): the
- * regular content glass of the apps, for a page laid on a ground (`--gbt-ground`): translucent, blurred, a rim of
- * light and a soft shadow, no edge.
+ * `glass` (the default): the regular content glass of the apps, laid on the ground (`--gbt-ground`): translucent,
+ * blurred, a rim of light and a soft shadow, no edge. `elevated` (the default until the web took the ground): an
+ * opaque sheet with a shadow. `bordered` (`outlined`, its name in 3.x, is kept): the opaque sheet with a 1px edge.
  */
 export type CardVariant = 'elevated' | 'bordered' | 'outlined' | 'glass'
 export type CardTone = 'default' | 'success' | 'warning' | 'error'
@@ -46,7 +46,7 @@ export class Card {
   icon = input<string>('')
   headingLevel = input<1 | 2 | 3 | 4 | 5 | 6>(2)
 
-  variant = input<CardVariant>('elevated')
+  variant = input<CardVariant>('glass')
   description = input<string>('')
   count = input<number | null>(null)
   flush = input(false, { transform: booleanAttribute })
@@ -70,10 +70,10 @@ export class Card {
     return this.icon() || (tone === 'default' ? '' : TONE_ICONS[tone])
   })
 
-  /** The box's look: `bordered` draws as `outlined` (one rule for both names). */
+  /** The box's look: the glass is the box's own; `bordered` draws as `outlined` (one rule for both names). */
   protected readonly boxVariant = computed(() => {
     const variant = this.variant()
-    return variant === 'elevated' ? null : variant === 'bordered' ? 'outlined' : variant
+    return variant === 'glass' ? null : variant === 'bordered' ? 'outlined' : variant
   })
 
   protected readonly cardClass = computed(

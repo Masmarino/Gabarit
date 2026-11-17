@@ -1,3 +1,6 @@
+@use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/glass';
+
 .gbt-toaster {
   position: fixed;
   z-index: 1300;
@@ -57,10 +60,10 @@
   width: 100%;
   padding: 0.75rem 1rem;
   pointer-events: auto;
-  background: var(--bg-inverse);
+  // A capsule of liquid glass (4.0) in the page's ink, dense enough to be read over the page.
   border: none;
-  border-radius: var(--site-border-radius);
-  box-shadow: var(--site-shadow-lg);
+  border-radius: var(--gbt-radius-row);
+  @include glass.floating-glass;
   animation: gbt-toaster-in var(--site-transition-base);
 
   &[data-variant='success'] .gbt-toaster__icon {
@@ -100,7 +103,7 @@
 .gbt-toaster__message {
   flex: 1 1 auto;
   margin: 0.3125rem 0;
-  color: var(--text-on-color);
+  color: var(--text-primary);
   font-size: 0.875rem;
   line-height: 1.4;
 }
@@ -114,23 +117,21 @@
   background: none;
   border: none;
   border-radius: 50%;
-  color: var(--text-on-color);
-  opacity: 0.7;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: opacity var(--site-transition-fast);
+  transition: color var(--site-transition-fast);
 
   &:hover,
   &:focus-visible {
-    opacity: 1;
+    color: var(--text-primary);
   }
 
   &:active {
-    opacity: 0.6;
+    color: var(--text-secondary);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--text-on-color);
-    outline-offset: 2px;
+    @include a11y.focus-ring(2px);
   }
 
   &::before {

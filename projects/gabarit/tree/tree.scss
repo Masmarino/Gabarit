@@ -32,10 +32,16 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
     @include a11y.focus-ring(-2px);
   }
 
+  // The chosen item: a thick glass lit at its top edge (4.0), in the page's ink.
   &[aria-selected='true'] {
-    background: var(--color-info-bg);
-    color: var(--color-info-bg-text);
+    background: var(--gbt-glass-thick);
+    box-shadow: var(--gbt-glass-rim-light);
+    color: var(--text-primary);
     font-weight: 600;
+
+    @media (prefers-contrast: more) {
+      box-shadow: inset 0 0 0 1px var(--border-color);
+    }
   }
 }
 

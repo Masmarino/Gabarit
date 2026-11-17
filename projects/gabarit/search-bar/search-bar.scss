@@ -1,4 +1,5 @@
 @use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/glass';
 
 $trigger-height: 40px;
 $trigger-width: 340px;
@@ -23,21 +24,24 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   gap: 8px;
   height: $trigger-height;
   width: $trigger-width;
-  padding: 0 12px;
-  background: var(--bg-principal);
-  border: 1px solid var(--border-color);
-  border-radius: var(--gbt-radius-search, var(--site-border-radius-sm));
-  box-shadow: var(--gbt-depth-hollow);
+  padding: 0 14px;
+  // A capsule of liquid glass on the ground (4.0): it commands, it is not a field of a form. Open, it thickens and
+  // takes the ring of what has the focus.
+  border: none;
+  border-radius: var(--gbt-radius-search, #{$trigger-height * 0.5});
+  @include glass.liquid-glass;
   transition:
     width 0.35s $easing,
-    border-color 0.2s $easing-std,
+    background-color 0.2s $easing-std,
     box-shadow 0.2s $easing-std;
   cursor: text;
 
   &--open {
     width: $trigger-width-open;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent);
+    background: var(--gbt-glass-thick);
+    box-shadow:
+      0 0 0 2px var(--gbt-focus-ring, var(--focus-ring)),
+      var(--gbt-depth-liquid);
   }
 }
 
@@ -116,7 +120,7 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   height: $toggle-size;
   padding: 0;
   border: none;
-  border-radius: var(--site-border-radius-sm);
+  border-radius: 50%;
   background: none;
   color: var(--text-primary);
   cursor: pointer;
@@ -230,12 +234,9 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateX(-50%);
   width: $trigger-width-open;
   max-height: $panel-max-height;
-  background: var(--bg-principal);
-  border: 1px solid var(--border-color);
-  border-radius: var(--site-border-radius-lg);
-  box-shadow:
-    0 16px 48px rgba(0, 0, 0, 0.18),
-    0 4px 12px rgba(0, 0, 0, 0.08);
+  // What floats: the liquid glass, dense enough to be read over the page.
+  border-radius: var(--gbt-radius-glass);
+  @include glass.floating-glass;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -393,7 +394,6 @@ $easing-std: cubic-bezier(0.4, 0, 0.2, 1);
   align-items: center;
   gap: 16px;
   padding: 8px 12px;
-  border-top: 1px solid var(--border-color);
   background: var(--bg-hover);
 }
 

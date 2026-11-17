@@ -1,4 +1,5 @@
 @use '../src/lib/tokens/a11y';
+@use '../src/lib/tokens/glass';
 
 :host {
   display: block;
@@ -39,10 +40,9 @@
   min-width: 0;
   min-height: 5.25rem;
   padding: 0.875rem 1rem 0.9375rem;
-  border: 1px solid var(--gbt-card-border);
-  border-radius: var(--site-border-radius-lg);
-  box-shadow: var(--site-shadow-sm);
-  background: var(--bg-principal);
+  // The tile's glass (4.0), so nothing moves when the figures arrive.
+  border-radius: var(--gbt-radius-glass);
+  @include glass.glass;
 }
 
 .sr-only {

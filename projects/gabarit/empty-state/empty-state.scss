@@ -54,7 +54,9 @@
   width: 3.25rem;
   height: 3.25rem;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--border-color) 18%, transparent);
+  // A disc of thin glass lit at its top edge (4.0).
+  background: var(--gbt-glass-thin);
+  box-shadow: var(--gbt-glass-rim-light);
   color: var(--text-secondary);
   font-size: 1.375rem;
 }
