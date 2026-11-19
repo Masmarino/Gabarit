@@ -71,3 +71,14 @@ Correctif, rien à changer dans une app.
   le texte est descendu.
 - Essai `tests/text_input.rs` (`the_wheel_scrolls_a_long_text`).
 - **Web, Apple, Android :** rien (les champs du système défilent déjà).
+
+## 4.2.2 : le verre d'une feuille suit la feuille
+
+Correctif, rien à changer dans une app.
+
+- **Android :** `GBottomSheet` (et `GSheet`, qui la pose) en verre épais, le cas par défaut : le verre était posé sur le
+  modificateur que reçoit la feuille de Material 3, qui décale sa surface après lui. Le verre restait en haut de
+  l'écran, et la feuille montait sans fond : la page se lisait au travers. Le verre est maintenant posé dans la feuille,
+  sous la poignée (`handle`) et sous les marges du système (`contentWindowInsets`), jusqu'au bord du bas. Une feuille
+  sur un fond propre (`ground`) ne change pas.
+- **Web, Apple, GPUI :** rien.

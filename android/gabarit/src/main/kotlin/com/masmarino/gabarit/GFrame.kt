@@ -452,14 +452,27 @@ fun GBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier, ground: C
     val radius = GRadius.glass
     val shape = RoundedCornerShape(topStart = radius, topEnd = radius)
     val rim = if (glass) G.colors.ink3 else if (ground.luminance() < 0.2f) GFrameColor.rim else G.colors.border
-    ModalBottomSheet(onDismissRequest = onDismiss,
-        modifier = if (glass) modifier.gGlass(GGlassDensity.Thick, shape, GGlassShadow.None) else modifier, sheetState = state,
-        containerColor = if (glass) Color.Transparent else ground,
+    val grip = @Composable {
+        Box(Modifier.padding(top = 10.dp, bottom = 6.dp).size(width = 36.dp, height = 5.dp).background(rim, RoundedCornerShape(GRadius.pill)))
+    }
+    if (!glass) {
+        ModalBottomSheet(onDismissRequest = onDismiss, modifier = modifier, sheetState = state, containerColor = ground,
+            contentColor = G.colors.textPrimary, tonalElevation = 0.dp, shape = shape,
+            contentWindowInsets = contentWindowInsets, sheetGesturesEnabled = dismissible,
+            dragHandle = if (handle) grip else null) { CompositionLocalProvider(LocalGInSheet provides true) { content() } }
+        return
+    }
+    // The sheet moves its surface after the modifier it is given: glass laid there would stay where the sheet is not.
+    // It is laid inside, under the handle and the system's insets too.
+    val insets = contentWindowInsets()
+    ModalBottomSheet(onDismissRequest = onDismiss, modifier = modifier, sheetState = state, containerColor = Color.Transparent,
         contentColor = G.colors.textPrimary, tonalElevation = 0.dp, shape = shape,
-        contentWindowInsets = contentWindowInsets, sheetGesturesEnabled = dismissible,
-        dragHandle = if (!handle) null else ({
-            Box(Modifier.padding(top = 10.dp, bottom = 6.dp).size(width = 36.dp, height = 5.dp).background(rim, RoundedCornerShape(GRadius.pill)))
-        })) { CompositionLocalProvider(LocalGInSheet provides true) { content() } }
+        contentWindowInsets = { WindowInsets(0) }, sheetGesturesEnabled = dismissible, dragHandle = null) {
+        Column(Modifier.fillMaxWidth().gGlass(GGlassDensity.Thick, shape, GGlassShadow.None).windowInsetsPadding(insets)) {
+            if (handle) Box(Modifier.align(Alignment.CenterHorizontally)) { grip() }
+            CompositionLocalProvider(LocalGInSheet provides true) { content() }
+        }
+    }
 }
 
 /**
