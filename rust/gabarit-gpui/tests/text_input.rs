@@ -118,3 +118,46 @@ fn copy_and_paste(cx: &mut TestAppContext) {
         .update(cx, |input, _, _| assert_eq!(input.text(), "one two"))
         .unwrap();
 }
+
+/// A long text in several lines: the wheel scrolls it within the field, between its top and its end, and the caret
+/// does not pull it back while it stays put.
+#[gpui::test]
+fn the_wheel_scrolls_a_long_text(cx: &mut TestAppContext) {
+    use gpui::{ScrollDelta, ScrollEvent, point, px};
+    cx.update(|cx| {
+        theme::init(cx);
+        text_field::bind_keys(cx);
+    });
+    let texte = (1..=30)
+        .map(|n| format!("Ligne {n}"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let (champ, cx) =
+        cx.add_window_view(move |_, cx| GTextInput::new(cx).multi_line(1, 4).with_text(texte));
+    cx.run_until_parked();
+    let roule = |cx: &mut gpui::VisualTestContext, dy: f32| {
+        cx.simulate_event(ScrollEvent {
+            position: point(px(20.), px(10.)),
+            delta: ScrollDelta::Pixels(point(px(0.), px(dy))),
+            ..Default::default()
+        });
+        cx.run_until_parked();
+    };
+    // Opened with the caret at the end: the end shows.
+    let bas = champ.read_with(cx, |champ, _| champ.scrolled());
+    assert!(bas > px(0.), "la fin du texte se voit ({bas:?})");
+    roule(cx, 60.);
+    let apres = champ.read_with(cx, |champ, _| champ.scrolled());
+    assert!(
+        apres < bas,
+        "la molette fait remonter le texte ({apres:?} < {bas:?})"
+    );
+    // Repainted, the caret (still at the end) does not bring it back.
+    cx.run_until_parked();
+    assert_eq!(champ.read_with(cx, |champ, _| champ.scrolled()), apres);
+    // Not above the top, nor past the end.
+    roule(cx, 100_000.);
+    assert_eq!(champ.read_with(cx, |champ, _| champ.scrolled()), px(0.));
+    roule(cx, -100_000.);
+    assert_eq!(champ.read_with(cx, |champ, _| champ.scrolled()), bas);
+}

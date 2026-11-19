@@ -15,8 +15,9 @@ use gpui::{
     ElementInputHandler, Entity, EntityInputHandler, EventEmitter, FocusHandle, Focusable,
     GlobalElementId, Hsla, InspectorElementId, IntoElement, KeyBinding, LayoutId, MouseButton,
     MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, ParentElement, Pixels, Point, Render,
-    RenderOnce, Role, SharedString, Style, Styled, Task, TextAlign, TextRun, UTF16Selection,
-    UnderlineStyle, Window, WrappedLine, actions, div, fill, point, prelude::*, px, relative, size,
+    RenderOnce, Role, ScrollEvent, SharedString, Style, Styled, Task, TextAlign, TextRun,
+    UTF16Selection, UnderlineStyle, Window, WrappedLine, actions, div, fill, point, prelude::*, px,
+    relative, size,
 };
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -158,6 +159,11 @@ pub struct GTextInput {
     layout: Option<TextLayout>,
     /// How far the text is scrolled (horizontally on one line, vertically on several).
     scroll: Point<Pixels>,
+    /// The caret (and the text's length) the scroll last followed: the caret is brought back into view only when it
+    /// moves or the text changes, so that the wheel can read the rest of a long text.
+    followed: Option<(usize, usize)>,
+    /// How much of the text is out of sight, in several lines (zero: all of it shows, the wheel scrolls the page).
+    overflow: Pixels,
     /// The caret blinks while the field has the focus.
     caret_visible: bool,
     blink: Option<Task<()>>,
@@ -242,6 +248,8 @@ impl GTextInput {
             is_selecting: false,
             layout: None,
             scroll: Point::default(),
+            followed: None,
+            overflow: px(0.),
             caret_visible: true,
             blink: None,
         }
@@ -645,6 +653,32 @@ impl GTextInput {
         }
     }
 
+    /// The wheel or the trackpad: in several lines, the text scrolls up and down within the field. At either end (or
+    /// when it all shows), the event goes on to what holds the field, which scrolls in turn.
+    fn on_scroll(&mut self, event: &ScrollEvent, _window: &mut Window, cx: &mut Context<Self>) {
+        if !self.multi_line || self.overflow <= px(0.) {
+            return;
+        }
+        let line_height = self
+            .layout
+            .as_ref()
+            .map_or(px(20.), |layout| layout.line_height);
+        let scrolled = (self.scroll.y + event.delta.pixel_delta(line_height).y)
+            .min(px(0.))
+            .max(-self.overflow);
+        if scrolled == self.scroll.y {
+            return;
+        }
+        self.scroll.y = scrolled;
+        cx.stop_propagation();
+        cx.notify();
+    }
+
+    /// How far the text is scrolled up, in several lines (zero: at the top).
+    pub fn scrolled(&self) -> Pixels {
+        -self.scroll.y
+    }
+
     fn offset_for_point(&self, position: Point<Pixels>) -> usize {
         let Some(layout) = self.layout.as_ref() else {
             return self.content.len();
@@ -931,6 +965,7 @@ impl Render for GTextInput {
             .on_mouse_up(MouseButton::Left, cx.listener(Self::on_mouse_up))
             .on_mouse_up_out(MouseButton::Left, cx.listener(Self::on_mouse_up))
             .on_mouse_move(cx.listener(Self::on_mouse_move))
+            .on_scroll(cx.listener(Self::on_scroll))
             .w_full()
             .g_text(text::BODY)
             .child(GTextElement { input: cx.entity() })
@@ -1154,13 +1189,18 @@ impl Element for GTextElement {
             layout.position(cursor)
         };
 
-        // Scrolled so that the caret shows: sideways on one line, up and down on several.
+        // Scrolled so that the caret shows: sideways on one line, up and down on several. In several lines, only when
+        // the caret has moved or the text changed: otherwise the wheel's scroll stays.
         let mut scroll = input.scroll;
+        let followed = (cursor, input.content.len());
+        let follow = input.followed != Some(followed);
+        let mut overflow = px(0.);
         if input.multi_line {
             let height = layout.height();
-            if caret_at.y + scroll.y < px(0.) {
+            overflow = (height - bounds.size.height).max(px(0.));
+            if follow && caret_at.y + scroll.y < px(0.) {
                 scroll.y = -caret_at.y;
-            } else if caret_at.y + line_height + scroll.y > bounds.size.height {
+            } else if follow && caret_at.y + line_height + scroll.y > bounds.size.height {
                 scroll.y = bounds.size.height - caret_at.y - line_height;
             }
             scroll.y = scroll
@@ -1239,6 +1279,8 @@ impl Element for GTextElement {
         let stored = TextLayout { origin, ..layout };
         self.input.update(cx, |input, _| {
             input.scroll = scroll;
+            input.followed = Some(followed);
+            input.overflow = overflow;
             input.layout = Some(stored);
         });
         Prepaint {

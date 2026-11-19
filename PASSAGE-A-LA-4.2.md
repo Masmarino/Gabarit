@@ -58,3 +58,16 @@ une app ne doit pas en poser non plus.
   `--gbt-ground-selected-fill`, les composants suivent l'accent (la mixin `ambiance-dore` les pose).
 - `groundAccent(accent, ambiance)` (`@masmarino/gabarit/ground`) calcule les quatre valeurs et rend les propriétés à
   poser (`properties`) ; `GROUND_AMBIANCES`.
+
+## 4.2.1 : la molette dans un champ de plusieurs lignes
+
+Correctif, rien à changer dans une app.
+
+- **GPUI :** un `GTextInput` de plusieurs lignes (`multi_line`) dont le texte dépasse sa hauteur la plus grande défile à
+  la molette et au pavé tactile, entre le début et la fin du texte. Avant, il ne suivait que le curseur : un long
+  message se lisait seulement aux flèches. Le curseur ne ramène plus le texte vers lui tant qu'il ne bouge pas et que
+  le texte ne change pas ; à la première frappe ou au premier déplacement, il se montre de nouveau. Aux deux bouts, ou
+  quand tout le texte se voit, la molette fait défiler ce qui contient le champ. `GTextInput::scrolled()` dit de combien
+  le texte est descendu.
+- Essai `tests/text_input.rs` (`the_wheel_scrolls_a_long_text`).
+- **Web, Apple, Android :** rien (les champs du système défilent déjà).
