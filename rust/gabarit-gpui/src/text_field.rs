@@ -11,17 +11,19 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use gpui::{
-    App, AvailableSpace, Bounds, ClipboardItem, Context, CursorStyle, Element, ElementId,
-    ElementInputHandler, Entity, EntityInputHandler, EventEmitter, FocusHandle, Focusable,
-    GlobalElementId, Hsla, InspectorElementId, IntoElement, KeyBinding, LayoutId, MouseButton,
-    MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, ParentElement, Pixels, Point, Render,
-    RenderOnce, Role, ScrollEvent, SharedString, Style, Styled, Task, TextAlign, TextRun,
+    App, AvailableSpace, BorderStyle, Bounds, ClipboardItem, Context, CursorStyle, Element,
+    ElementId, ElementInputHandler, Entity, EntityInputHandler, EventEmitter, FocusHandle,
+    Focusable, FontStyle, FontWeight, GlobalElementId, Hitbox, HitboxBehavior, Hsla,
+    InspectorElementId, IntoElement, KeyBinding, LayoutId, MouseButton, MouseDownEvent,
+    MouseMoveEvent, MouseUpEvent, PaintQuad, ParentElement, Pixels, Point, Render, RenderOnce,
+    Role, ScrollEvent, SharedString, StrikethroughStyle, Style, Styled, Task, TextAlign, TextRun,
     UTF16Selection, UnderlineStyle, Window, WrappedLine, actions, div, fill, point, prelude::*, px,
-    relative, size,
+    quad, relative, size,
 };
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::button::metrics;
+use crate::presentation::{GMarkKind, GPresentation, GStyleSpan, Presented};
 use crate::theme::{ActiveTheme, GTextExt, alpha};
 use crate::tokens::{self, opacity, radius, text};
 
@@ -124,6 +126,33 @@ pub fn bind_keys(cx: &mut App) {
     cx.bind_keys(bindings);
 }
 
+/// The grapheme boundary before `offset` (a family emoji is one letter).
+fn previous_grapheme(text: &str, offset: usize) -> usize {
+    text.grapheme_indices(true)
+        .rev()
+        .find_map(|(index, _)| (index < offset).then_some(index))
+        .unwrap_or(0)
+}
+
+fn next_grapheme(text: &str, offset: usize) -> usize {
+    text.grapheme_indices(true)
+        .find_map(|(index, _)| (index > offset).then_some(index))
+        .unwrap_or(text.len())
+}
+
+fn previous_word(text: &str, offset: usize) -> usize {
+    text.unicode_word_indices()
+        .rev()
+        .find_map(|(index, _)| (index < offset).then_some(index))
+        .unwrap_or(0)
+}
+
+fn next_word(text: &str, offset: usize) -> usize {
+    text.unicode_word_indices()
+        .find_map(|(index, word)| (index + word.len() > offset).then_some(index + word.len()))
+        .unwrap_or(text.len())
+}
+
 /// What a text input says to its owner.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum GTextInputEvent {
@@ -167,11 +196,29 @@ pub struct GTextInput {
     /// The caret blinks while the field has the focus.
     caret_visible: bool,
     blink: Option<Task<()>>,
+    /// How the field shows its text (`presenter`, 4.3); none: as it is.
+    presenter: Option<Presenter>,
+    /// The presentation of the text as it is now (made again when it changes).
+    presented: Option<Rc<Presented>>,
+    /// What a click does besides placing the caret: a link opens, a circle checks (where they were last drawn).
+    hot: Vec<(Bounds<Pixels>, Hot)>,
 }
 
-/// A laid-out text: one wrapped line per hard line, and where each starts.
+/// The owner's presenter: the field's text → how it shows (`GPresentation`).
+type Presenter = Rc<dyn Fn(&str, &App) -> GPresentation>;
+
+/// A place of the field that a click acts on.
+#[derive(Clone, Debug)]
+enum Hot {
+    Link(SharedString),
+    Toggle(Range<usize>, SharedString),
+}
+
+/// A laid-out text (the shown one): one wrapped line per hard line, and where each starts; the height of each line's
+/// rows (a title's are higher).
 struct TextLayout {
     lines: Rc<Vec<(usize, WrappedLine)>>,
+    heights: Rc<Vec<Pixels>>,
     line_height: Pixels,
     /// Where the text's origin was painted (scroll included).
     origin: Point<Pixels>,
@@ -187,11 +234,64 @@ impl TextLayout {
             .unwrap_or(0)
     }
 
+    fn row_height(&self, index: usize) -> Pixels {
+        self.heights.get(index).copied().unwrap_or(self.line_height)
+    }
+
     fn line_top(&self, index: usize) -> Pixels {
         self.lines[..index]
             .iter()
-            .map(|(_, line)| line.size(self.line_height).height)
+            .enumerate()
+            .map(|(i, (_, line))| line.size(self.row_height(i)).height)
             .sum()
+    }
+
+    /// The hard line drawn at `y` (from the text's origin) and the height of its rows.
+    fn row_at(&self, y: Pixels) -> (usize, Pixels) {
+        let mut top = px(0.);
+        for (index, (_, line)) in self.lines.iter().enumerate() {
+            let height = self.row_height(index);
+            top += line.size(height).height;
+            if y < top {
+                return (index, height);
+            }
+        }
+        let last = self.lines.len().saturating_sub(1);
+        (last, self.row_height(last))
+    }
+
+    /// The rectangles (from the text's origin) the shown range `range` covers, row by row; `full`: a row that goes on
+    /// reaches the field's width (a selection), or else the text's end on it.
+    fn rects(&self, range: Range<usize>, full: Pixels) -> Vec<Bounds<Pixels>> {
+        let mut rects = Vec::new();
+        if range.is_empty() || self.lines.is_empty() {
+            return rects;
+        }
+        let start = self.position(range.start);
+        let end = self.position(range.end);
+        let mut row = start.y;
+        while row <= end.y {
+            let (index, height) = self.row_at(row + px(0.5));
+            let from = if row == start.y { start.x } else { px(0.) };
+            let to = if row == end.y {
+                end.x
+            } else {
+                let line = &self.lines[index].1;
+                if line.wrap_boundaries().is_empty() {
+                    line.width() + px(4.)
+                } else {
+                    full
+                }
+            };
+            if to > from {
+                rects.push(Bounds::from_corners(
+                    point(from, row),
+                    point(to, row + height),
+                ));
+            }
+            row += height;
+        }
+        rects
     }
 
     fn height(&self) -> Pixels {
@@ -203,7 +303,7 @@ impl TextLayout {
         let index = self.line_index(offset);
         let (start, line) = &self.lines[index];
         let local = line
-            .position_for_index(offset - start, self.line_height)
+            .position_for_index(offset - start, self.row_height(index))
             .unwrap_or_default();
         point(local.x, local.y + self.line_top(index))
     }
@@ -212,13 +312,14 @@ impl TextLayout {
     fn offset(&self, position: Point<Pixels>) -> usize {
         let mut top = px(0.);
         for (index, (start, line)) in self.lines.iter().enumerate() {
-            let height = line.size(self.line_height).height;
+            let row = self.row_height(index);
+            let height = line.size(row).height;
             if position.y < top + height || index == self.lines.len() - 1 {
                 let local = point(
                     position.x.max(px(0.)),
                     (position.y - top).clamp(px(0.), height - px(0.5)),
                 );
-                let found = match line.closest_index_for_position(local, self.line_height) {
+                let found = match line.closest_index_for_position(local, row) {
                     Ok(found) | Err(found) => found,
                 };
                 return start + found.min(line.len());
@@ -252,7 +353,42 @@ impl GTextInput {
             overflow: px(0.),
             caret_visible: true,
             blink: None,
+            presenter: None,
+            presented: None,
+            hot: Vec::new(),
         }
+    }
+
+    /// How the field shows its text (4.3): `presenter` is given the text each time it changes and says what to hide, to
+    /// replace, to style (see `GPresentation`). The text itself, the one `text()` gives and `Changed` announces, stays
+    /// as it is typed: a note in Markdown shows its titles and its bold without their marks.
+    pub fn presenter(mut self, presenter: impl Fn(&str, &App) -> GPresentation + 'static) -> Self {
+        self.presenter = Some(Rc::new(presenter));
+        self.presented = None;
+        self
+    }
+
+    /// The presentation of the text as it is now, made again if the text changed (`None` without a presenter).
+    fn view(&mut self, cx: &App) -> Option<Rc<Presented>> {
+        let presenter = self.presenter.clone()?;
+        if self.content.is_empty() {
+            return None;
+        }
+        if let Some(presented) = &self.presented
+            && presented.source == self.content
+        {
+            return Some(presented.clone());
+        }
+        let presented = Rc::new(Presented::new(&self.content, presenter(&self.content, cx)));
+        self.presented = Some(presented.clone());
+        Some(presented)
+    }
+
+    /// The presentation of the text, if it is the current one (for drawing, which only reads).
+    fn current(&self) -> Option<&Presented> {
+        self.presented
+            .as_deref()
+            .filter(|presented| presented.source == self.content && !self.content.is_empty())
     }
 
     /// Several lines, wrapped at the field's width: `min_rows` high at first, growing to `max_rows`, then scrolling.
@@ -349,33 +485,29 @@ impl GTextInput {
     }
 
     fn previous_boundary(&self, offset: usize) -> usize {
-        self.content
-            .grapheme_indices(true)
-            .rev()
-            .find_map(|(index, _)| (index < offset).then_some(index))
-            .unwrap_or(0)
+        previous_grapheme(&self.content, offset)
     }
 
     fn next_boundary(&self, offset: usize) -> usize {
-        self.content
-            .grapheme_indices(true)
-            .find_map(|(index, _)| (index > offset).then_some(index))
-            .unwrap_or(self.content.len())
+        next_grapheme(&self.content, offset)
     }
 
-    fn previous_word(&self, offset: usize) -> usize {
-        self.content
-            .unicode_word_indices()
-            .rev()
-            .find_map(|(index, _)| (index < offset).then_some(index))
-            .unwrap_or(0)
+    /// The caret moved over the shown text by `step` (a letter or a word, either way), back to the source: with a
+    /// presentation, hidden marks are stepped over as nothing, a replaced part as one letter.
+    fn shown_step(&mut self, from: usize, step: fn(&str, usize) -> usize, cx: &App) -> usize {
+        let view = self.view(cx);
+        match view {
+            Some(view) => view.to_source(step(&view.text, view.to_shown(from))),
+            None => step(&self.content, from),
+        }
     }
 
-    fn next_word(&self, offset: usize) -> usize {
-        self.content
-            .unicode_word_indices()
-            .find_map(|(index, word)| (index + word.len() > offset).then_some(index + word.len()))
-            .unwrap_or(self.content.len())
+    /// A place of the source where the caret may stand (not inside a hidden mark or before a line's mark).
+    fn settle(&mut self, offset: usize, cx: &App) -> usize {
+        match self.view(cx) {
+            Some(view) => view.to_source(view.to_shown(offset)),
+            None => offset,
+        }
     }
 
     /// The start and the end of the line holding `offset` (a hard line: up to a return).
@@ -390,27 +522,36 @@ impl GTextInput {
     }
 
     /// The offset one row above or below the caret, at the goal's x; at the ends, the start or the end.
-    fn vertical(&mut self, rows: f32) -> usize {
+    fn vertical(&mut self, rows: f32, cx: &App) -> usize {
         let cursor = self.cursor_offset();
+        let view = self.view(cx);
         let Some(layout) = self.layout.as_ref() else {
             return cursor;
         };
-        let position = layout.position(cursor);
+        let shown = view.as_ref().map_or(cursor, |view| view.to_shown(cursor));
+        let position = layout.position(shown);
         let x = *self.goal_x.get_or_insert(position.x);
-        let y = position.y + layout.line_height * rows + layout.line_height / 2.;
+        let (_, height) = layout.row_at(position.y + px(0.5));
+        let y = if rows < 0. {
+            position.y - px(1.)
+        } else {
+            position.y + height + px(1.)
+        };
         if y < px(0.) {
             0
         } else if y >= layout.height() {
             self.content.len()
         } else {
-            layout.offset(point(x, y))
+            let offset = layout.offset(point(x, y));
+            view.map_or(offset, |view| view.to_source(offset))
         }
     }
 
     fn left(&mut self, _: &Left, window: &mut Window, cx: &mut Context<Self>) {
         self.goal_x = None;
         if self.selected_range.is_empty() {
-            self.move_to(self.previous_boundary(self.cursor_offset()), window, cx);
+            let offset = self.shown_step(self.cursor_offset(), previous_grapheme, cx);
+            self.move_to(offset, window, cx);
         } else {
             self.move_to(self.selected_range.start, window, cx)
         }
@@ -419,49 +560,54 @@ impl GTextInput {
     fn right(&mut self, _: &Right, window: &mut Window, cx: &mut Context<Self>) {
         self.goal_x = None;
         if self.selected_range.is_empty() {
-            self.move_to(self.next_boundary(self.selected_range.end), window, cx);
+            let offset = self.shown_step(self.selected_range.end, next_grapheme, cx);
+            self.move_to(offset, window, cx);
         } else {
             self.move_to(self.selected_range.end, window, cx)
         }
     }
 
     fn up(&mut self, _: &Up, window: &mut Window, cx: &mut Context<Self>) {
-        let offset = self.vertical(-1.);
+        let offset = self.vertical(-1., cx);
         self.move_to(offset, window, cx);
     }
 
     fn down(&mut self, _: &Down, window: &mut Window, cx: &mut Context<Self>) {
-        let offset = self.vertical(1.);
+        let offset = self.vertical(1., cx);
         self.move_to(offset, window, cx);
     }
 
     fn word_left(&mut self, _: &WordLeft, window: &mut Window, cx: &mut Context<Self>) {
         self.goal_x = None;
-        self.move_to(self.previous_word(self.cursor_offset()), window, cx);
+        let offset = self.shown_step(self.cursor_offset(), previous_word, cx);
+        self.move_to(offset, window, cx);
     }
 
     fn word_right(&mut self, _: &WordRight, window: &mut Window, cx: &mut Context<Self>) {
         self.goal_x = None;
-        self.move_to(self.next_word(self.cursor_offset()), window, cx);
+        let offset = self.shown_step(self.cursor_offset(), next_word, cx);
+        self.move_to(offset, window, cx);
     }
 
     fn select_left(&mut self, _: &SelectLeft, window: &mut Window, cx: &mut Context<Self>) {
         self.goal_x = None;
-        self.select_to(self.previous_boundary(self.cursor_offset()), window, cx);
+        let offset = self.shown_step(self.cursor_offset(), previous_grapheme, cx);
+        self.select_to(offset, window, cx);
     }
 
     fn select_right(&mut self, _: &SelectRight, window: &mut Window, cx: &mut Context<Self>) {
         self.goal_x = None;
-        self.select_to(self.next_boundary(self.cursor_offset()), window, cx);
+        let offset = self.shown_step(self.cursor_offset(), next_grapheme, cx);
+        self.select_to(offset, window, cx);
     }
 
     fn select_up(&mut self, _: &SelectUp, window: &mut Window, cx: &mut Context<Self>) {
-        let offset = self.vertical(-1.);
+        let offset = self.vertical(-1., cx);
         self.select_to(offset, window, cx);
     }
 
     fn select_down(&mut self, _: &SelectDown, window: &mut Window, cx: &mut Context<Self>) {
-        let offset = self.vertical(1.);
+        let offset = self.vertical(1., cx);
         self.select_to(offset, window, cx);
     }
 
@@ -471,7 +617,8 @@ impl GTextInput {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        self.select_to(self.previous_word(self.cursor_offset()), window, cx);
+        let offset = self.shown_step(self.cursor_offset(), previous_word, cx);
+        self.select_to(offset, window, cx);
     }
 
     fn select_word_right(
@@ -480,7 +627,8 @@ impl GTextInput {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        self.select_to(self.next_word(self.cursor_offset()), window, cx);
+        let offset = self.shown_step(self.cursor_offset(), next_word, cx);
+        self.select_to(offset, window, cx);
     }
 
     fn select_all(&mut self, _: &SelectAll, window: &mut Window, cx: &mut Context<Self>) {
@@ -491,22 +639,26 @@ impl GTextInput {
     fn home(&mut self, _: &Home, window: &mut Window, cx: &mut Context<Self>) {
         self.goal_x = None;
         let start = self.line_bounds(self.cursor_offset()).start;
+        let start = self.settle(start, cx);
         self.move_to(start, window, cx);
     }
 
     fn end(&mut self, _: &End, window: &mut Window, cx: &mut Context<Self>) {
         self.goal_x = None;
         let end = self.line_bounds(self.cursor_offset()).end;
+        let end = self.settle(end, cx);
         self.move_to(end, window, cx);
     }
 
     fn select_home(&mut self, _: &SelectHome, window: &mut Window, cx: &mut Context<Self>) {
         let start = self.line_bounds(self.cursor_offset()).start;
+        let start = self.settle(start, cx);
         self.select_to(start, window, cx);
     }
 
     fn select_end(&mut self, _: &SelectEnd, window: &mut Window, cx: &mut Context<Self>) {
         let end = self.line_bounds(self.cursor_offset()).end;
+        let end = self.settle(end, cx);
         self.select_to(end, window, cx);
     }
 
@@ -515,11 +667,34 @@ impl GTextInput {
             return;
         }
         if self.selected_range.is_empty() {
-            let previous = self.previous_boundary(self.cursor_offset());
-            if self.cursor_offset() == previous {
-                return;
+            let cursor = self.cursor_offset();
+            if let Some(view) = self.view(cx) {
+                // Right after a line's mark (a title's `## `, a task's circle): the mark goes, the text stays.
+                // Otherwise the letter shown before the caret, and it alone (not the hidden marks around it).
+                let range = match view.lead_before(cursor) {
+                    Some(lead) => Some(lead),
+                    None => {
+                        let shown = view.to_shown(cursor);
+                        let previous = previous_grapheme(&view.text, shown);
+                        (previous < shown)
+                            .then(|| view.source_of_letters(previous..shown))
+                            .flatten()
+                    }
+                };
+                if let Some(range) = range {
+                    self.selected_range = range;
+                    self.selection_reversed = false;
+                }
+                if self.selected_range.is_empty() {
+                    return;
+                }
+            } else {
+                let previous = self.previous_boundary(cursor);
+                if cursor == previous {
+                    return;
+                }
+                self.select_to(previous, window, cx)
             }
-            self.select_to(previous, window, cx)
         }
         self.replace_text_in_range(None, "", window, cx)
     }
@@ -529,11 +704,28 @@ impl GTextInput {
             return;
         }
         if self.selected_range.is_empty() {
-            let next = self.next_boundary(self.cursor_offset());
-            if self.cursor_offset() == next {
-                return;
+            let cursor = self.cursor_offset();
+            if let Some(view) = self.view(cx) {
+                // The letter shown after the caret, and it alone.
+                let shown = view.to_shown(cursor);
+                let next = next_grapheme(&view.text, shown);
+                if let Some(range) = (next > shown)
+                    .then(|| view.source_of_letters(shown..next))
+                    .flatten()
+                {
+                    self.selected_range = range;
+                    self.selection_reversed = false;
+                }
+                if self.selected_range.is_empty() {
+                    return;
+                }
+            } else {
+                let next = self.next_boundary(cursor);
+                if cursor == next {
+                    return;
+                }
+                self.select_to(next, window, cx)
             }
-            self.select_to(next, window, cx)
         }
         self.replace_text_in_range(None, "", window, cx)
     }
@@ -548,7 +740,8 @@ impl GTextInput {
             return;
         }
         if self.selected_range.is_empty() {
-            self.select_to(self.previous_word(self.cursor_offset()), window, cx);
+            let offset = self.shown_step(self.cursor_offset(), previous_word, cx);
+            self.select_to(offset, window, cx);
         }
         self.replace_text_in_range(None, "", window, cx)
     }
@@ -617,22 +810,39 @@ impl GTextInput {
         if self.disabled {
             return;
         }
+        // A link opens, a task's circle checks: nothing else.
+        if !event.modifiers.shift
+            && event.click_count == 1
+            && let Some((_, hot)) = self
+                .hot
+                .iter()
+                .find(|(bounds, _)| bounds.contains(&event.position))
+                .cloned()
+        {
+            match hot {
+                Hot::Link(url) => cx.open_url(&url),
+                Hot::Toggle(range, text) => self.edit_in_place(range, &text, cx),
+            }
+            return;
+        }
         self.is_selecting = true;
         self.goal_x = None;
         window.focus(&self.focus_handle, cx);
-        let offset = self.offset_for_point(event.position);
+        let offset = self.offset_for_point(event.position, cx);
         if event.modifiers.shift {
             self.select_to(offset, window, cx);
         } else if event.click_count == 2 {
-            // A double click: the word.
-            let start = self.previous_word(self.next_boundary(offset));
-            let end = self.next_word(start);
+            // A double click: the word (of the shown text).
+            let next = self.shown_step(offset, next_grapheme, cx);
+            let start = self.shown_step(next, previous_word, cx);
+            let end = self.shown_step(start, next_word, cx);
             self.move_to(start, window, cx);
             self.select_to(end, window, cx);
         } else if event.click_count >= 3 {
             let line = self.line_bounds(offset);
-            self.move_to(line.start, window, cx);
-            self.select_to(line.end, window, cx);
+            let (start, end) = (self.settle(line.start, cx), self.settle(line.end, cx));
+            self.move_to(start, window, cx);
+            self.select_to(end, window, cx);
         } else {
             self.move_to(offset, window, cx)
         }
@@ -649,7 +859,8 @@ impl GTextInput {
         cx: &mut Context<Self>,
     ) {
         if self.is_selecting {
-            self.select_to(self.offset_for_point(event.position), window, cx);
+            let offset = self.offset_for_point(event.position, cx);
+            self.select_to(offset, window, cx);
         }
     }
 
@@ -679,14 +890,45 @@ impl GTextInput {
         -self.scroll.y
     }
 
-    fn offset_for_point(&self, position: Point<Pixels>) -> usize {
+    fn offset_for_point(&mut self, position: Point<Pixels>, cx: &App) -> usize {
+        let view = self.view(cx);
         let Some(layout) = self.layout.as_ref() else {
             return self.content.len();
         };
-        if layout.text != self.content {
+        let shown = view
+            .as_ref()
+            .map_or(self.content.as_str(), |view| view.text.as_str());
+        if layout.text != shown {
             return self.content.len();
         }
-        layout.offset(position - layout.origin)
+        let offset = layout.offset(position - layout.origin);
+        view.map_or(offset, |view| view.to_source(offset))
+    }
+
+    /// A part of the text replaced where it is (a task checked by its circle): the caret and the selection stay on
+    /// the same letters.
+    fn edit_in_place(&mut self, range: Range<usize>, text: &str, cx: &mut Context<Self>) {
+        if self.disabled
+            || range.end > self.content.len()
+            || !self.content.is_char_boundary(range.start)
+            || !self.content.is_char_boundary(range.end)
+        {
+            return;
+        }
+        let shift = |offset: usize| {
+            if offset >= range.end {
+                offset - range.len() + text.len()
+            } else if offset > range.start {
+                range.start + text.len()
+            } else {
+                offset
+            }
+        };
+        self.content.replace_range(range.clone(), text);
+        self.selected_range = shift(self.selected_range.start)..shift(self.selected_range.end);
+        self.marked_range = None;
+        cx.emit(GTextInputEvent::Changed);
+        cx.notify();
     }
 
     /// The caret shows at once after a key or a click, then blinks.
@@ -881,15 +1123,21 @@ impl EntityInputHandler for GTextInput {
         range_utf16: Range<usize>,
         _bounds: Bounds<Pixels>,
         _window: &mut Window,
-        _cx: &mut Context<Self>,
+        cx: &mut Context<Self>,
     ) -> Option<Bounds<Pixels>> {
+        let view = self.view(cx);
         let layout = self.layout.as_ref()?;
-        if layout.text != self.content {
+        let shown = view
+            .as_ref()
+            .map_or(self.content.as_str(), |view| view.text.as_str());
+        if layout.text != shown {
             return None;
         }
         let range = self.range_from_utf16(&range_utf16);
-        let start = layout.position(range.start);
-        let end = layout.position(range.end);
+        let to_shown = |offset: usize| view.as_ref().map_or(offset, |view| view.to_shown(offset));
+        let start = layout.position(to_shown(range.start));
+        let end = layout.position(to_shown(range.end));
+        let (_, height) = layout.row_at(start.y + px(0.5));
         let end = if end.y > start.y {
             point(layout.width, start.y)
         } else {
@@ -897,7 +1145,7 @@ impl EntityInputHandler for GTextInput {
         };
         Some(Bounds::from_corners(
             layout.origin + start,
-            layout.origin + point(end.x.max(start.x), start.y + layout.line_height),
+            layout.origin + point(end.x.max(start.x), start.y + height),
         ))
     }
 
@@ -905,13 +1153,19 @@ impl EntityInputHandler for GTextInput {
         &mut self,
         point: Point<Pixels>,
         _window: &mut Window,
-        _cx: &mut Context<Self>,
+        cx: &mut Context<Self>,
     ) -> Option<usize> {
+        let view = self.view(cx);
         let layout = self.layout.as_ref()?;
-        if layout.text != self.content {
+        let shown = view
+            .as_ref()
+            .map_or(self.content.as_str(), |view| view.text.as_str());
+        if layout.text != shown {
             return None;
         }
-        Some(self.offset_to_utf16(layout.offset(point - layout.origin)))
+        let offset = layout.offset(point - layout.origin);
+        let offset = view.map_or(offset, |view| view.to_source(offset));
+        Some(self.offset_to_utf16(offset))
     }
 }
 
@@ -923,6 +1177,11 @@ impl Focusable for GTextInput {
 
 impl Render for GTextInput {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        // The presentation, made again if the text changed (and with the theme of now).
+        if self.presenter.is_some() {
+            self.presented = None;
+            self.view(cx);
+        }
         let focused = self.focus_handle.is_focused(window);
         if focused && self.blink.is_none() {
             self.restart_blink(cx);
@@ -979,12 +1238,26 @@ struct GTextElement {
 
 struct Prepaint {
     lines: Rc<Vec<(usize, WrappedLine)>>,
+    heights: Rc<Vec<Pixels>>,
     origin: Point<Pixels>,
-    line_height: Pixels,
     selections: Vec<PaintQuad>,
     caret: Option<PaintQuad>,
-    placeholder: bool,
+    /// The presentation's marks (a task's circle, a quote's bar, a rule), drawn on the text.
+    marks: Vec<Drawn>,
+    /// Where the pointer becomes a hand (a link, a circle).
+    hands: Vec<Hitbox>,
     a11y: A11yText,
+}
+
+/// A mark to draw.
+enum Drawn {
+    Quad(PaintQuad),
+    /// A circle's check: drawn in `circle`, in `color`.
+    Check {
+        circle: Bounds<Pixels>,
+        color: Hsla,
+        font: gpui::Font,
+    },
 }
 
 /// What a screen reader reads of the field: its text, its selection.
@@ -1005,55 +1278,152 @@ impl IntoElement for GTextElement {
     }
 }
 
-fn runs_for(input: &GTextInput, text: &str, window: &Window, color: Hsla) -> Vec<TextRun> {
-    let style = window.text_style();
+/// What the element draws: the text shown (the placeholder when the field is empty), its styles and its lines'
+/// scales, and the composition under way.
+struct ShownText {
+    text: String,
+    styles: Vec<(Range<usize>, GStyleSpan)>,
+    scales: Vec<f32>,
+    marked: Option<Range<usize>>,
+    placeholder: bool,
+}
+
+fn shown_text(input: &GTextInput) -> ShownText {
+    if input.content.is_empty() {
+        return ShownText {
+            text: input.placeholder.to_string(),
+            styles: Vec::new(),
+            scales: Vec::new(),
+            marked: None,
+            placeholder: true,
+        };
+    }
+    match input.current() {
+        Some(view) => ShownText {
+            text: view.text.clone(),
+            styles: view.styles.clone(),
+            scales: view.scales.clone(),
+            marked: input
+                .marked_range
+                .as_ref()
+                .map(|marked| view.to_shown(marked.start)..view.to_shown(marked.end)),
+            placeholder: false,
+        },
+        None => ShownText {
+            text: input.content.clone(),
+            styles: Vec::new(),
+            scales: Vec::new(),
+            marked: input.marked_range.clone(),
+            placeholder: false,
+        },
+    }
+}
+
+/// The text's runs: the field's font and `color`, with the styles of the presentation, the composition underlined.
+fn runs_for(
+    text: &str,
+    styles: &[(Range<usize>, GStyleSpan)],
+    marked: Option<&Range<usize>>,
+    window: &Window,
+    color: Hsla,
+) -> Vec<TextRun> {
+    let font = window.text_style().font();
     let run = TextRun {
         len: text.len(),
-        font: style.font(),
+        font,
         color,
         background_color: None,
         underline: None,
         strikethrough: None,
     };
-    match input.marked_range.as_ref() {
-        Some(marked) if !input.content.is_empty() => vec![
-            TextRun {
-                len: marked.start,
-                ..run.clone()
-            },
-            TextRun {
-                len: marked.end - marked.start,
-                underline: Some(UnderlineStyle {
-                    color: Some(color),
-                    thickness: px(1.0),
-                    wavy: false,
-                }),
-                ..run.clone()
-            },
-            TextRun {
-                len: text.len() - marked.end,
-                ..run
-            },
-        ]
-        .into_iter()
-        .filter(|run| run.len > 0)
-        .collect(),
-        _ => vec![run],
+    if styles.is_empty() && marked.is_none() {
+        return vec![run];
     }
+    let mut cuts = vec![0, text.len()];
+    for (range, _) in styles {
+        cuts.push(range.start.min(text.len()));
+        cuts.push(range.end.min(text.len()));
+    }
+    if let Some(marked) = marked {
+        cuts.push(marked.start.min(text.len()));
+        cuts.push(marked.end.min(text.len()));
+    }
+    cuts.retain(|cut| text.is_char_boundary(*cut));
+    cuts.sort_unstable();
+    cuts.dedup();
+    let mut runs = Vec::new();
+    for window_cuts in cuts.windows(2) {
+        let (start, end) = (window_cuts[0], window_cuts[1]);
+        let mut piece = TextRun {
+            len: end - start,
+            ..run.clone()
+        };
+        for (range, style) in styles {
+            if range.start > start || end > range.end {
+                continue;
+            }
+            if style.bold {
+                piece.font.weight = FontWeight::SEMIBOLD;
+            }
+            if style.italic {
+                piece.font.style = FontStyle::Italic;
+            }
+            if style.monospace {
+                piece.font.family = tokens::GFamily::Mono.name().into();
+            }
+            if let Some(color) = style.color {
+                piece.color = color;
+            }
+            if let Some(background) = style.background {
+                piece.background_color = Some(background);
+            }
+        }
+        for (range, style) in styles {
+            if range.start > start || end > range.end {
+                continue;
+            }
+            if style.underline {
+                piece.underline = Some(UnderlineStyle {
+                    color: Some(piece.color),
+                    thickness: px(1.),
+                    wavy: false,
+                });
+            }
+            if style.strikethrough {
+                piece.strikethrough = Some(StrikethroughStyle {
+                    color: Some(piece.color),
+                    thickness: px(1.),
+                });
+            }
+        }
+        if marked.is_some_and(|marked| marked.start <= start && end <= marked.end) {
+            piece.underline = Some(UnderlineStyle {
+                color: Some(piece.color),
+                thickness: px(1.0),
+                wavy: false,
+            });
+        }
+        runs.push(piece);
+    }
+    if runs.is_empty() {
+        runs.push(run);
+    }
+    runs
 }
 
-/// Shapes `text`, hard line by hard line, wrapped at `wrap` (none on one line).
+/// Shapes `text`, hard line by hard line, wrapped at `wrap` (none on one line), each line at its scale.
 fn shape(
     text: &str,
     runs: &[TextRun],
     wrap: Option<Pixels>,
+    scales: &[f32],
     window: &Window,
 ) -> Vec<(usize, WrappedLine)> {
     let style = window.text_style();
     let font_size = style.font_size.to_pixels(window.rem_size());
     let mut lines = Vec::new();
     let mut start = 0;
-    for line in text.split('\n') {
+    for (index, line) in text.split('\n').enumerate() {
         // The runs of this line alone.
         let mut line_runs = Vec::new();
         let mut position = 0;
@@ -1075,11 +1445,12 @@ fn shape(
                 ..runs[0].clone()
             });
         }
+        let scale = scales.get(index).copied().unwrap_or(1.);
         let shaped = window
             .text_system()
             .shape_text(
                 SharedString::from(line.to_string()),
-                font_size,
+                font_size * scale,
                 &line_runs,
                 wrap,
                 None,
@@ -1091,6 +1462,13 @@ fn shape(
         start += line.len() + 1;
     }
     lines
+}
+
+/// The height of each line's rows: the field's line height, at the line's scale.
+fn heights(line_height: Pixels, lines: usize, scales: &[f32]) -> Vec<Pixels> {
+    (0..lines)
+        .map(|index| (line_height * scales.get(index).copied().unwrap_or(1.)).round())
+        .collect()
 }
 
 impl Element for GTextElement {
@@ -1122,25 +1500,32 @@ impl Element for GTextElement {
         }
         // Several lines: as high as the wrapped text, between its least and its most rows.
         let (min_rows, max_rows) = (input.min_rows as f32, input.max_rows as f32);
-        let text = if input.content.is_empty() {
-            input.placeholder.to_string()
-        } else {
-            input.content.clone()
-        };
+        let shown = shown_text(input);
         let color = window.text_style().color;
-        let runs = runs_for(input, &text, window, color);
+        let runs = runs_for(
+            &shown.text,
+            &shown.styles,
+            shown.marked.as_ref(),
+            window,
+            color,
+        );
         let layout_id =
             window.request_measured_layout(style, move |known, available, window, _cx| {
                 let width = known.width.unwrap_or(match available.width {
                     AvailableSpace::Definite(width) => width,
                     _ => px(10_000.),
                 });
-                let lines = shape(&text, &runs, Some(width), window);
-                let rows = lines
+                let lines = shape(&shown.text, &runs, Some(width), &shown.scales, window);
+                let heights = heights(line_height, lines.len(), &shown.scales);
+                let height: Pixels = lines
                     .iter()
-                    .map(|(_, line)| line.wrap_boundaries().len() + 1)
-                    .sum::<usize>() as f32;
-                size(width, line_height * rows.clamp(min_rows, max_rows))
+                    .zip(heights.iter())
+                    .map(|((_, line), height)| line.size(*height).height)
+                    .sum();
+                size(
+                    width,
+                    height.clamp(line_height * min_rows, line_height * max_rows),
+                )
             });
         (layout_id, ())
     }
@@ -1157,22 +1542,26 @@ impl Element for GTextElement {
         let colors = cx.theme().colors;
         let input = self.input.read(cx);
         let line_height = window.line_height();
-        let placeholder = input.content.is_empty();
-        let (text, color) = if placeholder {
-            (input.placeholder.to_string(), colors.text_discret)
+        let font_size = window.text_style().font_size.to_pixels(window.rem_size());
+        let shown = shown_text(input);
+        let placeholder = shown.placeholder;
+        let color = if placeholder {
+            colors.text_discret
         } else {
-            (input.content.clone(), window.text_style().color)
+            window.text_style().color
         };
-        let runs = runs_for(input, &text, window, color);
+        let view = input.current();
+        let to_shown = |offset: usize| view.map_or(offset, |view| view.to_shown(offset));
+        let runs = runs_for(
+            &shown.text,
+            &shown.styles,
+            shown.marked.as_ref(),
+            window,
+            color,
+        );
         let wrap = input.multi_line.then_some(bounds.size.width);
-        let lines = Rc::new(shape(&text, &runs, wrap, window));
-        let layout = TextLayout {
-            lines: Rc::new(Vec::new()),
-            line_height,
-            origin: bounds.origin,
-            width: bounds.size.width,
-            text: input.content.clone(),
-        };
+        let lines = Rc::new(shape(&shown.text, &runs, wrap, &shown.scales, window));
+        let line_heights = Rc::new(heights(line_height, lines.len(), &shown.scales));
         // Measured on the real text (the placeholder's positions mean nothing).
         let layout = TextLayout {
             lines: if placeholder {
@@ -1180,19 +1569,32 @@ impl Element for GTextElement {
             } else {
                 lines.clone()
             },
-            ..layout
+            heights: if placeholder {
+                Rc::new(vec![line_height])
+            } else {
+                line_heights.clone()
+            },
+            line_height,
+            origin: bounds.origin,
+            width: bounds.size.width,
+            text: if placeholder {
+                String::new()
+            } else {
+                shown.text.clone()
+            },
         };
-        let cursor = input.cursor_offset();
+        let cursor = to_shown(input.cursor_offset());
         let caret_at = if placeholder {
             point(px(0.), px(0.))
         } else {
             layout.position(cursor)
         };
+        let (_, caret_height) = layout.row_at(caret_at.y + px(0.5));
 
         // Scrolled so that the caret shows: sideways on one line, up and down on several. In several lines, only when
         // the caret has moved or the text changed: otherwise the wheel's scroll stays.
         let mut scroll = input.scroll;
-        let followed = (cursor, input.content.len());
+        let followed = (input.cursor_offset(), input.content.len());
         let follow = input.followed != Some(followed);
         let mut overflow = px(0.);
         if input.multi_line {
@@ -1200,8 +1602,8 @@ impl Element for GTextElement {
             overflow = (height - bounds.size.height).max(px(0.));
             if follow && caret_at.y + scroll.y < px(0.) {
                 scroll.y = -caret_at.y;
-            } else if follow && caret_at.y + line_height + scroll.y > bounds.size.height {
-                scroll.y = bounds.size.height - caret_at.y - line_height;
+            } else if follow && caret_at.y + caret_height + scroll.y > bounds.size.height {
+                scroll.y = bounds.size.height - caret_at.y - caret_height;
             }
             scroll.y = scroll
                 .y
@@ -1225,38 +1627,12 @@ impl Element for GTextElement {
         let origin = bounds.origin + scroll;
 
         let focused = input.focus_handle.is_focused(window);
+        let selection = to_shown(input.selected_range.start)..to_shown(input.selected_range.end);
         let mut selections = Vec::new();
-        let selection = input.selected_range.clone();
         if !selection.is_empty() && !placeholder {
             let ground = alpha(colors.accent, if focused { 0.25 } else { 0.12 });
-            let start = layout.position(selection.start);
-            let end = layout.position(selection.end);
-            let mut row = start.y;
-            while row <= end.y {
-                let from = if row == start.y { start.x } else { px(0.) };
-                let to = if row == end.y {
-                    end.x
-                } else {
-                    // To the end of the row: the line's width, or the field's when it wraps.
-                    let index =
-                        layout.line_index(layout.offset(point(px(0.), row + line_height / 2.)));
-                    let line = &layout.lines[index].1;
-                    if line.wrap_boundaries().is_empty() {
-                        line.width() + px(4.)
-                    } else {
-                        bounds.size.width
-                    }
-                };
-                if to > from {
-                    selections.push(fill(
-                        Bounds::from_corners(
-                            origin + point(from, row),
-                            origin + point(to, row + line_height),
-                        ),
-                        ground,
-                    ));
-                }
-                row += line_height;
+            for rect in layout.rects(selection.clone(), bounds.size.width) {
+                selections.push(fill(Bounds::new(origin + rect.origin, rect.size), ground));
             }
         }
         let caret = (focused && selection.is_empty() && input.caret_visible && !input.disabled)
@@ -1264,15 +1640,117 @@ impl Element for GTextElement {
                 fill(
                     Bounds::new(
                         origin + caret_at + point(px(0.), px(1.)),
-                        size(px(2.), line_height - px(2.)),
+                        size(px(2.), caret_height - px(2.)),
                     ),
                     colors.text_primary,
                 )
             });
+
+        // The presentation's marks and what a click does on them.
+        let mut marks = Vec::new();
+        let mut hot = Vec::new();
+        if let Some(view) = view.filter(|_| !placeholder) {
+            for (at, kind) in &view.marks {
+                let position = layout.position(*at);
+                let (index, height) = layout.row_at(position.y + px(0.5));
+                let scale = shown.scales.get(index).copied().unwrap_or(1.);
+                match kind {
+                    GMarkKind::Circle {
+                        checked,
+                        color,
+                        check,
+                        toggle,
+                    } => {
+                        let diameter = (font_size * scale * 1.1).round();
+                        let circle = Bounds::new(
+                            origin
+                                + point(position.x + px(1.), position.y + (height - diameter) / 2.),
+                            size(diameter, diameter),
+                        );
+                        if *checked {
+                            marks.push(Drawn::Quad(quad(
+                                circle,
+                                diameter / 2.,
+                                *color,
+                                px(0.),
+                                *color,
+                                BorderStyle::Solid,
+                            )));
+                            marks.push(Drawn::Check {
+                                circle,
+                                color: *check,
+                                font: window.text_style().font(),
+                            });
+                        } else {
+                            marks.push(Drawn::Quad(quad(
+                                circle,
+                                diameter / 2.,
+                                gpui::transparent_black(),
+                                px(1.5),
+                                *color,
+                                BorderStyle::Solid,
+                            )));
+                        }
+                        if let Some((range, text)) = toggle {
+                            hot.push((
+                                circle.dilate(px(4.)),
+                                Hot::Toggle(range.clone(), text.clone()),
+                            ));
+                        }
+                    }
+                    GMarkKind::Bar { color } => {
+                        marks.push(Drawn::Quad(quad(
+                            Bounds::new(
+                                origin + point(position.x + px(2.), position.y + px(2.)),
+                                size(px(3.), height - px(4.)),
+                            ),
+                            px(1.5),
+                            *color,
+                            px(0.),
+                            *color,
+                            BorderStyle::Solid,
+                        )));
+                    }
+                    GMarkKind::Rule { color } => {
+                        marks.push(Drawn::Quad(fill(
+                            Bounds::new(
+                                point(bounds.origin.x, origin.y + position.y + height / 2.),
+                                size(bounds.size.width, px(1.)),
+                            ),
+                            *color,
+                        )));
+                    }
+                }
+            }
+            for (range, url) in &view.links {
+                for rect in layout.rects(range.clone(), bounds.size.width) {
+                    hot.push((
+                        Bounds::new(origin + rect.origin, rect.size),
+                        Hot::Link(url.clone()),
+                    ));
+                }
+            }
+        }
+        // Only what shows is clicked.
+        let hot: Vec<(Bounds<Pixels>, Hot)> = hot
+            .into_iter()
+            .filter_map(|(area, what)| {
+                let seen = area.intersect(&bounds);
+                (seen.size.width > px(0.) && seen.size.height > px(0.)).then_some((seen, what))
+            })
+            .collect();
+        let hands = hot
+            .iter()
+            .map(|(area, _)| window.insert_hitbox(*area, HitboxBehavior::Normal))
+            .collect();
         let a11y = A11yText {
             label: input.label.clone(),
-            value: input.content.clone(),
-            selection: input.selected_range.clone(),
+            value: if placeholder {
+                String::new()
+            } else {
+                shown.text.clone()
+            },
+            selection,
             multi_line: input.multi_line,
             disabled: input.disabled,
         };
@@ -1282,14 +1760,16 @@ impl Element for GTextElement {
             input.followed = Some(followed);
             input.overflow = overflow;
             input.layout = Some(stored);
+            input.hot = hot;
         });
         Prepaint {
             lines,
+            heights: line_heights,
             origin,
-            line_height,
             selections,
             caret,
-            placeholder,
+            marks,
+            hands,
             a11y,
         }
     }
@@ -1310,28 +1790,68 @@ impl Element for GTextElement {
             ElementInputHandler::new(bounds, self.input.clone()),
             cx,
         );
+        for hand in &prepaint.hands {
+            window.set_cursor_style(CursorStyle::PointingHand, hand);
+        }
         window.with_content_mask(Some(gpui::ContentMask { bounds }), |window| {
             for selection in prepaint.selections.drain(..) {
                 window.paint_quad(selection);
             }
             let mut top = px(0.);
-            for (_, line) in prepaint.lines.iter() {
+            for (index, (_, line)) in prepaint.lines.iter().enumerate() {
+                let height = prepaint.heights.get(index).copied().unwrap_or_default();
                 line.paint(
                     prepaint.origin + point(px(0.), top),
-                    prepaint.line_height,
+                    height,
                     TextAlign::Left,
                     None,
                     window,
                     cx,
                 )
                 .ok();
-                top += line.size(prepaint.line_height).height;
+                top += line.size(height).height;
+            }
+            for mark in prepaint.marks.drain(..) {
+                match mark {
+                    Drawn::Quad(mark) => window.paint_quad(mark),
+                    Drawn::Check {
+                        circle,
+                        color,
+                        mut font,
+                    } => {
+                        font.weight = FontWeight::SEMIBOLD;
+                        let text = SharedString::from("\u{2713}");
+                        let check = window.text_system().shape_line(
+                            text.clone(),
+                            circle.size.height * 0.7,
+                            &[TextRun {
+                                len: text.len(),
+                                font,
+                                color,
+                                background_color: None,
+                                underline: None,
+                                strikethrough: None,
+                            }],
+                            None,
+                        );
+                        let x = (circle.size.width - check.width) / 2.;
+                        check
+                            .paint(
+                                circle.origin + point(x, px(0.)),
+                                circle.size.height,
+                                TextAlign::Left,
+                                None,
+                                window,
+                                cx,
+                            )
+                            .ok();
+                    }
+                }
             }
             if let Some(caret) = prepaint.caret.take() {
                 window.paint_quad(caret);
             }
         });
-        let _ = prepaint.placeholder;
     }
 
     fn a11y_role(&self) -> Option<Role> {

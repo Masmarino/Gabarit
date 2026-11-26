@@ -1,7 +1,10 @@
 //! The text input as the platform drives it: an input method's composition (marked text), UTF-16 offsets (what macOS,
 //! Windows and IBus speak), the emoji made of several characters, Arabic and Hebrew, the clipboard, the moves.
 
-use gabarit_gpui::text_field::{self, Backspace, Copy, Left, Paste, SelectAll, SelectLeft};
+use gabarit_gpui::text_field::{
+    self, Backspace, Copy, Delete, End, Home, Left, Paste, Right, SelectAll, SelectLeft,
+};
+use gabarit_gpui::{GPresentation, GSegment};
 use gabarit_gpui::{GTextInput, theme};
 use gpui::{Action, EntityInputHandler, Focusable, TestAppContext, WindowHandle};
 
@@ -160,4 +163,112 @@ fn the_wheel_scrolls_a_long_text(cx: &mut TestAppContext) {
     assert_eq!(champ.read_with(cx, |champ, _| champ.scrolled()), px(0.));
     roule(cx, -100_000.);
     assert_eq!(champ.read_with(cx, |champ, _| champ.scrolled()), bas);
+}
+
+/// A field that hides `**` and a line's `## ` (a small Markdown, as an owner would present it).
+fn presented(cx: &mut TestAppContext, text: &str) -> WindowHandle<GTextInput> {
+    cx.update(|cx| {
+        theme::init(cx);
+        text_field::bind_keys(cx);
+    });
+    let text = text.to_string();
+    let window = cx.add_window(move |_, cx| {
+        GTextInput::new(cx)
+            .multi_line(3, 10)
+            .with_text(text)
+            .presenter(|source, _| {
+                let mut segments = Vec::new();
+                let mut start = 0;
+                for line in source.split('\n') {
+                    if line.starts_with("## ") {
+                        segments.push(GSegment::hidden(start..start + 3).lead());
+                    }
+                    let mut from = 0;
+                    while let Some(i) = line[from..].find("**") {
+                        segments.push(GSegment::hidden(start + from + i..start + from + i + 2));
+                        from += i + 2;
+                    }
+                    start += line.len() + 1;
+                }
+                GPresentation {
+                    segments,
+                    ..Default::default()
+                }
+            })
+    });
+    window
+        .update(cx, |input, window, cx| {
+            let focus = input.focus_handle(cx);
+            window.focus(&focus, cx);
+        })
+        .unwrap();
+    cx.run_until_parked();
+    window
+}
+
+#[gpui::test]
+fn hidden_marks_are_stepped_over(cx: &mut TestAppContext) {
+    let window = presented(cx, "a **b** c");
+    // From the end, Left twice: before « c », then after « b », over the hidden `**` (the caret stays in the bold).
+    press(cx, window, Left);
+    press(cx, window, Left);
+    window
+        .update(cx, |input, _, _| assert_eq!(input.selection(), 5..5))
+        .unwrap();
+    // Left, Right: back after « b ».
+    press(cx, window, Left);
+    window
+        .update(cx, |input, _, _| assert_eq!(input.selection(), 2..2))
+        .unwrap();
+    press(cx, window, Right);
+    window
+        .update(cx, |input, _, _| assert_eq!(input.selection(), 5..5))
+        .unwrap();
+    // Backspace takes « b » alone, not the marks around it.
+    press(cx, window, Backspace);
+    window
+        .update(cx, |input, _, _| assert_eq!(input.text(), "a **** c"))
+        .unwrap();
+}
+
+#[gpui::test]
+fn a_line_mark_is_never_stepped_before(cx: &mut TestAppContext) {
+    let window = presented(cx, "x\n## Titre");
+    press(cx, window, Home);
+    window
+        .update(cx, |input, _, _| assert_eq!(input.selection(), 5..5))
+        .unwrap();
+    // Left from the title's start goes to the line above's end, over the mark.
+    press(cx, window, Left);
+    window
+        .update(cx, |input, _, _| assert_eq!(input.selection(), 1..1))
+        .unwrap();
+    press(cx, window, Right);
+    window
+        .update(cx, |input, _, _| assert_eq!(input.selection(), 5..5))
+        .unwrap();
+    // Backspace right after the mark takes it away: the line is no title any more.
+    press(cx, window, Backspace);
+    window
+        .update(cx, |input, _, _| {
+            assert_eq!(input.text(), "x\nTitre");
+            assert_eq!(input.selection(), 2..2);
+        })
+        .unwrap();
+}
+
+#[gpui::test]
+fn delete_and_end_on_a_presented_text(cx: &mut TestAppContext) {
+    let window = presented(cx, "**gras** fin");
+    press(cx, window, Home);
+    // The line's start: before the opening `**`; Delete takes « g ».
+    press(cx, window, Delete);
+    window
+        .update(cx, |input, _, _| assert_eq!(input.text(), "**ras** fin"))
+        .unwrap();
+    // The line's end: after everything.
+    press(cx, window, End);
+    window
+        .update(cx, |input, _, _| assert_eq!(input.selection(), 11..11))
+        .unwrap();
 }

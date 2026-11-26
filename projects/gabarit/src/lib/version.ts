@@ -1,1 +1,1 @@
-export const GABARIT_VERSION = '4.2.2'
+export const GABARIT_VERSION = '4.3.0'
